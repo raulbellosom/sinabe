@@ -79,8 +79,8 @@ CMD ["nginx", "-g", "daemon off;"]
    npm init -y
 
 2. Instalar dependencias necesarias:
-   npm install express @prisma/client bcryptjs jsonwebtoken nodemailer
-   npm install -D prisma
+   npm install express @prisma/client bcryptjs jsonwebtoken nodemailer pm2
+   npm install -D prisma nodemon
 
 3. Inicializar Prisma:
    npx prisma init
