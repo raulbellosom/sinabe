@@ -78,6 +78,8 @@ CMD ["nginx", "-g", "daemon off;"]
    cd mycad-backend
    npm init -y
 
+   (Recuerda realizar tu archivo de entorno .env copiando el contenido de .env.example y sustituyendo con tus credenciales los parametros que se encuentran señalados dentro del ejemplo.)
+
 2. Instalar dependencias necesarias:
    npm install express @prisma/client bcryptjs jsonwebtoken nodemailer pm2
    npm install -D prisma nodemon
@@ -153,7 +155,7 @@ MYSQL_DATABASE: mycad
 MYSQL_USER: username
 MYSQL_PASSWORD: password
 
-## Ejecuta el comando para crear contenedor:
+##Ejecuta el comando para crear y/o correr el contenedor:
 
 docker-compose up --build
 

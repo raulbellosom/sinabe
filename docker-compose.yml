@@ -1,27 +1,85 @@
-# docker-compose.yml
+# # docker-compose.yml
+version: "3.8"
 
-version: "3"
 services:
   frontend:
+    container_name: frontend
+    restart: always
     build:
       context: ./mycad-frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./mycad-frontend:/app
+      - /app/node_modules
     ports:
-      - "5173:80"
+      - "5173:5173"
+    command: npm run dev
 
   backend:
+    container_name: backend
+    restart: always
     build:
       context: ./mycad-backend
-    ports:
-      - "4000:4000"
+      dockerfile: Dockerfile
+    volumes:
+      - ./mycad-backend:/app
+      - /app/node_modules
     environment:
       DATABASE_URL: mysql://root:root@mysql:3306/mycad
+    ports:
+      - 4000:4000
+    env_file:
+      - ./mycad-backend/.env
+    command: npm run dev
     depends_on:
       - mysql
 
   mysql:
+    container_name: mysql
+    restart: always
     image: mysql:5.7
     ports:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: mycad
+# version: "3"
+# services:
+#   frontend:
+#     build:
+#       context: ./mycad-frontend
+#     ports:
+#       - "5173:80"
+#     volumes:
+#       - ./mycad-frontend:/usr/src/app
+#       - /usr/src/app/node_modules
+
+#   backend:
+#     build:
+#       context: ./mycad-backend
+#     ports:
+#       - "4000:4000"
+#     volumes:
+#       - ./mycad-backend:/usr/src/app
+#       - /usr/src/app/node_modules
+#     environment:
+#       DATABASE_URL: mysql://root:root@mysql:3306/mycad
+#     command: npm run dev
+#     depends_on:
+#       - mysql
+
+#   mysql:
+#     image: mysql:5.7
+#     ports:
+#       - "3306:3306"
+#     environment:
+#       MYSQL_ROOT_PASSWORD: root
+#       MYSQL_DATABASE: mycad
+
+#   node-runner:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.node-runner
+#     depends_on:
+#       - frontend
+#       - backend

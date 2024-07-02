@@ -1,11 +1,17 @@
 import express from "express";
+import { Router } from "express";
 
 const app = express();
+const router = Router();
 
-app.get("/", (req, res) => {
-  res.send("Hello World");
+router.get("/", async (req, res) => {
+  res.status(200).json({ message: "Hello world" });
 });
 
-app.listen(4000, () => {
-  console.log("Server is running on http://localhost:4000");
+app.use("/api", router);
+
+const port = process.env.PORT || 4000;
+
+app.listen(port, () => {
+  console.log(`server listening on http://localhost:${port}`);
 });
