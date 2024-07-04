@@ -1,10 +1,19 @@
-import "./App.css";
+import React from 'react';
+import AppProvider from './context/AppProvider';
+import { Toaster } from 'react-hot-toast';
+import AppRouter from './router/AppRouter';
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <>
-      <div>hola mundo updates 1</div>
-    </>
+    <QueryClientProvider client={queryClient}>
+      <AppProvider>
+        <AppRouter />
+        <Toaster />
+      </AppProvider>
+    </QueryClientProvider>
   );
 }
 

@@ -31,6 +31,7 @@ RUN npm install -g vite
 
 # Copiar el resto de los archivos del proyecto
 COPY . .
+COPY .env ./
 
 # Exponer el puerto que ViteJS utiliza
 EXPOSE 80
