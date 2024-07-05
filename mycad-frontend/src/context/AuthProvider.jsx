@@ -1,37 +1,41 @@
-import { useReducer, useEffect } from 'react';
+import React, { useReducer, useEffect } from 'react';
 import AuthContext from './AuthContext';
-import AuthReducer from './AuthReducer.js';
-import axios from 'axios';
+import authReducer from './AuthReducer';
+import { useAuthData } from '../hooks/useAuth';
 
 const AuthProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(AuthReducer, {
-    user: null,
+  const [state, dispatch] = useReducer(authReducer, {
+    user: JSON.parse(localStorage.getItem('user')) || null,
     loading: true,
   });
 
+  const { login, logout, register, loadUser } = useAuthData(dispatch);
+
   useEffect(() => {
-    const loadUser = async () => {
+    const loadUserData = async () => {
       try {
-        const response = await axios.get('/api/auth/me');
-        dispatch({ type: 'LOAD_USER', payload: response.data });
+        const user = await loadUser();
+        if (user) {
+          dispatch({ type: 'LOAD_USER', payload: user });
+        } else {
+          dispatch({ type: 'AUTH_ERROR' });
+        }
       } catch (error) {
         dispatch({ type: 'AUTH_ERROR' });
       }
     };
-    loadUser();
+
+    if (!state.user) {
+      loadUserData();
+    } else {
+      dispatch({ type: 'LOAD_USER', payload: state.user });
+    }
   }, []);
 
-  const login = async (credentials) => {
-    const response = await axios.post('/api/auth/login', credentials);
-    dispatch({ type: 'LOGIN_SUCCESS', payload: response.data });
-  };
-
-  const logout = () => {
-    dispatch({ type: 'LOGOUT' });
-  };
-
   return (
-    <AuthContext.Provider value={{ state, login, logout }}>
+    <AuthContext.Provider
+      value={{ ...state, login, logout, register, dispatch }}
+    >
       {children}
     </AuthContext.Provider>
   );

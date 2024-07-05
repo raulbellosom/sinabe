@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import AuthContext from '../../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const formik = useFormik({
     initialValues: {
@@ -15,15 +17,14 @@ const Login = () => {
       email: Yup.string().email('Invalid email address').required('Required'),
       password: Yup.string().required('Required'),
     }),
-    onSubmit: (values) => {
-      // Simulate login
-      console.log(values);
+    onSubmit: async (values) => {
+      await login(values);
       navigate('/dashboard');
     },
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h2 className="text-2xl mb-6">Login</h2>
         <form onSubmit={formik.handleSubmit}>

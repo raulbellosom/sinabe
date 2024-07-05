@@ -24,30 +24,3 @@ const verifyRole = (roles) => {
 };
 
 export default { verifyRole };
-
-// role permissions example
-// const express = require('express');
-// const { verifyRole } = require('./middleware/authorization');
-// const app = express();
-
-// app.use(express.json());
-
-// // Ejemplo de ruta protegida
-// app.get('/vehicles', verifyRole(['admin', 'user']), async (req, res) => {
-//   const vehicles = await prisma.vehicle.findMany();
-//   res.json(vehicles);
-// });
-
-// // Otra ruta protegida para solo admin
-// app.delete('/vehicles/:id', verifyRole(['admin']), async (req, res) => {
-//   const { id } = req.params;
-//   await prisma.vehicle.delete({
-//     where: { id: parseInt(id) },
-//   });
-//   res.status(204).send();
-// });
-
-// const PORT = process.env.PORT || 4000;
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}`);
-// });

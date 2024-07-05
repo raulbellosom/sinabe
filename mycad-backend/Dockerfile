@@ -13,12 +13,17 @@ FROM node:20.10.0-alpine
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install && npm cache clean --force
+# RUN npm install && npm cache clean --force
+RUN npm install
 ENV PATH=/app/node_modules/.bin:$PATH
 
 COPY . .
 COPY src ./src
 COPY .env ./
+
+RUN npx prisma generate
+
+# RUN npx prisma migrate dev --name init
 
 #RUN npm install -g nodemon
 

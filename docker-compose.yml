@@ -4,7 +4,6 @@ version: "3.8"
 services:
   frontend:
     container_name: frontend
-    restart: always
     build:
       context: ./mycad-frontend
       dockerfile: Dockerfile
@@ -17,7 +16,6 @@ services:
 
   backend:
     container_name: backend
-    restart: always
     build:
       context: ./mycad-backend
       dockerfile: Dockerfile
@@ -36,13 +34,28 @@ services:
 
   mysql:
     container_name: mysql
-    restart: always
     image: mysql:5.7
     ports:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: mycad
+
+  prisma-studio:
+    container_name: prisma-studio
+    image: node:20.10.0-alpine
+    build:
+      context: ./mycad-backend
+    working_dir: /app
+    volumes:
+      - ./mycad-backend:/app
+    ports:
+      - "5555:5555"
+    command: ["sh", "-c", "npx prisma studio"]
+    environment:
+      DATABASE_URL: mysql://root:root@mysql:3306/mycad
+    depends_on:
+      - mysql
 # version: "3"
 # services:
 #   frontend:

@@ -5,10 +5,11 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String  @id @default(uuid())
   firstName String
   lastName  String
   email     String   @unique
@@ -39,12 +40,13 @@ model Vehicle {
   status          String
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-  createdById     Int
+  createdById     String           // Cambiar a tipo String para usar UUID
   createdBy       User             @relation(fields: [createdById], references: [id])
   serviceHistories ServiceHistory[]
   rentals         Rental[]
   files           File[]
 }
+
 
 model VehicleType {
   id       Int      @id @default(autoincrement())
