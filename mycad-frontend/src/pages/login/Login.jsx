@@ -29,7 +29,14 @@ const Login = () => {
         <h2 className="text-2xl mb-6">Login</h2>
         <form onSubmit={formik.handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-700">
+            <label
+              onClick={() => {
+                formik.setFieldValue('email', 'raul.belloso.m@gmail.com');
+                formik.setFieldValue('password', 'Nigga0599.');
+              }}
+              htmlFor="email"
+              className="block text-gray-700"
+            >
               Email
             </label>
             <input

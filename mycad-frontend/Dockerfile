@@ -23,7 +23,13 @@ FROM node:20.10.0-alpine
 WORKDIR /app
 
 # Copiar archivos de configuración y de paquetes
+RUN rm -rf node_modules package-lock.json
+
 COPY package*.json ./
+COPY vite.config.js ./
+COPY tailwind.config.js ./
+COPY package.json ./
+
 RUN npm install
 
 # Instalar Vite globalmente

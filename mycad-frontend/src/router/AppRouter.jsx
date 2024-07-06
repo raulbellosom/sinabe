@@ -25,6 +25,10 @@ const AppRouter = () => {
                     <Sidebar />
                     <Routes>
                       <Route
+                        path="/"
+                        element={<ProtectedRoute element={Dashboard} />}
+                      />
+                      <Route
                         path="/dashboard"
                         element={<ProtectedRoute element={Dashboard} />}
                       />
