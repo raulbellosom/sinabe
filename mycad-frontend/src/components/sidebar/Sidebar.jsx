@@ -6,10 +6,17 @@ import {
   MenuItem,
   menuClasses,
 } from 'react-pro-sidebar';
-import { FaTachometerAlt, FaCar, FaUserCircle } from 'react-icons/fa';
+import {
+  FaTachometerAlt,
+  FaCar,
+  FaUserCircle,
+  FaSignOutAlt,
+} from 'react-icons/fa';
 import AuthContext from '../../context/AuthContext';
 import AccountSidebar from './AccountSidebar';
-import MyCADLogo from '../../assets/logo/mycad.png';
+import MyCADLogo from '../../assets/logo/mycad_icon.png';
+import { Button } from 'flowbite-react';
+import { HiOutlineMenuAlt1 } from 'react-icons/hi';
 
 const themes = {
   light: {
@@ -56,11 +63,9 @@ const hexToRgba = (hex, alpha) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-const Sidebar = () => {
+const Sidebar = ({ collapsed = false, setCollapsed = () => {} }) => {
   const location = useLocation();
   const { user, logout } = useContext(AuthContext);
-
-  const [collapsed, setCollapsed] = useState(false);
   const [toggled, setToggled] = useState(false);
   const [broken, setBroken] = useState(false);
   const [rtl, setRtl] = useState(false);
@@ -123,10 +128,20 @@ const Sidebar = () => {
     <div
       style={{
         display: 'flex',
-        height: '100%',
+        height: '100vh',
         direction: rtl ? 'rtl' : 'ltr',
       }}
+      className="relative"
     >
+      <Button
+        type="button"
+        onClick={() => (collapsed ? setCollapsed(false) : setCollapsed(true))}
+        color="light"
+        className="absolute top-2 -right-14 z-20 h-10 w-10 rounded-sm flex items-center justify-center"
+        style={{ outline: 'none' }}
+      >
+        <HiOutlineMenuAlt1 />
+      </Button>
       <ProSidebar
         collapsed={collapsed}
         toggled={toggled}
@@ -144,51 +159,84 @@ const Sidebar = () => {
         }}
       >
         <div
-          style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            justifyContent: 'space-between',
+          }}
         >
-          {user && (
-            <>
-              <AccountSidebar
-                email={user.email}
-                name={user.firstName + ' ' + user.lastName}
-                photo={user.photo}
-                btnOnClick={logout}
-              />
-              <hr className="my-4" />
-            </>
-          )}
-          <Menu
-            menuItemStyles={{
-              button: {
-                [`&.active`]: {
-                  backgroundColor: '#13395e',
-                  color: '#b6c8d9',
+          <div>
+            {user && (
+              <>
+                <AccountSidebar
+                  role={user.roleId === 1 ? 'Admin' : 'User'}
+                  name={user.firstName + ' ' + user.lastName}
+                  photo={user.photo}
+                  collapsed={collapsed}
+                />
+                <hr className="my-4" />
+              </>
+            )}
+            <Menu
+              menuItemStyles={{
+                button: {
+                  [`&.active`]: {
+                    backgroundColor: '#13395e',
+                    color: '#b6c8d9',
+                  },
                 },
-              },
-            }}
-          >
-            <MenuItem
-              component={<Link to={'/dashboard'} />}
-              active={location.pathname === '/dashboard'}
-              icon={<FaTachometerAlt />}
+              }}
             >
-              Dashboard
-            </MenuItem>
-            <MenuItem
-              component={<Link to={'/vehicles'} />}
-              active={location.pathname === '/vehicles'}
-              icon={<FaCar />}
-            >
-              Vehicles
-            </MenuItem>
-            <MenuItem
-              component={<Link to={'/users'} />}
-              active={location.pathname === '/users'}
-              icon={<FaUserCircle />}
-            >
-              Users
-            </MenuItem>
-          </Menu>
+              <MenuItem
+                component={<Link to={'/dashboard'} />}
+                active={location.pathname === '/dashboard'}
+                icon={<FaTachometerAlt />}
+              >
+                Dashboard
+              </MenuItem>
+              <MenuItem
+                component={<Link to={'/vehicles'} />}
+                active={location.pathname === '/vehicles'}
+                icon={<FaCar />}
+              >
+                Vehicles
+              </MenuItem>
+              <MenuItem
+                component={<Link to={'/users'} />}
+                active={location.pathname === '/users'}
+                icon={<FaUserCircle />}
+              >
+                Users
+              </MenuItem>
+            </Menu>
+          </div>
+          <div className="p-5 pl-3">
+            {collapsed ? (
+              <Button
+                type="button"
+                className="w-full outline-none"
+                onClick={logout}
+                color="light"
+              >
+                <span className="h-5 outline-none">
+                  <FaSignOutAlt className="w-4 h-4" />
+                </span>
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                className="w-full"
+                onClick={logout}
+                color="light"
+              >
+                <span className="flex justify-center items-center text-nowrap gap-2 h-5">
+                  <FaSignOutAlt className="w-4 h-4" />
+                  <span className={`font-semibold`}>Cerrar Sesión</span>
+                </span>
+              </Button>
+            )}
+          </div>
         </div>
       </ProSidebar>
     </div>
