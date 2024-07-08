@@ -37,7 +37,7 @@ export const useAuthData = (dispatch) => {
     onSuccess: () => {
       queryClient.removeQueries('user');
       localStorage.removeItem('user');
-      localStorage.removeItem('token'); // Remove token from localStorage
+      localStorage.removeItem('token');
       dispatch({ type: 'LOGOUT' });
     },
     onSettled: () => setLoading(false),

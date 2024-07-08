@@ -11,12 +11,13 @@ import {
   FaCar,
   FaUserCircle,
   FaSignOutAlt,
+  FaUserEdit,
 } from 'react-icons/fa';
 import AuthContext from '../../context/AuthContext';
 import AccountSidebar from './AccountSidebar';
 import MyCADLogo from '../../assets/logo/mycad_icon.png';
 import { Button } from 'flowbite-react';
-import { HiOutlineMenuAlt1 } from 'react-icons/hi';
+import Navbar from '../navbar/Navbar';
 
 const themes = {
   light: {
@@ -63,9 +64,10 @@ const hexToRgba = (hex, alpha) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-const Sidebar = ({ collapsed = false, setCollapsed = () => {} }) => {
+const Sidebar = ({ children }) => {
   const location = useLocation();
   const { user, logout } = useContext(AuthContext);
+  const [collapsed, setCollapsed] = useState(false);
   const [toggled, setToggled] = useState(false);
   const [broken, setBroken] = useState(false);
   const [rtl, setRtl] = useState(false);
@@ -131,17 +133,8 @@ const Sidebar = ({ collapsed = false, setCollapsed = () => {} }) => {
         height: '100vh',
         direction: rtl ? 'rtl' : 'ltr',
       }}
-      className="relative"
+      className="relative w-full h-full overflow-hidden bg-gray-100"
     >
-      <Button
-        type="button"
-        onClick={() => (collapsed ? setCollapsed(false) : setCollapsed(true))}
-        color="light"
-        className="absolute top-2 -right-14 z-20 h-10 w-10 rounded-sm flex items-center justify-center"
-        style={{ outline: 'none' }}
-      >
-        <HiOutlineMenuAlt1 />
-      </Button>
       <ProSidebar
         collapsed={collapsed}
         toggled={toggled}
@@ -167,17 +160,13 @@ const Sidebar = ({ collapsed = false, setCollapsed = () => {} }) => {
           }}
         >
           <div>
-            {user && (
-              <>
-                <AccountSidebar
-                  role={user.roleId === 1 ? 'Admin' : 'User'}
-                  name={user.firstName + ' ' + user.lastName}
-                  photo={user.photo}
-                  collapsed={collapsed}
-                />
-                <hr className="my-4" />
-              </>
-            )}
+            <AccountSidebar
+              // role={user.roleId === 1 ? 'Admin' : 'User'}
+              role={user.email}
+              name={user.firstName + ' ' + user.lastName}
+              photo={user.photo}
+              collapsed={collapsed}
+            />
             <Menu
               menuItemStyles={{
                 button: {
@@ -188,6 +177,13 @@ const Sidebar = ({ collapsed = false, setCollapsed = () => {} }) => {
                 },
               }}
             >
+              <MenuItem
+                component={<Link to={'/'} />}
+                active={location.pathname === '/'}
+                icon={<FaUserEdit />}
+              >
+                Editar Perfil
+              </MenuItem>
               <MenuItem
                 component={<Link to={'/dashboard'} />}
                 active={location.pathname === '/dashboard'}
@@ -211,34 +207,29 @@ const Sidebar = ({ collapsed = false, setCollapsed = () => {} }) => {
               </MenuItem>
             </Menu>
           </div>
-          <div className="p-5 pl-3">
-            {collapsed ? (
-              <Button
-                type="button"
-                className="w-full outline-none"
-                onClick={logout}
-                color="light"
-              >
-                <span className="h-5 outline-none">
-                  <FaSignOutAlt className="w-4 h-4" />
-                </span>
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                className="w-full"
-                onClick={logout}
-                color="light"
-              >
-                <span className="flex justify-center items-center text-nowrap gap-2 h-5">
-                  <FaSignOutAlt className="w-4 h-4" />
-                  <span className={`font-semibold`}>Cerrar Sesión</span>
-                </span>
-              </Button>
-            )}
+          <div className="p-4">
+            <Button
+              type="button"
+              className="w-full border-none truncate flex justify-start items-center"
+              onClick={logout}
+              color="light"
+            >
+              <FaSignOutAlt className="text-lg mt-0.5 mr-4" />
+              Cerrar Sesión
+            </Button>
           </div>
         </div>
       </ProSidebar>
+      <div className="w-full h-full">
+        <Navbar
+          collapsed={collapsed}
+          setCollapsed={() => setCollapsed(!collapsed)}
+          toggled={toggled}
+          setToggled={() => setToggled(!toggled)}
+          broken={broken}
+        />
+        {children}
+      </div>
     </div>
   );
 };

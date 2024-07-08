@@ -1,61 +1,72 @@
-// src/router/AppRouter.jsx
-import React, { Suspense, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { Suspense, lazy, useContext } from 'react';
+import AuthContext from '../context/AuthContext';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 import Login from '../pages/login/Login';
 import Dashboard from '../pages/dashboard/Dashboard';
 import Vehicles from '../pages/vehicles/Vehicles';
 import NotFound from '../pages/notFound/NotFound';
-import Sidebar from '../components/sidebar/Sidebar';
-import Navbar from '../components/navbar/Navbar';
 import ProtectedRoute from './ProtectedRoute';
+const Sidebar = lazy(() => import('../components/sidebar/Sidebar'));
+import LoadingModal from '../components/loadingModal/LoadingModal';
 
 const AppRouter = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const { user } = useContext(AuthContext);
 
   return (
     <div className="h-screen w-full">
       <Router>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingModal loading={true} />}>
           <div className="flex h-screen w-full">
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route
-                path="*"
-                element={
-                  <>
-                    <Sidebar
-                      collapsed={collapsed}
-                      setCollapsed={setCollapsed}
-                    />
-                    <div className="flex flex-col w-full h-full">
-                      <Navbar />
-                      <Routes>
-                        <Route
-                          path="/"
-                          element={<ProtectedRoute element={Dashboard} />}
-                        />
-                        <Route
-                          path="/dashboard"
-                          element={<ProtectedRoute element={Dashboard} />}
-                        />
-                        <Route
-                          path="/vehicles"
-                          element={<ProtectedRoute element={Vehicles} />}
-                        />
-                        <Route
-                          path="*"
-                          element={<ProtectedRoute element={NotFound} />}
-                        />
-                      </Routes>
-                    </div>
-                  </>
-                }
-              />
-            </Routes>
+            {user ? <AuthorizedRoute user={user} /> : <UnauthorizedRoute />}
           </div>
         </Suspense>
       </Router>
     </div>
+  );
+};
+
+const AuthorizedRoute = ({ user }) => {
+  return (
+    <Routes>
+      <Route
+        path="*"
+        element={
+          <>
+            <Sidebar>
+              <Routes>
+                <Route element={<ProtectedRoute user={user} />}>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/vehicles" element={<Vehicles />} />
+                  <Route
+                    path="/login"
+                    element={
+                      <>
+                        <Navigate to={'/'} replace={true} />
+                      </>
+                    }
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </Sidebar>
+          </>
+        }
+      />
+    </Routes>
+  );
+};
+
+const UnauthorizedRoute = () => {
+  return (
+    <Routes>
+      <Route path="*" element={<Login />} />
+    </Routes>
   );
 };
 

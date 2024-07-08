@@ -10,54 +10,44 @@ const AccountSidebar = ({ name, role, photo, collapsed }) => {
     'flex',
     'items-center',
     'justify-center',
+    'rounded-full',
     'text-white',
     'text-2xl',
     'font-bold',
   );
   return (
-    <div className="flex flex-col items-center pt-2 h-56">
+    <div className="p-4 h-fit space-y-5">
       <div
-        className={`w-full flex ${collapsed ? 'justify-center' : 'justify-start'} items-center gap-2 p-4`}
+        className={`w-full overflow-hidden whitespace-nowrap text-nowrap flex justify-start gap-4 items-center`}
       >
-        <img
-          src={MyCAD_ICON}
-          alt="MyCAD ICON"
-          className={
-            logoClasses + (collapsed ? ' rounded-full' : ' rounded-lg')
-          }
-        />
-        <span
-          className={`${collapsed && 'hidden'} text-3xl text-orange-500 font-extrabold`}
-        >
+        <img src={MyCAD_ICON} alt="MyCAD ICON" className={logoClasses} />
+        <span className={`text-2xl text-orange-500 font-extrabold mb-2`}>
           MyCAD
         </span>
       </div>
-      <img
-        src={photo || 'https://via.placeholder.com/150'}
-        alt="User Photo"
-        className={`${collapsed ? 'w-10 h-10' : 'w-16 h-16'} rounded-full mb-2`}
-      />
-
-      <h2
+      <div
         className={classNames(
-          'text-xl font-bold mb-1 text-orange-500',
-          collapsed
-            ? 'transition-all duration-75 transform translate-x-full hidden'
-            : 'transition-all duration-500 transform translate-x-0 ease-in-out',
+          'w-full whitespace-nowrap overflow-hidden flex justify-start gap-4 items-center',
         )}
       >
-        {name}
-      </h2>
-      <p
-        className={classNames(
-          'text-gray-500 mb-2',
-          collapsed
-            ? 'transition-all duration-75 transform translate-x-full hidden'
-            : 'transition-all duration-500 transform translate-x-0 ease-in-out',
-        )}
-      >
-        {role}
-      </p>
+        <img
+          src={photo || 'https://via.placeholder.com/150'}
+          alt="User Photo"
+          className={`w-10 h-10 mt-2 rounded-full`}
+        />
+        <div className={'truncate whitespace-nowrap text-nowrap'}>
+          <h2
+            className={classNames(
+              'text-lg font-bold text-orange-500 w-full truncate',
+            )}
+          >
+            {name}
+          </h2>
+          <p className={classNames('text-neutral-500 w-full truncate text-xs')}>
+            {role}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
