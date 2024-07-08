@@ -15,7 +15,7 @@ import {
 } from 'react-icons/fa';
 import AuthContext from '../../context/AuthContext';
 import AccountSidebar from './AccountSidebar';
-import MyCADLogo from '../../assets/logo/mycad_icon.png';
+import BgPattern from '../../assets/bg/pattern-randomized.png';
 import { Button } from 'flowbite-react';
 import Navbar from '../navbar/Navbar';
 
@@ -71,7 +71,7 @@ const Sidebar = ({ children }) => {
   const [toggled, setToggled] = useState(false);
   const [broken, setBroken] = useState(false);
   const [rtl, setRtl] = useState(false);
-  const [hasImage, setHasImage] = useState(false);
+  const [hasImage, setHasImage] = useState(true);
   const [theme, setTheme] = useState('light');
 
   const handleRTLChange = (e) => {
@@ -140,12 +140,12 @@ const Sidebar = ({ children }) => {
         toggled={toggled}
         onBackdropClick={() => setToggled(false)}
         onBreakPoint={setBroken}
-        image={MyCADLogo}
+        image={BgPattern}
         rtl={rtl}
         breakPoint="md"
         backgroundColor={hexToRgba(
           themes[theme].sidebar.backgroundColor,
-          hasImage ? 0.9 : 1,
+          hasImage ? 0 : 1,
         )}
         rootStyles={{
           color: themes[theme].sidebar.color,
@@ -210,9 +210,9 @@ const Sidebar = ({ children }) => {
           <div className="p-4">
             <Button
               type="button"
-              className="w-full border-none truncate flex justify-start items-center"
+              color={'light'}
+              className="w-full border-none truncate flex justify-start items-center bg-transparent text-gray-500 hover:text-gray-700"
               onClick={logout}
-              color="light"
             >
               <FaSignOutAlt className="text-lg mt-0.5 mr-4" />
               Cerrar Sesión
