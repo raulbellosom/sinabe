@@ -22,18 +22,22 @@ import Navbar from '../navbar/Navbar';
 const themes = {
   light: {
     sidebar: {
-      backgroundColor: '#ffffff',
-      color: '#607489',
+      backgroundColor: '#F6E8DF',
+      color: '#0B2948',
     },
     menu: {
       menuContent: '#fbfcfd',
-      icon: '#0098e5',
+      icon: '#ff5a1f',
       hover: {
-        backgroundColor: '#c5e4ff',
-        color: '#44596e',
+        backgroundColor: '#ff5a1f',
+        color: '#fff',
       },
       disabled: {
         color: '#9fb6cf',
+      },
+      active: {
+        color: '#FFF',
+        backgroundColor: '#0B2948',
       },
     },
   },
@@ -133,7 +137,7 @@ const Sidebar = ({ children }) => {
         height: '100vh',
         direction: rtl ? 'rtl' : 'ltr',
       }}
-      className="relative w-full h-full overflow-hidden bg-gray-100"
+      className="relative w-full h-full overflow-hidden bg-mycad-sand"
     >
       <ProSidebar
         collapsed={collapsed}
@@ -145,7 +149,7 @@ const Sidebar = ({ children }) => {
         breakPoint="md"
         backgroundColor={hexToRgba(
           themes[theme].sidebar.backgroundColor,
-          hasImage ? 0 : 1,
+          hasImage ? 0.15 : 1,
         )}
         rootStyles={{
           color: themes[theme].sidebar.color,
@@ -167,12 +171,30 @@ const Sidebar = ({ children }) => {
               photo={user.photo}
               collapsed={collapsed}
             />
+            <div className="border-t border-gray-300 py-1" />
             <Menu
               menuItemStyles={{
+                root: {
+                  fontSize: '16px',
+                  fontWeight: 600,
+                },
                 button: {
-                  [`&.active`]: {
-                    backgroundColor: '#13395e',
-                    color: '#b6c8d9',
+                  ['&:hover']: {
+                    backgroundColor: hexToRgba(
+                      themes[theme].menu.hover.backgroundColor,
+                      hasImage ? 0.75 : 1,
+                    ),
+                    color: themes[theme].menu.hover.color,
+                  },
+                  [`&.ps-active`]: {
+                    backgroundColor: hexToRgba(
+                      themes[theme].menu.active.backgroundColor,
+                      hasImage ? 0.75 : 1,
+                    ),
+                    color: themes[theme].menu.active.color,
+                  },
+                  [`&.${menuClasses.disabled}`]: {
+                    color: themes[theme].menu.disabled.color,
                   },
                 },
               }}
@@ -210,8 +232,8 @@ const Sidebar = ({ children }) => {
           <div className="p-4">
             <Button
               type="button"
-              color={'light'}
-              className="w-full border-none truncate flex justify-start items-center bg-transparent text-gray-500 hover:text-gray-700"
+              gradientMonochrome="purple"
+              className="w-full border-none truncate flex justify-start items-centertext-white transition-colors duration-100 ease-in-out"
               onClick={logout}
             >
               <FaSignOutAlt className="text-lg mt-0.5 mr-4" />

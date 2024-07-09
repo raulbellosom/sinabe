@@ -38,7 +38,7 @@ const AccountSidebar = ({ name, role, photo, collapsed }) => {
         <div className={'truncate whitespace-nowrap text-nowrap'}>
           <h2
             className={classNames(
-              'text-lg font-bold text-orange-500 w-full truncate',
+              'text-lg font-bold text-mycad-purp-light w-full truncate',
             )}
           >
             {name}
