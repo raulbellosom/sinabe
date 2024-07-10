@@ -32,15 +32,6 @@ RUN npm install -g pm2
 # Copiar los archivos desde la etapa de construcción
 COPY --from=builder /app /app
 
-# Pulir la base de datos
-RUN npm run pull
-
-# Ejecutar las migraciones de Prisma
-RUN npm run migrate
-
-# prisma seed 
-RUN npm run seed
-
 # Exponer el puerto de la aplicación
 EXPOSE 4000
 
@@ -48,4 +39,4 @@ EXPOSE 4000
 ENV NODE_ENV production
 
 # Comando por defecto para iniciar la aplicación con pm2
-CMD ["npm run prod", "npm run pull", "npm run migrate", "npm run seed"]
+CMD npm run pull && npm run migrate && npm run seed && pm2-runtime src/index.js
