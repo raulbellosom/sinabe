@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import useVehicle from '../../hooks/useVehicle';
+import VehicleContext, { useVehicleContext } from '../../context/VehicleContext';
 
 const Vehicles = () => {
-  const { vehicles, status, createVehicle, updateVehicle, deleteVehicle } =
-    useVehicle();
+  
+  const { vehicles } = useVehicleContext()
   const [formState, setFormState] = useState({ make: '', model: '', year: '' });
   const [editMode, setEditMode] = useState(false);
 
@@ -64,7 +65,7 @@ const Vehicles = () => {
         <button type="submit">{editMode ? 'Update' : 'Create'}</button>
       </form>
       <ul>
-        {vehicles.map((vehicle) => (
+        {vehicles?.map((vehicle) => (
           <li key={vehicle.id}>
             {vehicle.make} {vehicle.model} - {vehicle.year}
             <button onClick={() => handleEdit(vehicle)}>Edit</button>

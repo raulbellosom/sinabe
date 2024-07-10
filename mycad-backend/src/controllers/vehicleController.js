@@ -1,10 +1,8 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { db } from "../lib/db.js";
 
 export const getVehicles = async (req, res) => {
   try {
-    const vehicles = await prisma.vehicle.findMany();
+    const vehicles = await db.vehicle.findMany();
     res.json(vehicles);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -15,7 +13,7 @@ export const getVehicleById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const vehicle = await prisma.vehicle.findUnique({
+    const vehicle = await db.vehicle.findUnique({
       where: { id },
     });
 
@@ -42,7 +40,7 @@ export const createVehicle = async (req, res) => {
   } = req.body;
 
   try {
-    const vehicle = await prisma.vehicle.create({
+    const vehicle = await db.vehicle.create({
       data: {
         typeId,
         brand,
@@ -67,7 +65,7 @@ export const updateVehicle = async (req, res) => {
     req.body;
 
   try {
-    const vehicle = await prisma.vehicle.update({
+    const vehicle = await db.vehicle.update({
       where: { id },
       data: {
         typeId,
@@ -90,7 +88,7 @@ export const deleteVehicle = async (req, res) => {
   const { id } = req.params;
 
   try {
-    await prisma.vehicle.delete({
+    await db.vehicle.delete({
       where: { id },
     });
 
