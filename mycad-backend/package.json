@@ -10,8 +10,9 @@
     "start": "node src/index.js",
     "seed": "node prisma/seeders/seed.js",
     "prisma": "npx prisma",
-    "migrate": "npx prisma migrate dev",
+    "migrate": "npx prisma migrate dev --name init",
     "generate": "npx prisma generate",
+    "pull": "npx prisma db pull",
     "prod": "pm2 start src/index.js --name mycad-backend"
   },
   "dependencies": {
