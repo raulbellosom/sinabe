@@ -29,11 +29,6 @@ RUN npm install -g pm2
 # Copiar los archivos desde la etapa de construcción
 COPY --from=builder /app /app
 
-# Generar Prisma Client
-RUN npx prisma generate
-
-RUN npx prisma migrate deploy
-
 # Exponer el puerto de la aplicación
 EXPOSE 4000
 
