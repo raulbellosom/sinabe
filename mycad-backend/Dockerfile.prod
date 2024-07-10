@@ -32,6 +32,12 @@ RUN npm install -g pm2
 # Copiar los archivos desde la etapa de construcción
 COPY --from=builder /app /app
 
+# Ejecutar las migraciones de Prisma
+RUN npx prisma migrate deploy
+
+# prisma seed 
+RUN npx prisma db seed --preview-feature
+
 # Exponer el puerto de la aplicación
 EXPOSE 4000
 
