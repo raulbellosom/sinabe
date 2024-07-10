@@ -4,6 +4,10 @@ FROM node:20.10.0-alpine AS builder
 # Establecer el directorio de trabajo
 WORKDIR /app
 
+# remove the node_modules and package-lock.json
+RUN npm cache clean --force
+RUN rm -rf node_modules package-lock.json
+
 # Copiar package.json y package-lock.json
 COPY package*.json ./
 
@@ -35,4 +39,4 @@ EXPOSE 4000
 ENV NODE_ENV production
 
 # Comando por defecto para iniciar la aplicación con pm2
-CMD ["pm2-runtime", "src/index.js"]
+CMD ["npm", "run", "prod"]
