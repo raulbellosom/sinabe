@@ -40,7 +40,5 @@ EXPOSE 4000
 # Configurar la variable de entorno para producción
 ENV NODE_ENV production
 
-# Ejecutar los comandos de Prisma y luego iniciar la aplicación
-# CMD npm run pull && npm run migrate && npm run seed && pm2-runtime src/index.js
-# Comando por defecto para iniciar la aplicación con pm2
-CMD ["sh", "-c", "pm2-runtime src/index.js && npx prisma migrate deploy && npx prisma db pull && node prisma/seeders/seed.js"]
+# Iniciar la aplicación
+CMD ["npm", "run", "prod"]
