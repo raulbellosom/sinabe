@@ -2,7 +2,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { PrismaClient } from "@prisma/client";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import vehicleRoutes from "./routes/vehicleRoutes.js";
@@ -11,7 +10,6 @@ import pingRoutes from "./routes/pingRoutes.js";
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
 const APP_URL = process.env.APP_URL || "http://localhost:5173";
 
 app.use(cors([APP_URL]));

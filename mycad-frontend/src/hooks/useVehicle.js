@@ -5,16 +5,21 @@ import {
   updateVehicle,
   deleteVehicle,
 } from '../services/api';
-import { useContext } from 'react';
-import VehicleContext from '../context/VehicleContext';
+import { useLoading } from '../context/LoadingContext';
 
-const useVehicle = () => {
-  const { dispatch } = useContext(VehicleContext);
+const useVehicle = (dispatch) => {
+  
   const queryClient = useQueryClient();
+  const { dispatch: loadingDispatch } = useLoading();
 
-  const { data: vehicles, status } = useQuery('vehicles', getVehicles, {
+  const setLoading = (loading) => {
+    loadingDispatch({ type: 'SET_LOADING', payload: loading });
+  };
+  const fetchVehicles = useMutation(getVehicles, {
+    onMutate: () => setLoading(true),
     onSuccess: (data) => {
-      dispatch({ type: 'SET_VEHICLES', payload: data });
+      dispatch({ type: 'FETCH_VEHICLES_SUCCESS', payload: data });
+      setLoading(false)
     },
   });
 
@@ -37,8 +42,7 @@ const useVehicle = () => {
   });
 
   return {
-    vehicles,
-    status,
+    fetchVehicles: fetchVehicles.mutate,
     createVehicle: createVehicleMutation.mutate,
     updateVehicle: updateVehicleMutation.mutate,
     deleteVehicle: deleteVehicleMutation.mutate,

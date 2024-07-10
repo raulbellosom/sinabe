@@ -1,12 +1,11 @@
 // middleware/authorization.js
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { db } from "../lib/db.js";
 
 const verifyRole = (roles) => {
   return async (req, res, next) => {
     const userId = req.user.id; // Assuming user ID is stored in req.user
 
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: userId },
       include: { role: true },
     });
