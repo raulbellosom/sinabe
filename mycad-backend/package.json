@@ -13,7 +13,7 @@
     "migrate": "npx prisma migrate dev --name init",
     "generate": "npx prisma generate",
     "pull": "npx prisma db pull",
-    "prod": "pm2 start src/index.js --name mycad-backend && npx prisma generate && npm run migrate && npm run seed"
+    "prod": "npx run generate && npm run migrate && npm run seed && pm2 start src/index.js --name mycad-backend"
   },
   "dependencies": {
     "@prisma/client": "^5.16.1",
