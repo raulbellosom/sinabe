@@ -12,7 +12,7 @@
     "prisma": "npx prisma",
     "migrate": "npx prisma migrate dev",
     "generate": "npx prisma generate",
-    "prod": "pm2 start index.js --name mycad-backend"
+    "prod": "pm2 start src/index.js --name mycad-backend"
   },
   "dependencies": {
     "@prisma/client": "^5.16.1",
