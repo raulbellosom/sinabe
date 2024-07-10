@@ -16,9 +16,6 @@ COPY . .
 # Generar Prisma Client
 RUN npx prisma generate
 
-# Ejecutar la compilación de la aplicación (si aplica, por ejemplo, TypeScript)
-# RUN npm run build
-
 # Etapa de producción
 FROM node:20.10.0-alpine
 
@@ -28,7 +25,7 @@ WORKDIR /app
 # Instalar pm2 globalmente
 RUN npm install -g pm2
 
-# Copiar los archivos de la etapa de construcción
+# Copiar los archivos desde la etapa de construcción
 COPY --from=builder /app /app
 
 # Exponer el puerto de la aplicación
