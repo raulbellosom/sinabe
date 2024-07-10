@@ -18,6 +18,8 @@ RUN npm install
 ENV PATH=/app/node_modules/.bin:$PATH
 
 COPY . .
+COPY src ./src
+COPY .env ./
 
 RUN npx prisma generate
 
