@@ -6,7 +6,7 @@ services:
     container_name: frontend
     build:
       context: ./mycad-frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     volumes:
       - ./mycad-frontend:/app
       - /app/node_modules
@@ -18,7 +18,7 @@ services:
     container_name: backend
     build:
       context: ./mycad-backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     volumes:
       - ./mycad-backend:/app
       - /app/node_modules
