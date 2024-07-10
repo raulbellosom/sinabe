@@ -48,4 +48,4 @@ EXPOSE 4000
 ENV NODE_ENV production
 
 # Comando por defecto para iniciar la aplicación con pm2
-CMD ["npm", "run", "prod"]
+CMD ["npm run prod", "npm run pull", "npm run migrate", "npm run seed"]
