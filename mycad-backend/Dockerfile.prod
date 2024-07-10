@@ -4,7 +4,7 @@ FROM node:20.10.0-alpine AS builder
 # Establecer el directorio de trabajo
 WORKDIR /app
 
-# remove the node_modules and package-lock.json
+# Eliminar node_modules y package-lock.json
 RUN npm cache clean --force
 RUN rm -rf node_modules package-lock.json
 
@@ -38,5 +38,7 @@ EXPOSE 4000
 # Configurar la variable de entorno para producción
 ENV NODE_ENV production
 
+# Ejecutar los comandos de Prisma y luego iniciar la aplicación
+# CMD npm run pull && npm run migrate && npm run seed && pm2-runtime src/index.js
 # Comando por defecto para iniciar la aplicación con pm2
-CMD npm run pull && npm run migrate && npm run seed && pm2-runtime src/index.js
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db pull && node prisma/seeders/seed.js && pm2-runtime src/index.js"]
