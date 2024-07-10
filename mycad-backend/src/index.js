@@ -11,8 +11,9 @@ dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
+const APP_URL = process.env.APP_URL || "http://localhost:5173";
 
-app.use(cors());
+app.use(cors([APP_URL]));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
