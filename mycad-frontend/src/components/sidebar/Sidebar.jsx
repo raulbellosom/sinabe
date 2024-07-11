@@ -23,7 +23,7 @@ const themes = {
   light: {
     sidebar: {
       backgroundColor: '#F6E8DF',
-      color: '#0B2948',
+      color: '#312e81',
     },
     menu: {
       menuContent: '#fbfcfd',
@@ -37,7 +37,7 @@ const themes = {
       },
       active: {
         color: '#FFF',
-        backgroundColor: '#0B2948',
+        backgroundColor: '#312e81',
       },
     },
   },
@@ -130,14 +130,18 @@ const Sidebar = ({ children }) => {
     }),
   };
 
+  const isActivePath = (path) => {
+    const currentPath = path === '/' ? '/dashboard' : path;
+    return location.pathname?.includes(currentPath);
+  };
+
   return (
     <div
       style={{
         display: 'flex',
-        height: '100vh',
         direction: rtl ? 'rtl' : 'ltr',
       }}
-      className="relative w-full h-full overflow-hidden bg-mycad-sand"
+      className="relative w-full h-full min-h-dvh overflow-hidden bg-gray-100 dark:bg-gray-900"
     >
       <ProSidebar
         collapsed={collapsed}
@@ -200,29 +204,29 @@ const Sidebar = ({ children }) => {
               }}
             >
               <MenuItem
-                component={<Link to={'/'} />}
-                active={location.pathname === '/'}
+                component={<Link to={'/profile'} />}
+                active={isActivePath('/profile')}
                 icon={<FaUserEdit />}
               >
                 Editar Perfil
               </MenuItem>
               <MenuItem
                 component={<Link to={'/dashboard'} />}
-                active={location.pathname === '/dashboard'}
+                active={isActivePath('/dashboard')}
                 icon={<FaTachometerAlt />}
               >
                 Dashboard
               </MenuItem>
               <MenuItem
                 component={<Link to={'/vehicles'} />}
-                active={location.pathname === '/vehicles'}
+                active={isActivePath('/vehicles')}
                 icon={<FaCar />}
               >
                 Vehicles
               </MenuItem>
               <MenuItem
                 component={<Link to={'/users'} />}
-                active={location.pathname === '/users'}
+                active={isActivePath('/users')}
                 icon={<FaUserCircle />}
               >
                 Users
@@ -242,7 +246,7 @@ const Sidebar = ({ children }) => {
           </div>
         </div>
       </ProSidebar>
-      <div className="w-full h-full">
+      <div className="flex flex-col w-full h-full min-h-dvh overflow-y-auto">
         <Navbar
           collapsed={collapsed}
           setCollapsed={() => setCollapsed(!collapsed)}
@@ -250,7 +254,9 @@ const Sidebar = ({ children }) => {
           setToggled={() => setToggled(!toggled)}
           broken={broken}
         />
-        {children}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4">{children}</div>
+        </main>
       </div>
     </div>
   );

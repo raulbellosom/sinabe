@@ -1,10 +1,12 @@
 import React, { useContext, useState } from 'react';
 import useVehicle from '../../hooks/useVehicle';
-import VehicleContext, { useVehicleContext } from '../../context/VehicleContext';
+import VehicleContext, {
+  useVehicleContext,
+} from '../../context/VehicleContext';
+import { Link } from 'react-router-dom';
 
 const Vehicles = () => {
-  
-  const { vehicles } = useVehicleContext()
+  const { vehicles } = useVehicleContext();
   const [formState, setFormState] = useState({ make: '', model: '', year: '' });
   const [editMode, setEditMode] = useState(false);
 
@@ -42,7 +44,15 @@ const Vehicles = () => {
 
   return (
     <div>
-      <h1>Vehicles</h1>
+      <div className="flex justify-between items-center">
+        <h1>Vehicles</h1>
+        <Link
+          to={'/vehicles/create'}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+        >
+          Crear vehiculo
+        </Link>
+      </div>
       <form onSubmit={handleSubmit}>
         <input
           name="make"
