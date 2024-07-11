@@ -1,14 +1,15 @@
-import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import {
   getVehicles,
   createVehicle,
   updateVehicle,
   deleteVehicle,
+  getVehicleTypes,
+  getVehicleType,
 } from '../services/api';
 import { useLoading } from '../context/LoadingContext';
 
 const useVehicle = (dispatch) => {
-  
   const queryClient = useQueryClient();
   const { dispatch: loadingDispatch } = useLoading();
 
@@ -19,26 +20,51 @@ const useVehicle = (dispatch) => {
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLES_SUCCESS', payload: data });
-      setLoading(false)
     },
+    onSettled: () => setLoading(false),
   });
 
   const createVehicleMutation = useMutation(createVehicle, {
-    onSuccess: () => {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
       queryClient.invalidateQueries('vehicles');
+      dispatch({ type: 'CREATE_VEHICLE', payload: data });
     },
+    onSettled: () => setLoading(false),
   });
 
   const updateVehicleMutation = useMutation(updateVehicle, {
-    onSuccess: () => {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
       queryClient.invalidateQueries('vehicles');
+      dispatch({ type: 'UPDATE_VEHICLE', payload: data });
     },
+    onSettled: () => setLoading(false),
   });
 
   const deleteVehicleMutation = useMutation(deleteVehicle, {
-    onSuccess: () => {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
       queryClient.invalidateQueries('vehicles');
+      dispatch({ type: 'DELETE_VEHICLE', payload: data });
     },
+    onSettled: () => setLoading(false),
+  });
+
+  const fetchVehicleTypes = useMutation(getVehicleTypes, {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      dispatch({ type: 'FETCH_VEHICLE_TYPES', payload: data });
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const fetchVehicleType = useMutation(getVehicleType, {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      dispatch({ type: 'FETCH_VEHICLE_TYPE', payload: data });
+    },
+    onSettled: () => setLoading(false),
   });
 
   return {
@@ -46,6 +72,8 @@ const useVehicle = (dispatch) => {
     createVehicle: createVehicleMutation.mutate,
     updateVehicle: updateVehicleMutation.mutate,
     deleteVehicle: deleteVehicleMutation.mutate,
+    fetchVehicleTypes: fetchVehicleTypes.mutate,
+    fetchVehicleType: fetchVehicleType.mutate,
   };
 };
 

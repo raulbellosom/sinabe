@@ -28,30 +28,25 @@ export const getVehicleById = async (req, res) => {
 };
 
 export const createVehicle = async (req, res) => {
-  const {
-    typeId,
-    brand,
-    model,
-    acquisitionDate,
-    cost,
-    mileage,
-    status,
-    createdById,
-  } = req.body;
+  const { typeId, brand, model, acquisitionDate, cost, mileage, status } =
+    req.body;
+  const user = req.user;
 
   try {
     const vehicle = await db.vehicle.create({
       data: {
-        typeId,
+        typeId: parseInt(typeId, 10),
         brand,
         model,
         acquisitionDate: new Date(acquisitionDate),
         cost,
         mileage,
         status,
-        createdById,
+        createdById: user.id,
       },
     });
+
+    console.log(vehicle);
 
     res.status(201).json(vehicle);
   } catch (error) {
@@ -93,6 +88,33 @@ export const deleteVehicle = async (req, res) => {
     });
 
     res.json({ message: "Vehicle deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getVehicleTypes = async (req, res) => {
+  try {
+    const vehicleTypes = await db.vehicleType.findMany();
+    res.json(vehicleTypes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getVehicleTypeById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const vehicleType = await db.vehicleType.findUnique({
+      where: { id },
+    });
+
+    if (vehicleType) {
+      res.json(vehicleType);
+    } else {
+      res.status(404).json({ message: "Vehicle type not found" });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

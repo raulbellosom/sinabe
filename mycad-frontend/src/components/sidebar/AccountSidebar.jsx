@@ -21,7 +21,9 @@ const AccountSidebar = ({ name, role, photo, collapsed }) => {
         className={`w-full overflow-hidden whitespace-nowrap text-nowrap flex justify-start gap-4 items-center`}
       >
         <img src={MyCAD_ICON} alt="MyCAD ICON" className={logoClasses} />
-        <span className={`text-2xl text-orange-500 font-extrabold mb-2`}>
+        <span
+          className={`text-2xl text-orange-500 font-extrabold mb-2 truncate`}
+        >
           MyCAD
         </span>
       </div>
@@ -33,12 +35,12 @@ const AccountSidebar = ({ name, role, photo, collapsed }) => {
         <img
           src={photo || 'https://via.placeholder.com/150'}
           alt="User Photo"
-          className={`w-10 h-10 mt-2 rounded-full`}
+          className={`w-10 h-10 mt-2 rounded-full bg-stone-400`}
         />
         <div className={'truncate whitespace-nowrap text-nowrap'}>
           <h2
             className={classNames(
-              'text-lg font-bold text-mycad-purp-light w-full truncate',
+              'text-lg font-bold text-indigo-900 w-full truncate',
             )}
           >
             {name}
