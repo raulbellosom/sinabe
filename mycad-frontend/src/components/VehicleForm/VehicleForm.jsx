@@ -10,30 +10,37 @@ const VehicleForm = ({
   initialValues,
   onSubmit,
   vehicleTypes,
-  isSubmitting,
+  vehicleModels,
+  vehicleBrands,
 }) => {
   const formik = useFormik({
+    enableReinitialize: true,
     initialValues: initialValues,
     validationSchema: VehicleFormSchema,
-    onSubmit: (values) => {
-      onSubmit(values);
+    onSubmit: (values, actions) => {
+      onSubmit(values, actions);
     },
   });
   return (
     <FormikProvider value={formik}>
-      <Form onSubmit={formik.handleSubmit} className="space-y-6">
-        <VehicleFormFields vehicleTypes={vehicleTypes} />
+      <Form className="space-y-4" onSubmit={formik.handleSubmit}>
+        <VehicleFormFields
+          vehicleTypes={vehicleTypes}
+          vehicleBrands={vehicleBrands}
+          vehicleModels={vehicleModels}
+        />
         <Button
           type="submit"
-          disabled={isSubmitting}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          disabled={formik.isSubmitting}
+          className="py-2 rounded"
+          color={formik.isSubmitting ? 'gray' : 'purple'}
         >
-          {isSubmitting ? (
-            <Spinner className="animate-spin" size={20} />
+          {formik.isSubmitting ? (
+            <Spinner className="animate-spin" color={'purple'} size={20} />
           ) : (
             <>
               <FaSave size={20} className="mr-2" />
-              Guardar
+              Crear Vehículo
             </>
           )}
         </Button>

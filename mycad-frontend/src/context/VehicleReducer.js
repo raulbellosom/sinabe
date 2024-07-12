@@ -6,14 +6,21 @@ const VehicleReducer = (state, action) => {
         vehicles: action.payload,
         loading: false,
       };
+    case 'FETCH_VEHICLE':
+      return {
+        ...state,
+        vehicle: action.payload,
+      };
     case 'CREATE_VEHICLE':
       return {
         ...state,
+        vehicle: action.payload,
         vehicles: [...state.vehicles, action.payload],
       };
     case 'UPDATE_VEHICLE':
       return {
         ...state,
+        vehicle: action.payload,
         vehicles: state.vehicles.map((vehicle) =>
           vehicle.id === action.payload.id ? action.payload : vehicle,
         ),
@@ -34,6 +41,26 @@ const VehicleReducer = (state, action) => {
       return {
         ...state,
         vehicleType: action.payload,
+      };
+    case 'FETCH_VEHICLE_BRANDS':
+      return {
+        ...state,
+        vehicleBrands: action.payload,
+      };
+    case 'FETCH_VEHICLE_BRAND':
+      return {
+        ...state,
+        vehicleBrand: action.payload,
+      };
+    case 'FETCH_VEHICLE_MODELS':
+      return {
+        ...state,
+        vehicleModels: action.payload,
+      };
+    case 'FETCH_VEHICLE_MODEL':
+      return {
+        ...state,
+        vehicleModel: action.payload,
       };
     default:
       return state;
