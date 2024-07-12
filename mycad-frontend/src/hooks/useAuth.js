@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from 'react-query';
 import { login, logout, register, loadUser } from '../services/api';
 import { useLoading } from '../context/LoadingContext';
+import Notifies from '../components/Notifies/Notifies';
 
 export const useAuthData = (dispatch) => {
   const queryClient = useQueryClient();
@@ -15,8 +16,12 @@ export const useAuthData = (dispatch) => {
     onSuccess: (data) => {
       queryClient.setQueryData('user', data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('token', data.token); // Save token to localStorage
+      localStorage.setItem('token', data.token);
       dispatch({ type: 'LOGIN_SUCCESS', payload: data.user });
+    },
+    onError: (error) => {
+      dispatch({ type: 'AUTH_ERROR', payload: error });
+      Notifies('error', 'Usuario o contraseña incorrectos');
     },
     onSettled: () => setLoading(false),
   });
@@ -26,7 +31,7 @@ export const useAuthData = (dispatch) => {
     onSuccess: (data) => {
       queryClient.setQueryData('user', data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('token', data.token); // Save token to localStorage
+      localStorage.setItem('token', data.token);
       dispatch({ type: 'LOGIN_SUCCESS', payload: data.user });
     },
     onSettled: () => setLoading(false),

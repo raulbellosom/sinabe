@@ -6,6 +6,17 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
+// append access control allow origin header
+api.interceptors.request.use(
+  (config) => {
+    config.headers['Access-Control-Allow-Origin'] = '*';
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
+
 // Interceptor to add token to headers
 api.interceptors.request.use(
   (config) => {
@@ -86,6 +97,11 @@ export const getVehicles = async () => {
   return response.data;
 };
 
+export const getVehicle = async (vehicleId) => {
+  const response = await api.get(`${API_URL}/vehicles/${vehicleId}`);
+  return response.data;
+};
+
 export const createVehicle = async (vehicle) => {
   const response = await api.post(`${API_URL}/vehicles`, vehicle);
   return response.data;
@@ -109,6 +125,30 @@ export const getVehicleTypes = async () => {
 export const getVehicleType = async (vehicleTypeId) => {
   const response = await api.post(
     `${API_URL}/vehicles/vehicleTypes/${vehicleTypeId}`,
+  );
+  return response.data;
+};
+
+export const getVehicleBrands = async () => {
+  const response = await api.get(`${API_URL}/vehicles/vehicleBrands`);
+  return response.data;
+};
+
+export const getVehicleBrand = async (vehicleBrandId) => {
+  const response = await api.post(
+    `${API_URL}/vehicles/vehicleBrands/${vehicleBrandId}`,
+  );
+  return response.data;
+};
+
+export const getVehicleModels = async () => {
+  const response = await api.get(`${API_URL}/vehicles/vehicleModels`);
+  return response.data;
+};
+
+export const getVehicleModel = async (vehicleModelId) => {
+  const response = await api.post(
+    `${API_URL}/vehicles/vehicleModels/${vehicleModelId}`,
   );
   return response.data;
 };

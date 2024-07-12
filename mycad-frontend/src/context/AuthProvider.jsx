@@ -14,6 +14,11 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const loadUserData = async () => {
       try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          dispatch({ type: 'AUTH_ERROR' });
+          return;
+        }
         const user = await loadUser();
         if (user) {
           dispatch({ type: 'LOAD_USER', payload: user });
@@ -26,6 +31,7 @@ const AuthProvider = ({ children }) => {
     };
 
     if (!state.user) {
+      console.log('No user');
       loadUserData();
     } else {
       dispatch({ type: 'LOAD_USER', payload: state.user });

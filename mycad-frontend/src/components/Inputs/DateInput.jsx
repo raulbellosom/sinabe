@@ -3,7 +3,7 @@ import { ErrorMessage } from 'formik';
 import { TextInput, Label } from 'flowbite-react';
 
 const DateInput = ({ field, form: { touched, errors }, ...props }) => (
-  <div className="mb-4">
+  <div className="w-full">
     <Label
       htmlFor={props.id || props.name}
       className="block text-sm font-medium"

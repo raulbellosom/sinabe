@@ -76,9 +76,15 @@ const Vehicles = () => {
       </form>
       <ul>
         {vehicles?.map((vehicle) => (
-          <li key={vehicle.id}>
-            {vehicle.make} {vehicle.model} - {vehicle.year}
-            <button onClick={() => handleEdit(vehicle)}>Edit</button>
+          <li className="flex gap-4" key={vehicle.id}>
+            {vehicle?.model?.type?.name +
+              ' ' +
+              vehicle?.model?.brand?.name +
+              ' ' +
+              ' ' +
+              vehicle.model.name}
+            <Link to={`/vehicles/view/${vehicle.id}`}>View</Link>
+            <Link to={`/vehicles/edit/${vehicle.id}`}>Edit</Link>
             <button onClick={() => handleDelete(vehicle.id)}>Delete</button>
           </li>
         ))}

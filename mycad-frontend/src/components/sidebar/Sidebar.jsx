@@ -246,7 +246,7 @@ const Sidebar = ({ children }) => {
           </div>
         </div>
       </ProSidebar>
-      <div className="flex flex-col w-full h-full min-h-dvh overflow-y-auto">
+      <div className="w-full min-h-dvh h-screen max-h-dvh relative flex flex-col overflow-hidden">
         <Navbar
           collapsed={collapsed}
           setCollapsed={() => setCollapsed(!collapsed)}
@@ -254,7 +254,7 @@ const Sidebar = ({ children }) => {
           setToggled={() => setToggled(!toggled)}
           broken={broken}
         />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pt-16 h-full">
           <div className="p-4">{children}</div>
         </main>
       </div>
