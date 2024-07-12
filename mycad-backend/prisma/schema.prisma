@@ -30,14 +30,13 @@ model Role {
 
 model Vehicle {
   id              String           @id @default(uuid())
-  typeId          Int
-  type            VehicleType      @relation(fields: [typeId], references: [id])
-  brand           String
-  model           String
+  modelId         Int
+  model           Model           @relation(fields: [modelId], references: [id])
   acquisitionDate DateTime
   cost            Float
   mileage         Int
   status          String
+  comments        String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   createdById     String           // Cambiar a tipo String para usar UUID
@@ -47,11 +46,27 @@ model Vehicle {
   files           File[]
 }
 
-
 model VehicleType {
   id       Int      @id @default(autoincrement())
-  typeName String
-  vehicles Vehicle[]
+  name String
+  models   Model[]
+}
+
+model VehicleBrand {
+  id       Int      @id @default(autoincrement())
+  name    String
+  models   Model[]
+}
+
+model Model {
+  id        Int      @id @default(autoincrement())
+  name      String
+  year      Int
+  typeId    Int
+  brandId   Int
+  type      VehicleType  @relation(fields: [typeId], references: [id])
+  brand     VehicleBrand @relation(fields: [brandId], references: [id])
+  vehicles  Vehicle[]
 }
 
 model ServiceHistory {
