@@ -9,6 +9,6 @@ const AuthContext = createContext({
   dispatch: () => {},
 });
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuthContext = () => useContext(AuthContext);
 
 export default AuthContext;

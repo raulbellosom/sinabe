@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import VehicleForm from '../../components/VehicleForm/VehicleForm';
+import VehicleForm from '../../components/VehicleComponents/VehicleForm/VehicleForm';
 import { useVehicleContext } from '../../context/VehicleContext';
 import Skeleton from 'react-loading-skeleton';
 import { FaCar } from 'react-icons/fa';
@@ -88,6 +88,7 @@ const UpdateVehicle = () => {
           vehicleTypes={vehicleTypes}
           vehicleModels={vehicleModels}
           vehicleBrands={vehicleBrands}
+          isUpdate={true}
         />
       )}
     </div>

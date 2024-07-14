@@ -12,6 +12,7 @@ const VehicleForm = ({
   vehicleTypes,
   vehicleModels,
   vehicleBrands,
+  isUpdate = false,
 }) => {
   const formik = useFormik({
     enableReinitialize: true,
@@ -34,15 +35,12 @@ const VehicleForm = ({
           disabled={formik.isSubmitting}
           className="py-2 rounded"
           color={formik.isSubmitting ? 'gray' : 'purple'}
+          isProcessing={formik.isSubmitting}
         >
-          {formik.isSubmitting ? (
-            <Spinner className="animate-spin" color={'purple'} size={20} />
-          ) : (
-            <>
-              <FaSave size={20} className="mr-2" />
-              Crear Vehículo
-            </>
-          )}
+          <>
+            <FaSave size={20} className="mr-2" />
+            {isUpdate ? 'Actualizar ' : ' Crear '} Vehículo
+          </>
         </Button>
       </Form>
     </FormikProvider>

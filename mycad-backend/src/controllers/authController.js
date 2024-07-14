@@ -39,17 +39,12 @@ export const login = async (req, res) => {
   try {
     const user = await db.user.findUnique({
       where: { email },
+      include: { role: true },
     });
 
     if (user && (await bcrypt.compare(password, user.password))) {
       res.json({
-        user: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          roleId: user.roleId,
-        },
+        user,
         token: generateToken(user.id),
       });
     } else {
@@ -65,17 +60,14 @@ export const loadUser = async (req, res) => {
 
   try {
     if (user) {
-      res.json({
-        user: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          roleId: user.roleId,
-        },
+      const loadedUser = await db.user.findUnique({
+        where: { id: user.id },
+        include: { role: true },
       });
+
+      res.json(loadedUser);
     } else {
-      res.status(401).json({ message: "Not authorized, token failed" });
+      res.status(401).json({ message: "Not authorized, token failed 3" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });

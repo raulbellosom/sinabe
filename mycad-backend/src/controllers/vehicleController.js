@@ -93,7 +93,19 @@ export const createVehicle = async (req, res) => {
       },
     });
 
-    res.status(201).json(vehicle);
+    const newVehicle = await db.vehicle.findUnique({
+      where: { id: vehicle.id },
+      include: {
+        model: {
+          include: {
+            brand: true,
+            type: true,
+          },
+        },
+      },
+    });
+
+    res.status(201).json(newVehicle);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: error.message });
@@ -173,7 +185,19 @@ export const deleteVehicle = async (req, res) => {
       where: { id },
     });
 
-    res.json({ message: "Vehicle deleted" });
+    const vehicles = await db.vehicle.findMany({
+      where: { id: { not: id } },
+      include: {
+        model: {
+          include: {
+            brand: true,
+            type: true,
+          },
+        },
+      },
+    });
+
+    res.json({ data: vehicles, message: "Vehicle deleted" });
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: error.message });

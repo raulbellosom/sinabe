@@ -68,7 +68,7 @@ const useVehicle = (dispatch) => {
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicles');
-      dispatch({ type: 'DELETE_VEHICLE', payload: data });
+      dispatch({ type: 'DELETE_VEHICLE', payload: data.data });
       Notifies('success', 'Vehiculo eliminado exitosamente');
     },
     onError: (error) => {

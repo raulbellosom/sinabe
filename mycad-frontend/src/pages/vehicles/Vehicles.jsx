@@ -82,7 +82,7 @@ const Vehicles = () => {
               vehicle?.model?.brand?.name +
               ' ' +
               ' ' +
-              vehicle.model.name}
+              vehicle.model?.name}
             <Link to={`/vehicles/view/${vehicle.id}`}>View</Link>
             <Link to={`/vehicles/edit/${vehicle.id}`}>Edit</Link>
             <button onClick={() => handleDelete(vehicle.id)}>Delete</button>

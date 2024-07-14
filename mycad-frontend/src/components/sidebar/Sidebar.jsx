@@ -13,11 +13,12 @@ import {
   FaSignOutAlt,
   FaUserEdit,
 } from 'react-icons/fa';
-import AuthContext from '../../context/AuthContext';
+import { useAuthContext } from '../../context/AuthContext';
 import AccountSidebar from './AccountSidebar';
 import BgPattern from '../../assets/bg/pattern-randomized.png';
 import { Button } from 'flowbite-react';
 import Navbar from '../navbar/Navbar';
+import MainLayout from '../../Layout/MainLayout';
 
 const themes = {
   light: {
@@ -70,7 +71,7 @@ const hexToRgba = (hex, alpha) => {
 
 const Sidebar = ({ children }) => {
   const location = useLocation();
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout } = useAuthContext();
   const [collapsed, setCollapsed] = useState(false);
   const [toggled, setToggled] = useState(false);
   const [broken, setBroken] = useState(false);
@@ -254,9 +255,9 @@ const Sidebar = ({ children }) => {
           setToggled={() => setToggled(!toggled)}
           broken={broken}
         />
-        <main className="flex-1 overflow-y-auto pt-16 h-full">
-          <div className="p-4">{children}</div>
-        </main>
+        <div className="flex-1 overflow-y-auto pt-16 h-full">
+          <MainLayout>{children}</MainLayout>
+        </div>
       </div>
     </div>
   );
