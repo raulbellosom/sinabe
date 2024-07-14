@@ -28,9 +28,7 @@ const VehicleReducer = (state, action) => {
     case 'DELETE_VEHICLE':
       return {
         ...state,
-        vehicles: state.vehicles.filter(
-          (vehicle) => vehicle.id !== action.payload.id,
-        ),
+        vehicles: action.payload,
       };
     case 'FETCH_VEHICLE_TYPES':
       return {

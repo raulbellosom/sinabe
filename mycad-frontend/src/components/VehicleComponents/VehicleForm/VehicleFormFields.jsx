@@ -1,8 +1,8 @@
 import React from 'react';
 import { Field } from 'formik';
-import TextInput from '../Inputs/TextInput';
-import SelectInput from '../Inputs/SelectInput';
-import DateInput from '../Inputs/DateInput';
+import TextInput from '../../Inputs/TextInput';
+import SelectInput from '../../Inputs/SelectInput';
+import DateInput from '../../Inputs/DateInput';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import {
   MdOutlineDirectionsCar,

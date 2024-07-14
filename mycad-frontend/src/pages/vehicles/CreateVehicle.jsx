@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import VehicleForm from '../../components/VehicleForm/VehicleForm';
+import VehicleForm from '../../components/VehicleComponents/VehicleForm/VehicleForm';
 import { useVehicleContext } from '../../context/VehicleContext';
 import { FaCar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';

@@ -6,19 +6,21 @@ import { useAuthData } from '../hooks/useAuth';
 const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, {
     user: JSON.parse(localStorage.getItem('user')) || null,
+    token: localStorage.getItem('token') || null,
     loading: true,
   });
 
   const { login, logout, register, loadUser } = useAuthData(dispatch);
 
   useEffect(() => {
-    const loadUserData = async () => {
+    const verifyToken = async () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
           dispatch({ type: 'AUTH_ERROR' });
           return;
         }
+
         const user = await loadUser();
         if (user) {
           dispatch({ type: 'LOAD_USER', payload: user });
@@ -30,12 +32,7 @@ const AuthProvider = ({ children }) => {
       }
     };
 
-    if (!state.user) {
-      console.log('No user');
-      loadUserData();
-    } else {
-      dispatch({ type: 'LOAD_USER', payload: state.user });
-    }
+    verifyToken();
   }, []);
 
   return (
