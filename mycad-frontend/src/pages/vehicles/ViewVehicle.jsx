@@ -91,9 +91,9 @@ const ViewVehicle = () => {
 
   const onEdit = (e) => {
     if (e.ctrlKey) {
-      window.open(`/vehicles/update/${id}`, '_blank');
+      window.open(`/vehicles/edit/${id}`, '_blank');
     } else {
-      navigate(`/vehicles/update/${id}`);
+      navigate(`/vehicles/edit/${id}`);
     }
   };
 
@@ -112,7 +112,7 @@ const ViewVehicle = () => {
 
   return (
     <div className="h-full bg-white p-4 rounded-md">
-      <div className="flex flex-col md:flex-row items-center gap-4 w-full py-2 border-b border-gray-300">
+      <div className="flex flex-col md:flex-row items-center gap-4 w-full pb-2 border-b border-gray-300">
         <div className="w-full h-full rounded-md flex items-center text-orange-500">
           <FaCar size={24} className="mr-4" />
           <h1 className="text-2xl font-bold">Detalles del Vehículo</h1>
@@ -124,7 +124,7 @@ const ViewVehicle = () => {
           onRemove={onRemove}
         />
       </div>
-      <p className="text-gray-800 py-2 pt-4">
+      <p className="mb-4 text-gray-800">
         Aquí puedes ver los detalles del vehículo.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

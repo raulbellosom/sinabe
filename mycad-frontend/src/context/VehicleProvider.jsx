@@ -2,6 +2,7 @@ import { useReducer, useEffect } from 'react';
 import VehicleContext from './VehicleContext';
 import VehicleReducer from './VehicleReducer';
 import useVehicle from '../hooks/useVehicle';
+import { useAuthContext } from './AuthContext';
 
 const VehicleProvider = ({ children }) => {
   const [state, dispatch] = useReducer(VehicleReducer, {
@@ -16,6 +17,8 @@ const VehicleProvider = ({ children }) => {
     vehicleModel: {},
   });
 
+  const { user, loading } = useAuthContext();
+
   const {
     fetchVehicles,
     fetchVehicle,
@@ -28,15 +31,22 @@ const VehicleProvider = ({ children }) => {
     fetchVehicleBrands,
     fetchVehicleModel,
     fetchVehicleModels,
+    createVehicleBrand,
+    updateVehicleBrand,
+    createVehicleModel,
+    updateVehicleModel,
+    createVehicleType,
+    updateVehicleType,
+    deleteVehicleModel,
   } = useVehicle(dispatch);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!user || loading) {
       return;
     }
+
     loadVehiclesInfo();
-  }, []);
+  }, [user]);
 
   const loadVehiclesInfo = () => {
     fetchVehicles();
@@ -60,6 +70,13 @@ const VehicleProvider = ({ children }) => {
         fetchVehicleBrands,
         fetchVehicleModel,
         fetchVehicleModels,
+        createVehicleBrand,
+        updateVehicleBrand,
+        createVehicleModel,
+        updateVehicleModel,
+        createVehicleType,
+        updateVehicleType,
+        deleteVehicleModel,
       }}
     >
       {children}
