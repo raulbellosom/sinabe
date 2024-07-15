@@ -11,6 +11,13 @@ import {
   getVehicleBrands,
   getVehicleModel,
   getVehicleModels,
+  createVehicleType,
+  createVehicleBrand,
+  createVehicleModel,
+  updateVehicleType,
+  updateVehicleBrand,
+  updateVehicleModel,
+  deleteVehicleModel,
 } from '../services/api';
 import { useLoading } from '../context/LoadingContext';
 import Notifies from '../components/Notifies/Notifies';
@@ -125,6 +132,97 @@ const useVehicle = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
+  const createVehicleTypeMutation = useMutation(createVehicleType, {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries('vehicleTypes');
+      dispatch({ type: 'CREATE_VEHICLE_TYPE', payload: data });
+      Notifies('success', 'Tipo de vehiculo creado exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al crear el tipo de vehiculo');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const createVehicleBrandMutation = useMutation(createVehicleBrand, {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries('vehicleBrands');
+      dispatch({ type: 'CREATE_VEHICLE_BRAND', payload: data });
+      Notifies('success', 'Marca de vehiculo creada exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al crear la marca de vehiculo');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const createVehicleModelMutation = useMutation(createVehicleModel, {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries('vehicleModels');
+      dispatch({ type: 'CREATE_VEHICLE_MODEL', payload: data });
+      Notifies('success', 'Modelo de vehiculo creado exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al crear el modelo de vehiculo');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const updateVehicleTypeMutation = useMutation(updateVehicleType, {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries('vehicleTypes');
+      dispatch({ type: 'UPDATE_VEHICLE_TYPE', payload: data });
+      Notifies('success', 'Tipo de vehiculo actualizado exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al actualizar el tipo de vehiculo');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const updateVehicleBrandMutation = useMutation(updateVehicleBrand, {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries('vehicleBrands');
+      dispatch({ type: 'UPDATE_VEHICLE_BRAND', payload: data });
+      Notifies('success', 'Marca de vehiculo actualizada exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al actualizar la marca de vehiculo');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const updateVehicleModelMutation = useMutation(updateVehicleModel, {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries('vehicleModels');
+      dispatch({ type: 'UPDATE_VEHICLE_MODEL', payload: data });
+      Notifies('success', 'Modelo de vehiculo actualizado exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al actualizar el modelo de vehiculo');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const deleteVehicleModelMutation = useMutation(deleteVehicleModel, {
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries('vehicleModels');
+      dispatch({ type: 'DELETE_VEHICLE_MODEL', payload: data });
+      Notifies('success', 'Modelo de vehiculo eliminado exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al eliminar el modelo de vehiculo');
+    },
+    onSettled: () => setLoading,
+  });
+
   return {
     fetchVehicles: fetchVehicles.mutate,
     fetchVehicle: fetchVehicle.mutate,
@@ -141,6 +239,25 @@ const useVehicle = (dispatch) => {
     fetchVehicleBrand: fetchVehicleBrand.mutate,
     fetchVehicleModels: fetchVehicleModels.mutate,
     fetchVehicleModel: fetchVehicleModel.mutate,
+    createVehicleType: (values) => {
+      return createVehicleTypeMutation.mutateAsync(values);
+    },
+    createVehicleBrand: (values) => {
+      return createVehicleBrandMutation.mutateAsync(values);
+    },
+    createVehicleModel: (values) => {
+      return createVehicleModelMutation.mutateAsync(values);
+    },
+    updateVehicleType: (values) => {
+      return updateVehicleTypeMutation.mutateAsync(values);
+    },
+    updateVehicleBrand: (values) => {
+      return updateVehicleBrandMutation.mutateAsync(values);
+    },
+    updateVehicleModel: (values) => {
+      return updateVehicleModelMutation.mutateAsync(values);
+    },
+    deleteVehicleModel: deleteVehicleModelMutation.mutate,
   };
 };
 

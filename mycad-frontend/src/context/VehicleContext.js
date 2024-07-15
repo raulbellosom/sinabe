@@ -21,6 +21,13 @@ const VehicleContext = createContext({
   fetchVehicleBrand: () => {},
   fetchVehicleModels: () => {},
   fetchVehicleModel: () => {},
+  createVehicleBrand: () => {},
+  updateVehicleBrand: () => {},
+  createVehicleModel: () => {},
+  updateVehicleModel: () => {},
+  createVehicleType: () => {},
+  updateVehicleType: () => {},
+  deleteVehicleModel: () => {},
 });
 export const useVehicleContext = () => useContext(VehicleContext);
 

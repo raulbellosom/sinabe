@@ -2,7 +2,12 @@ import React from 'react';
 import { ErrorMessage } from 'formik';
 import { Label, Select } from 'flowbite-react';
 
-const SelectInput = ({ field, form: { touched, errors }, ...props }) => (
+const SelectInput = ({
+  field,
+  isOtherOption,
+  form: { touched, errors },
+  ...props
+}) => (
   <div className="w-full">
     <Label
       htmlFor={props.id || props.name}
@@ -23,6 +28,7 @@ const SelectInput = ({ field, form: { touched, errors }, ...props }) => (
           {option.label}
         </option>
       ))}
+      {isOtherOption && <option value="0">Otro</option>}
     </Select>
     <ErrorMessage
       name={field.name}

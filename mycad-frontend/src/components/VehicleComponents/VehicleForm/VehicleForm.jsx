@@ -4,7 +4,6 @@ import { VehicleFormSchema } from './VehicleFormSchema';
 import VehicleFormFields from './VehicleFormFields';
 import { Button } from 'flowbite-react';
 import { FaSave } from 'react-icons/fa';
-import { Spinner } from 'flowbite-react';
 
 const VehicleForm = ({
   initialValues,
@@ -12,6 +11,7 @@ const VehicleForm = ({
   vehicleTypes,
   vehicleModels,
   vehicleBrands,
+  onOtherModelSelected,
   isUpdate = false,
 }) => {
   const formik = useFormik({
@@ -22,6 +22,7 @@ const VehicleForm = ({
       onSubmit(values, actions);
     },
   });
+
   return (
     <FormikProvider value={formik}>
       <Form className="space-y-4" onSubmit={formik.handleSubmit}>
@@ -29,6 +30,7 @@ const VehicleForm = ({
           vehicleTypes={vehicleTypes}
           vehicleBrands={vehicleBrands}
           vehicleModels={vehicleModels}
+          onOtherModelSelected={onOtherModelSelected}
         />
         <Button
           type="submit"

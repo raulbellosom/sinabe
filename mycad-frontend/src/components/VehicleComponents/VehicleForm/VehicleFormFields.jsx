@@ -13,8 +13,33 @@ import { BiCategory, BiDollar } from 'react-icons/bi';
 import { IoMdSpeedometer } from 'react-icons/io';
 import { MdGarage } from 'react-icons/md';
 
-const VehicleFormFields = ({ vehicleTypes, vehicleModels, vehicleBrands }) => (
+const VehicleFormFields = ({
+  vehicleTypes,
+  vehicleModels,
+  vehicleBrands,
+  onOtherModelSelected,
+}) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+    <Field
+      name="modelId"
+      id="modelId"
+      component={SelectInput}
+      icon={MdOutlineDirectionsCar}
+      label="Modelo"
+      options={[
+        ...vehicleModels.map((model) => ({
+          label: model.name,
+          value: model.id,
+        })),
+        { label: 'Otro', value: 0 },
+      ]}
+      onChange={(e) => {
+        const value = e.target.value;
+        if (value === '0') {
+          onOtherModelSelected();
+        }
+      }}
+    />
     <Field
       name="typeId"
       id="typeId"
@@ -35,17 +60,6 @@ const VehicleFormFields = ({ vehicleTypes, vehicleModels, vehicleBrands }) => (
       options={vehicleBrands.map((brand) => ({
         label: brand.name,
         value: brand.id,
-      }))}
-    />
-    <Field
-      name="modelId"
-      id="modelId"
-      component={SelectInput}
-      icon={MdOutlineDirectionsCar}
-      label="Modelo"
-      options={vehicleModels.map((model) => ({
-        label: model.name,
-        value: model.id,
       }))}
     />
     <Field
