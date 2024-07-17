@@ -3,22 +3,16 @@ import { Field } from 'formik';
 import TextInput from '../../Inputs/TextInput';
 import SelectInput from '../../Inputs/SelectInput';
 import DateInput from '../../Inputs/DateInput';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
+import TextArea from '../../Inputs/TextArea';
 import {
   MdOutlineDirectionsCar,
   MdInfo,
   MdCalendarToday,
 } from 'react-icons/md';
-import { BiCategory, BiDollar } from 'react-icons/bi';
+import { BiDollar } from 'react-icons/bi';
 import { IoMdSpeedometer } from 'react-icons/io';
-import { MdGarage } from 'react-icons/md';
 
-const VehicleFormFields = ({
-  vehicleTypes,
-  vehicleModels,
-  vehicleBrands,
-  onOtherModelSelected,
-}) => (
+const VehicleFormFields = ({ vehicleModels, onOtherSelected }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
     <Field
       name="modelId"
@@ -26,49 +20,13 @@ const VehicleFormFields = ({
       component={SelectInput}
       icon={MdOutlineDirectionsCar}
       label="Modelo"
-      options={[
-        ...vehicleModels.map((model) => ({
-          label: model.name,
-          value: model.id,
-        })),
-        { label: 'Otro', value: 0 },
-      ]}
-      onChange={(e) => {
-        const value = e.target.value;
-        if (value === '0') {
-          onOtherModelSelected();
-        }
-      }}
-    />
-    <Field
-      name="typeId"
-      id="typeId"
-      component={SelectInput}
-      label="Tipo de Vehículo"
-      icon={BiCategory}
-      options={vehicleTypes.map((type) => ({
-        label: type.name,
-        value: type.id,
+      options={vehicleModels.map((model) => ({
+        label: model.name,
+        value: model.id,
       }))}
-    />
-    <Field
-      name="brandId"
-      id="brandId"
-      component={SelectInput}
-      icon={PiTrademarkRegisteredBold}
-      label="Marca"
-      options={vehicleBrands.map((brand) => ({
-        label: brand.name,
-        value: brand.id,
-      }))}
-    />
-    <Field
-      name="year"
-      id="year"
-      component={TextInput}
-      icon={MdGarage}
-      label="Año del modelo"
-      type="number"
+      isOtherOption={true}
+      onOtherSelected={onOtherSelected}
+      className="col-span-1 sm:col-span-2"
     />
     <Field
       name="acquisitionDate"
@@ -101,6 +59,13 @@ const VehicleFormFields = ({
       component={TextInput}
       icon={MdInfo}
       label="Estado"
+    />
+    <Field
+      name="comments"
+      id="comments"
+      component={TextArea}
+      label="Observaciones"
+      className="col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-4"
     />
   </div>
 );

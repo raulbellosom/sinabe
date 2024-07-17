@@ -1,8 +1,9 @@
-import { FaCar } from 'react-icons/fa';
+import { FaCar, FaUserCircle, FaUserEdit } from 'react-icons/fa';
 import { HiHome } from 'react-icons/hi';
 import { MdChecklist } from 'react-icons/md';
 import { PiStackPlusFill } from 'react-icons/pi';
 import { LuPenSquare } from 'react-icons/lu';
+import { BiCategory } from 'react-icons/bi';
 
 const BreadcrumbsBuilder = (path) => {
   const breadcrumbs = [
@@ -31,20 +32,46 @@ const BreadcrumbsBuilder = (path) => {
       href: '/vehicles/view',
       icon: MdChecklist,
     },
+
     {
-      label: 'Crear Tipo de Vehiculo',
-      href: '/vehicle-types/create',
+      label: 'Catalogos',
+      href: '/catalogs',
+      icon: BiCategory,
+    },
+    {
+      label: 'Crear Modelo de Vehiculo',
+      href: '/catalogs/vehicle-models/create',
       icon: null,
     },
     {
-      label: 'Editar Tipo de Vehiculo',
-      href: '/vehicle-types/edit',
+      label: 'Editar Modelo de Vehiculo',
+      href: '/catalogs/vehicle-models/edit',
       icon: null,
     },
     {
-      label: 'Detalles del Tipo de Vehiculo',
-      href: '/vehicle-types/view',
+      label: 'Usuarios',
+      href: '/users',
+      icon: FaUserCircle,
+    },
+    {
+      label: 'Crear Usuario',
+      href: '/users/create',
       icon: null,
+    },
+    {
+      label: 'Editar Usuario',
+      href: '/users/edit',
+      icon: null,
+    },
+    {
+      label: 'Detalles del Usuario',
+      href: '/users/view',
+      icon: null,
+    },
+    {
+      label: 'Perfil',
+      href: '/profile',
+      icon: FaUserEdit,
     },
   ];
 

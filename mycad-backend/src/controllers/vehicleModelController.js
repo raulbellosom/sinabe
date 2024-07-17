@@ -164,7 +164,12 @@ export const updateVehicleBrand = async (req, res) => {
 
 export const getVehicleModels = async (req, res) => {
   try {
-    const vehicleModels = await db.model.findMany();
+    const vehicleModels = await db.model.findMany({
+      include: {
+        brand: true,
+        type: true,
+      },
+    });
     res.json(vehicleModels);
   } catch (error) {
     console.log(error.message);
@@ -177,7 +182,11 @@ export const getVehicleModelById = async (req, res) => {
 
   try {
     const vehicleModel = await db.model.findUnique({
-      where: { id },
+      where: { id: parseInt(id, 10) },
+      include: {
+        brand: true,
+        type: true,
+      },
     });
 
     if (vehicleModel) {
@@ -198,9 +207,9 @@ export const createVehicleModel = async (req, res) => {
     const model = await db.model.findFirst({
       where: {
         name,
-        brandId,
-        typeId,
-        year,
+        brandId: parseInt(brandId, 10),
+        typeId: parseInt(typeId, 10),
+        year: parseInt(year, 10),
       },
     });
 
@@ -209,7 +218,7 @@ export const createVehicleModel = async (req, res) => {
     }
 
     const brand = await db.vehicleBrand.findUnique({
-      where: { id: brandId },
+      where: { id: parseInt(brandId, 10) },
     });
 
     if (!brand) {
@@ -217,7 +226,7 @@ export const createVehicleModel = async (req, res) => {
     }
 
     const type = await db.vehicleType.findUnique({
-      where: { id: typeId },
+      where: { id: parseInt(typeId, 10) },
     });
 
     if (!type) {
@@ -227,9 +236,13 @@ export const createVehicleModel = async (req, res) => {
     const vehicleModel = await db.model.create({
       data: {
         name,
-        brandId,
-        typeId,
-        year,
+        brandId: parseInt(brandId, 10),
+        typeId: parseInt(typeId, 10),
+        year: parseInt(year, 10),
+      },
+      include: {
+        brand: true,
+        type: true,
       },
     });
 
@@ -257,9 +270,13 @@ export const updateVehicleModel = async (req, res) => {
       where: { id: parseInt(id, 10) },
       data: {
         name,
-        brandId,
-        typeId,
-        year,
+        brandId: parseInt(brandId, 10),
+        typeId: parseInt(typeId, 10),
+        year: parseInt(year, 10),
+      },
+      include: {
+        brand: true,
+        type: true,
       },
     });
 

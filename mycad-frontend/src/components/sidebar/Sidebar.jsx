@@ -1,10 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Sidebar as ProSidebar,
   Menu,
   MenuItem,
   menuClasses,
+  SubMenu,
 } from 'react-pro-sidebar';
 import {
   FaTachometerAlt,
@@ -19,6 +20,8 @@ import BgPattern from '../../assets/bg/pattern-randomized.png';
 import { Button } from 'flowbite-react';
 import Navbar from '../navbar/Navbar';
 import MainLayout from '../../Layout/MainLayout';
+import { BiCategory } from 'react-icons/bi';
+import { MdGarage } from 'react-icons/md';
 
 const themes = {
   light: {
@@ -93,7 +96,7 @@ const Sidebar = ({ children }) => {
 
   const menuItemStyles = {
     root: {
-      fontSize: '13px',
+      fontSize: '16px',
       fontWeight: 400,
     },
     icon: {
@@ -202,15 +205,14 @@ const Sidebar = ({ children }) => {
                     color: themes[theme].menu.disabled.color,
                   },
                 },
+                SubMenuExpandIcon: {
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignContent: 'center',
+                  transform: ' scale(1.5)',
+                },
               }}
             >
-              <MenuItem
-                component={<Link to={'/profile'} />}
-                active={isActivePath('/profile')}
-                icon={<FaUserEdit />}
-              >
-                Editar Perfil
-              </MenuItem>
               <MenuItem
                 component={<Link to={'/dashboard'} />}
                 active={isActivePath('/dashboard')}
@@ -218,19 +220,41 @@ const Sidebar = ({ children }) => {
               >
                 Dashboard
               </MenuItem>
-              <MenuItem
-                component={<Link to={'/vehicles'} />}
-                active={isActivePath('/vehicles')}
-                icon={<FaCar />}
-              >
-                Vehicles
-              </MenuItem>
+              <SubMenu label="Vehículos" icon={<MdGarage />}>
+                <MenuItem
+                  icon={<FaCar />}
+                  active={isActivePath('/vehicles')}
+                  component={<Link to={'/vehicles'} />}
+                  onClick={() => {
+                    setToggled(false);
+                  }}
+                >
+                  Mis Vehículos
+                </MenuItem>
+                <MenuItem
+                  icon={<BiCategory />}
+                  active={isActivePath('/catalogs')}
+                  component={<Link to={'/catalogs'} />}
+                  onClick={() => {
+                    setToggled(false);
+                  }}
+                >
+                  Catalogos
+                </MenuItem>
+              </SubMenu>
               <MenuItem
                 component={<Link to={'/users'} />}
                 active={isActivePath('/users')}
                 icon={<FaUserCircle />}
               >
                 Users
+              </MenuItem>
+              <MenuItem
+                component={<Link to={'/profile'} />}
+                active={isActivePath('/profile')}
+                icon={<FaUserEdit />}
+              >
+                Editar Perfil
               </MenuItem>
             </Menu>
           </div>

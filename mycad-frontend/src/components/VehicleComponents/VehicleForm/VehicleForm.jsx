@@ -8,9 +8,7 @@ import { FaSave } from 'react-icons/fa';
 const VehicleForm = ({
   initialValues,
   onSubmit,
-  vehicleTypes,
   vehicleModels,
-  vehicleBrands,
   onOtherModelSelected,
   isUpdate = false,
 }) => {
@@ -27,10 +25,8 @@ const VehicleForm = ({
     <FormikProvider value={formik}>
       <Form className="space-y-4" onSubmit={formik.handleSubmit}>
         <VehicleFormFields
-          vehicleTypes={vehicleTypes}
-          vehicleBrands={vehicleBrands}
           vehicleModels={vehicleModels}
-          onOtherModelSelected={onOtherModelSelected}
+          onOtherSelected={onOtherModelSelected}
         />
         <Button
           type="submit"

@@ -15,6 +15,7 @@ import LoadingModal from '../components/loadingModal/LoadingModal';
 import CreateVehicle from '../pages/vehicles/CreateVehicle';
 import UpdateVehicle from '../pages/vehicles/UpdateVehicle';
 import ViewVehicle from '../pages/vehicles/ViewVehicle';
+import Catalogs from '../pages/vehicles/catalogs/Catalogs';
 const Sidebar = lazy(() => import('../components/sidebar/Sidebar'));
 
 const AppRouter = () => {
@@ -51,6 +52,7 @@ const AuthorizedRoute = ({ user }) => {
                     element={<UpdateVehicle />}
                   />
                   <Route path="/vehicles/view/:id" element={<ViewVehicle />} />
+                  <Route path="/catalogs" element={<Catalogs />} />
                   <Route
                     path="/login"
                     element={

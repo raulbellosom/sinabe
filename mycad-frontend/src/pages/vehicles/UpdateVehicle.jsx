@@ -8,6 +8,8 @@ import DateLocalParced from '../../utils/DateLocalParced';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import { useAuthContext } from '../../context/AuthContext';
+import ModalForm from '../../components/Modals/ModalForm';
+import ModelForm from '../../components/VehicleComponents/ModelForm/ModelForm';
 
 const UpdateVehicle = () => {
   const { id } = useParams();
@@ -22,18 +24,25 @@ const UpdateVehicle = () => {
     fetchVehicle,
     deleteVehicle,
     loading,
+    createVehicleModel,
   } = useVehicleContext();
   const [initialValues, setInitialValues] = useState({
-    typeId: '',
-    brandId: '',
     modelId: '',
     acquisitionDate: '',
-    year: '',
     cost: '',
     mileage: '',
     status: '',
+    comments: '',
   });
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newModelValue, setNewModelValue] = useState({
+    name: '',
+    year: '',
+    brandId: '',
+    typeId: '',
+  });
+  const [formattedModels, setFormattedModels] = useState([]);
 
   useEffect(() => {
     fetchVehicle(id);
@@ -45,15 +54,47 @@ const UpdateVehicle = () => {
       const newVehicle = {
         ...vehicle,
         acquisitionDate: acquisitionDate,
-        typeId: vehicle.model.type.id,
-        brandId: vehicle.model.brand.id,
         modelId: vehicle.model.id,
-        year: vehicle.model.year,
       };
 
       setInitialValues(newVehicle);
     }
   }, [vehicle]);
+
+  const handleModalOpen = async () => {
+    setIsModalOpen(true);
+  };
+
+  useEffect(() => {
+    if (vehicleModels) {
+      const formattedModels = vehicleModels?.map((model) => ({
+        name: `${model.name} ${model.year} - ${model.brand.name} - ${model.type.name}`,
+        id: model.id,
+      }));
+      setFormattedModels(formattedModels);
+    }
+  }, [vehicleModels]);
+
+  const handleNewModelSubmit = async (values) => {
+    try {
+      const newModel = await createVehicleModel(values);
+      setFormattedModels([
+        ...formattedModels,
+        {
+          name: `${newModel.name} ${newModel.year} - ${newModel.brand.name} - ${newModel.type.name}`,
+          id: newModel.id,
+        },
+      ]);
+      setInitialValues((prevValues) => ({
+        ...prevValues,
+        modelId: newModel.id,
+      }));
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsModalOpen(false);
+    }
+  };
 
   const handleSubmit = (values, { setSubmitting, resetForm }) => {
     try {
@@ -81,7 +122,15 @@ const UpdateVehicle = () => {
   const onShow = () => {
     navigate(`/vehicles/view/${id}`);
   };
-
+  const onCloseModal = () => {
+    setIsModalOpen(false);
+    setNewModelValue({
+      name: '',
+      year: '',
+      brandId: '',
+      typeId: '',
+    });
+  };
   return (
     <>
       <div className="h-full bg-white p-4 rounded-md">
@@ -118,10 +167,9 @@ const UpdateVehicle = () => {
           <VehicleForm
             initialValues={initialValues}
             onSubmit={handleSubmit}
-            vehicleTypes={vehicleTypes}
-            vehicleModels={vehicleModels}
-            vehicleBrands={vehicleBrands}
+            vehicleModels={formattedModels}
             isUpdate={true}
+            onOtherModelSelected={() => handleModalOpen()}
           />
         )}
       </div>
@@ -129,6 +177,18 @@ const UpdateVehicle = () => {
         isOpenModal={isOpenModal}
         removeFunction={handleDeleteVehicle}
       />
+      <ModalForm
+        onClose={onCloseModal}
+        title={'Crear Modelo'}
+        isOpenModal={isModalOpen}
+      >
+        <ModelForm
+          onSubmit={handleNewModelSubmit}
+          initialValues={newModelValue}
+          vehicleBrands={vehicleBrands}
+          vehicleTypes={vehicleTypes}
+        />
+      </ModalForm>
     </>
   );
 };

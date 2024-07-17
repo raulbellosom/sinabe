@@ -1,14 +1,17 @@
 import React from 'react';
 import { ErrorMessage } from 'formik';
 import { Label, Select } from 'flowbite-react';
+import classNames from 'classnames';
 
 const SelectInput = ({
   field,
   isOtherOption,
-  form: { touched, errors },
+  onOtherSelected,
+  className,
+  form: { touched, errors, setFieldValue },
   ...props
 }) => (
-  <div className="w-full">
+  <div className={classNames('w-full', className)}>
     <Label
       htmlFor={props.id || props.name}
       className="block text-sm font-medium"
@@ -21,8 +24,17 @@ const SelectInput = ({
       {...props}
       color={touched[field.name] && errors[field.name] ? 'failure' : ''}
       className="mt-1"
+      onChange={(e) => {
+        const value = e.target.value;
+        setFieldValue(field.name, value);
+        if (value === '0' && onOtherSelected && isOtherOption) {
+          onOtherSelected();
+        }
+      }}
     >
-      <option value="">Seleccione una opción</option>
+      <option disabled value="">
+        Seleccione una opción
+      </option>
       {props.options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}

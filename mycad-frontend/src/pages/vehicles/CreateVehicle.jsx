@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import VehicleForm from '../../components/VehicleComponents/VehicleForm/VehicleForm';
 import { useVehicleContext } from '../../context/VehicleContext';
 import { FaCar } from 'react-icons/fa';
@@ -6,9 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import { useAuthContext } from '../../context/AuthContext';
 import ModalForm from '../../components/Modals/ModalForm';
-import { BiCategory } from 'react-icons/bi';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
-import { MdGarage } from 'react-icons/md';
+import ModelForm from '../../components/VehicleComponents/ModelForm/ModelForm';
 
 const CreateVehicle = () => {
   const {
@@ -22,22 +20,55 @@ const CreateVehicle = () => {
   const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalFields, setModalFields] = useState([]);
-
-  const handleModalOpen = (fields) => {
-    setModalFields(fields);
-    setIsModalOpen(true);
-  };
-
-  let initialValues = {
-    typeId: '',
+  const [newModelValue, setNewModelValue] = useState({
+    name: '',
+    year: '',
     brandId: '',
+    typeId: '',
+  });
+  const [formattedModels, setFormattedModels] = useState([]);
+  const [initialValues, setInitialValues] = useState({
     modelId: '',
     acquisitionDate: '',
-    year: '',
     cost: '',
     mileage: '',
     status: '',
+    comments: '',
+  });
+
+  const handleModalOpen = async () => {
+    setIsModalOpen(true);
+  };
+
+  useEffect(() => {
+    if (vehicleModels) {
+      const formattedModels = vehicleModels?.map((model) => ({
+        name: `${model.name} ${model.year} - ${model.brand.name} - ${model.type.name}`,
+        id: model.id,
+      }));
+      setFormattedModels(formattedModels);
+    }
+  }, [vehicleModels]);
+
+  const handleNewModelSubmit = async (values) => {
+    try {
+      const newModel = await createVehicleModel(values);
+      setFormattedModels([
+        ...formattedModels,
+        {
+          name: `${newModel.name} ${newModel.year} - ${newModel.brand.name} - ${newModel.type.name}`,
+          id: newModel.id,
+        },
+      ]);
+      setInitialValues((prevValues) => ({
+        ...prevValues,
+        modelId: newModel.id,
+      }));
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsModalOpen(false);
+    }
   };
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
@@ -56,6 +87,16 @@ const CreateVehicle = () => {
     navigate('/vehicles');
   };
 
+  const onCloseModal = () => {
+    setIsModalOpen(false);
+    setNewModelValue({
+      name: '',
+      year: '',
+      brandId: '',
+      typeId: '',
+    });
+  };
+
   return (
     <div className="h-full bg-white p-4 rounded-md">
       <div className="flex flex-col md:flex-row items-center gap-4 w-full pb-2 border-b border-gray-300">
@@ -72,43 +113,21 @@ const CreateVehicle = () => {
       <VehicleForm
         initialValues={initialValues}
         onSubmit={handleSubmit}
-        vehicleTypes={vehicleTypes}
-        vehicleBrands={vehicleBrands}
-        vehicleModels={vehicleModels}
-        onOtherModelSelected={() =>
-          handleModalOpen([
-            {
-              label: 'Ingrese el nombre del modelo',
-              inputType: 'text',
-              icon: FaCar,
-            },
-            {
-              label: 'Ingrese el año del modelo',
-              inputType: 'text',
-              icon: MdGarage,
-            },
-            {
-              label: 'Seleccione el tipo de vehículo',
-              values: vehicleTypes,
-              inputType: 'select',
-              icon: BiCategory,
-            },
-            {
-              label: 'Seleccione la marca de vehículo',
-              values: vehicleBrands,
-              inputType: 'select',
-              icon: PiTrademarkRegisteredBold,
-            },
-          ])
-        }
+        vehicleModels={formattedModels}
+        onOtherModelSelected={() => handleModalOpen()}
       />
       <ModalForm
-        title="Añadir Nuevo Modelo"
-        inputs={modalFields}
+        onClose={onCloseModal}
+        title={'Crear Modelo'}
         isOpenModal={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={(data) => console.log(data)}
-      />
+      >
+        <ModelForm
+          onSubmit={handleNewModelSubmit}
+          initialValues={newModelValue}
+          vehicleBrands={vehicleBrands}
+          vehicleTypes={vehicleTypes}
+        />
+      </ModalForm>
     </div>
   );
 };

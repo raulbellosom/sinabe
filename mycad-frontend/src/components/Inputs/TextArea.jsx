@@ -1,11 +1,11 @@
 import React from 'react';
 import { ErrorMessage } from 'formik';
-import { TextInput as Input, Label } from 'flowbite-react';
+import { Textarea as Area, Label } from 'flowbite-react';
 import classNames from 'classnames';
 
-const TextInput = ({
-  className,
+const TextArea = ({
   field,
+  className,
   form: { touched, errors },
   ...props
 }) => (
@@ -14,10 +14,9 @@ const TextInput = ({
       htmlFor={props.id || props.name}
       className={'block text-sm font-medium'}
       color={touched[field.name] && errors[field.name] ? 'failure' : ''}
-    >
-      {props.label}
-    </Label>
-    <Input
+      value={props.label}
+    />
+    <Area
       {...field}
       {...props}
       color={touched[field.name] && errors[field.name] ? 'failure' : ''}
@@ -31,4 +30,4 @@ const TextInput = ({
   </div>
 );
 
-export default TextInput;
+export default TextArea;

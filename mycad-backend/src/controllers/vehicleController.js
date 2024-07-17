@@ -48,40 +48,20 @@ export const getVehicleById = async (req, res) => {
 };
 
 export const createVehicle = async (req, res) => {
-  const {
-    typeId,
-    brandId,
-    year,
-    modelId,
-    modelName,
-    acquisitionDate,
-    cost,
-    mileage,
-    status,
-  } = req.body;
+  const { modelId, acquisitionDate, cost, mileage, status, comments } =
+    req.body;
   const user = req.user;
 
-  const model = await db.model.findUnique({
-    where: { id: parseInt(modelId, 10) },
-  });
-
-  if (!model) {
-    try {
-      await db.model.create({
-        data: {
-          brandId,
-          typeId,
-          year,
-          name: modelName,
-        },
-      });
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({ message: error.message });
-    }
-  }
-
   try {
+    const model = await db.model.findUnique({
+      where: { id: parseInt(modelId, 10) },
+    });
+
+    if (!model) {
+      res.status(404).json({ message: "Model not found" });
+      return;
+    }
+
     const vehicle = await db.vehicle.create({
       data: {
         modelId: parseInt(modelId, 10),
@@ -90,6 +70,7 @@ export const createVehicle = async (req, res) => {
         mileage,
         status,
         createdById: user.id,
+        comments,
       },
     });
 
@@ -114,40 +95,20 @@ export const createVehicle = async (req, res) => {
 
 export const updateVehicle = async (req, res) => {
   const { id } = req.params;
-  const {
-    typeId,
-    brandId,
-    modelId,
-    year,
-    modelName,
-    acquisitionDate,
-    cost,
-    mileage,
-    status,
-  } = req.body;
-
-  const model = await db.model.findUnique({
-    where: { id: parseInt(modelId, 10) },
-  });
-
-  if (!model) {
-    try {
-      await db.model.update({
-        where: { id: parseInt(modelId, 10) },
-        data: {
-          brandId,
-          typeId,
-          year,
-        },
-      });
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({ message: error.message });
-    }
-  }
+  const { modelId, comments, acquisitionDate, cost, mileage, status } =
+    req.body;
 
   try {
-    const vehicle = await db.vehicle.update({
+    const model = await db.model.findUnique({
+      where: { id: parseInt(modelId, 10) },
+    });
+
+    if (!model) {
+      res.status(404).json({ message: "Model not found" });
+      return;
+    }
+
+    await db.vehicle.update({
       where: { id },
       data: {
         modelId: parseInt(modelId, 10),
@@ -155,6 +116,7 @@ export const updateVehicle = async (req, res) => {
         cost,
         mileage,
         status,
+        comments,
       },
     });
 

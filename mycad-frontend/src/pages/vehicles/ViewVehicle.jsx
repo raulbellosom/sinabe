@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useVehicleContext } from '../../context/VehicleContext';
 import { useAuthContext } from '../../context/AuthContext';
-import { useBreadcrumb } from '../../context/BreadcrumbContext';
 import VehicleProperty from '../../components/VehicleComponents/VehicleView/VehicleProperty';
 import { FaCar } from 'react-icons/fa';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
@@ -10,6 +9,7 @@ import {
   MdOutlineDirectionsCar,
   MdInfo,
   MdCalendarToday,
+  MdOutlineTextsms,
 } from 'react-icons/md';
 import { BiCategory, BiDollar } from 'react-icons/bi';
 import { IoMdSpeedometer } from 'react-icons/io';
@@ -22,22 +22,8 @@ const ViewVehicle = () => {
   const navigate = useNavigate();
   const { fetchVehicle, vehicle, loading, deleteVehicle } = useVehicleContext();
   const { user } = useAuthContext();
-  const { setBreadcrumb } = useBreadcrumb();
   const [vehicleData, setVehicleData] = useState(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
-
-  useEffect(() => {
-    setBreadcrumb([
-      {
-        label: 'Vehículos',
-        href: '/vehicles',
-        icon: FaCar,
-      },
-      {
-        label: 'Detalles del Vehículo',
-      },
-    ]);
-  }, [setBreadcrumb]);
 
   useEffect(() => {
     fetchVehicle(id);
@@ -45,20 +31,20 @@ const ViewVehicle = () => {
 
   useEffect(() => {
     const data = {
-      type: {
-        name: vehicle?.model?.type?.name,
-        icon: BiCategory,
-        label: 'Tipo de Vehículo',
+      model: {
+        name: vehicle?.model?.name,
+        icon: MdOutlineDirectionsCar,
+        label: 'Modelo',
       },
       brand: {
         name: vehicle?.model?.brand?.name,
         icon: PiTrademarkRegisteredBold,
         label: 'Marca',
       },
-      model: {
-        name: vehicle?.model?.name,
-        icon: MdOutlineDirectionsCar,
-        label: 'Modelo',
+      type: {
+        name: vehicle?.model?.type?.name,
+        icon: BiCategory,
+        label: 'Tipo de Vehículo',
       },
       year: {
         name: vehicle?.model?.year,
@@ -84,6 +70,11 @@ const ViewVehicle = () => {
         name: vehicle.status,
         icon: MdInfo,
         label: 'Estado',
+      },
+      comments: {
+        name: vehicle.comments,
+        icon: MdOutlineTextsms,
+        label: 'Comentarios',
       },
     };
     setVehicleData(data);
