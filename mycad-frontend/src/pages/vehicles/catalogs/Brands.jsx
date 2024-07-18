@@ -171,7 +171,7 @@ const Brands = () => {
         }
       >
         <BrandForm
-          initialValue={initialValues}
+          initialValues={initialValues}
           onSubmit={handleSubmit}
           isUpdate={editMode}
         />
