@@ -69,6 +69,7 @@ const Types = () => {
       setIsOpenModal(false);
     } catch (error) {
       console.log(error);
+      setSubmitting(false);
     }
   };
 
@@ -79,6 +80,7 @@ const Types = () => {
       setRemoveTypeId(null);
     } catch (error) {
       console.log(error);
+      setIsDeleteModalOpen(false);
     }
   };
 

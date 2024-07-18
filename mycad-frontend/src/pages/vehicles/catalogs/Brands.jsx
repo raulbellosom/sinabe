@@ -61,10 +61,26 @@ const Brands = () => {
         : await createVehicleBrand(values);
       setSubmitting(false);
       resetForm();
+      setInitialValues({
+        name: '',
+        id: '',
+        count: 0,
+      });
       setIsOpenModal(false);
     } catch (error) {
       console.log(error);
       setSubmitting(false);
+    }
+  };
+
+  const handleDeleteVehicleBrand = async () => {
+    try {
+      await deleteVehicleBrand(removeBrandId);
+      setIsDeleteModalOpen(false);
+      setRemoveBrandId(null);
+    } catch (error) {
+      console.log(error);
+      setIsDeleteModalOpen(false);
     }
   };
 
@@ -81,16 +97,6 @@ const Brands = () => {
   const onRemoveBrand = (id) => {
     setRemoveBrandId(id);
     setIsDeleteModalOpen(true);
-  };
-
-  const handleDeleteVehicleBrand = async () => {
-    try {
-      await deleteVehicleBrand(removeBrandId);
-      setIsDeleteModalOpen(false);
-      setRemoveBrandId(null);
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   return (
@@ -157,16 +163,16 @@ const Brands = () => {
       </div>
       <ModalForm
         onClose={onCloseModal}
+        isOpenModal={isOpenModal}
         title={
           editMode
             ? 'Editar Marca de Vehiculos'
             : 'Agregar Nueva Marca de Vehiculos'
         }
-        isOpenModal={isOpenModal}
       >
         <BrandForm
-          onSubmit={handleSubmit}
           initialValue={initialValues}
+          onSubmit={handleSubmit}
           isUpdate={editMode}
         />
       </ModalForm>
