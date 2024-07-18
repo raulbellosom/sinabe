@@ -115,7 +115,7 @@ const ViewVehicle = () => {
           onRemove={onRemove}
         />
       </div>
-      <div className="flex gap-2 items-center justify-start pb-4">
+      <div className="flex flex-wrap gap-2 items-center justify-start pb-4">
         {vehicle?.conditions &&
           vehicle?.conditions?.length > 0 &&
           vehicle?.conditions?.map((condition, index) => (
