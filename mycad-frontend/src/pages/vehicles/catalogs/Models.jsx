@@ -107,7 +107,7 @@ const Models = () => {
 
   return (
     <div className="w-full h-full">
-      <div className="flex justify-between items-center text-nowrap mb-2">
+      <div className="flex flex-col md:flex-row gap-4 justify-between items-center text-nowrap mb-2">
         <h1 className="text-xl font-bold ml-4 text-orange-500">
           Modelos de Vehiculos
         </h1>

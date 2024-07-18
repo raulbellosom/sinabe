@@ -15,7 +15,7 @@ const Catalogs = () => {
   };
 
   return (
-    <div className="bg-white p-2 overflow-x-auto">
+    <div className="bg-white p-2 overflow-hidden">
       <Tabs aria-label="Default tabs" variant="fullWidth">
         <Tabs.Item
           active={view === 'models'}
