@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Tabs } from 'flowbite-react';
 import Models from './Models';
+import Brands from './Brands';
 import { BiCategory } from 'react-icons/bi';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import { HiCubeTransparent } from 'react-icons/hi';
+import Types from './Types';
 
 const Catalogs = () => {
   const [view, setView] = useState('models');
@@ -13,8 +15,8 @@ const Catalogs = () => {
   };
 
   return (
-    <div className="bg-white p-2">
-      <Tabs aria-label="Default tabs" variant="underline">
+    <div className="bg-white p-2 overflow-x-auto">
+      <Tabs aria-label="Default tabs" variant="fullWidth">
         <Tabs.Item
           active={view === 'models'}
           onClick={() => handleTabChange('models')}
@@ -29,15 +31,15 @@ const Catalogs = () => {
           title="Marcas"
           icon={PiTrademarkRegisteredBold}
         >
-          Brands
+          <Brands />
         </Tabs.Item>
         <Tabs.Item
           active={view === 'types'}
           onClick={() => handleTabChange('types')}
-          title="Tipos de Vehiculos"
+          title="Tipos"
           icon={BiCategory}
         >
-          Types
+          <Types />
         </Tabs.Item>
       </Tabs>
     </div>

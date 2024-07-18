@@ -54,6 +54,11 @@ const VehicleReducer = (state, action) => {
           vehicleType.id === action.payload.id ? action.payload : vehicleType,
         ),
       };
+    case 'DELETE_VEHICLE_TYPE':
+      return {
+        ...state,
+        vehicleTypes: action.payload,
+      };
     case 'FETCH_VEHICLE_BRANDS':
       return {
         ...state,
@@ -77,6 +82,11 @@ const VehicleReducer = (state, action) => {
         vehicleBrands: state.vehicleBrands.map((vehicleBrand) =>
           vehicleBrand.id === action.payload.id ? action.payload : vehicleBrand,
         ),
+      };
+    case 'DELETE_VEHICLE_BRAND':
+      return {
+        ...state,
+        vehicleBrands: action.payload,
       };
     case 'FETCH_VEHICLE_MODELS':
       return {
@@ -106,6 +116,37 @@ const VehicleReducer = (state, action) => {
       return {
         ...state,
         vehicleModels: action.payload,
+      };
+    case 'FETCH_VEHICLE_CONDITIONS':
+      return {
+        ...state,
+        vehicleConditions: action.payload,
+      };
+    case 'FETCH_VEHICLE_CONDITION':
+      return {
+        ...state,
+        vehicleCondition: action.payload,
+      };
+    case 'CREATE_VEHICLE_CONDITION':
+      return {
+        ...state,
+        vehicleCondition: action.payload,
+        vehicleConditions: [...state.vehicleConditions, action.payload],
+      };
+    case 'UPDATE_VEHICLE_CONDITION':
+      return {
+        ...state,
+        vehicleCondition: action.payload,
+        vehicleConditions: state.vehicleConditions.map((vehicleCondition) =>
+          vehicleCondition.id === action.payload.id
+            ? action.payload
+            : vehicleCondition,
+        ),
+      };
+    case 'DELETE_VEHICLE_CONDITION':
+      return {
+        ...state,
+        vehicleConditions: action.payload,
       };
     default:
       return state;

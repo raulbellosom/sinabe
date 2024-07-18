@@ -1,6 +1,7 @@
 import { Button } from 'flowbite-react';
 import classNames from 'classnames';
 import { FaEdit, FaEye, FaPlus, FaTrash } from 'react-icons/fa';
+import { MdCancel } from 'react-icons/md';
 
 const ActionButtons = ({
   userRole,
@@ -9,6 +10,12 @@ const ActionButtons = ({
   onRemove,
   onCreate,
   position,
+  onCancel,
+  labelShow,
+  labelEdit,
+  labelRemove,
+  labelCreate,
+  labelCancel,
 }) => {
   const permisions = {
     show: [1, 2, 3],
@@ -19,14 +26,14 @@ const ActionButtons = ({
 
   const actions = [
     {
-      label: 'Ver',
+      label: labelShow || 'Ver',
       action: onShow,
       color: 'cyan',
       icon: FaEye,
       permission: permisions.show.includes(userRole),
     },
     {
-      label: 'Editar',
+      label: labelEdit || 'Editar',
       action: onEdit,
       color: 'yellow',
       icon: FaEdit,
@@ -34,16 +41,23 @@ const ActionButtons = ({
     },
     {
       label: 'Eliminar',
-      action: onRemove,
+      action: labelRemove || onRemove,
       color: 'red',
       icon: FaTrash,
       permission: permisions.remove.includes(userRole),
     },
     {
-      label: 'Nuevo',
+      label: labelCreate || 'Nuevo',
       action: onCreate,
       color: 'indigo',
       icon: FaPlus,
+      permission: permisions.create.includes(userRole),
+    },
+    {
+      label: labelCancel || 'Cancelar',
+      action: onCancel,
+      color: 'red',
+      icon: MdCancel,
       permission: permisions.create.includes(userRole),
     },
   ];
@@ -76,7 +90,7 @@ const ActionButtons = ({
   return (
     <div
       className={classNames(
-        'w-full flex flex-wrap md:flex-row justify-center md:justify-end items-center gap-2',
+        'w-full flex justify-center md:justify-end items-center gap-2 border border-gray-200 rounded-md p-2 md:border-none md:p-0',
         positionClass,
       )}
     >
@@ -87,8 +101,8 @@ const ActionButtons = ({
           outline
           color={action.color}
         >
-          {action.icon && <action.icon size={18} className="mr-2" />}
-          <span className="md:hidden lg:block">{action.label}</span>
+          {action.icon && <action.icon size={18} className="mr-2 mt-0.5" />}
+          <span>{action.label}</span>
         </Button>
       ))}
     </div>

@@ -11,9 +11,14 @@ import {
 } from 'react-icons/md';
 import { BiDollar } from 'react-icons/bi';
 import { IoMdSpeedometer } from 'react-icons/io';
+import MultiSelectInput from '../../Inputs/MultiSelectInput';
 
-const VehicleFormFields = ({ vehicleModels, onOtherSelected }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+const VehicleFormFields = ({
+  vehicleModels,
+  vehicleConditions,
+  onOtherSelected,
+}) => (
+  <div className="grid grid-cols-12 gap-3">
     <Field
       name="modelId"
       id="modelId"
@@ -26,7 +31,7 @@ const VehicleFormFields = ({ vehicleModels, onOtherSelected }) => (
       }))}
       isOtherOption={true}
       onOtherSelected={onOtherSelected}
-      className="col-span-1 sm:col-span-2"
+      className="col-span-12 md:col-span-8"
     />
     <Field
       name="acquisitionDate"
@@ -35,6 +40,7 @@ const VehicleFormFields = ({ vehicleModels, onOtherSelected }) => (
       label="Fecha de Adquisición"
       title="Fecha de Adquisición"
       icon={MdCalendarToday}
+      className="col-span-12 md:col-span-4"
     />
     <Field
       name="cost"
@@ -43,6 +49,8 @@ const VehicleFormFields = ({ vehicleModels, onOtherSelected }) => (
       icon={BiDollar}
       label="Costo de Adquisición"
       type="number"
+      className="col-span-6 md:col-span-4"
+      min={0}
     />
     <Field
       name="mileage"
@@ -52,20 +60,38 @@ const VehicleFormFields = ({ vehicleModels, onOtherSelected }) => (
       icon={IoMdSpeedometer}
       type="number"
       min={0}
+      className="col-span-6 md:col-span-4"
     />
     <Field
       name="status"
       id="status"
-      component={TextInput}
+      component={SelectInput}
       icon={MdInfo}
       label="Estado"
+      options={[
+        { label: 'Activo', value: true },
+        { label: 'Inactivo', value: false },
+      ]}
+      className="col-span-12 md:col-span-4"
+    />
+    <Field
+      name="conditions"
+      id="conditions"
+      component={MultiSelectInput}
+      icon={MdInfo}
+      label="Condición del Vehículo"
+      options={vehicleConditions.map((condition) => ({
+        label: condition.name,
+        value: condition.id,
+      }))}
+      className="col-span-12"
     />
     <Field
       name="comments"
       id="comments"
       component={TextArea}
       label="Observaciones"
-      className="col-span-1 sm:col-span-2 md:col-span-3 xl:col-span-4"
+      className="col-span-12"
     />
   </div>
 );

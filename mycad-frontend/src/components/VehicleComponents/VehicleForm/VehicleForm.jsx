@@ -10,6 +10,7 @@ const VehicleForm = ({
   onSubmit,
   vehicleModels,
   onOtherModelSelected,
+  vehicleConditions,
   isUpdate = false,
 }) => {
   const formik = useFormik({
@@ -26,6 +27,7 @@ const VehicleForm = ({
       <Form className="space-y-4" onSubmit={formik.handleSubmit}>
         <VehicleFormFields
           vehicleModels={vehicleModels}
+          vehicleConditions={vehicleConditions}
           onOtherSelected={onOtherModelSelected}
         />
         <Button

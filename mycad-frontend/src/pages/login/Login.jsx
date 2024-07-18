@@ -45,7 +45,7 @@ const Login = () => {
             <label
               onClick={() => {
                 formik.setFieldValue('email', 'raul.belloso.m@gmail.com');
-                formik.setFieldValue('password', 'Nigga0599.');
+                formik.setFieldValue('password', '12341234');
               }}
               htmlFor="email"
               className="block text-gray-700"

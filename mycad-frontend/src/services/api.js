@@ -117,6 +117,41 @@ export const deleteVehicle = async (vehicleId) => {
   return response.data;
 };
 
+export const getVehicleModels = async () => {
+  const response = await api.get(`${API_URL}/vehicles/vehicleModels`);
+  return response.data;
+};
+
+export const getVehicleModel = async (vehicleModelId) => {
+  const response = await api.post(
+    `${API_URL}/vehicles/vehicleModels/${vehicleModelId}`,
+  );
+  return response.data;
+};
+
+export const createVehicleModel = async (vehicleModel) => {
+  const response = await api.post(
+    `${API_URL}/vehicles/vehicleModels`,
+    vehicleModel,
+  );
+  return response.data;
+};
+
+export const updateVehicleModel = async (vehicleModel) => {
+  const response = await api.put(
+    `${API_URL}/vehicles/vehicleModels/${vehicleModel.id}`,
+    vehicleModel,
+  );
+  return response.data;
+};
+
+export const deleteVehicleModel = async (vehicleModelId) => {
+  const response = await api.delete(
+    `${API_URL}/vehicles/vehicleModels/${vehicleModelId}`,
+  );
+  return response.data;
+};
+
 export const getVehicleTypes = async () => {
   const response = await api.get(`${API_URL}/vehicles/vehicleTypes`);
   return response.data;
@@ -124,6 +159,29 @@ export const getVehicleTypes = async () => {
 
 export const getVehicleType = async (vehicleTypeId) => {
   const response = await api.post(
+    `${API_URL}/vehicles/vehicleTypes/${vehicleTypeId}`,
+  );
+  return response.data;
+};
+
+export const createVehicleType = async (vehicleType) => {
+  const response = await api.post(
+    `${API_URL}/vehicles/vehicleTypes`,
+    vehicleType,
+  );
+  return response.data;
+};
+
+export const updateVehicleType = async (vehicleType) => {
+  const response = await api.put(
+    `${API_URL}/vehicles/vehicleTypes/${vehicleType.id}`,
+    vehicleType,
+  );
+  return response.data;
+};
+
+export const deleteVehicleType = async (vehicleTypeId) => {
+  const response = await api.delete(
     `${API_URL}/vehicles/vehicleTypes/${vehicleTypeId}`,
   );
   return response.data;
@@ -141,46 +199,10 @@ export const getVehicleBrand = async (vehicleBrandId) => {
   return response.data;
 };
 
-export const getVehicleModels = async () => {
-  const response = await api.get(`${API_URL}/vehicles/vehicleModels`);
-  return response.data;
-};
-
-export const getVehicleModel = async (vehicleModelId) => {
-  const response = await api.post(
-    `${API_URL}/vehicles/vehicleModels/${vehicleModelId}`,
-  );
-  return response.data;
-};
-
-export const createVehicleType = async (vehicleType) => {
-  const response = await api.post(
-    `${API_URL}/vehicles/vehicleTypes`,
-    vehicleType,
-  );
-  return response.data;
-};
-
 export const createVehicleBrand = async (vehicleBrand) => {
   const response = await api.post(
     `${API_URL}/vehicles/vehicleBrands`,
     vehicleBrand,
-  );
-  return response.data;
-};
-
-export const createVehicleModel = async (vehicleModel) => {
-  const response = await api.post(
-    `${API_URL}/vehicles/vehicleModels`,
-    vehicleModel,
-  );
-  return response.data;
-};
-
-export const updateVehicleType = async (vehicleType) => {
-  const response = await api.put(
-    `${API_URL}/vehicles/vehicleTypes/${vehicleType.id}`,
-    vehicleType,
   );
   return response.data;
 };
@@ -193,17 +215,44 @@ export const updateVehicleBrand = async (vehicleBrand) => {
   return response.data;
 };
 
-export const updateVehicleModel = async (vehicleModel) => {
-  const response = await api.put(
-    `${API_URL}/vehicles/vehicleModels/${vehicleModel.id}`,
-    vehicleModel,
+export const deleteVehicleBrand = async (vehicleBrandId) => {
+  const response = await api.delete(
+    `${API_URL}/vehicles/vehicleBrands/${vehicleBrandId}`,
   );
   return response.data;
 };
 
-export const deleteVehicleModel = async (vehicleModelId) => {
+export const getVehicleConditions = async () => {
+  const response = await api.get(`${API_URL}/vehicles/vehicleConditions`);
+  return response.data;
+};
+
+export const getVehicleCondition = async (vehicleConditionId) => {
+  const response = await api.post(
+    `${API_URL}/vehicles/vehicleConditions/${vehicleConditionId}`,
+  );
+  return response.data;
+};
+
+export const createVehicleCondition = async (vehicleCondition) => {
+  const response = await api.post(
+    `${API_URL}/vehicles/vehicleConditions`,
+    vehicleCondition,
+  );
+  return response.data;
+};
+
+export const updateVehicleCondition = async (vehicleCondition) => {
+  const response = await api.put(
+    `${API_URL}/vehicles/vehicleConditions/${vehicleCondition.id}`,
+    vehicleCondition,
+  );
+  return response.data;
+};
+
+export const deleteVehicleCondition = async (vehicleConditionId) => {
   const response = await api.delete(
-    `${API_URL}/vehicles/vehicleModels/${vehicleModelId}`,
+    `${API_URL}/vehicles/vehicleConditions/${vehicleConditionId}`,
   );
   return response.data;
 };
