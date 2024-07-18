@@ -29,6 +29,9 @@ export const VehicleFormSchema = Yup.object().shape({
     .integer()
     .typeError('El kilometraje debe ser un número')
     .required('El kilometraje es requerido'),
-  status: Yup.string().required('El estado es requerido'),
+  status: Yup.boolean().required('El estado es requerido'),
   comments: Yup.string().nullable(),
+  conditions: Yup.array()
+    .of(Yup.number())
+    .required('La condición es requerida'),
 });

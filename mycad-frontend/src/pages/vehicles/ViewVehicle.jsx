@@ -16,6 +16,7 @@ import { IoMdSpeedometer } from 'react-icons/io';
 import { MdGarage } from 'react-icons/md';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import ModalRemove from '../../components/Modals/ModalRemove';
+import { Badge } from 'flowbite-react';
 
 const ViewVehicle = () => {
   const { id } = useParams();
@@ -100,11 +101,10 @@ const ViewVehicle = () => {
   const onCreate = () => {
     navigate('/vehicles/create');
   };
-
   return (
     <div className="h-full bg-white p-4 rounded-md">
-      <div className="flex flex-col md:flex-row items-center gap-4 w-full pb-2 border-b border-gray-300">
-        <div className="w-full h-full rounded-md flex items-center text-orange-500">
+      <div className="w-full flex flex-col-reverse md:flex-row items-center justify-between gap-4 pb-1">
+        <div className="w-full rounded-md flex items-center text-orange-500">
           <FaCar size={24} className="mr-4" />
           <h1 className="text-2xl font-bold">Detalles del Vehículo</h1>
         </div>
@@ -115,9 +115,15 @@ const ViewVehicle = () => {
           onRemove={onRemove}
         />
       </div>
-      <p className="mb-4 text-gray-800">
-        Aquí puedes ver los detalles del vehículo.
-      </p>
+      <div className="flex gap-2 items-center justify-start pb-4">
+        {vehicle?.conditions &&
+          vehicle?.conditions?.length > 0 &&
+          vehicle?.conditions?.map((condition, index) => (
+            <Badge size={'sm'} key={index} color="indigo">
+              {condition.condition.name}
+            </Badge>
+          ))}
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {loading || !vehicleData || Object?.keys(vehicle)?.length == 0 ? (
           <>

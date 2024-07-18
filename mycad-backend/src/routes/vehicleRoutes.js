@@ -21,18 +21,34 @@ import {
   createVehicleType,
   updateVehicleType,
   deleteVehicleModel,
+  createCondition,
+  updateCondition,
+  deleteCondition,
+  deleteVehicleBrand,
+  deleteVehicleType,
+  getConditionById,
+  getConditions,
 } from "../controllers/vehicleModelController.js";
 
 const router = express.Router();
 
 router.route("/").get(protect, getVehicles).post(protect, createVehicle);
-
-router.route("/vehicleTypes").get(protect, getVehicleTypes);
-router.route("/vehicleBrands").get(protect, getVehicleBrands);
-router.route("/vehicleModels").get(protect, getVehicleModels);
-router.route("/vehicleBrands").post(protect, createVehicleBrand);
-router.route("/vehicleModels").post(protect, createVehicleModel);
-router.route("/vehicleTypes").post(protect, createVehicleType);
+router
+  .route("/vehicleTypes")
+  .get(protect, getVehicleTypes)
+  .post(protect, createVehicleType);
+router
+  .route("/vehicleBrands")
+  .get(protect, getVehicleBrands)
+  .post(protect, createVehicleBrand);
+router
+  .route("/vehicleModels")
+  .get(protect, getVehicleModels)
+  .post(protect, createVehicleModel);
+router
+  .route("/vehicleConditions")
+  .get(protect, getConditions)
+  .post(protect, createCondition);
 
 router
   .route("/:id")
@@ -40,12 +56,25 @@ router
   .put(protect, updateVehicle)
   .delete(protect, deleteVehicle);
 
-router.route("/vehicleTypes/:id").get(protect, getVehicleTypeById);
-router.route("/vehicleBrands/:id").get(protect, getVehicleBrandById);
-router.route("/vehicleModels/:id").get(protect, getVehicleModelById);
-router.route("/vehicleBrands/:id").put(protect, updateVehicleBrand);
-router.route("/vehicleModels/:id").put(protect, updateVehicleModel);
-router.route("/vehicleTypes/:id").put(protect, updateVehicleType);
-router.route("/vehicleModels/:id").delete(protect, deleteVehicleModel);
+router
+  .route("/vehicleTypes/:id")
+  .get(protect, getVehicleTypeById)
+  .put(protect, updateVehicleType)
+  .delete(protect, deleteVehicleType);
+router
+  .route("/vehicleBrands/:id")
+  .get(protect, getVehicleBrandById)
+  .put(protect, updateVehicleBrand)
+  .delete(protect, deleteVehicleBrand);
+router
+  .route("/vehicleModels/:id")
+  .get(protect, getVehicleModelById)
+  .put(protect, updateVehicleModel)
+  .delete(protect, deleteVehicleModel);
+router
+  .route("/vehicleConditions/:id")
+  .get(protect, getConditionById)
+  .put(protect, updateCondition)
+  .delete(protect, deleteCondition);
 
 export default router;

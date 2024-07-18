@@ -15,6 +15,8 @@ const VehicleProvider = ({ children }) => {
     vehicleBrand: {},
     vehicleModels: [],
     vehicleModel: {},
+    vehicleConditions: [],
+    vehicleCondition: {},
   });
 
   const { user, loading } = useAuthContext();
@@ -27,56 +29,70 @@ const VehicleProvider = ({ children }) => {
     deleteVehicle,
     fetchVehicleType,
     fetchVehicleTypes,
-    fetchVehicleBrand,
-    fetchVehicleBrands,
-    fetchVehicleModel,
-    fetchVehicleModels,
-    createVehicleBrand,
-    updateVehicleBrand,
-    createVehicleModel,
-    updateVehicleModel,
     createVehicleType,
     updateVehicleType,
+    deleteVehicleType,
+    fetchVehicleBrand,
+    fetchVehicleBrands,
+    createVehicleBrand,
+    updateVehicleBrand,
+    deleteVehicleBrand,
+    fetchVehicleModel,
+    fetchVehicleModels,
+    createVehicleModel,
+    updateVehicleModel,
     deleteVehicleModel,
+    fetchVehicleConditions,
+    fetchVehicleCondition,
+    createVehicleCondition,
+    updateVehicleCondition,
+    deleteVehicleCondition,
   } = useVehicle(dispatch);
-
-  useEffect(() => {
-    if (!user || loading) {
-      return;
-    }
-
-    loadVehiclesInfo();
-  }, [user]);
 
   const loadVehiclesInfo = () => {
     fetchVehicles();
     fetchVehicleTypes();
     fetchVehicleBrands();
     fetchVehicleModels();
+    fetchVehicleConditions();
   };
+
+  useEffect(() => {
+    if (!user || loading) {
+      return;
+    }
+    loadVehiclesInfo();
+  }, [user]);
 
   return (
     <VehicleContext.Provider
       value={{
         ...state,
+        fetchVehicles,
+        fetchVehicle,
         createVehicle,
         updateVehicle,
         deleteVehicle,
-        fetchVehicleType,
         fetchVehicleTypes,
-        fetchVehicle,
-        fetchVehicles,
-        fetchVehicleBrand,
-        fetchVehicleBrands,
-        fetchVehicleModel,
-        fetchVehicleModels,
-        createVehicleBrand,
-        updateVehicleBrand,
-        createVehicleModel,
-        updateVehicleModel,
+        fetchVehicleType,
         createVehicleType,
         updateVehicleType,
+        deleteVehicleType,
+        fetchVehicleBrand,
+        fetchVehicleBrands,
+        createVehicleBrand,
+        updateVehicleBrand,
+        deleteVehicleBrand,
+        fetchVehicleModel,
+        fetchVehicleModels,
+        createVehicleModel,
+        updateVehicleModel,
         deleteVehicleModel,
+        fetchVehicleConditions,
+        fetchVehicleCondition,
+        createVehicleCondition,
+        updateVehicleCondition,
+        deleteVehicleCondition,
       }}
     >
       {children}

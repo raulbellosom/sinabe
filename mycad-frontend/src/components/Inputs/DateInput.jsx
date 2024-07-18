@@ -1,12 +1,13 @@
 import React from 'react';
 import { ErrorMessage } from 'formik';
 import { TextInput, Label } from 'flowbite-react';
+import classNames from 'classnames';
 
 const DateInput = ({ field, form: { touched, errors }, ...props }) => (
-  <div className="w-full">
+  <div className={classNames('w-full', props.className)}>
     <Label
       htmlFor={props.id || props.name}
-      className="block text-sm font-medium"
+      className="block text-sm font-medium text-nowrap"
       color={touched[field.name] && errors[field.name] ? 'failure' : ''}
     >
       {props.label}

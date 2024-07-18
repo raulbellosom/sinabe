@@ -20,7 +20,7 @@ const TextArea = ({
       {...field}
       {...props}
       color={touched[field.name] && errors[field.name] ? 'failure' : ''}
-      className="mt-1"
+      className="mt-1 min-h-44 md:min-h-28"
     />
     <ErrorMessage
       name={field.name}

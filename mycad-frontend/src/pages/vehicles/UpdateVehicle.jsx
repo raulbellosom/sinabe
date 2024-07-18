@@ -17,12 +17,13 @@ const UpdateVehicle = () => {
   const { user } = useAuthContext();
   const {
     updateVehicle,
+    fetchVehicle,
+    deleteVehicle,
     vehicle,
     vehicleTypes,
     vehicleBrands,
     vehicleModels,
-    fetchVehicle,
-    deleteVehicle,
+    vehicleConditions,
     loading,
     createVehicleModel,
   } = useVehicleContext();
@@ -33,6 +34,7 @@ const UpdateVehicle = () => {
     mileage: '',
     status: '',
     comments: '',
+    conditions: [],
   });
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,6 +57,7 @@ const UpdateVehicle = () => {
         ...vehicle,
         acquisitionDate: acquisitionDate,
         modelId: vehicle.model.id,
+        comments: vehicle.comments || '',
       };
 
       setInitialValues(newVehicle);
@@ -134,7 +137,7 @@ const UpdateVehicle = () => {
   return (
     <>
       <div className="h-full bg-white p-4 rounded-md">
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full pb-2 border-b border-gray-300">
+        <div className="flex flex-col-reverse md:flex-row items-center gap-4 w-full pb-1">
           <div className="w-full h-full rounded-md flex items-center text-orange-500">
             <FaCar size={24} className="mr-4" />
             <h1 className="text-2xl font-bold">Actualizar Vehículo</h1>
@@ -168,6 +171,7 @@ const UpdateVehicle = () => {
             initialValues={initialValues}
             onSubmit={handleSubmit}
             vehicleModels={formattedModels}
+            vehicleConditions={vehicleConditions}
             isUpdate={true}
             onOtherModelSelected={() => handleModalOpen()}
           />

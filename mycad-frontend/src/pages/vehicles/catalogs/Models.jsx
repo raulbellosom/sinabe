@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useVehicleContext } from '../../../context/VehicleContext';
-import { Button, Checkbox, Table } from 'flowbite-react';
+import { Checkbox, Table } from 'flowbite-react';
 import ModalForm from '../../../components/Modals/ModalForm';
 import ModelForm from '../../../components/VehicleComponents/ModelForm/ModelForm';
 import Skeleton from 'react-loading-skeleton';
+import ActionButtons from '../../../components/ActionButtons/ActionButtons';
+import { useAuthContext } from '../../../context/AuthContext';
+import ModalRemove from '../../../components/Modals/ModalRemove';
 
 const Models = () => {
   const {
@@ -12,11 +15,16 @@ const Models = () => {
     vehicleTypes,
     createVehicleModel,
     updateVehicleModel,
+    deleteVehicleModel,
+    fetchVehicleModels,
     loading,
   } = useVehicleContext();
+  const { user } = useAuthContext();
   const [models, setModels] = useState([]);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [deleteModelId, setDeleteModelId] = useState(null);
   const [initialValues, setInitialValues] = useState({
     name: '',
     brandId: '',
@@ -24,6 +32,10 @@ const Models = () => {
     year: '',
     id: '',
   });
+
+  useEffect(() => {
+    fetchVehicleModels();
+  }, []);
 
   useEffect(() => {
     const formattedModels = vehicleModels.map((model) => {
@@ -78,13 +90,32 @@ const Models = () => {
     });
   };
 
+  const onDeleteModel = (id) => {
+    setDeleteModelId(id);
+    setIsRemoveModalOpen(true);
+  };
+
+  const handleRemoveModel = async () => {
+    try {
+      await deleteVehicleModel(deleteModelId);
+      setIsRemoveModalOpen(false);
+      setDeleteModelId(null);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
-    <div className="">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-orange-500">Modelos</h1>
-        <Button color={'purple'} onClick={() => setIsOpenModal(true)}>
-          Crear Modelo
-        </Button>
+    <div className="w-full h-full">
+      <div className="flex justify-between items-center text-nowrap mb-2">
+        <h1 className="text-xl font-bold ml-4 text-orange-500">
+          Modelos de Vehiculos
+        </h1>
+        <ActionButtons
+          userRole={user.roleId}
+          onCreate={() => setIsOpenModal(true)}
+          labelCreate={'Crear Modelo de Vehiculo'}
+        />
       </div>
       <div className="overflow-x-auto">
         {models && !loading ? (
@@ -135,14 +166,11 @@ const Models = () => {
                     </span>
                   </Table.Cell>
                   <Table.Cell>
-                    <Button
-                      type="button"
-                      color={'warning'}
-                      outline
-                      onClick={() => onEditModel(model)}
-                    >
-                      Editar
-                    </Button>
+                    <ActionButtons
+                      userRole={user?.roleId}
+                      onEdit={() => onEditModel(model)}
+                      onRemove={() => onDeleteModel(model.id)}
+                    />
                   </Table.Cell>
                 </Table.Row>
               ))}
@@ -165,6 +193,10 @@ const Models = () => {
           isUpdate={editMode}
         />
       </ModalForm>
+      <ModalRemove
+        isOpenModal={isRemoveModalOpen}
+        removeFunction={handleRemoveModel}
+      />
     </div>
   );
 };

@@ -17,6 +17,7 @@ model User {
   photo     String?
   roleId    Int
   role      Role     @relation(fields: [roleId], references: [id])
+  enabled   Boolean
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   vehicles  Vehicle[]
@@ -35,27 +36,31 @@ model Vehicle {
   acquisitionDate DateTime
   cost            Float
   mileage         Int
-  status          String
+  status          Boolean
   comments        String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-  createdById     String           // Cambiar a tipo String para usar UUID
+  createdById     String
   createdBy       User             @relation(fields: [createdById], references: [id])
   serviceHistories ServiceHistory[]
   rentals         Rental[]
   files           File[]
+  enabled         Boolean
+  conditions      VehicleCondition[]
 }
 
 model VehicleType {
-  id       Int      @id @default(autoincrement())
-  name String
-  models   Model[]
+  id        Int      @id @default(autoincrement())
+  name      String
+  enabled   Boolean
+  models    Model[]
 }
 
 model VehicleBrand {
-  id       Int      @id @default(autoincrement())
-  name    String
-  models   Model[]
+  id        Int      @id @default(autoincrement())
+  name      String
+  enabled   Boolean
+  models    Model[]
 }
 
 model Model {
@@ -64,6 +69,7 @@ model Model {
   year      Int
   typeId    Int
   brandId   Int
+  enabled   Boolean
   type      VehicleType  @relation(fields: [typeId], references: [id])
   brand     VehicleBrand @relation(fields: [brandId], references: [id])
   vehicles  Vehicle[]
@@ -77,6 +83,9 @@ model ServiceHistory {
   description String
   cost        Float
   comments    String?
+  enabled     Boolean
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Rental {
@@ -91,6 +100,9 @@ model Rental {
   totalCost  Float
   status     String
   comments   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  enabled    Boolean
 }
 
 model Client {
@@ -101,6 +113,7 @@ model Client {
   phoneNumber  String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  enabled      Boolean
   rentals      Rental[]
 }
 
@@ -111,5 +124,24 @@ model File {
   fileType   String
   fileUrl    String
   metadata   Json?
+  enabled    Boolean
+  createdAt  DateTime @default(now())
   uploadedAt DateTime @default(now())
+}
+
+model Condition {
+  id        Int       @id @default(autoincrement())
+  name      String
+  enabled   Boolean
+  vehicles  VehicleCondition[]
+}
+
+model VehicleCondition {
+  id          Int       @id @default(autoincrement())
+  vehicleId   String
+  conditionId Int
+  vehicle     Vehicle   @relation(fields: [vehicleId], references: [id])
+  condition   Condition @relation(fields: [conditionId], references: [id])
+
+  @@unique([vehicleId, conditionId])
 }

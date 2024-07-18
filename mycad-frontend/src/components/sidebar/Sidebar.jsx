@@ -145,7 +145,7 @@ const Sidebar = ({ children }) => {
         display: 'flex',
         direction: rtl ? 'rtl' : 'ltr',
       }}
-      className="relative w-full h-full min-h-dvh overflow-hidden bg-gray-100 dark:bg-gray-900"
+      className="relative w-full h-full min-h-dvh overflow-hidden bg-gray-200 dark:bg-gray-900"
     >
       <ProSidebar
         collapsed={collapsed}
