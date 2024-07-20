@@ -31,7 +31,7 @@ const Catalogs = () => {
           title="Catalogos"
           icon={BiCategory}
         >
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 text-3xl justify-start gap-4">
+          <div className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 text-3xl justify-start gap-4">
             <Types />
             <Brands />
             <Conditions />
