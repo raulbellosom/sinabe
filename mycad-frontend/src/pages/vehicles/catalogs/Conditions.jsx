@@ -5,19 +5,19 @@ import ModalForm from '../../../components/Modals/ModalForm';
 import ModalRemove from '../../../components/Modals/ModalRemove';
 import CatalogList from '../../../components/VehicleComponents/CatalogList';
 
-const Types = () => {
+const Conditions = () => {
   const {
-    createVehicleType,
-    updateVehicleType,
-    deleteVehicleType,
-    fetchVehicleTypes,
+    createVehicleCondition,
+    updateVehicleCondition,
+    deleteVehicleCondition,
+    fetchVehicleConditions,
     loading,
-    vehicleTypes,
+    vehicleConditions,
   } = useVehicleContext();
-  const [types, setTypes] = useState([]);
+  const [conditions, setConditions] = useState([]);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [removeTypeId, setRemoveTypeId] = useState(null);
+  const [removeConditionId, setRemoveConditionId] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [initialValues, setInitialValues] = useState({
     name: '',
@@ -26,26 +26,26 @@ const Types = () => {
   });
 
   useEffect(() => {
-    fetchVehicleTypes();
+    fetchVehicleConditions();
   }, []);
 
   useEffect(() => {
-    const formattedTypes = vehicleTypes.map((type) => {
+    const formattedConditions = vehicleConditions.map((condition) => {
       return {
-        id: type.id,
-        name: type.name,
-        count: type.count,
+        id: condition.id,
+        name: condition.name,
+        count: condition.count,
       };
     });
-    setTypes(formattedTypes);
-  }, [vehicleTypes]);
+    setConditions(formattedConditions);
+  }, [vehicleConditions]);
 
-  const onEditType = (type) => {
+  const onEditCondition = (condition) => {
     setEditMode(true);
     setInitialValues({
-      id: type.id,
-      name: type.name,
-      count: type.count,
+      id: condition.id,
+      name: condition.name,
+      count: condition.count,
     });
     setIsOpenModal(true);
   };
@@ -53,8 +53,8 @@ const Types = () => {
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       editMode
-        ? await updateVehicleType(values)
-        : await createVehicleType(values);
+        ? await updateVehicleCondition(values)
+        : await createVehicleCondition(values);
       setSubmitting(false);
       resetForm();
       setInitialValues({
@@ -71,9 +71,9 @@ const Types = () => {
 
   const handleDelete = async () => {
     try {
-      await deleteVehicleType(removeTypeId);
+      await deleteVehicleCondition(removeConditionId);
       setIsDeleteModalOpen(false);
-      setRemoveTypeId(null);
+      setRemoveConditionId(null);
     } catch (error) {
       console.log(error);
       setIsDeleteModalOpen(false);
@@ -90,20 +90,20 @@ const Types = () => {
     setIsOpenModal(false);
   };
 
-  const onRemoveType = (id) => {
-    setRemoveTypeId(id);
+  const onRemoveCondition = (id) => {
+    setRemoveConditionId(id);
     setIsDeleteModalOpen(true);
   };
   return (
     <div className="w-full h-full">
-      {types && types.length > 0 && !loading ? (
+      {conditions && conditions.length > 0 && !loading ? (
         <CatalogList
-          data={types}
-          title="Tipos de Vehiculos"
+          data={conditions}
+          title="Condiciones de los Vehiculos"
           onCreate={() => setIsOpenModal(true)}
           position="center"
-          onEdit={(type) => onEditType(type)}
-          onRemove={(type) => onRemoveType(type.id)}
+          onEdit={(type) => onEditCondition(type)}
+          onRemove={(type) => onRemoveCondition(type.id)}
         />
       ) : (
         <CatalogList.Skeleton />
@@ -111,7 +111,11 @@ const Types = () => {
       <ModalForm
         onClose={onCloseModal}
         isOpenModal={isOpenModal}
-        title={editMode ? 'Editar Tipo de Vehiculo' : 'Crear Tipo de Vehiculo'}
+        title={
+          editMode
+            ? 'Editar Condicion del Vehiculo'
+            : 'Crear Condicion del Vehiculo'
+        }
       >
         <TypeForm
           initialValues={initialValues}
@@ -127,4 +131,4 @@ const Types = () => {
   );
 };
 
-export default Types;
+export default Conditions;

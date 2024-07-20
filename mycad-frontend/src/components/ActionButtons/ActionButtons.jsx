@@ -2,9 +2,9 @@ import { Button } from 'flowbite-react';
 import classNames from 'classnames';
 import { FaEdit, FaEye, FaPlus, FaTrash } from 'react-icons/fa';
 import { MdCancel } from 'react-icons/md';
+import { useAuthContext } from '../../context/AuthContext';
 
 const ActionButtons = ({
-  userRole,
   onShow,
   onEdit,
   onRemove,
@@ -16,12 +16,16 @@ const ActionButtons = ({
   labelRemove,
   labelCreate,
   labelCancel,
+  extraActions = [],
 }) => {
+  const { user } = useAuthContext();
+
   const permisions = {
     show: [1, 2, 3],
     edit: [1, 2],
     remove: [1],
-    create: [1, 2, 3],
+    create: [1, 2],
+    extraActions: [1, 2, 3],
   };
 
   const actions = [
@@ -30,36 +34,40 @@ const ActionButtons = ({
       action: onShow,
       color: 'cyan',
       icon: FaEye,
-      permission: permisions.show.includes(userRole),
+      permission: permisions.show.includes(user.roleId),
     },
     {
       label: labelEdit || 'Editar',
       action: onEdit,
       color: 'yellow',
       icon: FaEdit,
-      permission: permisions.edit.includes(userRole),
+      permission: permisions.edit.includes(user.roleId),
     },
     {
-      label: 'Eliminar',
-      action: labelRemove || onRemove,
+      label: labelRemove || 'Eliminar',
+      action: onRemove,
       color: 'red',
       icon: FaTrash,
-      permission: permisions.remove.includes(userRole),
+      permission: permisions.remove.includes(user.roleId),
     },
     {
       label: labelCreate || 'Nuevo',
       action: onCreate,
       color: 'indigo',
       icon: FaPlus,
-      permission: permisions.create.includes(userRole),
+      permission: permisions.create.includes(user.roleId),
     },
     {
       label: labelCancel || 'Cancelar',
       action: onCancel,
       color: 'red',
       icon: MdCancel,
-      permission: permisions.create.includes(userRole),
+      permission: permisions.create.includes(user.roleId),
     },
+    ...extraActions.map((action) => ({
+      ...action,
+      permission: permisions.extraActions.includes(user.roleId),
+    })),
   ];
 
   const filteredActions = actions.filter(

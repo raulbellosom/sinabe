@@ -1,8 +1,9 @@
 import { useReducer, useEffect } from 'react';
+import { useAuthContext } from './AuthContext';
 import VehicleContext from './VehicleContext';
 import VehicleReducer from './VehicleReducer';
 import useVehicle from '../hooks/useVehicle';
-import { useAuthContext } from './AuthContext';
+import useVehicleCatalogs from '../hooks/useVehicleCatalogs';
 
 const VehicleProvider = ({ children }) => {
   const [state, dispatch] = useReducer(VehicleReducer, {
@@ -27,6 +28,9 @@ const VehicleProvider = ({ children }) => {
     createVehicle,
     updateVehicle,
     deleteVehicle,
+  } = useVehicle(dispatch);
+
+  const {
     fetchVehicleType,
     fetchVehicleTypes,
     createVehicleType,
@@ -47,7 +51,7 @@ const VehicleProvider = ({ children }) => {
     createVehicleCondition,
     updateVehicleCondition,
     deleteVehicleCondition,
-  } = useVehicle(dispatch);
+  } = useVehicleCatalogs(dispatch);
 
   const loadVehiclesInfo = () => {
     fetchVehicles();

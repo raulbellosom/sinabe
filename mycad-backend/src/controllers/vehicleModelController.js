@@ -623,12 +623,10 @@ export const createCondition = async (req, res) => {
         count: condition.vehicles.length,
       };
 
-      return res
-        .status(400)
-        .json({
-          data: conditionWithCount,
-          message: "Condition already exists",
-        });
+      return res.status(400).json({
+        data: conditionWithCount,
+        message: "Condition already exists",
+      });
     }
 
     const newCondition = await db.condition.create({
@@ -636,9 +634,20 @@ export const createCondition = async (req, res) => {
         name,
         enabled: true,
       },
+      include: {
+        vehicles: {
+          select: { id: true },
+        },
+      },
     });
 
-    res.status(201).json(newCondition);
+    const conditionWithCount = {
+      id: newCondition.id,
+      name: newCondition.name,
+      count: newCondition.vehicles.length,
+    };
+
+    res.status(201).json(conditionWithCount);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: error.message });

@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useVehicleContext } from '../../../context/VehicleContext';
 import BrandForm from '../../../components/VehicleComponents/BrandForm/BrandForm';
 import ModalForm from '../../../components/Modals/ModalForm';
-import { Checkbox, Table } from 'flowbite-react';
-import Skeleton from 'react-loading-skeleton';
 import { useAuthContext } from '../../../context/AuthContext';
-import ActionButtons from '../../../components/ActionButtons/ActionButtons';
 import ModalRemove from '../../../components/Modals/ModalRemove';
+import CatalogList from '../../../components/VehicleComponents/CatalogList';
 
 const Brands = () => {
   const {
@@ -101,66 +99,18 @@ const Brands = () => {
 
   return (
     <div className="w-full h-full">
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center text-nowrap mb-2">
-        <h1 className="text-xl font-bold ml-4 text-orange-500">
-          Marcas de Vehiculos
-        </h1>
-        <ActionButtons
-          userRole={user.roleId}
+      {brands && brands.length > 0 && !loading ? (
+        <CatalogList
+          data={brands}
+          title="Marcas de Vehiculos"
           onCreate={() => setIsOpenModal(true)}
-          labelCreate={'Crear Marca de Vehiculo'}
+          position="center"
+          onEdit={(type) => onEditBrand(type)}
+          onRemove={(type) => onRemoveBrand(type.id)}
         />
-      </div>
-      <div className="overflow-x-auto">
-        {brands && brands.length > 0 && !loading ? (
-          <Table hoverable>
-            <Table.Head>
-              <Table.HeadCell className="p-4">
-                <Checkbox />
-              </Table.HeadCell>
-              <Table.HeadCell>#</Table.HeadCell>
-              <Table.HeadCell>Nombre</Table.HeadCell>
-              <Table.HeadCell># de Vehiculos de esta Marca</Table.HeadCell>
-              <Table.HeadCell className="text-center">Acciones</Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="divide-y">
-              {brands.map((brand, index) => (
-                <Table.Row
-                  key={brand.id}
-                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <Table.Cell className="p-4">
-                    <Checkbox />
-                  </Table.Cell>
-                  <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    {index + 1}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <span className="text-gray-900 dark:text-white">
-                      {brand.name}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell className="text-center">
-                    <span className="text-gray-900 dark:text-white text-center">
-                      {brand.count}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <ActionButtons
-                      position="center"
-                      userRole={user.roleId}
-                      onEdit={() => onEditBrand(brand)}
-                      onRemove={() => onRemoveBrand(brand.id)}
-                    />
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
-        ) : (
-          <Skeleton className="w-full h-10" count={10} />
-        )}
-      </div>
+      ) : (
+        <CatalogList.Skeleton />
+      )}
       <ModalForm
         onClose={onCloseModal}
         isOpenModal={isOpenModal}
