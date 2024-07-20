@@ -3,7 +3,6 @@ import { ErrorMessage } from 'formik';
 import { Label } from 'flowbite-react';
 import classNames from 'classnames';
 import Select from 'react-select';
-import makeAnimated from 'react-select/animated';
 
 const MultiSelectInput = ({
   field,
@@ -39,7 +38,6 @@ const MultiSelectInput = ({
         isMulti
         className="mt-1 border border-gray-500 rounded-lg"
         closeMenuOnSelect={false}
-        components={animatedComponents}
         classNamePrefix="react-select"
         onChange={handleChange}
         value={props.options.filter((option) =>
