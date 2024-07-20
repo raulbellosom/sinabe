@@ -3,9 +3,9 @@ import { Tabs } from 'flowbite-react';
 import Models from './Models';
 import Brands from './Brands';
 import { BiCategory } from 'react-icons/bi';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import { HiCubeTransparent } from 'react-icons/hi';
 import Types from './Types';
+import Conditions from './Conditions';
 
 const Catalogs = () => {
   const [view, setView] = useState('models');
@@ -15,7 +15,7 @@ const Catalogs = () => {
   };
 
   return (
-    <div className="bg-white p-2 overflow-hidden">
+    <div className="bg-white p-2 overflow-hidden h-full min-h-full rounded-md">
       <Tabs aria-label="Default tabs" variant="fullWidth">
         <Tabs.Item
           active={view === 'models'}
@@ -26,20 +26,16 @@ const Catalogs = () => {
           <Models />
         </Tabs.Item>
         <Tabs.Item
-          active={view === 'brands'}
-          onClick={() => handleTabChange('brands')}
-          title="Marcas"
-          icon={PiTrademarkRegisteredBold}
-        >
-          <Brands />
-        </Tabs.Item>
-        <Tabs.Item
           active={view === 'types'}
           onClick={() => handleTabChange('types')}
-          title="Tipos"
+          title="Catalogos"
           icon={BiCategory}
         >
-          <Types />
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 text-3xl justify-start gap-4">
+            <Types />
+            <Brands />
+            <Conditions />
+          </div>
         </Tabs.Item>
       </Tabs>
     </div>
