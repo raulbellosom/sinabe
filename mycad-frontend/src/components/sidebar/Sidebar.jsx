@@ -43,6 +43,10 @@ const themes = {
         color: '#FFF',
         backgroundColor: '#312e81',
       },
+      hover: {
+        backgroundColor: '#ff5a1f',
+        color: '#fff',
+      },
     },
   },
   dark: {
@@ -97,16 +101,15 @@ const Sidebar = ({ children }) => {
   const menuItemStyles = {
     root: {
       fontSize: '16px',
-      fontWeight: 400,
+      fontWeight: 600,
     },
     icon: {
-      color: themes[theme].menu.icon,
       [`&.${menuClasses.disabled}`]: {
         color: themes[theme].menu.disabled.color,
       },
-    },
-    SubMenuExpandIcon: {
-      color: '#b6b7b9',
+      [`&.${menuClasses.active}`]: {
+        color: themes[theme].menu.active.color,
+      },
     },
     subMenuContent: ({ level }) => ({
       backgroundColor:
@@ -117,18 +120,32 @@ const Sidebar = ({ children }) => {
             )
           : 'transparent',
     }),
+    SubMenuExpandIcon: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignContent: 'center',
+      transform: ' scale(1.5)',
+    },
     button: {
-      [`&.${menuClasses.disabled}`]: {
-        color: themes[theme].menu.disabled.color,
-      },
-      '&:hover': {
+      [`&:hover, &${menuClasses.SubMenuExpandIcon}`]: {
         backgroundColor: hexToRgba(
           themes[theme].menu.hover.backgroundColor,
-          hasImage ? 0.8 : 1,
+          hasImage ? 0.75 : 1,
         ),
         color: themes[theme].menu.hover.color,
       },
+      [`&.ps-active`]: {
+        backgroundColor: hexToRgba(
+          themes[theme].menu.active.backgroundColor,
+          hasImage ? 0.75 : 1,
+        ),
+        color: themes[theme].menu.active.color,
+      },
+      [`&.${menuClasses.disabled}`]: {
+        color: themes[theme].menu.disabled.color,
+      },
     },
+
     label: ({ open }) => ({
       fontWeight: open ? 600 : undefined,
     }),
@@ -144,8 +161,8 @@ const Sidebar = ({ children }) => {
       style={{
         display: 'flex',
         direction: rtl ? 'rtl' : 'ltr',
+        height: '100vh',
       }}
-      className="relative w-full h-full min-h-dvh overflow-hidden bg-gray-200 dark:bg-gray-900"
     >
       <ProSidebar
         collapsed={collapsed}
@@ -180,39 +197,7 @@ const Sidebar = ({ children }) => {
               collapsed={collapsed}
             />
             <div className="border-t border-gray-300 py-1" />
-            <Menu
-              menuItemStyles={{
-                root: {
-                  fontSize: '16px',
-                  fontWeight: 600,
-                },
-                button: {
-                  ['&:hover']: {
-                    backgroundColor: hexToRgba(
-                      themes[theme].menu.hover.backgroundColor,
-                      hasImage ? 0.75 : 1,
-                    ),
-                    color: themes[theme].menu.hover.color,
-                  },
-                  [`&.ps-active`]: {
-                    backgroundColor: hexToRgba(
-                      themes[theme].menu.active.backgroundColor,
-                      hasImage ? 0.75 : 1,
-                    ),
-                    color: themes[theme].menu.active.color,
-                  },
-                  [`&.${menuClasses.disabled}`]: {
-                    color: themes[theme].menu.disabled.color,
-                  },
-                },
-                SubMenuExpandIcon: {
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignContent: 'center',
-                  transform: ' scale(1.5)',
-                },
-              }}
-            >
+            <Menu menuItemStyles={menuItemStyles}>
               <MenuItem
                 component={<Link to={'/dashboard'} />}
                 active={isActivePath('/dashboard')}
@@ -239,7 +224,7 @@ const Sidebar = ({ children }) => {
                     setToggled(false);
                   }}
                 >
-                  Catalogos
+                  Catálogos
                 </MenuItem>
               </SubMenu>
               <MenuItem
@@ -247,7 +232,7 @@ const Sidebar = ({ children }) => {
                 active={isActivePath('/users')}
                 icon={<FaUserCircle />}
               >
-                Users
+                Usuarios
               </MenuItem>
               <MenuItem
                 component={<Link to={'/profile'} />}
@@ -262,7 +247,7 @@ const Sidebar = ({ children }) => {
             <Button
               type="button"
               gradientMonochrome="purple"
-              className="w-full border-none truncate flex justify-start items-centertext-white transition-colors duration-100 ease-in-out"
+              className="w-full border-none truncate flex justify-start items-center text-white transition-colors duration-100 ease-in-out"
               onClick={logout}
             >
               <FaSignOutAlt className="text-lg mt-0.5 mr-4" />
@@ -271,7 +256,7 @@ const Sidebar = ({ children }) => {
           </div>
         </div>
       </ProSidebar>
-      <div className="w-full min-h-dvh h-screen max-h-dvh relative flex flex-col overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden relative">
         <Navbar
           collapsed={collapsed}
           setCollapsed={() => setCollapsed(!collapsed)}
@@ -279,7 +264,7 @@ const Sidebar = ({ children }) => {
           setToggled={() => setToggled(!toggled)}
           broken={broken}
         />
-        <div className="flex-1 overflow-y-auto pt-16 h-full">
+        <div className="flex-1 overflow-auto pt-16 h-full">
           <MainLayout>{children}</MainLayout>
         </div>
       </div>

@@ -95,19 +95,21 @@ const Conditions = () => {
     setIsDeleteModalOpen(true);
   };
   return (
-    <div className="w-full h-full">
-      {conditions && conditions.length > 0 && !loading ? (
-        <CatalogList
-          data={conditions}
-          title="Condiciones de los Vehiculos"
-          onCreate={() => setIsOpenModal(true)}
-          position="center"
-          onEdit={(type) => onEditCondition(type)}
-          onRemove={(type) => onRemoveCondition(type.id)}
-        />
-      ) : (
-        <CatalogList.Skeleton />
-      )}
+    <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="h-full overflow-auto">
+        {conditions && conditions.length > 0 && !loading ? (
+          <CatalogList
+            data={conditions}
+            title="Condicion de los Vehiculos"
+            onCreate={() => setIsOpenModal(true)}
+            position="center"
+            onEdit={(type) => onEditCondition(type)}
+            onRemove={(type) => onRemoveCondition(type.id)}
+          />
+        ) : (
+          <CatalogList.Skeleton />
+        )}
+      </div>
       <ModalForm
         onClose={onCloseModal}
         isOpenModal={isOpenModal}

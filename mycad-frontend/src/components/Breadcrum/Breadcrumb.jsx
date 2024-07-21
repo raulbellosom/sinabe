@@ -6,7 +6,7 @@ import { IoChevronForward } from 'react-icons/io5';
 
 const Breadcrumbs = ({ breadcrumbs = [] }) => {
   return (
-    <div className="group flex items-start">
+    <div className="group flex items-start pb-4">
       <Link
         to="/"
         className="text-neutral-700 hover:text-indigo-900 cursor-pointer p-0 m-0 group flex items-center"

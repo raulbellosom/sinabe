@@ -68,7 +68,7 @@ const ViewVehicle = () => {
         label: 'Kilometraje',
       },
       status: {
-        name: vehicle.status,
+        name: vehicle.status ? 'Activo' : 'Inactivo',
         icon: MdInfo,
         label: 'Estado',
       },
