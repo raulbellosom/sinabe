@@ -161,7 +161,7 @@ const Sidebar = ({ children }) => {
       style={{
         display: 'flex',
         direction: rtl ? 'rtl' : 'ltr',
-        height: '100vh',
+        height: '100dvh',
       }}
     >
       <ProSidebar
@@ -256,7 +256,7 @@ const Sidebar = ({ children }) => {
           </div>
         </div>
       </ProSidebar>
-      <div className="flex-1 min-h-0 overflow-hidden relative">
+      <div className="flex-1 min-h-0 max-h-dvh overflow-hidden relative">
         <Navbar
           collapsed={collapsed}
           setCollapsed={() => setCollapsed(!collapsed)}
