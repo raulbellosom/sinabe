@@ -98,7 +98,7 @@ const ActionButtons = ({
   return (
     <div
       className={classNames(
-        'w-full flex justify-center md:justify-end items-center gap-2 border border-gray-200 rounded-md p-2 md:border-none md:p-0',
+        'w-fit flex justify-center md:justify-end items-center gap-2 border border-gray-200 rounded-md border-none md:p-0',
         positionClass,
       )}
     >
@@ -108,6 +108,7 @@ const ActionButtons = ({
           onClick={action.action}
           outline
           color={action.color}
+          className="p-0 m-0"
         >
           {action.icon && <action.icon size={18} className="mr-2 mt-0.5" />}
           <span>{action.label}</span>

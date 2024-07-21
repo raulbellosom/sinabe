@@ -14,9 +14,9 @@ const MainLayout = ({ children }) => {
   }, [location]);
 
   return (
-    <div className="p-4">
+    <div className="flex flex-col flex-1 h-full bg-gray-200 p-4 overflow-auto">
       <Breadcrumbs breadcrumbs={breadcrumb} />
-      <main className="py-4">{children}</main>
+      <div className="flex-1">{children}</div>
     </div>
   );
 };
