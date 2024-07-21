@@ -37,6 +37,7 @@ const MultiSelectInput = ({
         {...props}
         isMulti
         className="mt-1 border border-gray-500 rounded-lg"
+        closeMenuOnSelect={false}
         classNamePrefix="react-select"
         onChange={handleChange}
         value={props.options.filter((option) =>
