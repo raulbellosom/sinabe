@@ -128,6 +128,7 @@ const Brands = () => {
       </ModalForm>
       <ModalRemove
         isOpenModal={isDeleteModalOpen}
+        onCloseModal={() => setIsDeleteModalOpen(false)}
         removeFunction={handleDeleteVehicleBrand}
       />
     </div>

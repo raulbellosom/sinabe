@@ -195,6 +195,7 @@ const Models = () => {
       </ModalForm>
       <ModalRemove
         isOpenModal={isRemoveModalOpen}
+        onCloseModal={() => setIsRemoveModalOpen(false)}
         removeFunction={handleRemoveModel}
       />
     </div>

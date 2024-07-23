@@ -14,7 +14,7 @@ const LoadingModal = ({ loading }) => {
           color="#e3a008"
           ariaLabel="three-circles-loading"
           wrapperStyle={{}}
-          wrapperClass=""
+          wrapperclassName=""
         />
       </div>
     </div>,
