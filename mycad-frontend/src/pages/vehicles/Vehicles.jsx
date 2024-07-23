@@ -1,94 +1,166 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import Skeleton from 'react-loading-skeleton';
+
 import useVehicle from '../../hooks/useVehicle';
 import VehicleContext, {
   useVehicleContext,
 } from '../../context/VehicleContext';
 import { Link } from 'react-router-dom';
+import Table from '../../components/Table/Table';
+import { useAuthContext } from '../../context/AuthContext';
+import ActionButtons from '../../components/ActionButtons/ActionButtons';
+import { Checkbox, Table as T } from 'flowbite-react';
+import TableHeader from '../../components/Table/TableHeader';
+import TableActions from '../../components/Table/TableActions';
+import TableFooter from '../../components/Table/TableFooter';
+import LinkButton from '../../components/ActionButtons/LinkButton';
+import { FaEdit, FaEye } from 'react-icons/fa';
+
+const vehicleColumns = [
+  {
+    id: 'name',
+    value: 'Nombre',
+    classes: 'w-auto',
+  },
+  {
+    id: 'type',
+    value: 'Tipo',
+    classes: 'w-auto',
+  },
+  {
+    id: 'brand',
+    value: 'Marca',
+    classes: 'w-auto',
+  },
+  {
+    id: 'year',
+    value: 'Año',
+    classes: 'w-auto',
+  },
+  {
+    id: 'status',
+    value: 'Estatus',
+    classes: 'w-auto',
+  },
+  {
+    id: 'actions',
+    value: '',
+    classes: ' w-1',
+  },
+];
 
 const Vehicles = () => {
-  const { vehicles } = useVehicleContext();
-  const [formState, setFormState] = useState({ make: '', model: '', year: '' });
-  const [editMode, setEditMode] = useState(false);
+  const { vehicles, loading } = useVehicleContext();
+  console.log("rendering component")
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPageNumber, setCurrentPageNumber] = useState(1);
+  const [vehiclesToDisplay, setVehiclesToDisplay] = useState(vehicles);
+  const TOTAL_VALUES_PER_PAGE = 5;
+  const index =
+    TOTAL_VALUES_PER_PAGE * currentPageNumber - TOTAL_VALUES_PER_PAGE + 1;
+  const filteredVehicles = vehicles?.filter((vehicle) =>
+    JSON.stringify(vehicle).toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
-  if (status === 'loading') {
-    return <div>Loading...</div>;
-  }
-
-  if (status === 'error') {
-    return <div>Error loading vehicles</div>;
-  }
-
-  const handleChange = (e) => {
-    setFormState({ ...formState, [e.target.name]: e.target.value });
+  const goOnPrevPage = () => {
+    if (currentPageNumber === 1) return;
+    setCurrentPageNumber((prev) => prev - 1);
   };
+  const goOnNextPage = () => {
+    if (currentPageNumber === filteredVehicles.length / TOTAL_VALUES_PER_PAGE)
+      return;
+    setCurrentPageNumber((prev) => prev + 1);
+  };
+  const handleSelectChange = (page) => {
+    setCurrentPageNumber(page);
+  };
+  useEffect(() => {
+    const start = (currentPageNumber - 1) * TOTAL_VALUES_PER_PAGE;
+    const end = currentPageNumber * TOTAL_VALUES_PER_PAGE;
+    setVehiclesToDisplay(filteredVehicles.slice(start, end));
+  }, [currentPageNumber, vehicles, searchTerm]);
 
-  const handleSubmit = (e) => {
+  const handleSearch = (e) => {
     e.preventDefault();
-    if (editMode) {
-      updateVehicle(formState);
-    } else {
-      createVehicle(formState);
-    }
-    setFormState({ make: '', model: '', year: '' });
-    setEditMode(false);
-  };
-
-  const handleEdit = (vehicle) => {
-    setFormState(vehicle);
-    setEditMode(true);
+    setSearchTerm(e.target.value);
   };
 
   const handleDelete = (vehicleId) => {
     deleteVehicle(vehicleId);
   };
-
+  if (vehiclesToDisplay?.length === 0) return <div>Loading...</div>;
   return (
     <div>
-      <div className="flex justify-between items-center">
-        <h1>Vehicles</h1>
-        <Link
-          to={'/vehicles/create'}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-        >
-          Crear vehiculo
-        </Link>
-      </div>
-      <form onSubmit={handleSubmit}>
-        <input
-          name="make"
-          value={formState.make}
-          onChange={handleChange}
-          placeholder="Make"
+      <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 antialiased">
+        <TableHeader
+          title="Vehículos"
+          labelButton="Nuevo vehículo"
+          redirect="/vehicles/create"
         />
-        <input
-          name="model"
-          value={formState.model}
-          onChange={handleChange}
-          placeholder="Model"
+        <TableActions handleSearchTerm={handleSearch} />
+        {vehiclesToDisplay && !loading ? (
+          <Table columns={vehicleColumns}>
+            {vehiclesToDisplay?.map((vehicle) => {
+              const { id, name, type, brand, year } = vehicle.model;
+              return (
+                <T.Row
+                  key={id}
+                  className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <T.Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    {name}
+                  </T.Cell>
+                  <T.Cell>
+                    {/* <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300"> */}
+                    {type?.name}
+                    {/* </span> */}
+                  </T.Cell>
+                  <T.Cell>{brand?.name}</T.Cell>
+                  <T.Cell>{year}</T.Cell>
+                  <T.Cell>
+                    <div
+                      className={`flex items-center rounded text-center text-white justify-center w-1/2 ${vehicle?.status ? 'bg-green-500' : 'bg-red-600'}`}
+                    >
+                      {vehicle?.status ? 'Activo' : 'Inactivo'}
+                    </div>
+                  </T.Cell>
+                  <T.Cell className="p-4">
+                    <div className="w-full flex justify-center md:justify-end items-center gap-2 border border-gray-200 rounded-md p-2 md:border-none md:p-0">
+                      <LinkButton
+                        route={`/vehicles/edit/${vehicle.id}`}
+                        label="Editar"
+                        icon={FaEdit}
+                        color="yellow"
+                      />
+                      <LinkButton
+                        route={`/vehicles/view/${vehicle.id}`}
+                        label="Ver"
+                        icon={FaEye}
+                        color="cyan"
+                      />
+                      <ActionButtons
+                        onRemove={() => handleDelete(vehicle?.id)}
+                      />
+                    </div>
+                  </T.Cell>
+                </T.Row>
+              );
+            })}
+          </Table>
+        ) : (
+          <Skeleton className="w-full h-10" count={10} />
+        )}
+
+        <TableFooter
+          index={index}
+          currentPage={currentPageNumber}
+          totalItems={vehicles?.length}
+          valuesPerPage={TOTAL_VALUES_PER_PAGE}
+          goOnNextPage={goOnNextPage}
+          goOnPrevPage={goOnPrevPage}
+          handleSelectChange={handleSelectChange}
         />
-        <input
-          name="year"
-          value={formState.year}
-          onChange={handleChange}
-          placeholder="Year"
-        />
-        <button type="submit">{editMode ? 'Update' : 'Create'}</button>
-      </form>
-      <ul>
-        {vehicles?.map((vehicle) => (
-          <li className="flex gap-4" key={vehicle.id}>
-            {vehicle?.model?.type?.name +
-              ' ' +
-              vehicle?.model?.brand?.name +
-              ' ' +
-              ' ' +
-              vehicle.model?.name}
-            <Link to={`/vehicles/view/${vehicle.id}`}>View</Link>
-            <Link to={`/vehicles/edit/${vehicle.id}`}>Edit</Link>
-            <button onClick={() => handleDelete(vehicle.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+      </section>
     </div>
   );
 };
