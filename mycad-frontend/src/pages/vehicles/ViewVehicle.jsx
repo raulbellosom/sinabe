@@ -148,6 +148,7 @@ const ViewVehicle = () => {
       </div>
       <ModalRemove
         isOpenModal={isOpenModal}
+        onCloseModal={() => setIsOpenModal(false)}
         removeFunction={handleDeleteVehicle}
       />
     </div>

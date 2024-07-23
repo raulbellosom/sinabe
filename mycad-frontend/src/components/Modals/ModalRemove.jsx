@@ -1,19 +1,14 @@
 import { Button, Modal } from 'flowbite-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 
-const ModalRemove = ({ removeFunction, isOpenModal }) => {
-  const [openModal, setOpenModal] = useState(isOpenModal);
-
-  useEffect(() => {
-    setOpenModal(isOpenModal);
-  }, [isOpenModal]);
+const ModalRemove = ({ removeFunction, isOpenModal, onCloseModal }) => {
 
   return (
     <Modal
-      show={openModal}
+      show={isOpenModal}
       size="lg"
-      onClose={() => setOpenModal(false)}
+      onClose={onCloseModal}
       dismissible
       popup
     >
@@ -33,7 +28,7 @@ const ModalRemove = ({ removeFunction, isOpenModal }) => {
             <Button color="failure" onClick={removeFunction}>
               Sí, eliminar
             </Button>
-            <Button color="gray" onClick={() => setOpenModal(false)}>
+            <Button color="gray" onClick={onCloseModal}>
               No, cancelar
             </Button>
           </div>
