@@ -1,20 +1,17 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
-
-import useVehicle from '../../hooks/useVehicle';
-import VehicleContext, {
+import {
   useVehicleContext,
 } from '../../context/VehicleContext';
-import { Link } from 'react-router-dom';
 import Table from '../../components/Table/Table';
-import { useAuthContext } from '../../context/AuthContext';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import { Checkbox, Table as T } from 'flowbite-react';
 import TableHeader from '../../components/Table/TableHeader';
 import TableActions from '../../components/Table/TableActions';
 import TableFooter from '../../components/Table/TableFooter';
 import LinkButton from '../../components/ActionButtons/LinkButton';
 import { FaEdit, FaEye } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import ModalRemove from '../../components/Modals/ModalRemove';
 
 const vehicleColumns = [
   {
@@ -50,8 +47,11 @@ const vehicleColumns = [
 ];
 
 const Vehicles = () => {
-  const { vehicles, loading } = useVehicleContext();
-  console.log("rendering component")
+  const { vehicles, loading, deleteVehicle } = useVehicleContext();
+  const navigate = useNavigate()
+  console.log("vehicles ", vehicles)
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [vehicleId, setVehicleId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const [vehiclesToDisplay, setVehiclesToDisplay] = useState(vehicles);
@@ -84,10 +84,16 @@ const Vehicles = () => {
     e.preventDefault();
     setSearchTerm(e.target.value);
   };
-
-  const handleDelete = (vehicleId) => {
-    deleteVehicle(vehicleId);
+  const handleClose = () => {
+    setIsOpenModal(false)
+  }
+  const handleDeleteVehicle = () => {
+    if (vehicleId) {
+      deleteVehicle(vehicleId);
+      navigate('/vehicles');
+    }
   };
+
   if (vehiclesToDisplay?.length === 0) return <div>Loading...</div>;
   return (
     <div>
@@ -104,7 +110,7 @@ const Vehicles = () => {
               const { id, name, type, brand, year } = vehicle.model;
               return (
                 <T.Row
-                  key={id}
+                  key={vehicle.id}
                   className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   <T.Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
@@ -139,7 +145,10 @@ const Vehicles = () => {
                         color="cyan"
                       />
                       <ActionButtons
-                        onRemove={() => handleDelete(vehicle?.id)}
+                        onRemove={() => {
+                          setIsOpenModal(true)
+                          setVehicleId(vehicle.id)
+                        }}
                       />
                     </div>
                   </T.Cell>
@@ -161,6 +170,11 @@ const Vehicles = () => {
           handleSelectChange={handleSelectChange}
         />
       </section>
+      <ModalRemove
+        isOpenModal={isOpenModal}
+        onCloseModal={() => setIsOpenModal(false)}
+        removeFunction={handleDeleteVehicle}
+      />
     </div>
   );
 };

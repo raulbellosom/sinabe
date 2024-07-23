@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import { IoChevronForward } from 'react-icons/io5';
 
 const Breadcrumbs = ({ breadcrumbs = [] }) => {
+  console.log("breadcrumbs ", breadcrumbs)
   return (
     <div className="group flex items-start pb-4">
       <Link
@@ -27,6 +28,7 @@ const Breadcrumbs = ({ breadcrumbs = [] }) => {
                 route?.href
                   ? 'text-gray-700 hover:text-indigo-900 dark:text-gray-400 dark:hover:text-white'
                   : 'cursor-default text-gray-500',
+                index === breadcrumbs?.length - 1 && 'pointer-events-none opacity-60'
               )}
             >
               {route.icon && <route.icon className="mr-2 h-3.5 w-3.5" />}

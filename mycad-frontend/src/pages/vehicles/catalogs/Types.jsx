@@ -121,6 +121,7 @@ const Types = () => {
       </ModalForm>
       <ModalRemove
         isOpenModal={isDeleteModalOpen}
+        onCloseModal={() => setIsDeleteModalOpen(false)}
         removeFunction={handleDelete}
       />
     </div>

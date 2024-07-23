@@ -9,9 +9,10 @@ const TableFooter = ({
   valuesPerPage,
   currentPage,
 }) => {
-  // console.log('totalItems ', totalItems);
-  // console.log('index ', index);
-  // console.log('currentPageNumber ', currentPage);
+  console.log('totalItems ', totalItems);
+  console.log('index ', index);
+  console.log('currentPageNumber ', currentPage);
+  console.log('promedio ', Math.round(totalItems / valuesPerPage));
   const activePagClass = "flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-primary-600 bg-primary-50 border border-primary-300 hover:bg-primary-100 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white";
   const pagClass = "flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white";
   const disablePagClass = "pointer-events-none opacity-60 flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white";
@@ -60,7 +61,7 @@ const TableFooter = ({
           </a>
         </li>
 
-        {Array.from(Array(Math.round(totalItems / valuesPerPage)))
+        {Array.from(Array(totalItems > valuesPerPage ? Math.round(totalItems / valuesPerPage) + 1 : Math.round(totalItems / valuesPerPage)))
           .map((e, i) => i + 1)
           .map((val) => {
             return (
@@ -69,7 +70,7 @@ const TableFooter = ({
                 ( currentPage >=4 && val === currentPage && currentPage !== Math.round(totalItems / valuesPerPage)) ?? (
                     <a
                       href="#"
-                      className="flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-primary-600 bg-primary-50 border border-primary-300 hover:bg-primary-100 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
+                      className="pointer-events-none flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-primary-600 bg-primary-50 border border-primary-300 hover:bg-primary-100 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
                     >
                       {currentPage}
                     </a>
