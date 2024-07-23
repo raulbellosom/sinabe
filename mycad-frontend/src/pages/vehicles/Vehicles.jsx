@@ -12,6 +12,7 @@ import LinkButton from '../../components/ActionButtons/LinkButton';
 import { FaEdit, FaEye } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import ModalRemove from '../../components/Modals/ModalRemove';
+import { Table as T} from 'flowbite-react';
 
 const vehicleColumns = [
   {
