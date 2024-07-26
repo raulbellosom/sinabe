@@ -30,23 +30,27 @@ model Role {
 }
 
 model Vehicle {
-  id              String           @id @default(uuid())
-  modelId         Int
-  model           Model           @relation(fields: [modelId], references: [id])
-  acquisitionDate DateTime
-  cost            Float
-  mileage         Int
-  status          Boolean
-  comments        String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  createdById     String
-  createdBy       User             @relation(fields: [createdById], references: [id])
-  serviceHistories ServiceHistory[]
-  rentals         Rental[]
-  files           File[]
-  enabled         Boolean
-  conditions      VehicleCondition[]
+  id                String           @id @default(uuid())
+  economicNumber    String?
+  plateNumber       String?
+  serialNumber      String?
+  modelId           Int
+  model             Model            @relation(fields: [modelId], references: [id])
+  acquisitionDate   DateTime
+  cost              Float
+  mileage           Int
+  status            Boolean
+  comments          String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  createdById       String
+  createdBy         User             @relation(fields: [createdById], references: [id])
+  serviceHistories  ServiceHistory[]
+  rentals           Rental[]
+  images            Image[]          @relation("VehicleImages")
+  files             File[]
+  enabled           Boolean
+  conditions        VehicleCondition[]
 }
 
 model VehicleType {
@@ -144,4 +148,21 @@ model VehicleCondition {
   condition   Condition @relation(fields: [conditionId], references: [id])
 
   @@unique([vehicleId, conditionId])
+}
+
+model Image {
+  id         String    @id @default(uuid())
+  url        String
+  thumbnail  String?
+  medium     String?
+  large      String?
+  type       String
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+  enabled    Boolean
+
+  vehicle    Vehicle?  @relation("VehicleImages", fields: [vehicleId], references: [id])
+  vehicleId  String?
+
+  @@index([vehicleId])
 }

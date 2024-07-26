@@ -45,6 +45,7 @@ export const getVehicleById = async (req, res) => {
             condition: true,
           },
         },
+        files: true,
       },
     });
 
@@ -127,6 +128,9 @@ export const updateVehicle = async (req, res) => {
   const { id } = req.params;
   const {
     modelId,
+    economicNumber,
+    serialNumber,
+    plateNumber,
     comments,
     acquisitionDate,
     cost,
@@ -150,6 +154,9 @@ export const updateVehicle = async (req, res) => {
         where: { id },
         data: {
           modelId: parseInt(modelId, 10),
+          economicNumber,
+          serialNumber,
+          plateNumber,
           comments,
           acquisitionDate: new Date(acquisitionDate),
           cost,

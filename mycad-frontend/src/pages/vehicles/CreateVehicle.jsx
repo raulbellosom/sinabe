@@ -30,10 +30,14 @@ const CreateVehicle = () => {
   const [formattedModels, setFormattedModels] = useState([]);
   const [initialValues, setInitialValues] = useState({
     modelId: '',
+    economicNumber: '',
+    serialNumber: '',
+    plateNumber: '',
     acquisitionDate: '',
     cost: '',
     mileage: '',
     status: '',
+    images: [],
     comments: '',
     conditions: [],
   });

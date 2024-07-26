@@ -29,10 +29,14 @@ const UpdateVehicle = () => {
   } = useVehicleContext();
   const [initialValues, setInitialValues] = useState({
     modelId: '',
+    economicNumber: '',
+    serialNumber: '',
+    plateNumber: '',
     acquisitionDate: '',
     cost: '',
     mileage: '',
     status: '',
+    images: [],
     comments: '',
     conditions: [],
   });
@@ -54,19 +58,24 @@ const UpdateVehicle = () => {
     if (Object.keys(vehicle).length !== 0) {
       const acquisitionDate = DateLocalParced(vehicle.acquisitionDate);
       const newVehicle = {
-        ...vehicle,
-        acquisitionDate: acquisitionDate,
         modelId: vehicle.model.id,
+        economicNumber: vehicle.economicNumber || '',
+        serialNumber: vehicle.serialNumber || '',
+        plateNumber: vehicle.plateNumber || '',
+        acquisitionDate: acquisitionDate,
+        cost: vehicle.cost || '',
+        mileage: vehicle.mileage || '',
+        status: vehicle.status || '',
+        images: vehicle.images || [],
         comments: vehicle.comments || '',
+        conditions: vehicle.conditions.map(
+          (condition) => condition.conditionId,
+        ),
       };
 
       setInitialValues(newVehicle);
     }
   }, [vehicle]);
-
-  const handleModalOpen = async () => {
-    setIsModalOpen(true);
-  };
 
   useEffect(() => {
     if (vehicleModels) {
@@ -77,6 +86,10 @@ const UpdateVehicle = () => {
       setFormattedModels(formattedModels);
     }
   }, [vehicleModels]);
+
+  const handleModalOpen = async () => {
+    setIsModalOpen(true);
+  };
 
   const handleNewModelSubmit = async (values) => {
     try {

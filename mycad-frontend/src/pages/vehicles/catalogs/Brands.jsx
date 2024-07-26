@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useVehicleContext } from '../../../context/VehicleContext';
 import BrandForm from '../../../components/VehicleComponents/BrandForm/BrandForm';
 import ModalForm from '../../../components/Modals/ModalForm';
-import { useAuthContext } from '../../../context/AuthContext';
 import ModalRemove from '../../../components/Modals/ModalRemove';
 import CatalogList from '../../../components/VehicleComponents/CatalogList';
 
@@ -15,7 +14,7 @@ const Brands = () => {
     loading,
     vehicleBrands,
   } = useVehicleContext();
-  const { user } = useAuthContext();
+
   const [brands, setBrands] = useState([]);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);

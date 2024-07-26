@@ -43,10 +43,6 @@ const themes = {
         color: '#FFF',
         backgroundColor: '#312e81',
       },
-      hover: {
-        backgroundColor: '#ff5a1f',
-        color: '#fff',
-      },
     },
   },
   dark: {
