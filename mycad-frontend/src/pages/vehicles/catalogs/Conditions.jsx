@@ -127,6 +127,7 @@ const Conditions = () => {
       </ModalForm>
       <ModalRemove
         isOpenModal={isDeleteModalOpen}
+        onCloseModal={() => setIsDeleteModalOpen(false)}
         removeFunction={handleDelete}
       />
     </div>

@@ -192,6 +192,7 @@ const UpdateVehicle = () => {
       </div>
       <ModalRemove
         isOpenModal={isOpenModal}
+        onCloseModal={() => setIsOpenModal(false)}
         removeFunction={handleDeleteVehicle}
       />
       <ModalForm
