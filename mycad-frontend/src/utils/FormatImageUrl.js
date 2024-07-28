@@ -5,7 +5,7 @@ export const FormattedUrlImage = (src) => {
   if (!src) {
     return NoImageFound;
   }
-
+  console.log(src instanceof File);
   if (src instanceof File) {
     return URL.createObjectURL(src);
   }

@@ -13,6 +13,7 @@ import {
 import { BiDollar } from 'react-icons/bi';
 import { IoMdSpeedometer } from 'react-icons/io';
 import MultiSelectInput from '../../Inputs/MultiSelectInput';
+import ImagePicker from '../../Inputs/ImagePicker';
 
 const VehicleFormFields = ({
   vehicleModels,
@@ -20,16 +21,16 @@ const VehicleFormFields = ({
   onOtherSelected,
 }) => (
   <div className="grid grid-cols-12 gap-3">
-    <div className="col-span-4">
+    <div className="col-span-12 lg:col-span-4 ">
       <Field
         name="images"
         id="images"
-        component={() => DropzoneInput({ name: 'images' })}
-        label="Imágenes"
+        component={ImagePicker}
+        label="Imagenes"
         className="col-span-12"
       />
     </div>
-    <div className="col-span-8 grid grid-cols-12 gap-3">
+    <div className="col-span-12 lg:col-span-8 grid grid-cols-12 gap-3">
       <Field
         name="modelId"
         id="modelId"
@@ -128,6 +129,17 @@ const VehicleFormFields = ({
         label="Observaciones"
         className="col-span-12"
       />
+      {/* <Field
+        name="files"
+        id="files"
+        component={() =>
+          DropzoneInput({
+            name: 'files',
+            label: 'Archivos',
+            className: 'col-span-12',
+          })
+        }
+      /> */}
     </div>
   </div>
 );

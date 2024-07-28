@@ -39,6 +39,7 @@ const UpdateVehicle = () => {
     images: [],
     comments: '',
     conditions: [],
+    files: [],
   });
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);

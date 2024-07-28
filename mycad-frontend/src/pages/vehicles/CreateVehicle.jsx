@@ -40,6 +40,7 @@ const CreateVehicle = () => {
     images: [],
     comments: '',
     conditions: [],
+    files: null,
   });
 
   const handleModalOpen = async () => {

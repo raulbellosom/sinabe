@@ -21,7 +21,7 @@ const VehicleForm = ({
       onSubmit(values, actions);
     },
   });
-
+  console.log(formik.values);
   return (
     <FormikProvider value={formik}>
       <Form className="space-y-4" onSubmit={formik.handleSubmit}>
