@@ -1,4 +1,3 @@
-// src/index.js
 import express from "express";
 import cors from "cors";
 import path from "path";
@@ -17,7 +16,19 @@ const APP_URL = process.env.APP_URL || "http://localhost:5173";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(cors([APP_URL]));
+app.use(
+  cors({
+    origin: APP_URL,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Access-Control-Allow-Origin",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
