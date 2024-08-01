@@ -1,3 +1,4 @@
+// src/index.js
 import express from "express";
 import cors from "cors";
 import path from "path";
@@ -18,13 +19,9 @@ const __dirname = path.dirname(__filename);
 
 app.use(
   cors({
-    origin: APP_URL,
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Access-Control-Allow-Origin",
-    ],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
