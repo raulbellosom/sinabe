@@ -170,7 +170,7 @@ const ViewVehicle = () => {
               <>
                 {Array.from({ length: 8 }).map((_, index) => (
                   <div key={index} className="col-span-12">
-                    <VehicleProperty.Skeleton key={index} />
+                    <VehicleProperty.Skeleton />
                   </div>
                 ))}
               </>
