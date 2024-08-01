@@ -8,9 +8,9 @@ const VehicleProperty = ({ label, value, icon: Icon }) => {
       ? value.replace(/\n/g, '<br />')
       : String(value);
   return (
-    <div className="flex flex-col ">
-      <h2 className="text-lg font-semibold h-7">{label}</h2>
-      <p className="flex items-center gap-2 justify-start min-h-6 border-b border-neutral-100 pb-1">
+    <div className="flex flex-col h-full">
+      <h2 className="text-sm md:text-lg font-semibold h-7">{label}</h2>
+      <p className="text-sm md:text-base flex items-center gap-2 justify-start min-h-6 border-b border-neutral-100 pb-1">
         {Icon && <Icon size={20} className="mr-2 inline text-orange-500" />}
         <span dangerouslySetInnerHTML={{ __html: formattedValue }} />
       </p>
