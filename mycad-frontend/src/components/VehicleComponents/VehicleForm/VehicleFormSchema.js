@@ -1,18 +1,11 @@
 import * as Yup from 'yup';
 
 export const VehicleFormSchema = Yup.object().shape({
-  // typeId: Yup.number().required('El tipo de vehículo es requerido'),
-  // brandId: Yup.number().required('La marca es requerida'),
   modelId: Yup.number().required('El modelo es requerido'),
-  // year: Yup.number()
-  //   .min(1980)
-  //   .max(
-  //     new Date().getFullYear() + 1,
-  //     `El año del modelo no puede ser mayor a ${new Date().getFullYear() + 1}`,
-  //   )
-  //   .integer()
-  //   .typeError('El año del modelo debe ser un número')
-  //   .required('El año del modelo es requerido'),
+  economicNumber: Yup.string(),
+  serialNumber: Yup.string(),
+  plateNumber: Yup.string(),
+  images: Yup.array().of(Yup.mixed()),
   acquisitionDate: Yup.date()
     .min('1980-01-01', 'La fecha de adquisición no puede ser menor a 1980')
     .max(
@@ -33,5 +26,5 @@ export const VehicleFormSchema = Yup.object().shape({
   comments: Yup.string().nullable(),
   conditions: Yup.array()
     .of(Yup.number())
-    .required('La condición es requerida'),
+    .required('Al menos una condición es requerida'),
 });
