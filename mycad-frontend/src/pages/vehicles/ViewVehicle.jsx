@@ -169,7 +169,7 @@ const ViewVehicle = () => {
             {loading || !vehicleData || Object?.keys(vehicle)?.length == 0 ? (
               <>
                 {Array.from({ length: 8 }).map((_, index) => (
-                  <div key={key} className="col-span-12">
+                  <div key={index} className="col-span-12">
                     <VehicleProperty.Skeleton key={index} />
                   </div>
                 ))}
