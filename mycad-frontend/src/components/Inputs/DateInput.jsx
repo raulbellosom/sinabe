@@ -9,9 +9,8 @@ const DateInput = ({ field, form: { touched, errors }, ...props }) => (
       htmlFor={props.id || props.name}
       className="block text-sm font-medium text-nowrap"
       color={touched[field.name] && errors[field.name] ? 'failure' : ''}
-    >
-      {props.label}
-    </Label>
+      value={props.label}
+    />
     <TextInput
       type="date"
       language="es-MX"

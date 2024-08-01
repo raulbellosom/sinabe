@@ -29,12 +29,17 @@ const UpdateVehicle = () => {
   } = useVehicleContext();
   const [initialValues, setInitialValues] = useState({
     modelId: '',
+    economicNumber: '',
+    serialNumber: '',
+    plateNumber: '',
     acquisitionDate: '',
     cost: '',
     mileage: '',
     status: '',
+    images: [],
     comments: '',
     conditions: [],
+    files: [],
   });
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,21 +57,33 @@ const UpdateVehicle = () => {
 
   useEffect(() => {
     if (Object.keys(vehicle).length !== 0) {
-      const acquisitionDate = DateLocalParced(vehicle.acquisitionDate);
-      const newVehicle = {
+      const formatedFiles = vehicle?.files?.map((file) => ({
+        id: file.id,
+        url: file.url,
+        type: file.type,
+        name: file?.metadata?.originalname || file?.id || '',
+      }));
+      const values = {
         ...vehicle,
-        acquisitionDate: acquisitionDate,
         modelId: vehicle.model.id,
+        economicNumber: vehicle.economicNumber || '',
+        serialNumber: vehicle.serialNumber || '',
+        plateNumber: vehicle.plateNumber || '',
+        acquisitionDate: vehicle.acquisitionDate,
+        cost: vehicle.cost || '',
+        mileage: vehicle.mileage,
+        status: vehicle.status || '',
+        images: vehicle.images || [],
+        files: vehicle?.files ? formatedFiles : [],
         comments: vehicle.comments || '',
+        conditions: vehicle.conditions.map(
+          (condition) => condition.conditionId,
+        ),
       };
 
-      setInitialValues(newVehicle);
+      setInitialValues(values);
     }
   }, [vehicle]);
-
-  const handleModalOpen = async () => {
-    setIsModalOpen(true);
-  };
 
   useEffect(() => {
     if (vehicleModels) {
@@ -77,6 +94,10 @@ const UpdateVehicle = () => {
       setFormattedModels(formattedModels);
     }
   }, [vehicleModels]);
+
+  const handleModalOpen = async () => {
+    setIsModalOpen(true);
+  };
 
   const handleNewModelSubmit = async (values) => {
     try {

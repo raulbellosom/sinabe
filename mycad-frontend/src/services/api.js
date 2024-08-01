@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+export const BASE_API_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:4000/';
+export const API_URL = `${BASE_API_URL}/api` || 'http://localhost:4000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -91,7 +93,6 @@ export const deleteUser = async (userId) => {
   return response.data;
 };
 
-// Similar functions for vehicles
 export const getVehicles = async () => {
   const response = await api.get(`${API_URL}/vehicles`);
   return response.data;
@@ -103,12 +104,49 @@ export const getVehicle = async (vehicleId) => {
 };
 
 export const createVehicle = async (vehicle) => {
-  const response = await api.post(`${API_URL}/vehicles`, vehicle);
+  api.defaults.headers['Content-Type'] = 'multipart/form-data';
+  let data = new FormData();
+
+  if (vehicle.images && vehicle.images.length > 0) {
+    vehicle.images.forEach((image) => {
+      data.append('images', image);
+    });
+  }
+
+  if (vehicle.files && vehicle.files.length > 0) {
+    vehicle.files.forEach((file) => {
+      data.append('files', file);
+    });
+  }
+
+  data.append('vehicle', JSON.stringify(vehicle));
+  const response = await api.post(`${API_URL}/vehicles`, data);
   return response.data;
 };
 
 export const updateVehicle = async (vehicle) => {
-  const response = await api.put(`${API_URL}/vehicles/${vehicle.id}`, vehicle);
+  api.defaults.headers['Content-Type'] = 'multipart/form-data';
+  const id = vehicle.id;
+  let data = new FormData();
+  let currentImages = vehicle.images.filter((image) => image instanceof File);
+  vehicle.images = vehicle.images.filter((image) => !(image instanceof File));
+  let currentFiles = vehicle.files.filter((file) => file instanceof File);
+  vehicle.files = vehicle.files.filter((file) => !(file instanceof File));
+
+  if (currentImages && currentImages.length > 0) {
+    currentImages.forEach((image) => {
+      data.append('images', image);
+    });
+  }
+
+  if (currentFiles && currentFiles.length > 0) {
+    currentFiles.forEach((file) => {
+      data.append('files', file);
+    });
+  }
+
+  data.append('vehicle', JSON.stringify(vehicle));
+  const response = await api.put(`${API_URL}/vehicles/${id}`, data);
   return response.data;
 };
 

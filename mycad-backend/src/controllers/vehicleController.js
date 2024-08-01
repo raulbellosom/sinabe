@@ -1,6 +1,6 @@
 import { db } from "../lib/db.js";
 
-const parseStatus = (status) => status === "true";
+const parseStatus = (status) => status == "true" || status == true;
 
 export const getVehicles = async (req, res) => {
   try {
@@ -16,6 +16,17 @@ export const getVehicles = async (req, res) => {
         conditions: {
           include: {
             condition: true,
+          },
+        },
+        files: true,
+        images: {
+          where: { enabled: true },
+          select: {
+            url: true,
+            type: true,
+            thumbnail: true,
+            medium: true,
+            large: true,
           },
         },
       },
@@ -45,10 +56,35 @@ export const getVehicleById = async (req, res) => {
             condition: true,
           },
         },
+        files: {
+          where: { enabled: true },
+          select: {
+            id: true,
+            url: true,
+            type: true,
+            metadata: true,
+          },
+        },
+        images: {
+          where: { enabled: true },
+          select: {
+            id: true,
+            url: true,
+            type: true,
+            thumbnail: true,
+            medium: true,
+            large: true,
+          },
+        },
       },
     });
 
     if (vehicle) {
+      vehicle.acquisitionDate
+        ? (vehicle.acquisitionDate = vehicle.acquisitionDate
+            .toISOString()
+            .split("T")[0])
+        : null;
       res.json(vehicle);
     } else {
       console.log(error.message);
@@ -61,6 +97,9 @@ export const getVehicleById = async (req, res) => {
 };
 
 export const createVehicle = async (req, res) => {
+  const { vehicle } = req.body;
+  const user = req.user;
+  const vehicleData = JSON.parse(vehicle);
   const {
     modelId,
     acquisitionDate,
@@ -69,14 +108,19 @@ export const createVehicle = async (req, res) => {
     status,
     comments,
     conditions,
-  } = req.body;
-  const user = req.user;
+    plateNumber,
+    economicNumber,
+    serialNumber,
+  } = vehicleData;
 
   try {
     const createdVehicle = await db.$transaction(async (prisma) => {
       const vehicle = await prisma.vehicle.create({
         data: {
           modelId: parseInt(modelId, 10),
+          plateNumber,
+          economicNumber,
+          serialNumber,
           acquisitionDate: new Date(acquisitionDate),
           cost,
           mileage,
@@ -97,6 +141,8 @@ export const createVehicle = async (req, res) => {
               condition: true,
             },
           },
+          images: true,
+          files: true,
         },
       });
 
@@ -108,6 +154,36 @@ export const createVehicle = async (req, res) => {
 
         await prisma.vehicleCondition.createMany({
           data: conditionData,
+        });
+      }
+
+      if (req.processedFiles && req.processedFiles.length > 0) {
+        const imageData = req.processedFiles.map((file) => ({
+          url: file.url,
+          type: file.type,
+          thumbnail: file.thumbnail,
+          medium: file.medium,
+          large: file.large,
+          vehicleId: vehicle.id,
+          enabled: true,
+        }));
+
+        await prisma.image.createMany({
+          data: imageData,
+        });
+      }
+
+      if (req.files && req.files.length > 0) {
+        const fileData = req.files.map((file) => ({
+          url: file.url,
+          type: file.type,
+          vehicleId: vehicle.id,
+          metadata: file.metadata,
+          enabled: true,
+        }));
+
+        await prisma.file.createMany({
+          data: fileData,
         });
       }
 
@@ -127,13 +203,18 @@ export const updateVehicle = async (req, res) => {
   const { id } = req.params;
   const {
     modelId,
-    comments,
     acquisitionDate,
     cost,
     mileage,
     status,
+    comments,
     conditions,
-  } = req.body;
+    plateNumber,
+    economicNumber,
+    serialNumber,
+    images,
+    files,
+  } = JSON.parse(req.body.vehicle || "{}");
 
   try {
     const model = await db.model.findUnique({
@@ -145,39 +226,29 @@ export const updateVehicle = async (req, res) => {
       return;
     }
 
-    const updatedVehicle = await db.$transaction(async (prisma) => {
-      const vehicle = await prisma.vehicle.update({
+    await db.$transaction(async (prisma) => {
+      await prisma.vehicle.update({
         where: { id },
         data: {
           modelId: parseInt(modelId, 10),
-          comments,
+          plateNumber,
+          economicNumber,
+          serialNumber,
           acquisitionDate: new Date(acquisitionDate),
           cost,
           mileage,
           status: parseStatus(status),
-        },
-        include: {
-          model: {
-            include: {
-              brand: true,
-              type: true,
-            },
-          },
-          conditions: {
-            include: {
-              condition: true,
-            },
-          },
+          comments,
         },
       });
 
       if (conditions && conditions.length > 0) {
         await prisma.vehicleCondition.deleteMany({
-          where: { vehicleId: vehicle.id },
+          where: { vehicleId: id },
         });
 
         const conditionData = conditions.map((conditionId) => ({
-          vehicleId: vehicle.id,
+          vehicleId: id,
           conditionId: parseInt(conditionId, 10),
         }));
 
@@ -186,8 +257,111 @@ export const updateVehicle = async (req, res) => {
         });
       }
 
-      return vehicle;
+      const currentImages = new Set();
+      images.forEach((element) => {
+        if (element.id) {
+          currentImages.add(element.id);
+        }
+      });
+
+      await prisma.image.updateMany({
+        where: {
+          vehicleId: id,
+          id: { notIn: Array.from(currentImages) },
+        },
+        data: { enabled: false },
+      });
+
+      if (req.processedFiles && req.processedFiles.length > 0) {
+        const imageData = req.processedFiles.map((file) => ({
+          url: file.url,
+          type: file.type,
+          thumbnail: file.thumbnail,
+          medium: file.medium,
+          large: file.large,
+          vehicleId: id,
+          enabled: true,
+        }));
+
+        await prisma.image.createMany({
+          data: imageData,
+        });
+      }
+
+      const currentFiles = new Set();
+      files.forEach((element) => {
+        if (element.id) {
+          currentFiles.add(element.id);
+        }
+      });
+
+      await prisma.file.updateMany({
+        where: {
+          vehicleId: id,
+          id: { notIn: Array.from(currentFiles) },
+        },
+        data: { enabled: false },
+      });
+
+      if (req.files && req.files.length > 0) {
+        const fileData = req.files.map((file) => ({
+          url: file.url,
+          type: file.type,
+          vehicleId: id,
+          metadata: file.metadata,
+          enabled: true,
+        }));
+
+        await prisma.file.createMany({
+          data: fileData,
+        });
+      }
     });
+
+    const updatedVehicle = await db.vehicle.findUnique({
+      where: { id },
+      include: {
+        model: {
+          include: {
+            brand: true,
+            type: true,
+          },
+        },
+        conditions: {
+          include: {
+            condition: true,
+          },
+        },
+        images: {
+          where: { enabled: true },
+          select: {
+            id: true,
+            url: true,
+            type: true,
+            thumbnail: true,
+            medium: true,
+            large: true,
+          },
+        },
+        files: {
+          where: { enabled: true },
+          select: {
+            id: true,
+            url: true,
+            type: true,
+            metadata: true,
+          },
+        },
+      },
+    });
+
+    if (updatedVehicle) {
+      updatedVehicle.acquisitionDate
+        ? (updatedVehicle.acquisitionDate = updatedVehicle.acquisitionDate
+            .toISOString()
+            .split("T")[0])
+        : null;
+    }
 
     res.json(updatedVehicle);
   } catch (error) {

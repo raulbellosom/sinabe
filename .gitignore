@@ -1,1 +1,4 @@
 .vscode
+mycad-backend/node_modules
+mycad-backend/.env
+mycad-backend/src/uploads
