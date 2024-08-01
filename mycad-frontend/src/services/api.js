@@ -6,6 +6,7 @@ export const API_URL = `${BASE_API_URL}/api` || 'http://localhost:4000/api';
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
 });
 
 // append access control allow origin header
@@ -105,8 +106,6 @@ export const getVehicle = async (vehicleId) => {
 
 export const createVehicle = async (vehicle) => {
   api.defaults.headers['Content-Type'] = 'multipart/form-data';
-  // access controll allow origin header
-  api.defaults.headers['Access-Control-Allow-Origin'] = '*';
   let data = new FormData();
 
   if (vehicle.images && vehicle.images.length > 0) {
@@ -128,8 +127,6 @@ export const createVehicle = async (vehicle) => {
 
 export const updateVehicle = async (vehicle) => {
   api.defaults.headers['Content-Type'] = 'multipart/form-data';
-  api.defaults.headers['Access-Control-Allow-Origin'] = '*';
-
   const id = vehicle.id;
   let data = new FormData();
   let currentImages = vehicle.images.filter((image) => image instanceof File);

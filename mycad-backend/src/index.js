@@ -17,6 +17,14 @@ const APP_URL = process.env.APP_URL || "http://localhost:5173";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const corsOptions = {
+  origin: APP_URL,
+  methods: "*",
+  allowedHeaders: "*",
+  exposedHeaders: "*",
+  credentials: true,
+};
+
 app.use(cors([APP_URL]));
 app.use(express.json());
 
