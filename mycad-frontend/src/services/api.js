@@ -6,6 +6,7 @@ export const API_URL = `${BASE_API_URL}/api` || 'http://localhost:4000/api';
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
 });
 
 // append access control allow origin header
