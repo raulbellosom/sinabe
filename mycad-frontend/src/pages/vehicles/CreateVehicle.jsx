@@ -40,7 +40,7 @@ const CreateVehicle = () => {
     images: [],
     comments: '',
     conditions: [],
-    files: null,
+    files: [],
   });
 
   const handleModalOpen = async () => {
@@ -111,7 +111,11 @@ const CreateVehicle = () => {
           <FaCar size={24} className="mr-4" />
           <h1 className="text-2xl font-bold">Crear Vehículo</h1>
         </div>
-        <ActionButtons userRole={user?.roleId} onCancel={onCancel} />
+        <ActionButtons
+          userRole={user?.roleId}
+          onCancel={onCancel}
+          labelCancel={'Descartar'}
+        />
       </div>
       <p className="mb-4 text-gray-800">
         Llena el formulario para crear un nuevo vehículo. Los campos marcados

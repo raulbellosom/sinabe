@@ -16,9 +16,8 @@ const SelectInput = ({
       htmlFor={props.id || props.name}
       className="block text-sm font-medium"
       color={touched[field.name] && errors[field.name] ? 'failure' : ''}
-    >
-      {props.label}
-    </Label>
+      value={props.label}
+    />
     <Select
       {...field}
       {...props}

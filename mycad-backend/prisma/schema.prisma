@@ -1,26 +1,28 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
-}
-
 model User {
-  id        String  @id @default(uuid())
+  id        String    @id @default(uuid())
   firstName String
   lastName  String
-  email     String   @unique
+  email     String    @unique
   password  String
   photo     String?
   roleId    Int
-  role      Role     @relation(fields: [roleId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   enabled   Boolean
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      Role      @relation(fields: [roleId], references: [id])
   vehicles  Vehicle[]
+
+  @@index([roleId], map: "User_roleId_fkey")
 }
 
 model Role {
@@ -30,139 +32,152 @@ model Role {
 }
 
 model Vehicle {
-  id                String           @id @default(uuid())
-  economicNumber    String?
-  plateNumber       String?
-  serialNumber      String?
-  modelId           Int
-  model             Model            @relation(fields: [modelId], references: [id])
-  acquisitionDate   DateTime
-  cost              Float
-  mileage           Int
-  status            Boolean
-  comments          String?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  createdById       String
-  createdBy         User             @relation(fields: [createdById], references: [id])
-  serviceHistories  ServiceHistory[]
-  rentals           Rental[]
-  images            Image[]          @relation("VehicleImages")
-  files             File[]
-  enabled           Boolean
-  conditions        VehicleCondition[]
+  id               String             @id @default(uuid())
+  acquisitionDate  DateTime
+  cost             Float
+  mileage          Int
+  status           Boolean
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  createdById      String
+  comments         String?
+  enabled          Boolean
+  modelId          Int
+  economicNumber   String?
+  plateNumber      String?
+  serialNumber     String?
+  files            File[]
+  images           Image[]            @relation("VehicleImages")
+  rentals          Rental[]
+  serviceHistories ServiceHistory[]
+  createdBy        User               @relation(fields: [createdById], references: [id])
+  model            Model              @relation(fields: [modelId], references: [id])
+  conditions       VehicleCondition[]
+
+  @@index([createdById], map: "Vehicle_createdById_fkey")
+  @@index([modelId], map: "Vehicle_modelId_fkey")
 }
 
 model VehicleType {
-  id        Int      @id @default(autoincrement())
-  name      String
-  enabled   Boolean
-  models    Model[]
+  id      Int     @id @default(autoincrement())
+  enabled Boolean
+  name    String
+  models  Model[]
 }
 
 model VehicleBrand {
-  id        Int      @id @default(autoincrement())
-  name      String
-  enabled   Boolean
-  models    Model[]
+  id      Int     @id @default(autoincrement())
+  name    String
+  enabled Boolean
+  models  Model[]
 }
 
 model Model {
-  id        Int      @id @default(autoincrement())
-  name      String
-  year      Int
-  typeId    Int
-  brandId   Int
-  enabled   Boolean
-  type      VehicleType  @relation(fields: [typeId], references: [id])
-  brand     VehicleBrand @relation(fields: [brandId], references: [id])
-  vehicles  Vehicle[]
+  id       Int          @id @default(autoincrement())
+  name     String
+  year     Int
+  typeId   Int
+  brandId  Int
+  enabled  Boolean
+  brand    VehicleBrand @relation(fields: [brandId], references: [id])
+  type     VehicleType  @relation(fields: [typeId], references: [id])
+  vehicles Vehicle[]
+
+  @@index([brandId], map: "Model_brandId_fkey")
+  @@index([typeId], map: "Model_typeId_fkey")
 }
 
 model ServiceHistory {
   id          String   @id @default(uuid())
-  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
   vehicleId   String
   serviceDate DateTime
   description String
   cost        Float
   comments    String?
-  enabled     Boolean
   createdAt   DateTime @default(now())
+  enabled     Boolean
   updatedAt   DateTime @updatedAt
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+
+  @@index([vehicleId], map: "ServiceHistory_vehicleId_fkey")
 }
 
 model Rental {
-  id         String   @id @default(uuid())
-  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id])
-  vehicleId  String
-  client     Client   @relation(fields: [clientId], references: [id])
-  clientId   String
-  startDate  DateTime
-  endDate    DateTime
-  dailyRate  Float
-  totalCost  Float
-  status     String
-  comments   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  enabled    Boolean
+  id        String   @id @default(uuid())
+  vehicleId String
+  clientId  String
+  startDate DateTime
+  endDate   DateTime
+  dailyRate Float
+  totalCost Float
+  status    String
+  comments  String?
+  createdAt DateTime @default(now())
+  enabled   Boolean
+  updatedAt DateTime @updatedAt
+  client    Client   @relation(fields: [clientId], references: [id])
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
+
+  @@index([clientId], map: "Rental_clientId_fkey")
+  @@index([vehicleId], map: "Rental_vehicleId_fkey")
 }
 
 model Client {
-  id           String   @id @default(uuid())
-  name         String
-  company      String
-  email        String
-  phoneNumber  String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  enabled      Boolean
-  rentals      Rental[]
+  id          String   @id @default(uuid())
+  name        String
+  company     String
+  email       String
+  phoneNumber String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  enabled     Boolean
+  rentals     Rental[]
 }
 
 model File {
   id         String   @id @default(uuid())
-  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id])
   vehicleId  String
-  fileType   String
-  fileUrl    String
   metadata   Json?
-  enabled    Boolean
-  createdAt  DateTime @default(now())
   uploadedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  enabled    Boolean
+  type       String
+  url        String
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id])
+
+  @@index([vehicleId], map: "File_vehicleId_fkey")
 }
 
 model Condition {
-  id        Int       @id @default(autoincrement())
-  name      String
-  enabled   Boolean
-  vehicles  VehicleCondition[]
+  id       Int                @id @default(autoincrement())
+  name     String
+  enabled  Boolean
+  vehicles VehicleCondition[]
 }
 
 model VehicleCondition {
   id          Int       @id @default(autoincrement())
   vehicleId   String
   conditionId Int
-  vehicle     Vehicle   @relation(fields: [vehicleId], references: [id])
   condition   Condition @relation(fields: [conditionId], references: [id])
+  vehicle     Vehicle   @relation(fields: [vehicleId], references: [id])
 
   @@unique([vehicleId, conditionId])
+  @@index([conditionId], map: "VehicleCondition_conditionId_fkey")
 }
 
 model Image {
-  id         String    @id @default(uuid())
-  url        String
-  thumbnail  String?
-  medium     String?
-  large      String?
-  type       String
-  metadata   Json?
-  createdAt  DateTime  @default(now())
-  enabled    Boolean
-
-  vehicle    Vehicle?  @relation("VehicleImages", fields: [vehicleId], references: [id])
-  vehicleId  String?
+  id        String   @id @default(uuid())
+  url       String
+  thumbnail String?
+  medium    String?
+  large     String?
+  type      String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  enabled   Boolean
+  vehicleId String?
+  vehicle   Vehicle? @relation("VehicleImages", fields: [vehicleId], references: [id])
 
   @@index([vehicleId])
 }

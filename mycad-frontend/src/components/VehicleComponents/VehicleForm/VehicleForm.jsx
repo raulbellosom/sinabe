@@ -21,7 +21,7 @@ const VehicleForm = ({
       onSubmit(values, actions);
     },
   });
-  console.log(formik.values);
+
   return (
     <FormikProvider value={formik}>
       <Form className="space-y-4" onSubmit={formik.handleSubmit}>
@@ -30,18 +30,20 @@ const VehicleForm = ({
           vehicleConditions={vehicleConditions}
           onOtherSelected={onOtherModelSelected}
         />
-        <Button
-          type="submit"
-          disabled={formik.isSubmitting}
-          className="py-2 rounded"
-          color={formik.isSubmitting ? 'gray' : 'purple'}
-          isProcessing={formik.isSubmitting}
-        >
-          <>
-            <FaSave size={20} className="mr-2" />
-            {isUpdate ? 'Actualizar ' : ' Crear '} Vehículo
-          </>
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            disabled={formik.isSubmitting}
+            className="py-2 rounded"
+            color={formik.isSubmitting ? 'gray' : 'purple'}
+            isProcessing={formik.isSubmitting}
+          >
+            <>
+              <FaSave size={20} className="mr-2" />
+              {isUpdate ? 'Actualizar ' : ' Crear '} Vehículo
+            </>
+          </Button>
+        </div>
       </Form>
     </FormikProvider>
   );

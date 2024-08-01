@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
-import {
-  useVehicleContext,
-} from '../../context/VehicleContext';
+import { useVehicleContext } from '../../context/VehicleContext';
 import Table from '../../components/Table/Table';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import TableHeader from '../../components/Table/TableHeader';
@@ -12,7 +10,7 @@ import LinkButton from '../../components/ActionButtons/LinkButton';
 import { FaEdit, FaEye } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import ModalRemove from '../../components/Modals/ModalRemove';
-import { Table as T} from 'flowbite-react';
+import { Table as T } from 'flowbite-react';
 
 const vehicleColumns = [
   {
@@ -49,8 +47,8 @@ const vehicleColumns = [
 
 const Vehicles = () => {
   const { vehicles, loading, deleteVehicle } = useVehicleContext();
-  const navigate = useNavigate()
-  console.log("vehicles ", vehicles)
+  const navigate = useNavigate();
+  console.log('vehicles ', vehicles);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,12 +84,13 @@ const Vehicles = () => {
     setSearchTerm(e.target.value);
   };
   const handleClose = () => {
-    setIsOpenModal(false)
-  }
+    setIsOpenModal(false);
+  };
   const handleDeleteVehicle = () => {
     if (vehicleId) {
       deleteVehicle(vehicleId);
       navigate('/vehicles');
+      setIsOpenModal(false);
     }
   };
 
@@ -147,8 +146,8 @@ const Vehicles = () => {
                       />
                       <ActionButtons
                         onRemove={() => {
-                          setIsOpenModal(true)
-                          setVehicleId(vehicle.id)
+                          setIsOpenModal(true);
+                          setVehicleId(vehicle.id);
                         }}
                       />
                     </div>

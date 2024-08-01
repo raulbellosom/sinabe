@@ -29,10 +29,24 @@ import {
   getConditionById,
   getConditions,
 } from "../controllers/vehicleModelController.js";
+import {
+  processImages,
+  upload,
+} from "../controllers/uploadImagesController.js";
+import { processFiles } from "../controllers/uploadFilesController.js";
 
 const router = express.Router();
 
-router.route("/").get(protect, getVehicles).post(protect, createVehicle);
+router
+  .route("/")
+  .get(protect, getVehicles)
+  .post(
+    protect,
+    upload.fields([{ name: "images" }, { name: "files" }]),
+    processImages,
+    processFiles,
+    createVehicle
+  );
 router
   .route("/vehicleTypes")
   .get(protect, getVehicleTypes)
@@ -53,7 +67,13 @@ router
 router
   .route("/:id")
   .get(protect, getVehicleById)
-  .put(protect, updateVehicle)
+  .put(
+    protect,
+    upload.fields([{ name: "images" }, { name: "files" }]),
+    processImages,
+    processFiles,
+    updateVehicle
+  )
   .delete(protect, deleteVehicle);
 
 router

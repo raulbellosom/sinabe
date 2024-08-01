@@ -57,24 +57,31 @@ const UpdateVehicle = () => {
 
   useEffect(() => {
     if (Object.keys(vehicle).length !== 0) {
-      const acquisitionDate = DateLocalParced(vehicle.acquisitionDate);
-      const newVehicle = {
+      const formatedFiles = vehicle?.files?.map((file) => ({
+        id: file.id,
+        url: file.url,
+        type: file.type,
+        name: file?.metadata?.originalname || file?.id || '',
+      }));
+      const values = {
+        ...vehicle,
         modelId: vehicle.model.id,
         economicNumber: vehicle.economicNumber || '',
         serialNumber: vehicle.serialNumber || '',
         plateNumber: vehicle.plateNumber || '',
-        acquisitionDate: acquisitionDate,
+        acquisitionDate: vehicle.acquisitionDate,
         cost: vehicle.cost || '',
-        mileage: vehicle.mileage || '',
+        mileage: vehicle.mileage,
         status: vehicle.status || '',
         images: vehicle.images || [],
+        files: vehicle?.files ? formatedFiles : [],
         comments: vehicle.comments || '',
         conditions: vehicle.conditions.map(
           (condition) => condition.conditionId,
         ),
       };
 
-      setInitialValues(newVehicle);
+      setInitialValues(values);
     }
   }, [vehicle]);
 

@@ -41,7 +41,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
   return (
     <div
       className={classNames(
-        'h-full flex items-center justify-between py-1 px-2 rounded-md transition-all cursor-pointer hover:scale-95 hover:bg-slate-300 ease-in-out duration-100',
+        'h-full w-full flex items-center justify-between py-1 px-2 rounded-md transition-all cursor-pointer hover:bg-stone-100 ease-in-out duration-100 truncate',
         className,
       )}
     >
