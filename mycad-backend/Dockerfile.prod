@@ -24,6 +24,7 @@ RUN mkdir -p src/uploads/vehicles/images/
 RUN mkdir -p src/uploads/vehicles/images/thumbnails
 RUN mkdir -p src/uploads/vehicles/images/medium
 RUN mkdir -p src/uploads/vehicles/images/large
+RUN mkdir -p src/uploads/vehicles/files
 
 # Etapa de producción
 FROM node:20.10.0-alpine
