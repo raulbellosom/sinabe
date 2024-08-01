@@ -1,4 +1,4 @@
-import { BASE_API_URL } from '../services/api';
+import { API_URL } from '../services/api';
 
 export const FormattedUrlImage = (src) => {
   let formattedUrl = '';
@@ -13,7 +13,7 @@ export const FormattedUrlImage = (src) => {
     if (src.startsWith('http://') || src.startsWith('https://')) {
       formattedUrl = src;
     } else {
-      formattedUrl = `${BASE_API_URL}/${src}`;
+      formattedUrl = `${API_URL}/${src}`;
     }
   }
   return formattedUrl;
