@@ -1,4 +1,3 @@
-// src/index.js
 import express from "express";
 import cors from "cors";
 import path from "path";
@@ -12,19 +11,14 @@ import pingRoutes from "./routes/pingRoutes.js";
 dotenv.config();
 
 const app = express();
-const APP_URL = process.env.APP_URL || "https://mycad.up.railway.app";
+const APP_URL = process.env.APP_URL || "http://localhost:5173";
+
+console.log("APP_URL", APP_URL);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(
-  cors({
-    origin: APP_URL, // Permitir solo el origen especificado
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // Métodos permitidos
-    allowedHeaders: ["Content-Type", "Authorization"], // Encabezados permitidos
-    credentials: true, // Permitir el uso de cookies o encabezados de autenticación
-  })
-);
+app.use(cors({ origin: APP_URL }));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
