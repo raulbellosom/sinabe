@@ -47,7 +47,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
     >
       <div className="flex items-center truncate">
         <span>{getIcon(file)}</span>
-        <span className="ml-2 truncate">{file.name}</span>
+        <span className="ml-2 truncate text-sm md:text-lg">{file.name}</span>
       </div>
       {onRemove && (
         <span>

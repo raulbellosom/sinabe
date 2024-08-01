@@ -165,7 +165,7 @@ const ViewVehicle = () => {
       </div>
       <div className="h-fit grid grid-cols-12 gap-4">
         <div className="h-full col-span-12 lg:col-span-6">
-          <div className="flex flex-wrap md:grid md:grid-cols-12 gap-4">
+          <div className="grid gap-2 grid-cols-12 md:gap-4 w-full h-full">
             {loading || !vehicleData || Object?.keys(vehicle)?.length == 0 ? (
               <>
                 {Array.from({ length: 8 }).map((_, index) => (
@@ -188,7 +188,7 @@ const ViewVehicle = () => {
         <div className="col-span-12 lg:col-span-6">
           <div className="flex flex-col gap-4">
             <div>
-              <h2 className="text-lg font-semibold h-7">Archivos</h2>
+              <h2 className="text-sm md:text-lg font-semibold h-7">Archivos</h2>
               <div className="flex flex-col gap-2">
                 {files && files?.length > 0 ? (
                   files.map((file, index) => (
@@ -202,7 +202,7 @@ const ViewVehicle = () => {
               </div>
             </div>
             <div>
-              <h2 className="text-lg font-semibold h-7">Imágenes</h2>
+              <h2 className="text-sm md:text-lg font-semibold h-7">Imágenes</h2>
               <div
                 className={classNames(
                   'h-fit max-h-fit grid gap-2 overflow-y-auto',
