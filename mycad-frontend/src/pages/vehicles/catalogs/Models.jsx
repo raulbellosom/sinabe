@@ -71,6 +71,7 @@ const Models = () => {
         : await createVehicleModel(values);
       setSubmitting(false);
       resetForm();
+      setEditMode(false);
       setIsOpenModal(false);
     } catch (error) {
       console.error(error);
