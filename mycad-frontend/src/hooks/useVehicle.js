@@ -25,7 +25,7 @@ const useVehicle = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const fetchVehicle = useMutation((signal) => getVehicle(signal), {
+  const fetchVehicle = useMutation(getVehicle, {
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLE', payload: data });
