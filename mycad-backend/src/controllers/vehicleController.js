@@ -453,13 +453,7 @@ export const searchVehicles = async (req, res) => {
             { economicNumber: { contains: searchTerm } },
             { plateNumber: { contains: searchTerm } },
             { serialNumber: { contains: searchTerm } },
-            { acquisitionDate: { contains: searchTerm } },
-            { mileage: { contains: searchTerm } },
-            { cost: { contains: searchTerm } },
             { comments: { contains: searchTerm } },
-            ...(Object.keys(acquisitionDateCondition).length
-              ? [acquisitionDateCondition]
-              : []),
           ],
         }
       : {};
