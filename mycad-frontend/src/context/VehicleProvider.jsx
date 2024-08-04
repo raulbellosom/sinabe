@@ -8,6 +8,7 @@ import useVehicleCatalogs from '../hooks/useVehicleCatalogs';
 const VehicleProvider = ({ children }) => {
   const [state, dispatch] = useReducer(VehicleReducer, {
     vehicles: [],
+    pagination: {},
     vehicle: {},
     loading: true,
     vehicleTypes: [],
@@ -28,6 +29,7 @@ const VehicleProvider = ({ children }) => {
     createVehicle,
     updateVehicle,
     deleteVehicle,
+    searchVehicles
   } = useVehicle(dispatch);
 
   const {
@@ -54,7 +56,7 @@ const VehicleProvider = ({ children }) => {
   } = useVehicleCatalogs(dispatch);
 
   const loadVehiclesInfo = () => {
-    fetchVehicles();
+    // fetchVehicles();
     fetchVehicleTypes();
     fetchVehicleBrands();
     fetchVehicleModels();
@@ -72,6 +74,7 @@ const VehicleProvider = ({ children }) => {
     <VehicleContext.Provider
       value={{
         ...state,
+        searchVehicles,
         fetchVehicles,
         fetchVehicle,
         createVehicle,
