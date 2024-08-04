@@ -161,7 +161,7 @@ export const deleteVehicle = async (vehicleId) => {
 };
 
 export const searchVehicles = async ({
-  query,
+  searchTerm,
   sortBy,
   order,
   page,
