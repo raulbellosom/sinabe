@@ -1,21 +1,35 @@
 import classNames from 'classnames';
+import React from 'react';
 
 const TableFooter = ({
-  index,
-  totalItems,
+  pagination,
   goOnPrevPage,
   goOnNextPage,
   handleSelectChange,
-  valuesPerPage,
-  currentPage,
 }) => {
-  console.log('totalItems ', totalItems);
-  console.log('index ', index);
-  console.log('currentPageNumber ', currentPage);
-  console.log('promedio ', Math.round(totalItems / valuesPerPage));
+  const { totalRecords, totalPages, currentPage, pageSize } = pagination
+  const index =
+  pageSize * currentPage - pageSize + 1;
+  const paginationNumber = []
+
   const activePagClass = "flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-primary-600 bg-primary-50 border border-primary-300 hover:bg-primary-100 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white";
   const pagClass = "flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white";
   const disablePagClass = "pointer-events-none opacity-60 flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white";
+  for(let i = 1; i<=totalPages; i++) {
+    const pagC = <li key={i} onClick={() => handleSelectChange(i)}>
+    {
+          <a
+            href="#"
+            className={classNames(
+              i == currentPage ? activePagClass : pagClass
+            )}
+          >
+            {i}
+          </a>
+    } </li>
+    paginationNumber.push(pagC)
+  }
+  console.log("pagination values ", pagination)
   return (
     <nav
       className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
@@ -24,13 +38,13 @@ const TableFooter = ({
       <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
         Mostrando&nbsp;
         <span className="font-semibold text-gray-900 dark:text-white">
-          {totalItems === index
-            ? totalItems
-            : `${index} - ${valuesPerPage + index - 1 >= totalItems ? totalItems : valuesPerPage + index - 1}`}
+          {totalRecords === index
+            ? totalRecords
+            : `${index} - ${pageSize + index - 1 >= totalRecords ? totalRecords : pageSize + index - 1}`}
         </span>
         &nbsp;de&nbsp;
         <span className="font-semibold text-gray-900 dark:text-white">
-          {totalItems}
+          {totalRecords}
         </span>
         &nbsp;resultados
       </span>
@@ -60,69 +74,11 @@ const TableFooter = ({
             </svg>
           </a>
         </li>
-
-        {Array.from(Array(totalItems > valuesPerPage ? Math.round(totalItems / valuesPerPage) + 1 : Math.round(totalItems / valuesPerPage)))
-          .map((e, i) => i + 1)
-          .map((val) => {
-            return (
-              <li key={val} onClick={() => handleSelectChange(val)}>
-              {
-                ( currentPage >=4 && val === currentPage && currentPage !== Math.round(totalItems / valuesPerPage)) ?? (
-                    <a
-                      href="#"
-                      className="pointer-events-none flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-primary-600 bg-primary-50 border border-primary-300 hover:bg-primary-100 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white"
-                    >
-                      {currentPage}
-                    </a>
-                ) 
-              }
-                {val === 1 ? (
-                    <a
-                      className={classNames(
-                        val === currentPage
-                          ? activePagClass
-                          : pagClass,
-                      )}
-                    >
-                      {val}
-                    </a>
-                ) 
-                 : val < 4 ? (
-                    <a
-                      className={classNames(
-                        val === currentPage
-                          ? activePagClass
-                          : pagClass,
-                      )}
-                    >
-                      {val}
-                    </a>
-                )  : Math.round(totalItems / valuesPerPage) - 1 === val ? (
-                    <a
-                      className={disablePagClass}
-                    >
-                      ...
-                    </a>
-                )
-                : val == Math.round(totalItems / valuesPerPage) ? (
-                    <a
-                      className={disablePagClass}
-                    >
-                      {Math.round(totalItems / valuesPerPage)}
-                    </a>
-                ) : (
-                    <></>
-                )}
-              </li>
-            );
-          })}
-
-
+        { paginationNumber?.map(( item ) => item)}
         <li
-          key={totalItems}
           onClick={goOnNextPage}
           className={
-            (valuesPerPage + index - 1) >= totalItems ? 'pointer-events-none opacity-60' : ''
+            (pageSize + index - 1) >= totalRecords ? 'pointer-events-none opacity-60' : ''
           }
         >
           <a
@@ -149,4 +105,4 @@ const TableFooter = ({
   );
 };
 
-export default TableFooter;
+export default React.memo(TableFooter);

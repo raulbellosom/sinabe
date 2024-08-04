@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react';
 
 const VehicleContext = createContext({
   vehicles: [],
+  pagination: {},
   vehicle: {},
   vehicleTypes: [],
   vehicleType: {},
@@ -37,6 +38,7 @@ const VehicleContext = createContext({
   createVehicleCondition: async () => {},
   updateVehicleCondition: async () => {},
   deleteVehicleCondition: async () => {},
+  searchVehicles: async () => {},
 });
 export const useVehicleContext = () => useContext(VehicleContext);
 

@@ -1,9 +1,8 @@
 import { TextInput } from "flowbite-react";
-import { useState } from "react";
+import React from "react";
 import { FaSearch } from "react-icons/fa";
 
 const TableActions = ({handleSearchTerm}) => {
-    
     return (
         <div className="flex flex-col md:flex-row items-stretch md:items-center md:space-x-3 space-y-3 md:space-y-0 justify-between  py-4 border-t dark:border-gray-700">
             <div className="w-full md:w-1/2">
@@ -14,7 +13,6 @@ const TableActions = ({handleSearchTerm}) => {
                             className="w-full mb-2"
                             placeholder="Buscar vehículo"
                             onChange={handleSearchTerm}
-
                         />
                     </div>
                 </form>
@@ -131,4 +129,4 @@ const TableActions = ({handleSearchTerm}) => {
     );
 }
 
-export default TableActions;
+export default React.memo(TableActions);

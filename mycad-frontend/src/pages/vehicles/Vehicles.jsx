@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { useVehicleContext } from '../../context/VehicleContext';
 import Table from '../../components/Table/Table';
@@ -11,6 +11,7 @@ import { FaEdit, FaEye } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import { Table as T } from 'flowbite-react';
+import useVehicle from '../../hooks/useVehicle';
 
 const vehicleColumns = [
   {
@@ -46,46 +47,45 @@ const vehicleColumns = [
 ];
 
 const Vehicles = () => {
-  const { vehicles, loading, deleteVehicle } = useVehicleContext();
+  const { vehicles, pagination,  loading, deleteVehicle, searchVehicles } = useVehicleContext();
+  const [searchTerm, setSearchTerm] = useState("")
   const navigate = useNavigate();
-  console.log('vehicles ', vehicles);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
-  const [vehiclesToDisplay, setVehiclesToDisplay] = useState(vehicles);
+  const lastChange = useRef()
   const TOTAL_VALUES_PER_PAGE = 5;
-  const index =
-    TOTAL_VALUES_PER_PAGE * currentPageNumber - TOTAL_VALUES_PER_PAGE + 1;
-  const filteredVehicles = vehicles?.filter((vehicle) =>
-    JSON.stringify(vehicle).toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  console.log("vehicles ", vehicles)
 
-  const goOnPrevPage = () => {
-    if (currentPageNumber === 1) return;
-    setCurrentPageNumber((prev) => prev - 1);
-  };
-  const goOnNextPage = () => {
-    if (currentPageNumber === filteredVehicles.length / TOTAL_VALUES_PER_PAGE)
-      return;
-    setCurrentPageNumber((prev) => prev + 1);
-  };
-  const handleSelectChange = (page) => {
-    setCurrentPageNumber(page);
-  };
+  const { refetch, isLoading, isFetching } = searchVehicles({searchTerm: searchTerm, pageSize: TOTAL_VALUES_PER_PAGE, page: currentPageNumber})
+
   useEffect(() => {
-    const start = (currentPageNumber - 1) * TOTAL_VALUES_PER_PAGE;
-    const end = currentPageNumber * TOTAL_VALUES_PER_PAGE;
-    setVehiclesToDisplay(filteredVehicles.slice(start, end));
-  }, [currentPageNumber, vehicles, searchTerm]);
+    console.log("executing")
+    refetch()
+  }, [searchTerm, currentPageNumber])
 
-  const handleSearch = (e) => {
+  const goOnPrevPage = useCallback(() => {
+    setCurrentPageNumber((prev) => prev - 1);
+  }, []);
+  const goOnNextPage = useCallback(() => {
+    setCurrentPageNumber((prev) => prev + 1);
+  }, []);
+  const handleSelectChange = useCallback((page) => {
+    setCurrentPageNumber(page);
+  },[]);
+
+  const handleSearch = useCallback((e) => {
     e.preventDefault();
-    setSearchTerm(e.target.value);
-  };
-  const handleClose = () => {
-    setIsOpenModal(false);
-  };
+    if (lastChange.current) {
+      clearTimeout(lastChange.current);
+    }
+    lastChange.current = setTimeout(() => {
+      lastChange.current = null;
+      setSearchTerm(e.target.value)
+    }, 600)
+
+  }, [searchTerm]);
+
   const handleDeleteVehicle = () => {
     if (vehicleId) {
       deleteVehicle(vehicleId);
@@ -93,8 +93,11 @@ const Vehicles = () => {
       setIsOpenModal(false);
     }
   };
+  if (loading) {
+    return <div>Loading..</div>
+  }
+  // const { pagination } = data
 
-  if (vehiclesToDisplay?.length === 0) return <div>Loading...</div>;
   return (
     <div>
       <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 antialiased">
@@ -103,11 +106,11 @@ const Vehicles = () => {
           labelButton="Nuevo vehículo"
           redirect="/vehicles/create"
         />
-        <TableActions handleSearchTerm={handleSearch} />
-        {vehiclesToDisplay && !loading ? (
+        <TableActions handleSearchTerm={handleSearch} value={searchTerm}/>
+        {vehicles && !isLoading && !isFetching? (
           <Table columns={vehicleColumns}>
-            {vehiclesToDisplay?.map((vehicle) => {
-              const { id, name, type, brand, year } = vehicle.model;
+            {vehicles?.map((vehicle) => {
+              const { name, type, brand, year } = vehicle.model;
               return (
                 <T.Row
                   key={vehicle.id}
@@ -125,7 +128,7 @@ const Vehicles = () => {
                   <T.Cell>{year}</T.Cell>
                   <T.Cell>
                     <div
-                      className={`flex items-center rounded text-center text-white justify-center w-1/2 ${vehicle?.status ? 'bg-green-500' : 'bg-red-600'}`}
+                      className={`flex items-center rounded text-center text-white justify-center w-2/3 ${vehicle?.status ? 'bg-green-500' : 'bg-red-600'}`}
                     >
                       {vehicle?.status ? 'Activo' : 'Inactivo'}
                     </div>
@@ -159,16 +162,15 @@ const Vehicles = () => {
         ) : (
           <Skeleton className="w-full h-10" count={10} />
         )}
+        {pagination && (
+            <TableFooter
+            pagination={pagination}
+            goOnNextPage={goOnNextPage}
+            goOnPrevPage={goOnPrevPage}
+            handleSelectChange={handleSelectChange}
+          />
+        )}
 
-        <TableFooter
-          index={index}
-          currentPage={currentPageNumber}
-          totalItems={vehicles?.length}
-          valuesPerPage={TOTAL_VALUES_PER_PAGE}
-          goOnNextPage={goOnNextPage}
-          goOnPrevPage={goOnPrevPage}
-          handleSelectChange={handleSelectChange}
-        />
       </section>
       <ModalRemove
         isOpenModal={isOpenModal}

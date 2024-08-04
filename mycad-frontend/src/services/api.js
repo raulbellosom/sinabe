@@ -98,8 +98,8 @@ export const getVehicles = async () => {
   return response.data;
 };
 
-export const getVehicle = async (vehicleId) => {
-  const response = await api.get(`/vehicles/${vehicleId}`);
+export const getVehicle = async ({vehicleId, signal}) => {
+  const response = await api.get(`/vehicles/${vehicleId}`, {signal: signal});
   return response.data;
 };
 
@@ -167,11 +167,16 @@ export const searchVehicles = async ({
   page,
   pageSize,
   conditionName,
+  signal
 }) => {
   try {
     const response = await api.get('/vehicles/search', {
       params: { searchTerm, sortBy, order, page, pageSize, conditionName },
-    });
+      signal: signal
+    },);
+    if (response.status !== 200) {
+      throw new Error(response.message || "Hubo un error al hacer la busqueda")
+    }
     return response.data;
   } catch (error) {
     console.error(error);
