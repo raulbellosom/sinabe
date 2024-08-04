@@ -447,23 +447,16 @@ export const searchVehicles = async (req, res) => {
     const textSearchConditions = searchTerm
       ? {
           OR: [
-            { model: { name: { contains: searchTerm, mode: "insensitive" } } },
-            {
-              model: {
-                brand: { name: { contains: searchTerm, mode: "insensitive" } },
-              },
-            },
-            {
-              model: {
-                type: { name: { contains: searchTerm, mode: "insensitive" } },
-              },
-            },
-            { economicNumber: { contains: searchTerm, mode: "insensitive" } },
-            { plateNumber: { contains: searchTerm, mode: "insensitive" } },
-            { serialNumber: { contains: searchTerm, mode: "insensitive" } },
-            { mileage: { contains: searchTerm, mode: "insensitive" } },
-            { cost: { contains: searchTerm, mode: "insensitive" } },
-            { comments: { contains: searchTerm, mode: "insensitive" } },
+            { model: { name: { contains: searchTerm } } },
+            { model: { brand: { name: { contains: searchTerm } } } },
+            { model: { type: { name: { contains: searchTerm } } } },
+            { economicNumber: { contains: searchTerm } },
+            { plateNumber: { contains: searchTerm } },
+            { serialNumber: { contains: searchTerm } },
+            { acquisitionDate: { contains: searchTerm } },
+            { mileage: { contains: searchTerm } },
+            { cost: { contains: searchTerm } },
+            { comments: { contains: searchTerm } },
             ...(Object.keys(acquisitionDateCondition).length
               ? [acquisitionDateCondition]
               : []),
