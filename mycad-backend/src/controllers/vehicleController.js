@@ -408,12 +408,12 @@ export const deleteVehicle = async (req, res) => {
 export const searchVehicles = async (req, res) => {
   try {
     const {
-      searchTerm, // Cambiado a searchTerm
+      searchTerm,
       sortBy = "createdAt",
       order = "asc",
       page = 1,
       pageSize = 10,
-      conditionName, // Este será un array
+      conditionName,
     } = req.query;
 
     const validSortFields = [
