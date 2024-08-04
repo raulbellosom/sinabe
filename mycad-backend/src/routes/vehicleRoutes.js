@@ -6,6 +6,7 @@ import {
   createVehicle,
   updateVehicle,
   deleteVehicle,
+  searchVehicles,
 } from "../controllers/vehicleController.js";
 import {
   getVehicleTypes,
@@ -63,6 +64,7 @@ router
   .route("/vehicleConditions")
   .get(protect, getConditions)
   .post(protect, createCondition);
+router.route("/search").get(protect, searchVehicles);
 
 router
   .route("/:id")
@@ -75,7 +77,6 @@ router
     updateVehicle
   )
   .delete(protect, deleteVehicle);
-
 router
   .route("/vehicleTypes/:id")
   .get(protect, getVehicleTypeById)

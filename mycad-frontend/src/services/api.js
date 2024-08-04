@@ -151,8 +151,32 @@ export const updateVehicle = async (vehicle) => {
 };
 
 export const deleteVehicle = async (vehicleId) => {
-  const response = await api.delete(`/vehicles/${vehicleId}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/vehicles/${vehicleId}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const searchVehicles = async ({
+  query,
+  sortBy,
+  order,
+  page,
+  pageSize,
+  conditionName,
+}) => {
+  try {
+    const response = await api.get('/vehicles/search', {
+      params: { searchTerm, sortBy, order, page, pageSize, conditionName },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getVehicleModels = async () => {

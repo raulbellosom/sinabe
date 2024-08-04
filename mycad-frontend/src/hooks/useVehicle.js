@@ -1,10 +1,11 @@
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   getVehicles,
   getVehicle,
   createVehicle,
   updateVehicle,
   deleteVehicle,
+  searchVehicles as searchVehiclesAPI,
 } from '../services/api';
 import { useLoading } from '../context/LoadingContext';
 import Notifies from '../components/Notifies/Notifies';
@@ -31,6 +32,21 @@ const useVehicle = (dispatch) => {
     },
     onSettled: () => setLoading(false),
   });
+
+  const searchVehicles = ({ query, sortBy, order, page, pageSize }) => {
+    return useQuery(
+      ['vehicles', { query, sortBy, order, page, pageSize }],
+      () => searchVehiclesAPI({ query, sortBy, order, page, pageSize }),
+      {
+        onSuccess: (data) => {
+          dispatch({ type: 'FETCH_VEHICLES_SUCCESS', payload: data.data });
+        },
+        onError: (error) => {
+          Notifies('error', 'Error al buscar vehículos');
+        },
+      },
+    );
+  };
 
   const createVehicleMutation = useMutation(createVehicle, {
     onMutate: () => setLoading(true),
@@ -74,6 +90,7 @@ const useVehicle = (dispatch) => {
   return {
     fetchVehicles: fetchVehicles.mutate,
     fetchVehicle: fetchVehicle.mutate,
+    searchVehicles: searchVehicles,
     createVehicle: (values) => {
       return createVehicleMutation.mutateAsync(values);
     },
