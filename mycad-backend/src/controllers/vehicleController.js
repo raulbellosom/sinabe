@@ -404,3 +404,134 @@ export const deleteVehicle = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const searchVehicles = async (req, res) => {
+  try {
+    const {
+      searchTerm, // Cambiado a searchTerm
+      sortBy = "createdAt",
+      order = "asc",
+      page = 1,
+      pageSize = 10,
+      conditionName, // Este será un array
+    } = req.query;
+
+    const validSortFields = [
+      "createdAt",
+      "cost",
+      "mileage",
+      "status",
+      "model.name",
+      "model.brand.name",
+      "model.type.name",
+      "model.year",
+      "economicNumber",
+      "plateNumber",
+      "serialNumber",
+    ];
+
+    const orderField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
+    const orderDirection = order === "desc" ? "desc" : "asc";
+
+    let acquisitionDateCondition = {};
+    if (searchTerm && /^\d{2}\/\d{2}\/\d{4}$/.test(searchTerm)) {
+      const [day, month, year] = searchTerm.split("/");
+      const acquisitionDate = new Date(`${year}-${month}-${day}`);
+      acquisitionDateCondition = {
+        acquisitionDate: {
+          equals: acquisitionDate,
+        },
+      };
+    }
+
+    const textSearchConditions = searchTerm
+      ? {
+          OR: [
+            { model: { name: { contains: searchTerm, mode: "insensitive" } } },
+            {
+              model: {
+                brand: { name: { contains: searchTerm, mode: "insensitive" } },
+              },
+            },
+            {
+              model: {
+                type: { name: { contains: searchTerm, mode: "insensitive" } },
+              },
+            },
+            { economicNumber: { contains: searchTerm, mode: "insensitive" } },
+            { plateNumber: { contains: searchTerm, mode: "insensitive" } },
+            { serialNumber: { contains: searchTerm, mode: "insensitive" } },
+            { mileage: { contains: searchTerm, mode: "insensitive" } },
+            { cost: { contains: searchTerm, mode: "insensitive" } },
+            { comments: { contains: searchTerm, mode: "insensitive" } },
+            ...(Object.keys(acquisitionDateCondition).length
+              ? [acquisitionDateCondition]
+              : []),
+          ],
+        }
+      : {};
+
+    const skip = (page - 1) * pageSize;
+    const take = parseInt(pageSize);
+
+    const whereConditions = {
+      ...textSearchConditions,
+      ...(conditionName && {
+        conditions: {
+          some: {
+            condition: {
+              name: {
+                in: Array.isArray(conditionName)
+                  ? conditionName
+                  : [conditionName],
+              },
+            },
+          },
+        },
+      }),
+    };
+
+    const vehicles = await prisma.vehicle.findMany({
+      where: whereConditions,
+      include: {
+        model: {
+          include: {
+            brand: true,
+            type: true,
+          },
+        },
+        conditions: {
+          include: {
+            condition: true,
+          },
+        },
+        images: true,
+        files: true,
+      },
+      orderBy: {
+        [orderField]: orderDirection,
+      },
+      skip,
+      take,
+    });
+
+    const totalRecords = await prisma.vehicle.count({
+      where: whereConditions,
+    });
+
+    const totalPages = Math.ceil(totalRecords / pageSize);
+
+    res.json({
+      data: vehicles,
+      pagination: {
+        totalRecords,
+        totalPages,
+        currentPage: parseInt(page),
+        pageSize: parseInt(pageSize),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching vehicles:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
