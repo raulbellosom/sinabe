@@ -25,7 +25,7 @@ const useVehicle = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const fetchVehicle = useMutation(getVehicle, {
+  const fetchVehicle = useMutation((signal) => getVehicle(signal), {
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLE', payload: data });
@@ -33,13 +33,14 @@ const useVehicle = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const searchVehicles = ({ query, sortBy, order, page, pageSize }) => {
+  const searchVehicles = ({ searchTerm, sortBy, order, page, pageSize }) => {
     return useQuery(
-      ['vehicles', { query, sortBy, order, page, pageSize }],
-      () => searchVehiclesAPI({ query, sortBy, order, page, pageSize }),
+      ['vehicles', { searchTerm, sortBy, order, page, pageSize }],
+      ({signal}) => searchVehiclesAPI({ searchTerm, sortBy, order, page, pageSize, signal }),
       {
+        staleTime: Infinity,
         onSuccess: (data) => {
-          dispatch({ type: 'FETCH_VEHICLES_SUCCESS', payload: data.data });
+          dispatch({ type: 'FETCH_VEHICLES_SUCCESS', payload: data });
         },
         onError: (error) => {
           Notifies('error', 'Error al buscar vehículos');
