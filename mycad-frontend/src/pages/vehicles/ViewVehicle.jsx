@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useVehicleContext } from '../../context/VehicleContext';
 import { useAuthContext } from '../../context/AuthContext';
 import VehicleProperty from '../../components/VehicleComponents/VehicleView/VehicleProperty';
-import { FaCar } from 'react-icons/fa';
+import { FaCar, FaTachometerAlt } from 'react-icons/fa';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import {
   MdOutlineDirectionsCar,
@@ -15,7 +15,6 @@ import {
 import { TbNumber123 } from 'react-icons/tb';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
 import { BiCategory, BiDollar } from 'react-icons/bi';
-import { IoMdSpeedometer } from 'react-icons/io';
 import { MdGarage } from 'react-icons/md';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import ModalRemove from '../../components/Modals/ModalRemove';
@@ -87,7 +86,7 @@ const ViewVehicle = () => {
       },
       mileage: {
         name: vehicle.mileage,
-        icon: IoMdSpeedometer,
+        icon: FaTachometerAlt,
         label: 'Kilometraje',
       },
       status: {
