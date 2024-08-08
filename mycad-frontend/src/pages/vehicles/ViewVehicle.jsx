@@ -22,20 +22,23 @@ import { Badge } from 'flowbite-react';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import FileIcon from '../../components/FileIcon/FileIcon';
 import classNames from 'classnames';
+import { getVehicle } from '../../services/api';
+import { useQuery } from '@tanstack/react-query';
 
 const ViewVehicle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { fetchVehicle, vehicle, loading, deleteVehicle } = useVehicleContext();
+  const { deleteVehicle } = useVehicleContext();
+  // const { refetch, isFetching } = fetchVehicle({id: id})
   const { user } = useAuthContext();
   const [vehicleData, setVehicleData] = useState(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [images, setImages] = useState([]);
   const [files, setFiles] = useState([]);
-
-  useEffect(() => {
-    fetchVehicle(id);
-  }, [id, fetchVehicle]);
+  const { data: vehicle, refetch, isFetching, isPending } = useQuery({
+    queryKey: ['vehicle', id],
+    queryFn: ({ signal }) => getVehicle({id, signal}),
+  })
 
   useEffect(() => {
     const data = {
@@ -60,42 +63,42 @@ const ViewVehicle = () => {
         label: 'Año del Modelo',
       },
       plateNumber: {
-        name: vehicle.plateNumber,
+        name: vehicle?.plateNumber,
         icon: AiOutlineFieldNumber,
         label: 'Número de Placa',
       },
       economicNumber: {
-        name: vehicle.economicNumber,
+        name: vehicle?.economicNumber,
         icon: MdOutlineNumbers,
         label: 'Número Económico',
       },
       serialNumber: {
-        name: vehicle.serialNumber,
+        name: vehicle?.serialNumber,
         icon: TbNumber123,
         label: 'Número de Serie',
       },
       acquisitionDate: {
-        name: vehicle.acquisitionDate,
+        name: vehicle?.acquisitionDate,
         icon: MdCalendarToday,
         label: 'Fecha de Adquisición',
       },
       cost: {
-        name: vehicle.cost,
+        name: vehicle?.cost,
         icon: BiDollar,
         label: 'Costo de Adquisición',
       },
       mileage: {
-        name: vehicle.mileage,
+        name: vehicle?.mileage,
         icon: FaTachometerAlt,
         label: 'Kilometraje',
       },
       status: {
-        name: vehicle.status ? 'Activo' : 'Inactivo',
+        name: vehicle?.status ? 'Activo' : 'Inactivo',
         icon: MdInfo,
         label: 'Estado',
       },
       comments: {
-        name: vehicle.comments,
+        name: vehicle?.comments,
         icon: MdOutlineTextsms,
         label: 'Comentarios',
       },
@@ -165,7 +168,7 @@ const ViewVehicle = () => {
       <div className="h-fit grid grid-cols-12 gap-4">
         <div className="h-full col-span-12 lg:col-span-6">
           <div className="grid gap-2 grid-cols-12 md:gap-4 w-full h-full">
-            {loading || !vehicleData || Object?.keys(vehicle)?.length == 0 ? (
+            {isFetching && !vehicleData ? (
               <>
                 {Array.from({ length: 8 }).map((_, index) => (
                   <div key={index} className="col-span-12">
