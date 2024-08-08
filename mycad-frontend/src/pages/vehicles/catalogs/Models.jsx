@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useVehicleContext } from '../../../context/VehicleContext';
+import { useCatalogContext } from '../../../context/CatalogContext';
 import { Checkbox, Table } from 'flowbite-react';
 import ModalForm from '../../../components/Modals/ModalForm';
 import ModelForm from '../../../components/VehicleComponents/ModelForm/ModelForm';
 import Skeleton from 'react-loading-skeleton';
 import ActionButtons from '../../../components/ActionButtons/ActionButtons';
-import { useAuthContext } from '../../../context/AuthContext';
 import ModalRemove from '../../../components/Modals/ModalRemove';
 
 const Models = () => {
@@ -18,8 +17,7 @@ const Models = () => {
     deleteVehicleModel,
     fetchVehicleModels,
     loading,
-  } = useVehicleContext();
-  const { user } = useAuthContext();
+  } = useCatalogContext();
   const [models, setModels] = useState([]);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -36,7 +34,7 @@ const Models = () => {
   useEffect(() => {
     fetchVehicleModels();
   }, []);
-  console.log('vehicleModels ', loading);
+
   useEffect(() => {
     const formattedModels = vehicleModels.map((model) => {
       return {
@@ -113,7 +111,6 @@ const Models = () => {
           Modelos de Vehiculos
         </h1>
         <ActionButtons
-          userRole={user.roleId}
           onCreate={() => setIsOpenModal(true)}
           labelCreate={'Crear Modelo de Vehiculo'}
         />
@@ -168,7 +165,6 @@ const Models = () => {
                   </Table.Cell>
                   <Table.Cell>
                     <ActionButtons
-                      userRole={user?.roleId}
                       onEdit={() => onEditModel(model)}
                       onRemove={() => onDeleteModel(model.id)}
                     />

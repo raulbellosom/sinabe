@@ -60,7 +60,7 @@ const ImagePicker = ({
             document.getElementById(props.id || props.name).click()
           }
           className={classNames(
-            'min-h-16 p-1 border-dashed border-2 border-muted-foreground text-center flex flex-col items-center justify-center',
+            'min-h-16 p-1 border-dashed cursor-pointer border-2 border-muted-foreground text-center flex flex-col items-center justify-center hover:bg-neutral-50',
             field?.value.length > 0
               ? 'w-24 h-24 xl:h-28 xl:w-28 2xl:h-32 2xl:w-32'
               : 'h-full w-full',

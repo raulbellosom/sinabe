@@ -4,6 +4,7 @@ import UserProvider from './UserProvider';
 import VehicleProvider from './VehicleProvider';
 import LoadingProvider from './LoadingProvider';
 import { BreadcrumbProvider } from './BreadcrumbContext';
+import CatalogProvider from './CatalogProvider';
 
 const AppProvider = ({ children }) => {
   return (
@@ -11,7 +12,9 @@ const AppProvider = ({ children }) => {
       <AuthProvider>
         <UserProvider>
           <VehicleProvider>
-            <BreadcrumbProvider>{children}</BreadcrumbProvider>
+            <CatalogProvider>
+              <BreadcrumbProvider>{children}</BreadcrumbProvider>
+            </CatalogProvider>
           </VehicleProvider>
         </UserProvider>
       </AuthProvider>

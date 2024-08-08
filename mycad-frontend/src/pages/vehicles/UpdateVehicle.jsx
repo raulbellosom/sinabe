@@ -1,31 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import VehicleForm from '../../components/VehicleComponents/VehicleForm/VehicleForm';
 import { useVehicleContext } from '../../context/VehicleContext';
+import { useCatalogContext } from '../../context/CatalogContext';
+import { useAuthContext } from '../../context/AuthContext';
+import { getVehicle } from '../../services/api';
+import { useQuery } from '@tanstack/react-query';
 import Skeleton from 'react-loading-skeleton';
 import { FaCar } from 'react-icons/fa';
-import DateLocalParced from '../../utils/DateLocalParced';
+import VehicleForm from '../../components/VehicleComponents/VehicleForm/VehicleForm';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import ModalRemove from '../../components/Modals/ModalRemove';
-import { useAuthContext } from '../../context/AuthContext';
 import ModalForm from '../../components/Modals/ModalForm';
 import ModelForm from '../../components/VehicleComponents/ModelForm/ModelForm';
-import { useQuery } from '@tanstack/react-query';
-import { getVehicle } from '../../services/api';
 
 const UpdateVehicle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthContext();
+  const { updateVehicle, deleteVehicle } = useVehicleContext();
   const {
-    updateVehicle,
-    deleteVehicle,
+    createVehicleModel,
+    vehicleConditions,
     vehicleTypes,
     vehicleBrands,
     vehicleModels,
-    vehicleConditions,
-    createVehicleModel,
-  } = useVehicleContext();
+  } = useCatalogContext();
+
   const [initialValues, setInitialValues] = useState({
     modelId: '',
     economicNumber: '',
@@ -49,10 +49,15 @@ const UpdateVehicle = () => {
     typeId: '',
   });
   const [formattedModels, setFormattedModels] = useState([]);
-  const { data: vehicle, refetch, isFetching, isPending } = useQuery({
+  const {
+    data: vehicle,
+    refetch,
+    isFetching,
+    isPending,
+  } = useQuery({
     queryKey: ['vehicle', id],
-    queryFn: ({ signal }) => getVehicle({id, signal}),
-  })
+    queryFn: ({ signal }) => getVehicle({ id, signal }),
+  });
 
   useEffect(() => {
     if (Object.keys(vehicle).length !== 0) {
@@ -154,6 +159,7 @@ const UpdateVehicle = () => {
       typeId: '',
     });
   };
+
   return (
     <>
       <div className="h-full bg-white p-4 rounded-md">
@@ -173,7 +179,8 @@ const UpdateVehicle = () => {
           Llena el formulario para crear un nuevo vehículo. Los campos marcados
           con * son obligatorios.
         </p>
-        {isPending || isFetching ||
+        {isPending ||
+        isFetching ||
         (Object.keys(vehicle).length == 0 && vehicle.constructor === Object) ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 gap-y-6">
             <Skeleton className="h-10 rounded-md" />
