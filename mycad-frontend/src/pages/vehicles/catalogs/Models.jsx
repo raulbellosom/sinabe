@@ -36,7 +36,7 @@ const Models = () => {
   useEffect(() => {
     fetchVehicleModels();
   }, []);
-
+  console.log('vehicleModels ', loading);
   useEffect(() => {
     const formattedModels = vehicleModels.map((model) => {
       return {

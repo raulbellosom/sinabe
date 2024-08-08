@@ -29,7 +29,7 @@ const VehicleProvider = ({ children }) => {
     createVehicle,
     updateVehicle,
     deleteVehicle,
-    searchVehicles
+    searchVehicles,
   } = useVehicle(dispatch);
 
   const {

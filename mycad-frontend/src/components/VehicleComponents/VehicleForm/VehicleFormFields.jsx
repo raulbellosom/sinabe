@@ -9,11 +9,15 @@ import {
   MdOutlineDirectionsCar,
   MdInfo,
   MdCalendarToday,
+  MdOutlineNumbers,
 } from 'react-icons/md';
 import { BiDollar } from 'react-icons/bi';
-import { IoMdSpeedometer } from 'react-icons/io';
+import { IoLogoModelS, IoMdSpeedometer } from 'react-icons/io';
 import MultiSelectInput from '../../Inputs/MultiSelectInput';
 import ImagePicker from '../../Inputs/ImagePicker';
+import { FaTachometerAlt } from 'react-icons/fa';
+import { AiOutlineFieldNumber } from 'react-icons/ai';
+import { TbNumber123 } from 'react-icons/tb';
 
 const VehicleFormFields = ({
   vehicleModels,
@@ -27,7 +31,7 @@ const VehicleFormFields = ({
           name="modelId"
           id="modelId"
           component={SelectInput}
-          icon={MdOutlineDirectionsCar}
+          icon={IoLogoModelS}
           label="Modelo"
           options={vehicleModels.map((model) => ({
             label: model.name,
@@ -41,7 +45,7 @@ const VehicleFormFields = ({
           name="economicNumber"
           id="economicNumber"
           component={TextInput}
-          icon={MdOutlineDirectionsCar}
+          icon={MdOutlineNumbers}
           label="Número Económico"
           className="col-span-6 md:col-span-4"
         />
@@ -49,7 +53,7 @@ const VehicleFormFields = ({
           name="serialNumber"
           id="serialNumber"
           component={TextInput}
-          icon={MdOutlineDirectionsCar}
+          icon={TbNumber123}
           label="Número de Serie"
           className="col-span-6 md:col-span-4"
         />
@@ -57,8 +61,18 @@ const VehicleFormFields = ({
           name="plateNumber"
           id="plateNumber"
           component={TextInput}
-          icon={MdOutlineDirectionsCar}
+          icon={AiOutlineFieldNumber}
           label="Número de Placa"
+          className="col-span-6 md:col-span-4"
+        />
+        <Field
+          name="mileage"
+          id="mileage"
+          component={TextInput}
+          label="Kilometraje"
+          icon={FaTachometerAlt}
+          type="number"
+          min={0}
           className="col-span-6 md:col-span-4"
         />
         <Field
@@ -69,7 +83,7 @@ const VehicleFormFields = ({
           title="Fecha de Adquisición"
           icon={MdCalendarToday}
           max={new Date().toISOString().split('T')[0]}
-          className="col-span-12 md:col-span-4"
+          className="col-span-6 md:col-span-4"
         />
         <Field
           name="cost"
@@ -81,16 +95,7 @@ const VehicleFormFields = ({
           className="col-span-6 md:col-span-4"
           min={0}
         />
-        <Field
-          name="mileage"
-          id="mileage"
-          component={TextInput}
-          label="Kilometraje"
-          icon={IoMdSpeedometer}
-          type="number"
-          min={0}
-          className="col-span-6 md:col-span-4"
-        />
+
         <Field
           name="status"
           id="status"
