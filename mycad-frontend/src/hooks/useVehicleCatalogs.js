@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getVehicleTypes,
   getVehicleType,
@@ -32,7 +32,8 @@ const useVehicleCatalogs = (dispatch) => {
     loadingDispatch({ type: 'SET_LOADING', payload: loading });
   };
 
-  const fetchVehicleTypes = useMutation(getVehicleTypes, {
+  const fetchVehicleTypes = useMutation({
+    mutationFn: getVehicleTypes,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLE_TYPES', payload: data });
@@ -40,7 +41,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const fetchVehicleType = useMutation(getVehicleType, {
+  const fetchVehicleType = useMutation({
+    mutationFn: getVehicleType,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLE_TYPE', payload: data });
@@ -48,7 +50,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const createVehicleTypeMutation = useMutation(createVehicleType, {
+  const createVehicleTypeMutation = useMutation({
+    mutationFn: createVehicleType,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleTypes');
@@ -61,7 +64,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const updateVehicleTypeMutation = useMutation(updateVehicleType, {
+  const updateVehicleTypeMutation = useMutation({
+    mutationFn: updateVehicleType,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleTypes');
@@ -74,7 +78,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const deleteVehicleTypeMutation = useMutation(deleteVehicleType, {
+  const deleteVehicleTypeMutation = useMutation({
+    mutationFn: deleteVehicleType,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleTypes');
@@ -87,7 +92,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const fetchVehicleBrands = useMutation(getVehicleBrands, {
+  const fetchVehicleBrands = useMutation({
+    mutationFn: getVehicleBrands,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLE_BRANDS', payload: data });
@@ -95,7 +101,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const fetchVehicleBrand = useMutation(getVehicleBrand, {
+  const fetchVehicleBrand = useMutation({
+    mutationFn: getVehicleBrand,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLE_BRAND', payload: data });
@@ -103,7 +110,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const createVehicleBrandMutation = useMutation(createVehicleBrand, {
+  const createVehicleBrandMutation = useMutation({
+    mutationFn: createVehicleBrand,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleBrands');
@@ -116,7 +124,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const updateVehicleBrandMutation = useMutation(updateVehicleBrand, {
+  const updateVehicleBrandMutation = useMutation({
+    mutationFn: updateVehicleBrand,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleBrands');
@@ -129,7 +138,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const deleteVehicleBrandMutation = useMutation(deleteVehicleBrand, {
+  const deleteVehicleBrandMutation = useMutation({
+    mutationFn: deleteVehicleBrand,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleBrands');
@@ -142,7 +152,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const fetchVehicleModels = useMutation(getVehicleModels, {
+  const fetchVehicleModels = useMutation({
+    mutationFn: getVehicleModels,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLE_MODELS', payload: data });
@@ -150,7 +161,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const fetchVehicleModel = useMutation(getVehicleModel, {
+  const fetchVehicleModel = useMutation({
+    mutationFn: getVehicleModel,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLE_MODEL', payload: data });
@@ -158,7 +170,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const createVehicleModelMutation = useMutation(createVehicleModel, {
+  const createVehicleModelMutation = useMutation({
+    mutationFn: createVehicleModel,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleModels');
@@ -171,7 +184,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const updateVehicleModelMutation = useMutation(updateVehicleModel, {
+  const updateVehicleModelMutation = useMutation({
+    mutationFn: updateVehicleModel,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleModels');
@@ -184,7 +198,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const deleteVehicleModelMutation = useMutation(deleteVehicleModel, {
+  const deleteVehicleModelMutation = useMutation({
+    mutationFn: deleteVehicleModel,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleModels');
@@ -197,7 +212,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const fetchVehicleConditions = useMutation(getVehicleConditions, {
+  const fetchVehicleConditions = useMutation({
+    mutationFn: getVehicleConditions,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLE_CONDITIONS', payload: data });
@@ -205,7 +221,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const fetchVehicleCondition = useMutation(getVehicleCondition, {
+  const fetchVehicleCondition = useMutation({
+    mutationFn: getVehicleCondition,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLE_CONDITION', payload: data });
@@ -213,7 +230,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const createVehicleConditionMutation = useMutation(createVehicleCondition, {
+  const createVehicleConditionMutation = useMutation({
+    mutationFn: createVehicleCondition,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleConditions');
@@ -226,7 +244,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const updateVehicleConditionMutation = useMutation(updateVehicleCondition, {
+  const updateVehicleConditionMutation = useMutation({
+    mutationFn: updateVehicleCondition,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleConditions');
@@ -239,7 +258,8 @@ const useVehicleCatalogs = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const deleteVehicleConditionMutation = useMutation(deleteVehicleCondition, {
+  const deleteVehicleConditionMutation = useMutation({
+    mutationFn: deleteVehicleCondition,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleConditions');

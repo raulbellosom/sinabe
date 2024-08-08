@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getVehicles,
   getVehicle,
@@ -17,7 +17,8 @@ const useVehicle = (dispatch) => {
   const setLoading = (loading) => {
     loadingDispatch({ type: 'SET_LOADING', payload: loading });
   };
-  const fetchVehicles = useMutation(getVehicles, {
+  const fetchVehicles = useMutation({
+    mutationFn: getVehicles,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_VEHICLES_SUCCESS', payload: data });
@@ -25,31 +26,39 @@ const useVehicle = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const fetchVehicle = useMutation(getVehicle, {
-    onMutate: () => setLoading(true),
-    onSuccess: (data) => {
-      dispatch({ type: 'FETCH_VEHICLE', payload: data });
-    },
-    onSettled: () => setLoading(false),
-  });
-
-  const searchVehicles = ({ searchTerm, sortBy, order, page, pageSize }) => {
-    return useQuery(
-      ['vehicles', { searchTerm, sortBy, order, page, pageSize }],
-      ({signal}) => searchVehiclesAPI({ searchTerm, sortBy, order, page, pageSize, signal }),
-      {
-        staleTime: Infinity,
-        onSuccess: (data) => {
-          dispatch({ type: 'FETCH_VEHICLES_SUCCESS', payload: data });
-        },
-        onError: (error) => {
-          Notifies('error', 'Error al buscar vehículos');
-        },
-      },
-    );
-  };
-
-  const createVehicleMutation = useMutation(createVehicle, {
+  // const fetchVehicle = ({id}) => {
+  //   return useQuery(
+  //     ['vehicle', {id}],
+  //     (({ signal }) => getVehicle({id, signal})),
+  //     {
+  //       staleTime: Infinity,
+  //       onSuccess: (data) => {
+  //         dispatch({ type: 'FETCH_VEHICLE', payload: data });
+  //       },
+  //       onError: (error) => {
+  //         Notifies('error', 'Error al buscar vehículo');
+  //       },
+  //     }
+  //   )
+  // }
+  // const searchVehicles = ({ searchTerm, sortBy, order, page, pageSize }) => {
+  //   return useQuery({
+  //       queryKey: ['vehicles', { searchTerm, sortBy, order, page, pageSize }],
+  //       queryFn: ({signal}) => searchVehiclesAPI({ searchTerm, sortBy, order, page, pageSize, signal }),
+  //       // staleTime: Infinity,
+  //       onSuccess: (data) => {
+  //         dispatch({ type: 'FETCH_VEHICLES_SUCCESS', payload: data });
+  //       },
+  //       onError: (error) => {
+  //         Notifies('error', 'Error al buscar vehículos');
+  //       },
+  //     },
+  //   );
+  // };
+  // ['vehicles', { searchTerm, sortBy, order, page, pageSize }],
+  // ({signal}) => searchVehiclesAPI({ searchTerm, sortBy, order, page, pageSize, signal }),
+  const createVehicleMutation = useMutation({
+    mutationFn: createVehicle,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicles');
@@ -62,7 +71,8 @@ const useVehicle = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const updateVehicleMutation = useMutation(updateVehicle, {
+  const updateVehicleMutation = useMutation({
+    mutationFn: updateVehicle,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicles');
@@ -75,7 +85,8 @@ const useVehicle = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const deleteVehicleMutation = useMutation(deleteVehicle, {
+  const deleteVehicleMutation = useMutation({
+    mutationFn: deleteVehicle,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicles');
@@ -90,8 +101,6 @@ const useVehicle = (dispatch) => {
 
   return {
     fetchVehicles: fetchVehicles.mutate,
-    fetchVehicle: fetchVehicle.mutate,
-    searchVehicles: searchVehicles,
     createVehicle: (values) => {
       return createVehicleMutation.mutateAsync(values);
     },

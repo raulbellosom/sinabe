@@ -12,6 +12,7 @@ const VehicleReducer = (state, action) => {
       return {
         ...state,
         vehicle: action.payload,
+        loading: false,
       };
     case 'CREATE_VEHICLE':
       return {
@@ -94,6 +95,7 @@ const VehicleReducer = (state, action) => {
       return {
         ...state,
         vehicleModels: action.payload,
+        loading: false,
       };
     case 'FETCH_VEHICLE_MODEL':
       return {

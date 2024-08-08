@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import { Table as T } from 'flowbite-react';
 import useVehicle from '../../hooks/useVehicle';
+import { useQuery } from '@tanstack/react-query';
+import { searchVehicles } from '../../services/api';
 
 const vehicleColumns = [
   {
@@ -47,31 +49,53 @@ const vehicleColumns = [
 ];
 
 const Vehicles = () => {
-  const { vehicles, pagination,  loading, deleteVehicle, searchVehicles } = useVehicleContext();
-  const [searchTerm, setSearchTerm] = useState("")
+  const { deleteVehicle } = useVehicleContext();
+
   const navigate = useNavigate();
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const lastChange = useRef()
-  const TOTAL_VALUES_PER_PAGE = 5;
-  console.log("vehicles ", vehicles)
+  const [searchFilters, setSearchFilters] = useState({
+    searchTerm: "",
+    pageSize: 5,
+    page: currentPageNumber,
 
-  const { refetch, isLoading, isFetching } = searchVehicles({searchTerm: searchTerm, pageSize: TOTAL_VALUES_PER_PAGE, page: currentPageNumber})
+  })
+  console.log("searchFilters ", searchFilters)
+  // const { refetch, isLoading, isFetching } = searchVehicles({searchTerm: searchTerm, pageSize: TOTAL_VALUES_PER_PAGE, page: currentPageNumber})
+  const { data: vehicles, refetch, isLoading, isPending } = useQuery({
+    queryKey: ['vehicles', { ...searchFilters }],
+    queryFn: ({signal}) => searchVehicles({ ...searchFilters, signal }),
+    staleTime: Infinity,
+  })
 
   useEffect(() => {
-    console.log("executing")
     refetch()
-  }, [searchTerm, currentPageNumber])
+  }, [searchFilters])
 
   const goOnPrevPage = useCallback(() => {
-    setCurrentPageNumber((prev) => prev - 1);
+    setSearchFilters(prevState => {
+      return {
+        ...prevState,
+        page: prevState?.page - 1
+      }
+    })
   }, []);
   const goOnNextPage = useCallback(() => {
-    setCurrentPageNumber((prev) => prev + 1);
-  }, []);
+    setSearchFilters(prevState => {
+      return {
+        ...prevState,
+        page: prevState?.page + 1
+      }
+    })  }, []);
   const handleSelectChange = useCallback((page) => {
-    setCurrentPageNumber(page);
+    setSearchFilters(prevState => {
+      return {
+        ...prevState,
+        page
+      }
+    })
   },[]);
 
   const handleSearch = useCallback((e) => {
@@ -81,10 +105,15 @@ const Vehicles = () => {
     }
     lastChange.current = setTimeout(() => {
       lastChange.current = null;
-      setSearchTerm(e.target.value)
+      setSearchFilters(prevState => {
+        return {
+          ...prevState,
+          searchTerm: e.target.value
+        }
+      })
     }, 600)
 
-  }, [searchTerm]);
+  }, [searchFilters?.searchTerm]);
 
   const handleDeleteVehicle = () => {
     if (vehicleId) {
@@ -93,11 +122,8 @@ const Vehicles = () => {
       setIsOpenModal(false);
     }
   };
-  if (loading) {
-    return <div>Loading..</div>
-  }
   // const { pagination } = data
-
+  console.log("vehicles data ", vehicles?.data)
   return (
     <div>
       <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 antialiased">
@@ -106,10 +132,10 @@ const Vehicles = () => {
           labelButton="Nuevo vehículo"
           redirect="/vehicles/create"
         />
-        <TableActions handleSearchTerm={handleSearch} value={searchTerm}/>
-        {vehicles && !isLoading && !isFetching? (
+        <TableActions handleSearchTerm={handleSearch} value={searchFilters?.searchTerm}/>
+        {vehicles && !isPending ? (
           <Table columns={vehicleColumns}>
-            {vehicles?.map((vehicle) => {
+            {vehicles?.data?.map((vehicle) => {
               const { name, type, brand, year } = vehicle.model;
               return (
                 <T.Row
@@ -162,9 +188,9 @@ const Vehicles = () => {
         ) : (
           <Skeleton className="w-full h-10" count={10} />
         )}
-        {pagination && (
+        {vehicles?.pagination && (
             <TableFooter
-            pagination={pagination}
+            pagination={vehicles?.pagination}
             goOnNextPage={goOnNextPage}
             goOnPrevPage={goOnPrevPage}
             handleSelectChange={handleSelectChange}

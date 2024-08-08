@@ -10,6 +10,8 @@ import ModalRemove from '../../components/Modals/ModalRemove';
 import { useAuthContext } from '../../context/AuthContext';
 import ModalForm from '../../components/Modals/ModalForm';
 import ModelForm from '../../components/VehicleComponents/ModelForm/ModelForm';
+import { useQuery } from '@tanstack/react-query';
+import { getVehicle } from '../../services/api';
 
 const UpdateVehicle = () => {
   const { id } = useParams();
@@ -17,14 +19,11 @@ const UpdateVehicle = () => {
   const { user } = useAuthContext();
   const {
     updateVehicle,
-    fetchVehicle,
     deleteVehicle,
-    vehicle,
     vehicleTypes,
     vehicleBrands,
     vehicleModels,
     vehicleConditions,
-    loading,
     createVehicleModel,
   } = useVehicleContext();
   const [initialValues, setInitialValues] = useState({
@@ -50,10 +49,10 @@ const UpdateVehicle = () => {
     typeId: '',
   });
   const [formattedModels, setFormattedModels] = useState([]);
-
-  useEffect(() => {
-    fetchVehicle(id);
-  }, [id]);
+  const { data: vehicle, refetch, isFetching, isPending } = useQuery({
+    queryKey: ['vehicle', id],
+    queryFn: ({ signal }) => getVehicle({id, signal}),
+  })
 
   useEffect(() => {
     if (Object.keys(vehicle).length !== 0) {
@@ -174,7 +173,7 @@ const UpdateVehicle = () => {
           Llena el formulario para crear un nuevo vehículo. Los campos marcados
           con * son obligatorios.
         </p>
-        {loading ||
+        {isPending || isFetching ||
         (Object.keys(vehicle).length == 0 && vehicle.constructor === Object) ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 gap-y-6">
             <Skeleton className="h-10 rounded-md" />

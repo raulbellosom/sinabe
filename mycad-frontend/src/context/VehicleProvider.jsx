@@ -25,11 +25,9 @@ const VehicleProvider = ({ children }) => {
 
   const {
     fetchVehicles,
-    fetchVehicle,
     createVehicle,
     updateVehicle,
     deleteVehicle,
-    searchVehicles
   } = useVehicle(dispatch);
 
   const {
@@ -74,9 +72,7 @@ const VehicleProvider = ({ children }) => {
     <VehicleContext.Provider
       value={{
         ...state,
-        searchVehicles,
         fetchVehicles,
-        fetchVehicle,
         createVehicle,
         updateVehicle,
         deleteVehicle,
