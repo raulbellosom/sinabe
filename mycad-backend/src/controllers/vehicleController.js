@@ -87,7 +87,7 @@ export const getVehicleById = async (req, res) => {
         : null;
       res.json(vehicle);
     } else {
-      console.log(error.message);
+      console.log("Vehicle not found");
       res.status(404).json({ message: "Vehicle not found" });
     }
   } catch (error) {
@@ -433,16 +433,16 @@ export const searchVehicles = async (req, res) => {
     const orderField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
     const orderDirection = order === "desc" ? "desc" : "asc";
 
-    let acquisitionDateCondition = {};
-    if (searchTerm && /^\d{2}\/\d{2}\/\d{4}$/.test(searchTerm)) {
-      const [day, month, year] = searchTerm.split("/");
-      const acquisitionDate = new Date(`${year}-${month}-${day}`);
-      acquisitionDateCondition = {
-        acquisitionDate: {
-          equals: acquisitionDate,
-        },
-      };
-    }
+    // let acquisitionDateCondition = {};
+    // if (searchTerm && /^\d{2}\/\d{2}\/\d{4}$/.test(searchTerm)) {
+    //   const [day, month, year] = searchTerm.split("/");
+    //   const acquisitionDate = new Date(`${year}-${month}-${day}`);
+    //   acquisitionDateCondition = {
+    //     acquisitionDate: {
+    //       equals: acquisitionDate,
+    //     },
+    //   };
+    // }
 
     const textSearchConditions = searchTerm
       ? {
@@ -463,6 +463,7 @@ export const searchVehicles = async (req, res) => {
 
     const whereConditions = {
       ...textSearchConditions,
+      enabled: true,
       ...(conditionName && {
         conditions: {
           some: {
