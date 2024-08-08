@@ -11,7 +11,6 @@ import { FaEdit, FaEye } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import { Table as T } from 'flowbite-react';
-import useVehicle from '../../hooks/useVehicle';
 
 const vehicleColumns = [
   {
@@ -47,22 +46,27 @@ const vehicleColumns = [
 ];
 
 const Vehicles = () => {
-  const { vehicles, pagination,  loading, deleteVehicle, searchVehicles } = useVehicleContext();
-  const [searchTerm, setSearchTerm] = useState("")
+  const { vehicles, pagination, loading, deleteVehicle, searchVehicles } =
+    useVehicleContext();
+  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
-  const lastChange = useRef()
+  const lastChange = useRef();
   const TOTAL_VALUES_PER_PAGE = 5;
-  console.log("vehicles ", vehicles)
+  console.log('vehicles ', vehicles);
 
-  const { refetch, isLoading, isFetching } = searchVehicles({searchTerm: searchTerm, pageSize: TOTAL_VALUES_PER_PAGE, page: currentPageNumber})
+  const { refetch, isLoading, isFetching } = searchVehicles({
+    searchTerm: searchTerm,
+    pageSize: TOTAL_VALUES_PER_PAGE,
+    page: currentPageNumber,
+  });
 
   useEffect(() => {
-    console.log("executing")
-    refetch()
-  }, [searchTerm, currentPageNumber])
+    console.log('executing');
+    refetch();
+  }, [searchTerm, currentPageNumber]);
 
   const goOnPrevPage = useCallback(() => {
     setCurrentPageNumber((prev) => prev - 1);
@@ -72,19 +76,21 @@ const Vehicles = () => {
   }, []);
   const handleSelectChange = useCallback((page) => {
     setCurrentPageNumber(page);
-  },[]);
+  }, []);
 
-  const handleSearch = useCallback((e) => {
-    e.preventDefault();
-    if (lastChange.current) {
-      clearTimeout(lastChange.current);
-    }
-    lastChange.current = setTimeout(() => {
-      lastChange.current = null;
-      setSearchTerm(e.target.value)
-    }, 600)
-
-  }, [searchTerm]);
+  const handleSearch = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (lastChange.current) {
+        clearTimeout(lastChange.current);
+      }
+      lastChange.current = setTimeout(() => {
+        lastChange.current = null;
+        setSearchTerm(e.target.value);
+      }, 600);
+    },
+    [searchTerm],
+  );
 
   const handleDeleteVehicle = () => {
     if (vehicleId) {
@@ -94,7 +100,7 @@ const Vehicles = () => {
     }
   };
   if (loading) {
-    return <div>Loading..</div>
+    return <div>Loading..</div>;
   }
   // const { pagination } = data
 
@@ -106,8 +112,8 @@ const Vehicles = () => {
           labelButton="Nuevo vehículo"
           redirect="/vehicles/create"
         />
-        <TableActions handleSearchTerm={handleSearch} value={searchTerm}/>
-        {vehicles && !isLoading && !isFetching? (
+        <TableActions handleSearchTerm={handleSearch} value={searchTerm} />
+        {vehicles && !isLoading && !isFetching ? (
           <Table columns={vehicleColumns}>
             {vehicles?.map((vehicle) => {
               const { name, type, brand, year } = vehicle.model;
@@ -163,14 +169,13 @@ const Vehicles = () => {
           <Skeleton className="w-full h-10" count={10} />
         )}
         {pagination && (
-            <TableFooter
+          <TableFooter
             pagination={pagination}
             goOnNextPage={goOnNextPage}
             goOnPrevPage={goOnPrevPage}
             handleSelectChange={handleSelectChange}
           />
         )}
-
       </section>
       <ModalRemove
         isOpenModal={isOpenModal}

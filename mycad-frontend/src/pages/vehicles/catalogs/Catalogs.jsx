@@ -9,7 +9,7 @@ import Conditions from './Conditions';
 
 const Catalogs = () => {
   return (
-    <div className="flex flex-col flex-1 h-full overflow-hidden p-2 rounded-md">
+    <div className="flex flex-col flex-1 h-full overflow-hidden rounded-md">
       <Tabs aria-label="Default tabs" variant="fullWidth">
         <Tabs.Item title="Modelos" icon={HiCubeTransparent}>
           <div className="h-full overflow-auto">
