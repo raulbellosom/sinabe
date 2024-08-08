@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useVehicleContext } from '../../../context/VehicleContext';
+import { useCatalogContext } from '../../../context/CatalogContext';
 import BrandForm from '../../../components/VehicleComponents/BrandForm/BrandForm';
 import ModalForm from '../../../components/Modals/ModalForm';
 import ModalRemove from '../../../components/Modals/ModalRemove';
@@ -7,13 +7,13 @@ import CatalogList from '../../../components/VehicleComponents/CatalogList';
 
 const Brands = () => {
   const {
+    vehicleBrands,
     createVehicleBrand,
     updateVehicleBrand,
     deleteVehicleBrand,
     fetchVehicleBrands,
     loading,
-    vehicleBrands,
-  } = useVehicleContext();
+  } = useCatalogContext();
 
   const [brands, setBrands] = useState([]);
   const [isOpenModal, setIsOpenModal] = useState(false);

@@ -128,7 +128,7 @@ const ImageViewer = ({ images = [], onRemove, imagesClassNames }) => {
           }
           index={index}
         >
-          <div className="relative">
+          <div className="relative w-24 h-24 xl:h-28 xl:w-28 2xl:h-32 2xl:w-32">
             {onRemove && (
               <button
                 onClick={(e) => {
@@ -148,7 +148,7 @@ const ImageViewer = ({ images = [], onRemove, imagesClassNames }) => {
                   : FormattedUrlImage(image.thumbnail)
               }
               alt={`Image ${index + 1}`}
-              className="w-full h-auto min-h-24 md:min-h-32 object-cover cursor-pointer shadow-md rounded-lg"
+              className="w-full h-full object-cover cursor-pointer shadow-md rounded-lg"
             />
           </div>
         </PhotoView>
