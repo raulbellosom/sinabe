@@ -98,8 +98,8 @@ export const getVehicles = async () => {
   return response.data;
 };
 
-export const getVehicle = async (vehicleId) => {
-  const response = await api.get(`/vehicles/${vehicleId}`);
+export const getVehicle = async ({ id: vehicleId , signal}) => {
+  const response = await api.get(`/vehicles/${vehicleId}`, {signal});
   return response.data;
 };
 

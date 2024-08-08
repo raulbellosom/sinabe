@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { login, logout, register, loadUser } from '../services/api';
 import { useLoading } from '../context/LoadingContext';
 import Notifies from '../components/Notifies/Notifies';
@@ -10,8 +10,9 @@ export const useAuthData = (dispatch) => {
   const setLoading = (loading) => {
     loadingDispatch({ type: 'SET_LOADING', payload: loading });
   };
-
-  const loginMutation = useMutation(login, {
+  
+  const loginMutation = useMutation({
+    mutationFn: login,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.setQueryData('user', data.user);
@@ -26,7 +27,8 @@ export const useAuthData = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const registerMutation = useMutation(register, {
+  const registerMutation = useMutation({
+    mutationFn: register,
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.setQueryData('user', data.user);
@@ -37,7 +39,8 @@ export const useAuthData = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const logoutMutation = useMutation(logout, {
+  const logoutMutation = useMutation({
+    mutationFn: logout,
     onMutate: () => setLoading(true),
     onSuccess: () => {
       queryClient.removeQueries('user');
