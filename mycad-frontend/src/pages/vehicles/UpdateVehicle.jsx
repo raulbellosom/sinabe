@@ -60,7 +60,7 @@ const UpdateVehicle = () => {
   });
 
   useEffect(() => {
-    if (Object.keys(vehicle).length !== 0) {
+    if (vehicle && Object.keys(vehicle).length !== 0) {
       const formatedFiles = vehicle?.files?.map((file) => ({
         id: file.id,
         url: file.url,
@@ -159,7 +159,6 @@ const UpdateVehicle = () => {
       typeId: '',
     });
   };
-
   return (
     <>
       <div className="h-full bg-white p-4 rounded-md">

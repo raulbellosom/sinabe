@@ -32,10 +32,6 @@ const Models = () => {
   });
 
   useEffect(() => {
-    fetchVehicleModels();
-  }, []);
-
-  useEffect(() => {
     const formattedModels = vehicleModels.map((model) => {
       return {
         id: model.id,

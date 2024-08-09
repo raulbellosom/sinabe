@@ -5,18 +5,15 @@ import { FaCar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import { useAuthContext } from '../../context/AuthContext';
+import { useCatalogContext } from '../../context/CatalogContext';
 import ModalForm from '../../components/Modals/ModalForm';
 import ModelForm from '../../components/VehicleComponents/ModelForm/ModelForm';
 
 const CreateVehicle = () => {
-  const {
-    createVehicle,
-    createVehicleModel,
-    vehicleTypes,
-    vehicleBrands,
-    vehicleModels,
-    vehicleConditions,
-  } = useVehicleContext();
+  const { createVehicle, createVehicleModel } = useVehicleContext();
+  const { vehicleModels, vehicleBrands, vehicleTypes, vehicleConditions } =
+    useCatalogContext();
+
   const { user } = useAuthContext();
   const navigate = useNavigate();
 

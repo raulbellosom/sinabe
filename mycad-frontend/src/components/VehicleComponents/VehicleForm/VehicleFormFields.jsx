@@ -5,14 +5,9 @@ import SelectInput from '../../Inputs/SelectInput';
 import DateInput from '../../Inputs/DateInput';
 import TextArea from '../../Inputs/TextArea';
 import FileInput from '../../Inputs/FileInput';
-import {
-  MdOutlineDirectionsCar,
-  MdInfo,
-  MdCalendarToday,
-  MdOutlineNumbers,
-} from 'react-icons/md';
+import { MdInfo, MdCalendarToday, MdOutlineNumbers } from 'react-icons/md';
 import { BiDollar } from 'react-icons/bi';
-import { IoLogoModelS, IoMdSpeedometer } from 'react-icons/io';
+import { IoLogoModelS } from 'react-icons/io';
 import MultiSelectInput from '../../Inputs/MultiSelectInput';
 import ImagePicker from '../../Inputs/ImagePicker';
 import { FaTachometerAlt } from 'react-icons/fa';

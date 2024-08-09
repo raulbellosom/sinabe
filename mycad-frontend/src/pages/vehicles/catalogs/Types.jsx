@@ -26,10 +26,6 @@ const Types = () => {
   });
 
   useEffect(() => {
-    fetchVehicleTypes();
-  }, []);
-
-  useEffect(() => {
     const formattedTypes = vehicleTypes.map((type) => {
       return {
         id: type.id,

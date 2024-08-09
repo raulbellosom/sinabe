@@ -27,10 +27,6 @@ const Brands = () => {
   });
 
   useEffect(() => {
-    fetchVehicleBrands();
-  }, []);
-
-  useEffect(() => {
     const formattedBrands = vehicleBrands.map((brand) => {
       return {
         id: brand.id,
