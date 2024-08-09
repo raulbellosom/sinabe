@@ -26,10 +26,6 @@ const Conditions = () => {
   });
 
   useEffect(() => {
-    fetchVehicleConditions();
-  }, []);
-
-  useEffect(() => {
     const formattedConditions = vehicleConditions.map((condition) => {
       return {
         id: condition.id,
