@@ -18,7 +18,7 @@ const DownloadFileImage = React.lazy(
   () => import('../../assets/images/download_file.webp'),
 );
 import { IoClose } from 'react-icons/io5';
-import { MdCloudDone, MdOpenInNew, MdSaveAlt } from 'react-icons/md';
+import { MdCloudDone, MdRemoveRedEye, MdSaveAlt } from 'react-icons/md';
 import { API_URL, downloadFile } from '../../services/api';
 import { BiError } from 'react-icons/bi';
 import { Progress } from 'flowbite-react';
@@ -30,7 +30,6 @@ const FileIcon = ({ file, className, size, onRemove }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
-  const [downloadedFile, setDownloadedFile] = useState(null);
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [isDownloadingError, setIsDownloadingError] = useState(false);
   const iconSize = size || 24;
@@ -103,7 +102,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
         <div className="flex items-center justify-evenly gap-2">
           {file.type.includes('pdf') && (
             <span onClick={handleOpenPdf}>
-              <MdOpenInNew
+              <MdRemoveRedEye
                 className="text-blue-500 cursor-pointer"
                 size={iconSize}
               />
