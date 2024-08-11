@@ -14,9 +14,7 @@ const PDFReader = React.lazy(() => import('../PDFReader/PDFReader'));
 const ActionButtons = React.lazy(
   () => import('../ActionButtons/ActionButtons'),
 );
-const DownloadFileImage = React.lazy(
-  () => import('../../assets/images/download_file.webp'),
-);
+import DownloadFileImage from '../../assets/images/download_file.webp';
 import { IoClose } from 'react-icons/io5';
 import { MdCloudDone, MdRemoveRedEye, MdSaveAlt } from 'react-icons/md';
 import { API_URL, downloadFile } from '../../services/api';
