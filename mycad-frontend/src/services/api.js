@@ -308,7 +308,6 @@ export const deleteVehicleCondition = async (vehicleConditionId) => {
   return response.data;
 };
 
-// File Download
 export const downloadFile = async (file, onDownloadProgress) => {
   const response = await api.get(file.url, {
     responseType: 'blob',
@@ -318,7 +317,7 @@ export const downloadFile = async (file, onDownloadProgress) => {
       onDownloadProgress(progress);
     },
   });
-  const fileName = `${file?.name}.${file?.type?.split('/')[1]}`;
+  const fileName = `${file?.name}`;
 
   saveAs(response.data, fileName ?? 'file');
 };

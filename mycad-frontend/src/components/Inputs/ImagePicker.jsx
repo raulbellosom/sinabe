@@ -102,6 +102,7 @@ const ImagePicker = ({
         <FileInput
           id={props.id || props.name}
           multiple={props.multiple}
+          accept={props.accept || 'image/*'}
           className="hidden"
           hidden
           onChange={handleFileChange}

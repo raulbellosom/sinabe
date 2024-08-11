@@ -130,6 +130,7 @@ const VehicleFormFields = ({
           className="col-span-12"
           multiple
           helperText="PDF, Word, Excel, Imagenes, Rar, Zip"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.rar,.zip,.tar,.gz,.ppt,.pptx,.mp4,.avi,.mov,.json,.xml"
         />
       </div>
     </div>
@@ -141,6 +142,7 @@ const VehicleFormFields = ({
           component={ImagePicker}
           label="Imagenes"
           multiple
+          accept="image/*"
         />
       </div>
     </div>

@@ -9,16 +9,20 @@ import {
   FaFile,
   FaFileVideo,
 } from 'react-icons/fa';
+const ModalViewer = React.lazy(() => import('../Modals/ModalViewer'));
+const PDFReader = React.lazy(() => import('../PDFReader/PDFReader'));
+const ActionButtons = React.lazy(
+  () => import('../ActionButtons/ActionButtons'),
+);
+const DownloadFileImage = React.lazy(
+  () => import('../../assets/images/download_file.webp'),
+);
 import { IoClose } from 'react-icons/io5';
-import classNames from 'classnames';
-import { MdCloudDone, MdOpenInNew, MdSaveAlt } from 'react-icons/md';
+import { MdCloudDone, MdRemoveRedEye, MdSaveAlt } from 'react-icons/md';
 import { API_URL, downloadFile } from '../../services/api';
-import ModalViewer from '../Modals/ModalViewer';
-import PDFReader from '../PDFReader/PDFReader';
-import ActionButtons from '../ActionButtons/ActionButtons';
-import DownloadFileImage from '../../assets/images/download_file.webp';
 import { BiError } from 'react-icons/bi';
 import { Progress } from 'flowbite-react';
+import classNames from 'classnames';
 
 const FileIcon = ({ file, className, size, onRemove }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,7 +30,6 @@ const FileIcon = ({ file, className, size, onRemove }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
-  const [downloadedFile, setDownloadedFile] = useState(null);
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [isDownloadingError, setIsDownloadingError] = useState(false);
   const iconSize = size || 24;
@@ -99,7 +102,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
         <div className="flex items-center justify-evenly gap-2">
           {file.type.includes('pdf') && (
             <span onClick={handleOpenPdf}>
-              <MdOpenInNew
+              <MdRemoveRedEye
                 className="text-blue-500 cursor-pointer"
                 size={iconSize}
               />

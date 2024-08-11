@@ -6,12 +6,20 @@ import { useAuthContext } from '../../context/AuthContext';
 import { getVehicle } from '../../services/api';
 import { useQuery } from '@tanstack/react-query';
 import Skeleton from 'react-loading-skeleton';
+const VehicleForm = React.lazy(
+  () => import('../../components/VehicleComponents/VehicleForm/VehicleForm'),
+);
+const ActionButtons = React.lazy(
+  () => import('../../components/ActionButtons/ActionButtons'),
+);
+const ModalRemove = React.lazy(
+  () => import('../../components/Modals/ModalRemove'),
+);
+const ModalForm = React.lazy(() => import('../../components/Modals/ModalForm'));
+const ModelForm = React.lazy(
+  () => import('../../components/VehicleComponents/ModelForm/ModelForm'),
+);
 import { FaCar } from 'react-icons/fa';
-import VehicleForm from '../../components/VehicleComponents/VehicleForm/VehicleForm';
-import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import ModalRemove from '../../components/Modals/ModalRemove';
-import ModalForm from '../../components/Modals/ModalForm';
-import ModelForm from '../../components/VehicleComponents/ModelForm/ModelForm';
 
 const UpdateVehicle = () => {
   const { id } = useParams();

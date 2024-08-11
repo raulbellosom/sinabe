@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useCatalogContext } from '../../../context/CatalogContext';
 import { Checkbox, Table } from 'flowbite-react';
-import ModalForm from '../../../components/Modals/ModalForm';
-import ModelForm from '../../../components/VehicleComponents/ModelForm/ModelForm';
 import Skeleton from 'react-loading-skeleton';
-import ActionButtons from '../../../components/ActionButtons/ActionButtons';
-import ModalRemove from '../../../components/Modals/ModalRemove';
+const ModalForm = React.lazy(
+  () => import('../../../components/Modals/ModalForm'),
+);
+const ModelForm = React.lazy(
+  () => import('../../../components/VehicleComponents/ModelForm/ModelForm'),
+);
+const ActionButtons = React.lazy(
+  () => import('../../../components/ActionButtons/ActionButtons'),
+);
+const ModalRemove = React.lazy(
+  () => import('../../../components/Modals/ModalRemove'),
+);
 
 const Models = () => {
   const {
