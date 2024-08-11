@@ -34,6 +34,7 @@ const FileInput = ({
         id={props.id || props.name}
         multiple={props.multiple}
         helperText={props.helperText || ''}
+        accept={props.accept || ''}
         color={touched[field.name] && errors[field.name] ? 'failure' : ''}
         className="mt-1"
         onChange={handleChange}

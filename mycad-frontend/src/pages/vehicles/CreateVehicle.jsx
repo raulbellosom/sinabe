@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import VehicleForm from '../../components/VehicleComponents/VehicleForm/VehicleForm';
+import { useCatalogContext } from '../../context/CatalogContext';
+import { useAuthContext } from '../../context/AuthContext';
 import { useVehicleContext } from '../../context/VehicleContext';
 import { FaCar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import { useAuthContext } from '../../context/AuthContext';
-import { useCatalogContext } from '../../context/CatalogContext';
-import ModalForm from '../../components/Modals/ModalForm';
-import ModelForm from '../../components/VehicleComponents/ModelForm/ModelForm';
+const ActionButtons = React.lazy(
+  () => import('../../components/ActionButtons/ActionButtons'),
+);
+const VehicleForm = React.lazy(
+  () => import('../../components/VehicleComponents/VehicleForm/VehicleForm'),
+);
+const ModalForm = React.lazy(() => import('../../components/Modals/ModalForm'));
+const ModelForm = React.lazy(
+  () => import('../../components/VehicleComponents/ModelForm/ModelForm'),
+);
 
 const CreateVehicle = () => {
   const { createVehicle, createVehicleModel } = useVehicleContext();

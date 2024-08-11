@@ -1,17 +1,28 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { useVehicleContext } from '../../context/VehicleContext';
-import Table from '../../components/Table/Table';
-import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import TableHeader from '../../components/Table/TableHeader';
-import TableActions from '../../components/Table/TableActions';
-import TableFooter from '../../components/Table/TableFooter';
-import LinkButton from '../../components/ActionButtons/LinkButton';
+const Table = React.lazy(() => import('../../components/Table/Table'));
+const ModalRemove = React.lazy(
+  () => import('../../components/Modals/ModalRemove'),
+);
+const ActionButtons = React.lazy(
+  () => import('../../components/ActionButtons/ActionButtons'),
+);
+const TableHeader = React.lazy(
+  () => import('../../components/Table/TableHeader'),
+);
+const TableActions = React.lazy(
+  () => import('../../components/Table/TableActions'),
+);
+const TableFooter = React.lazy(
+  () => import('../../components/Table/TableFooter'),
+);
+const LinkButton = React.lazy(
+  () => import('../../components/ActionButtons/LinkButton'),
+);
 import { FaEdit, FaEye } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import ModalRemove from '../../components/Modals/ModalRemove';
 import { Table as T } from 'flowbite-react';
-import useVehicle from '../../hooks/useVehicle';
 import { useQuery } from '@tanstack/react-query';
 import { searchVehicles } from '../../services/api';
 
@@ -55,65 +66,72 @@ const Vehicles = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
-  const lastChange = useRef()
+  const lastChange = useRef();
   const [searchFilters, setSearchFilters] = useState({
-    searchTerm: "",
+    searchTerm: '',
     pageSize: 5,
     page: currentPageNumber,
-
-  })
-  console.log("searchFilters ", searchFilters)
+  });
+  console.log('searchFilters ', searchFilters);
   // const { refetch, isLoading, isFetching } = searchVehicles({searchTerm: searchTerm, pageSize: TOTAL_VALUES_PER_PAGE, page: currentPageNumber})
-  const { data: vehicles, refetch, isLoading, isPending } = useQuery({
+  const {
+    data: vehicles,
+    refetch,
+    isLoading,
+    isPending,
+  } = useQuery({
     queryKey: ['vehicles', { ...searchFilters }],
-    queryFn: ({signal}) => searchVehicles({ ...searchFilters, signal }),
+    queryFn: ({ signal }) => searchVehicles({ ...searchFilters, signal }),
     staleTime: Infinity,
-  })
+  });
 
   useEffect(() => {
-    refetch()
-  }, [searchFilters])
+    refetch();
+  }, [searchFilters]);
 
   const goOnPrevPage = useCallback(() => {
-    setSearchFilters(prevState => {
+    setSearchFilters((prevState) => {
       return {
         ...prevState,
-        page: prevState?.page - 1
-      }
-    })
+        page: prevState?.page - 1,
+      };
+    });
   }, []);
   const goOnNextPage = useCallback(() => {
-    setSearchFilters(prevState => {
+    setSearchFilters((prevState) => {
       return {
         ...prevState,
-        page: prevState?.page + 1
-      }
-    })  }, []);
+        page: prevState?.page + 1,
+      };
+    });
+  }, []);
   const handleSelectChange = useCallback((page) => {
-    setSearchFilters(prevState => {
+    setSearchFilters((prevState) => {
       return {
         ...prevState,
-        page
+        page,
+      };
+    });
+  }, []);
+
+  const handleSearch = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (lastChange.current) {
+        clearTimeout(lastChange.current);
       }
-    })
-  },[]);
-
-  const handleSearch = useCallback((e) => {
-    e.preventDefault();
-    if (lastChange.current) {
-      clearTimeout(lastChange.current);
-    }
-    lastChange.current = setTimeout(() => {
-      lastChange.current = null;
-      setSearchFilters(prevState => {
-        return {
-          ...prevState,
-          searchTerm: e.target.value
-        }
-      })
-    }, 600)
-
-  }, [searchFilters?.searchTerm]);
+      lastChange.current = setTimeout(() => {
+        lastChange.current = null;
+        setSearchFilters((prevState) => {
+          return {
+            ...prevState,
+            searchTerm: e.target.value,
+          };
+        });
+      }, 600);
+    },
+    [searchFilters?.searchTerm],
+  );
 
   const handleDeleteVehicle = () => {
     if (vehicleId) {
@@ -123,7 +141,7 @@ const Vehicles = () => {
     }
   };
   // const { pagination } = data
-  console.log("vehicles data ", vehicles?.data)
+  console.log('vehicles data ', vehicles?.data);
   return (
     <div>
       <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 antialiased">
@@ -132,7 +150,10 @@ const Vehicles = () => {
           labelButton="Nuevo vehículo"
           redirect="/vehicles/create"
         />
-        <TableActions handleSearchTerm={handleSearch} value={searchFilters?.searchTerm}/>
+        <TableActions
+          handleSearchTerm={handleSearch}
+          value={searchFilters?.searchTerm}
+        />
         {vehicles && !isPending ? (
           <Table columns={vehicleColumns}>
             {vehicles?.data?.map((vehicle) => {
@@ -189,7 +210,7 @@ const Vehicles = () => {
           <Skeleton className="w-full h-10" count={10} />
         )}
         {vehicles?.pagination && (
-            <TableFooter
+          <TableFooter
             pagination={vehicles?.pagination}
             goOnNextPage={goOnNextPage}
             goOnPrevPage={goOnPrevPage}

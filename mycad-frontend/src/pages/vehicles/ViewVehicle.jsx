@@ -1,8 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useVehicleContext } from '../../context/VehicleContext';
-import { useAuthContext } from '../../context/AuthContext';
+import { getVehicle } from '../../services/api';
+import { useQuery } from '@tanstack/react-query';
 import VehicleProperty from '../../components/VehicleComponents/VehicleView/VehicleProperty';
+const ActionButtons = React.lazy(
+  () => import('../../components/ActionButtons/ActionButtons'),
+);
+const ModalRemove = React.lazy(
+  () => import('../../components/Modals/ModalRemove'),
+);
+const ImageViewer = React.lazy(
+  () => import('../../components/ImageViewer/ImageViewer'),
+);
+const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
 import { FaCar, FaTachometerAlt } from 'react-icons/fa';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import {
@@ -16,29 +26,28 @@ import { TbNumber123 } from 'react-icons/tb';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
 import { BiCategory, BiDollar } from 'react-icons/bi';
 import { MdGarage } from 'react-icons/md';
-import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import ModalRemove from '../../components/Modals/ModalRemove';
 import { Badge } from 'flowbite-react';
-import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import FileIcon from '../../components/FileIcon/FileIcon';
 import classNames from 'classnames';
-import { getVehicle } from '../../services/api';
-import { useQuery } from '@tanstack/react-query';
+import { useVehicleContext } from '../../context/VehicleContext';
 
 const ViewVehicle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { deleteVehicle } = useVehicleContext();
   // const { refetch, isFetching } = fetchVehicle({id: id})
-  const { user } = useAuthContext();
   const [vehicleData, setVehicleData] = useState(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [images, setImages] = useState([]);
   const [files, setFiles] = useState([]);
-  const { data: vehicle, refetch, isFetching, isPending } = useQuery({
+  const {
+    data: vehicle,
+    refetch,
+    isFetching,
+    isPending,
+  } = useQuery({
     queryKey: ['vehicle', id],
-    queryFn: ({ signal }) => getVehicle({id, signal}),
-  })
+    queryFn: ({ signal }) => getVehicle({ id, signal }),
+  });
 
   useEffect(() => {
     const data = {
@@ -150,7 +159,6 @@ const ViewVehicle = () => {
           <h1 className="text-2xl font-bold">Detalles del Vehículo</h1>
         </div>
         <ActionButtons
-          userRole={user?.roleId}
           onEdit={onEdit}
           onCreate={onCreate}
           onRemove={onRemove}
