@@ -27,6 +27,7 @@ export const getVehicles = async (req, res) => {
             thumbnail: true,
             medium: true,
             large: true,
+            metadata: true,
           },
         },
       },
@@ -74,6 +75,7 @@ export const getVehicleById = async (req, res) => {
             thumbnail: true,
             medium: true,
             large: true,
+            metadata: true,
           },
         },
       },
@@ -341,6 +343,7 @@ export const updateVehicle = async (req, res) => {
             thumbnail: true,
             medium: true,
             large: true,
+            metadata: true,
           },
         },
         files: {
