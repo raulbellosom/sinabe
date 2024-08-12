@@ -8,7 +8,6 @@ const ActionButtons = React.lazy(
 import DownloadFileImage from '../../assets/images/download_file.webp';
 import { API_URL, downloadFile } from '../../services/api';
 import { BiError } from 'react-icons/bi';
-import { Progress } from 'flowbite-react';
 import { IoClose } from 'react-icons/io5';
 import { MdCloudDone, MdRemoveRedEye, MdSaveAlt } from 'react-icons/md';
 import {
@@ -22,6 +21,7 @@ import {
   FaFileVideo,
 } from 'react-icons/fa';
 import classNames from 'classnames';
+import { FallingLines } from 'react-loader-spinner';
 
 const FileIcon = ({ file, className, size, onRemove }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -160,21 +160,29 @@ const FileIcon = ({ file, className, size, onRemove }) => {
             </p>
             <span className="text-sm text-neutral-500">{file.name}</span>
             <div className="flex gap-4">
-              <ActionButtons
-                extraActions={[
-                  {
-                    label: 'Descargar',
-                    icon: MdSaveAlt,
-                    action: handleDownload,
-                    color: 'green',
-                  },
-                ]}
-                onCancel={() => setIsModalDownloadOpen(false)}
-              />
+              {!isDownloading && (
+                <ActionButtons
+                  extraActions={[
+                    {
+                      label: 'Descargar',
+                      icon: MdSaveAlt,
+                      action: handleDownload,
+                      color: 'green',
+                    },
+                  ]}
+                  onCancel={() => setIsModalDownloadOpen(false)}
+                />
+              )}
             </div>
             {/* Barra de progreso */}
             {isDownloading && (
-              <Progress progress={downloadProgress} color="green" />
+              <FallingLines
+                width={80}
+                color="#ff5a1f"
+                ariaLabel="falling-circles-loading"
+                wrapperStyle={{}}
+                wrapperClass=""
+              />
             )}
             {isDownloaded && (
               <div className="flex items-center justify-center gap-2">
