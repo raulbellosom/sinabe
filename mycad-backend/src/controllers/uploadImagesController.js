@@ -33,6 +33,7 @@ const processImages = async (req, res, next) => {
 
   const processedFiles = await Promise.all(
     imageFiles.map(async (file) => {
+      const { originalname, mimetype, size, path: originalpath } = file;
       const fileName = path.parse(file.filename).name;
 
       const thumbnailDir = `${BASE_PATH}images/thumbnails/`;
@@ -66,7 +67,7 @@ const processImages = async (req, res, next) => {
       return {
         url: `${urlRelativePath}images/${file.filename}`,
         type: file.mimetype,
-        metadata: { ...file },
+        metadata: { originalname, mimetype, size, path: originalpath },
         thumbnail: thumbnailRelativePath,
         medium: mediumRelativePath,
         large: largeRelativePath,
