@@ -66,7 +66,7 @@ const processImages = async (req, res, next) => {
       return {
         url: `${urlRelativePath}images/${file.filename}`,
         type: file.mimetype,
-        metadata: file,
+        metadata: { ...file },
         thumbnail: thumbnailRelativePath,
         medium: mediumRelativePath,
         large: largeRelativePath,
