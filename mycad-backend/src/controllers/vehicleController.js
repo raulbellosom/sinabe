@@ -282,6 +282,7 @@ export const updateVehicle = async (req, res) => {
           medium: file.medium,
           large: file.large,
           vehicleId: id,
+          metadata: file.metadata,
           enabled: true,
         }));
 
