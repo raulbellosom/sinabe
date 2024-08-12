@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getVehicle } from '../../services/api';
+import { API_URL, downloadFile, getVehicle } from '../../services/api';
 import { useQuery } from '@tanstack/react-query';
 import VehicleProperty from '../../components/VehicleComponents/VehicleView/VehicleProperty';
 const ActionButtons = React.lazy(
@@ -29,6 +29,8 @@ import { MdGarage } from 'react-icons/md';
 import { Badge } from 'flowbite-react';
 import classNames from 'classnames';
 import { useVehicleContext } from '../../context/VehicleContext';
+import { IoCopyOutline } from 'react-icons/io5';
+import formatFileData from '../../utils/fileDataFormatter';
 
 const ViewVehicle = () => {
   const { id } = useParams();
@@ -112,21 +114,8 @@ const ViewVehicle = () => {
         label: 'Comentarios',
       },
     };
-
-    let filesState = [];
-    if (vehicle?.files && vehicle?.files?.length > 0) {
-      vehicle.files.map((file) => {
-        let fileData = {
-          url: file.url,
-          type: file.type,
-          name: file.metadata?.originalname,
-        };
-        filesState.push(fileData);
-      });
-    }
-
-    setFiles(filesState);
-    setImages(vehicle?.images || []);
+    setFiles(formatFileData(vehicle?.files || []));
+    setImages(formatFileData(vehicle?.images || []));
     setVehicleData(data);
   }, [vehicle]);
 
@@ -149,6 +138,17 @@ const ViewVehicle = () => {
 
   const onCreate = () => {
     navigate('/vehicles/create');
+  };
+
+  const handleDownloadImage = (img) => {
+    console.log(img);
+    downloadFile(img);
+  };
+
+  const handleShareImage = (img) => {
+    const imgURL =
+      img instanceof File ? URL.createObjectURL(img) : `${API_URL}/${img.url}`;
+    navigator.clipboard.writeText(imgURL);
   };
 
   return (
@@ -223,7 +223,19 @@ const ViewVehicle = () => {
                     : '',
                 )}
               >
-                {images.length > 0 && <ImageViewer images={images} />}
+                {images.length > 0 && (
+                  <ImageViewer
+                    images={images}
+                    onDownload={(img) => handleDownloadImage(img)}
+                    renderMenuOptions={[
+                      {
+                        label: 'Copiar URL',
+                        icon: IoCopyOutline,
+                        onClick: (img) => handleShareImage(img),
+                      },
+                    ]}
+                  />
+                )}
               </div>
             </div>
           </div>
