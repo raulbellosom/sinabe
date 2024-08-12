@@ -141,7 +141,6 @@ const ViewVehicle = () => {
   };
 
   const handleDownloadImage = (img) => {
-    console.log(img);
     downloadFile(img);
   };
 

@@ -308,14 +308,9 @@ export const deleteVehicleCondition = async (vehicleConditionId) => {
   return response.data;
 };
 
-export const downloadFile = async (file, onDownloadProgress) => {
+export const downloadFile = async (file) => {
   const response = await api.get(file.url, {
     responseType: 'blob',
-    onDownloadProgress: (progressEvent) => {
-      const total = progressEvent.total || 1;
-      const progress = Math.round((progressEvent.loaded * 100) / total);
-      onDownloadProgress(progress);
-    },
   });
   const fileName = `${file?.name}`;
 
