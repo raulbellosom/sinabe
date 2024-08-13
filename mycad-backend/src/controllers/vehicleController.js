@@ -437,6 +437,30 @@ export const searchVehicles = async (req, res) => {
     const orderField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
     const orderDirection = order === "desc" ? "desc" : "asc";
 
+    const formSortBy = (value, order) => {
+      let arr = value.split(".");
+      const obj = {};
+      if (arr === 2) {
+        obj = {
+          [arr[0]]: {
+            [arr[1]]: {
+              [arr[2]]: order,
+            },
+          },
+        };
+      } else if (arr === 1) {
+        obj = {
+          [arr[0]]: {
+            [arr[1]]: order,
+          },
+        };
+      } else {
+        obj = {
+          [arr[0]]: order,
+        };
+      }
+    };
+
     // let acquisitionDateCondition = {};
     // if (searchTerm && /^\d{2}\/\d{2}\/\d{4}$/.test(searchTerm)) {
     //   const [day, month, year] = searchTerm.split("/");
@@ -500,9 +524,7 @@ export const searchVehicles = async (req, res) => {
         images: true,
         files: true,
       },
-      orderBy: {
-        [orderField]: orderDirection,
-      },
+      orderby: formSortBy(orderField, orderDirection),
       skip,
       take,
     });
