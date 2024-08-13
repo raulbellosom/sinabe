@@ -439,8 +439,8 @@ export const searchVehicles = async (req, res) => {
 
     const formSortBy = (value, order) => {
       let arr = value.split(".");
-      const obj = {};
-      if (arr === 2) {
+      let obj = {};
+      if (arr.length === 3) {
         obj = {
           [arr[0]]: {
             [arr[1]]: {
@@ -448,7 +448,7 @@ export const searchVehicles = async (req, res) => {
             },
           },
         };
-      } else if (arr === 1) {
+      } else if (arr.length === 2) {
         obj = {
           [arr[0]]: {
             [arr[1]]: order,
@@ -459,6 +459,7 @@ export const searchVehicles = async (req, res) => {
           [arr[0]]: order,
         };
       }
+      return obj;
     };
 
     // let acquisitionDateCondition = {};
@@ -524,7 +525,7 @@ export const searchVehicles = async (req, res) => {
         images: true,
         files: true,
       },
-      orderby: formSortBy(orderField, orderDirection),
+      orderBy: formSortBy(orderField, orderDirection),
       skip,
       take,
     });
