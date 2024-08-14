@@ -15,7 +15,10 @@ const Card = ({ data = {}, showImage = false }) => {
           {Object.keys(data).map((key) => {
             if (key === 'title') {
               return (
-                <h4 key={key} className="text-base font-semibold text-gray-800">
+                <h4
+                  key={key}
+                  className="text-base font-semibold text-orange-500"
+                >
                   {data[key].value}
                 </h4>
               );
