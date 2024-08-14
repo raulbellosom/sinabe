@@ -25,27 +25,32 @@ import { useNavigate } from 'react-router-dom';
 import { Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchVehicles } from '../../services/api';
+import { ThreeCircles } from 'react-loader-spinner';
 
 const vehicleColumns = [
   {
-    id: 'name',
+    id: 'model.name',
     value: 'Nombre',
     classes: 'w-auto',
+    order: 'asc'
   },
   {
-    id: 'type',
+    id: 'model.type.name',
     value: 'Tipo',
     classes: 'w-auto',
+    order: 'asc'
   },
   {
-    id: 'brand',
+    id: 'model.brand.name',
     value: 'Marca',
     classes: 'w-auto',
+    order: 'asc'
   },
   {
-    id: 'year',
+    id: 'model.year',
     value: 'Año',
     classes: 'w-auto',
+    order: 'asc'
   },
   {
     id: 'status',
@@ -61,7 +66,7 @@ const vehicleColumns = [
 
 const Vehicles = () => {
   const { deleteVehicle } = useVehicleContext();
-
+  const [columns, setColumns] = useState([...vehicleColumns])
   const navigate = useNavigate();
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
@@ -71,6 +76,9 @@ const Vehicles = () => {
     searchTerm: '',
     pageSize: 5,
     page: currentPageNumber,
+    sortBy: 'createdAt',
+    order: 'asc',
+    conditionName: []
   });
   console.log('searchFilters ', searchFilters);
   // const { refetch, isLoading, isFetching } = searchVehicles({searchTerm: searchTerm, pageSize: TOTAL_VALUES_PER_PAGE, page: currentPageNumber})
@@ -132,7 +140,48 @@ const Vehicles = () => {
     },
     [searchFilters?.searchTerm],
   );
+  const sortBy = (column) => {
+    const selectedHeaderIndex = columns?.findIndex(
+      (col) => col.id === column,
+    );
+    let updatedHeaders = [];
+    if (selectedHeaderIndex !== -1) {
+      const selectedHeader = columns[selectedHeaderIndex];
+      selectedHeader;
+      const updatedHeader = {
+        ...selectedHeader,
+        order: selectedHeader?.order === 'asc' ? 'desc' : 'asc',
+      };
+      console.log("updatedHeader ", updatedHeader)
+      updatedHeaders = [...columns];
+      updatedHeaders[selectedHeaderIndex] = updatedHeader;
+      setSearchFilters((prevState) => {
+        return {
+          ...prevState,
+          sortBy: column,
+          order: updatedHeader?.order
+        };
+      });
+    }
+    setColumns(updatedHeaders)
 
+  }
+  const onCheckFilter = (value) => {
+    if (value !== "") {
+      let currentValues = [...searchFilters?.conditionName]
+      if (currentValues?.includes(value)){
+        currentValues = currentValues.filter((condition) => condition !== value)
+      } else {
+        currentValues.push(value)
+      }
+      setSearchFilters((prevState) => {
+        return {
+          ...prevState,
+          conditionName: currentValues,
+        };
+      });
+    }
+  }
   const handleDeleteVehicle = () => {
     if (vehicleId) {
       deleteVehicle(vehicleId);
@@ -152,11 +201,13 @@ const Vehicles = () => {
         />
         <TableActions
           handleSearchTerm={handleSearch}
+          onCheckFilter={onCheckFilter}
+          filters={searchFilters?.conditionName}
           value={searchFilters?.searchTerm}
         />
-        {vehicles && !isPending ? (
-          <Table columns={vehicleColumns}>
-            {vehicles?.data?.map((vehicle) => {
+          <Table columns={columns} sortBy={sortBy}>
+            {/* {isPending || isLoading && <Skeleton className="w-full h-10" count={10} />} */}
+            {vehicles && !isPending && vehicles?.data?.map((vehicle) => {
               const { name, type, brand, year } = vehicle.model;
               return (
                 <T.Row
@@ -206,9 +257,6 @@ const Vehicles = () => {
               );
             })}
           </Table>
-        ) : (
-          <Skeleton className="w-full h-10" count={10} />
-        )}
         {vehicles?.pagination && (
           <TableFooter
             pagination={vehicles?.pagination}
