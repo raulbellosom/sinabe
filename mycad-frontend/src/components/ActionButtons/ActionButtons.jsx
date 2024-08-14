@@ -111,7 +111,7 @@ const ActionButtons = ({
           className="p-0 m-0"
         >
           {action.icon && <action.icon size={18} className="mr-2 mt-0.5" />}
-          <span>{action.label}</span>
+          <span className="sm:hidden md:block">{action.label}</span>
         </Button>
       ))}
     </div>
