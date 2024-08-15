@@ -23,7 +23,6 @@ const Models = () => {
     createVehicleModel,
     updateVehicleModel,
     deleteVehicleModel,
-    fetchVehicleModels,
     loading,
   } = useCatalogContext();
   const [models, setModels] = useState([]);

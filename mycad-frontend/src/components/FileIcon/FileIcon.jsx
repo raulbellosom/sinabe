@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-
-const ModalViewer = React.lazy(() => import('../Modals/ModalViewer'));
+import ModalViewer from '../Modals/ModalViewer';
 const PDFReader = React.lazy(() => import('../PDFReader/PDFReader'));
 const ActionButtons = React.lazy(
   () => import('../ActionButtons/ActionButtons'),

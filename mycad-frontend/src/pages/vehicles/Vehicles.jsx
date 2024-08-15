@@ -27,36 +27,74 @@ import { useQuery } from '@tanstack/react-query';
 import { searchVehicles } from '../../services/api';
 import Card from '../../components/Card/Card';
 import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
+import ImageViewer from '../../components/ImageViewer/ImageViewer';
 
 const vehicleColumns = [
+  {
+    id: 'images',
+    value: 'Imagen',
+    classes: 'w-20',
+  },
+
   {
     id: 'model.name',
     value: 'Nombre',
     classes: 'w-auto',
-    order: 'asc'
+    order: 'asc',
   },
   {
     id: 'model.type.name',
     value: 'Tipo',
     classes: 'w-auto',
-    order: 'asc'
+    order: 'asc',
   },
   {
     id: 'model.brand.name',
     value: 'Marca',
     classes: 'w-auto',
-    order: 'asc'
+    order: 'asc',
   },
   {
     id: 'model.year',
     value: 'Año',
     classes: 'w-auto',
-    order: 'asc'
+    order: 'asc',
+  },
+  {
+    id: 'economicNumber',
+    value: 'Número económico',
+    classes: 'w-auto',
+    order: 'asc',
+  },
+  {
+    id: 'serialNumber',
+    value: 'Número de serie',
+    classes: 'w-auto',
+    order: 'asc',
+  },
+  {
+    id: 'plateNumber',
+    value: 'Número de placa',
+    classes: 'w-auto',
+    order: 'asc',
+  },
+  {
+    id: 'acquisitionDate',
+    value: 'Fecha de adquisición',
+    classes: 'w-auto',
+    order: 'asc',
+  },
+  {
+    id: 'cost',
+    value: 'Costo de adquisición',
+    classes: 'w-auto',
+    order: 'asc',
   },
   {
     id: 'status',
     value: 'Estatus',
-    classes: 'w-auto',
+    classes: 'w-fit',
+    order: 'asc',
   },
   {
     id: 'actions',
@@ -67,7 +105,7 @@ const vehicleColumns = [
 
 const Vehicles = () => {
   const { deleteVehicle } = useVehicleContext();
-  const [columns, setColumns] = useState([...vehicleColumns])
+  const [columns, setColumns] = useState([...vehicleColumns]);
   const navigate = useNavigate();
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
@@ -79,9 +117,9 @@ const Vehicles = () => {
     page: currentPageNumber,
     sortBy: 'createdAt',
     order: 'asc',
-    conditionName: []
+    conditionName: [],
   });
-  console.log('searchFilters ', searchFilters);
+  // console.log('searchFilters ', searchFilters);
   // const { refetch, isLoading, isFetching } = searchVehicles({searchTerm: searchTerm, pageSize: TOTAL_VALUES_PER_PAGE, page: currentPageNumber})
   const {
     data: vehicles,
@@ -142,9 +180,7 @@ const Vehicles = () => {
     [searchFilters?.searchTerm],
   );
   const sortBy = (column) => {
-    const selectedHeaderIndex = columns?.findIndex(
-      (col) => col.id === column,
-    );
+    const selectedHeaderIndex = columns?.findIndex((col) => col.id === column);
     let updatedHeaders = [];
     if (selectedHeaderIndex !== -1) {
       const selectedHeader = columns[selectedHeaderIndex];
@@ -153,27 +189,28 @@ const Vehicles = () => {
         ...selectedHeader,
         order: selectedHeader?.order === 'asc' ? 'desc' : 'asc',
       };
-      console.log("updatedHeader ", updatedHeader)
+      console.log('updatedHeader ', updatedHeader);
       updatedHeaders = [...columns];
       updatedHeaders[selectedHeaderIndex] = updatedHeader;
       setSearchFilters((prevState) => {
         return {
           ...prevState,
           sortBy: column,
-          order: updatedHeader?.order
+          order: updatedHeader?.order,
         };
       });
     }
-    setColumns(updatedHeaders)
-
-  }
+    setColumns(updatedHeaders);
+  };
   const onCheckFilter = (value) => {
-    if (value !== "") {
-      let currentValues = [...searchFilters?.conditionName]
-      if (currentValues?.includes(value)){
-        currentValues = currentValues.filter((condition) => condition !== value)
+    if (value !== '') {
+      let currentValues = [...searchFilters?.conditionName];
+      if (currentValues?.includes(value)) {
+        currentValues = currentValues.filter(
+          (condition) => condition !== value,
+        );
       } else {
-        currentValues.push(value)
+        currentValues.push(value);
       }
       setSearchFilters((prevState) => {
         return {
@@ -182,7 +219,7 @@ const Vehicles = () => {
         };
       });
     }
-  }
+  };
   const handleDeleteVehicle = () => {
     if (vehicleId) {
       deleteVehicle(vehicleId);
@@ -191,7 +228,12 @@ const Vehicles = () => {
     }
   };
   // const { pagination } = data
-  console.log('vehicles data ', vehicles?.data);
+  // console.log('vehicles data ', vehicles?.data);
+
+  const getNestedValue = (obj, path) => {
+    return path.split('.').reduce((value, key) => value[key], obj);
+  };
+
   return (
     <>
       <section className="flex flex-col gap-2 bg-white rounded-md dark:bg-gray-900 p-3 antialiased">
@@ -206,59 +248,119 @@ const Vehicles = () => {
           filters={searchFilters?.conditionName}
           value={searchFilters?.searchTerm}
         />
-        {/* {vehicles && !isPending ? ( */}
+        {vehicles && !isPending ? (
           <>
             <div className="hidden md:block">
               <Table columns={columns} sortBy={sortBy}>
-                {vehicles && !isPending && vehicles?.data?.map((vehicle) => {
-                  const { name, type, brand, year } = vehicle.model;
-                  return (
-                    <T.Row
-                      key={vehicle.id}
-                      className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      <T.Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {name}
-                      </T.Cell>
-                      <T.Cell>
-                        {/* <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300"> */}
-                        {type?.name}
-                        {/* </span> */}
-                      </T.Cell>
-                      <T.Cell>{brand?.name}</T.Cell>
-                      <T.Cell>{year}</T.Cell>
-                      <T.Cell>
-                        <div
-                          className={`flex items-center rounded text-center text-white justify-center px-2 ${vehicle?.status ? 'bg-green-500' : 'bg-red-600'}`}
-                        >
-                          {vehicle?.status ? 'Activo' : 'Inactivo'}
-                        </div>
-                      </T.Cell>
-                      <T.Cell className="p-4">
-                        <div className="w-full flex justify-center md:justify-end items-center gap-2 border border-gray-200 rounded-md p-2 md:border-none md:p-0">
-                          <LinkButton
-                            route={`/vehicles/edit/${vehicle.id}`}
-                            label="Editar"
-                            icon={FaEdit}
-                            color="yellow"
-                          />
-                          <LinkButton
-                            route={`/vehicles/view/${vehicle.id}`}
-                            label="Ver"
-                            icon={FaEye}
-                            color="cyan"
-                          />
-                          <ActionButtons
-                            onRemove={() => {
-                              setIsOpenModal(true);
-                              setVehicleId(vehicle.id);
-                            }}
-                          />
-                        </div>
-                      </T.Cell>
-                    </T.Row>
-                  );
-                })}
+                {vehicles &&
+                  !isPending &&
+                  vehicles?.data?.map((vehicle) => {
+                    return (
+                      <T.Row
+                        onDoubleClick={() =>
+                          navigate(`/vehicles/view/${vehicle.id}`)
+                        }
+                        onClick={(event) => {
+                          if (event.ctrlKey) {
+                            window.open(
+                              `/vehicles/view/${vehicle.id}`,
+                              '_blank',
+                            );
+                          }
+                        }}
+                        key={vehicle.id}
+                        className="border-b dark:border-gray-600 text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      >
+                        {vehicleColumns?.map((column) => {
+                          let content;
+                          if (column.id === 'cost') {
+                            content = parseToCurrency(
+                              getNestedValue(vehicle, column.id),
+                            );
+                          } else if (column.id === 'acquisitionDate') {
+                            content = parseToLocalDate(
+                              getNestedValue(vehicle, column.id),
+                            );
+                          } else {
+                            content = getNestedValue(vehicle, column.id);
+                          }
+
+                          if (
+                            column.id === 'images' &&
+                            vehicle?.images?.length > 0
+                          ) {
+                            return (
+                              <T.Cell key={column.id} className="w-20">
+                                <ImageViewer
+                                  images={[vehicle?.images[0]]}
+                                  imageClassName={
+                                    'w-10 h-10 md:w-10 md:h-10 lg:w-10 lg:h-10 xl:w-10 xl:h-10 2xl:w-10 2xl:h-10'
+                                  }
+                                />
+                              </T.Cell>
+                            );
+                          }
+
+                          if (column.id === 'model.name') {
+                            return (
+                              <T.Cell
+                                key={column.id}
+                                className="font-semibold whitespace-nowrap dark:text-white"
+                              >
+                                {getNestedValue(vehicle, column.id)}
+                              </T.Cell>
+                            );
+                          }
+                          if (column.id === 'status') {
+                            return (
+                              <T.Cell key={column.id}>
+                                <span
+                                  className={`px-4 py-1 rounded-full text-xs font-medium ${
+                                    vehicle.status
+                                      ? 'bg-green-100 text-green-800'
+                                      : 'bg-red-100 text-red-800'
+                                  }`}
+                                >
+                                  {vehicle.status ? 'Activo' : 'Inactivo'}
+                                </span>
+                              </T.Cell>
+                            );
+                          }
+                          if (column.id === 'actions') {
+                            return (
+                              <T.Cell key={column.id}>
+                                <div className="flex justify-center items-center gap-2">
+                                  <LinkButton
+                                    route={`/vehicles/edit/${vehicle.id}`}
+                                    label="Editar"
+                                    icon={FaEdit}
+                                    color="yellow"
+                                  />
+                                  <LinkButton
+                                    route={`/vehicles/view/${vehicle.id}`}
+                                    label="Ver"
+                                    icon={FaEye}
+                                    color="cyan"
+                                  />
+                                  <ActionButtons
+                                    onRemove={() => {
+                                      setIsOpenModal(true);
+                                      setVehicleId(vehicle.id);
+                                    }}
+                                  />
+                                </div>
+                              </T.Cell>
+                            );
+                          }
+                          return (
+                            <T.Cell className="text-nowrap" key={column.id}>
+                              {content}
+                            </T.Cell>
+                          );
+                        })}
+                      </T.Row>
+                    );
+                  })}
               </Table>
             </div>
             <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 md:hidden">
@@ -328,9 +430,9 @@ const Vehicles = () => {
               })}
             </div>
           </>
-        {/* ) : (
+        ) : (
           <Skeleton className="w-full h-10" count={10} />
-        )} */}
+        )}
         {vehicles?.pagination && (
           <TableFooter
             pagination={vehicles?.pagination}
