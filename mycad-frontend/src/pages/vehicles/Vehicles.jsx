@@ -294,7 +294,7 @@ const Vehicles = () => {
                                 <ImageViewer
                                   images={[vehicle?.images[0]]}
                                   imageClassName={
-                                    'w-10 h-10 md:w-10 md:h-10 lg:w-10 lg:h-10 xl:w-10 xl:h-10 2xl:w-10 2xl:h-10'
+                                    'first:w-12 first:h-12 first:rounded-md'
                                   }
                                 />
                               </T.Cell>
