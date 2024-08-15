@@ -1,19 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { useVehicleContext } from '../../../context/VehicleContext';
-import TypeForm from '../../../components/VehicleComponents/TypeForm/TypeForm';
-import ModalForm from '../../../components/Modals/ModalForm';
-import ModalRemove from '../../../components/Modals/ModalRemove';
+import { useCatalogContext } from '../../../context/CatalogContext';
 import CatalogList from '../../../components/VehicleComponents/CatalogList';
+const TypeForm = React.lazy(
+  () => import('../../../components/VehicleComponents/TypeForm/TypeForm'),
+);
+const ModalForm = React.lazy(
+  () => import('../../../components/Modals/ModalForm'),
+);
+const ModalRemove = React.lazy(
+  () => import('../../../components/Modals/ModalRemove'),
+);
 
 const Conditions = () => {
   const {
+    vehicleConditions,
     createVehicleCondition,
     updateVehicleCondition,
     deleteVehicleCondition,
     fetchVehicleConditions,
     loading,
-    vehicleConditions,
-  } = useVehicleContext();
+  } = useCatalogContext();
   const [conditions, setConditions] = useState([]);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -24,10 +30,6 @@ const Conditions = () => {
     id: '',
     count: 0,
   });
-
-  useEffect(() => {
-    fetchVehicleConditions();
-  }, []);
 
   useEffect(() => {
     const formattedConditions = vehicleConditions.map((condition) => {

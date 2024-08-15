@@ -27,6 +27,7 @@ export const getVehicles = async (req, res) => {
             thumbnail: true,
             medium: true,
             large: true,
+            metadata: true,
           },
         },
       },
@@ -74,6 +75,7 @@ export const getVehicleById = async (req, res) => {
             thumbnail: true,
             medium: true,
             large: true,
+            metadata: true,
           },
         },
       },
@@ -87,7 +89,7 @@ export const getVehicleById = async (req, res) => {
         : null;
       res.json(vehicle);
     } else {
-      console.log(error.message);
+      console.log("Vehicle not found");
       res.status(404).json({ message: "Vehicle not found" });
     }
   } catch (error) {
@@ -280,6 +282,7 @@ export const updateVehicle = async (req, res) => {
           medium: file.medium,
           large: file.large,
           vehicleId: id,
+          metadata: file.metadata,
           enabled: true,
         }));
 
@@ -341,6 +344,7 @@ export const updateVehicle = async (req, res) => {
             thumbnail: true,
             medium: true,
             large: true,
+            metadata: true,
           },
         },
         files: {
@@ -433,16 +437,41 @@ export const searchVehicles = async (req, res) => {
     const orderField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
     const orderDirection = order === "desc" ? "desc" : "asc";
 
-    let acquisitionDateCondition = {};
-    if (searchTerm && /^\d{2}\/\d{2}\/\d{4}$/.test(searchTerm)) {
-      const [day, month, year] = searchTerm.split("/");
-      const acquisitionDate = new Date(`${year}-${month}-${day}`);
-      acquisitionDateCondition = {
-        acquisitionDate: {
-          equals: acquisitionDate,
-        },
-      };
-    }
+    const formSortBy = (value, order) => {
+      let arr = value.split(".");
+      let obj = {};
+      if (arr.length === 3) {
+        obj = {
+          [arr[0]]: {
+            [arr[1]]: {
+              [arr[2]]: order,
+            },
+          },
+        };
+      } else if (arr.length === 2) {
+        obj = {
+          [arr[0]]: {
+            [arr[1]]: order,
+          },
+        };
+      } else {
+        obj = {
+          [arr[0]]: order,
+        };
+      }
+      return obj;
+    };
+
+    // let acquisitionDateCondition = {};
+    // if (searchTerm && /^\d{2}\/\d{2}\/\d{4}$/.test(searchTerm)) {
+    //   const [day, month, year] = searchTerm.split("/");
+    //   const acquisitionDate = new Date(`${year}-${month}-${day}`);
+    //   acquisitionDateCondition = {
+    //     acquisitionDate: {
+    //       equals: acquisitionDate,
+    //     },
+    //   };
+    // }
 
     const textSearchConditions = searchTerm
       ? {
@@ -463,6 +492,7 @@ export const searchVehicles = async (req, res) => {
 
     const whereConditions = {
       ...textSearchConditions,
+      enabled: true,
       ...(conditionName && {
         conditions: {
           some: {
@@ -492,12 +522,14 @@ export const searchVehicles = async (req, res) => {
             condition: true,
           },
         },
-        images: true,
-        files: true,
+        images: {
+          where: { enabled: true },
+        },
+        files: {
+          where: { enabled: true },
+        },
       },
-      orderBy: {
-        [orderField]: orderDirection,
-      },
+      orderBy: formSortBy(orderField, orderDirection),
       skip,
       take,
     });
@@ -508,8 +540,20 @@ export const searchVehicles = async (req, res) => {
 
     const totalPages = Math.ceil(totalRecords / pageSize);
 
+    let vehiclesData = {};
+    if (vehicles) {
+      vehiclesData = vehicles.map((vehicle) => {
+        vehicle.acquisitionDate
+          ? (vehicle.acquisitionDate = vehicle.acquisitionDate
+              .toISOString()
+              .split("T")[0])
+          : null;
+        return vehicle;
+      });
+    }
+
     res.json({
-      data: vehicles,
+      data: vehiclesData,
       pagination: {
         totalRecords,
         totalPages,

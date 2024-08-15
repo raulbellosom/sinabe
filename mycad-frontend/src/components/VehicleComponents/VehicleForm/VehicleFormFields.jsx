@@ -5,14 +5,9 @@ import SelectInput from '../../Inputs/SelectInput';
 import DateInput from '../../Inputs/DateInput';
 import TextArea from '../../Inputs/TextArea';
 import FileInput from '../../Inputs/FileInput';
-import {
-  MdOutlineDirectionsCar,
-  MdInfo,
-  MdCalendarToday,
-  MdOutlineNumbers,
-} from 'react-icons/md';
+import { MdInfo, MdCalendarToday, MdOutlineNumbers } from 'react-icons/md';
 import { BiDollar } from 'react-icons/bi';
-import { IoLogoModelS, IoMdSpeedometer } from 'react-icons/io';
+import { IoLogoModelS } from 'react-icons/io';
 import MultiSelectInput from '../../Inputs/MultiSelectInput';
 import ImagePicker from '../../Inputs/ImagePicker';
 import { FaTachometerAlt } from 'react-icons/fa';
@@ -135,6 +130,7 @@ const VehicleFormFields = ({
           className="col-span-12"
           multiple
           helperText="PDF, Word, Excel, Imagenes, Rar, Zip"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.rar,.zip,.tar,.gz,.ppt,.pptx,.mp4,.avi,.mov,.json,.xml"
         />
       </div>
     </div>
@@ -146,6 +142,7 @@ const VehicleFormFields = ({
           component={ImagePicker}
           label="Imagenes"
           multiple
+          accept="image/*"
         />
       </div>
     </div>

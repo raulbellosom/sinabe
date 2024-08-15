@@ -1,11 +1,11 @@
 import React from 'react';
 import { Tabs } from 'flowbite-react';
-import Models from './Models';
-import Brands from './Brands';
-import { BiCategory } from 'react-icons/bi';
 import { HiCubeTransparent } from 'react-icons/hi';
-import Types from './Types';
-import Conditions from './Conditions';
+import { BiCategory } from 'react-icons/bi';
+const Models = React.lazy(() => import('./Models'));
+const Brands = React.lazy(() => import('./Brands'));
+const Types = React.lazy(() => import('./Types'));
+const Conditions = React.lazy(() => import('./Conditions'));
 
 const Catalogs = () => {
   return (

@@ -1,27 +1,42 @@
 import { PhotoProvider, PhotoView } from 'react-photo-view';
-import 'react-photo-view/dist/react-photo-view.css';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import NoImageFound from '../../assets/images/NoImageFound.jpg';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
-import { useState, useRef, useEffect } from 'react';
 import { IoClose } from 'react-icons/io5';
+import { MdSaveAlt } from 'react-icons/md';
+import { Dropdown } from 'flowbite-react';
+import { BsThreeDotsVertical } from 'react-icons/bs';
 import 'react-lazy-load-image-component/src/effects/blur.css';
+import 'react-photo-view/dist/react-photo-view.css';
 import classNames from 'classnames';
 
-const ImageViewer = ({ images = [], onRemove, imagesClassNames }) => {
+const ImageViewer = ({
+  images = [],
+  onRemove,
+  onDownload,
+  renderMenuOptions = [],
+  imageClassName,
+}) => {
   return (
     <PhotoProvider
       brokenElement={
-        <img
+        <LazyLoadImage
           className="w-80 h-auto rounded-lg object-cover"
           src={NoImageFound}
           alt="NoImageFound"
         />
       }
       maskOpacity={0.8}
+      pullClosable={false}
+      maskClosable={false}
       loop={true}
-      speed={() => 200}
-      toolbarRender={({ onScale, scale, rotate, onRotate }) => {
+      speed={() => 300}
+      easing={(type) =>
+        type === 2
+          ? 'cubic-bezier(0.36, 0, 0.66, -0.56)'
+          : 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+      }
+      toolbarRender={({ onScale, scale, rotate, onRotate, index }) => {
         return (
           <>
             <svg
@@ -114,6 +129,32 @@ const ImageViewer = ({ images = [], onRemove, imagesClassNames }) => {
 	S202.403,42.716,202.403,95.22z"
               />
             </svg>
+            <span className="PhotoView-Slider__toolbarIcon text-white">
+              <Dropdown
+                label={<BsThreeDotsVertical size={20} />}
+                dismissOnClick={false}
+                inline
+                arrowIcon={null}
+              >
+                <Dropdown.Item
+                  className="bg-white text-black hover:bg-slate-100 hover:text-slate-500"
+                  onClick={() => onDownload(images[index])}
+                  icon={MdSaveAlt}
+                >
+                  <span>Descargar</span>
+                </Dropdown.Item>
+                {renderMenuOptions.map((option, index) => (
+                  <Dropdown.Item
+                    key={index}
+                    className="bg-white text-black hover:bg-slate-100 hover:text-slate-500"
+                    onClick={() => option.onClick(images[index])}
+                    icon={option?.icon || null}
+                  >
+                    <span>{option.label}</span>
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
+            </span>
           </>
         );
       }}
@@ -128,7 +169,12 @@ const ImageViewer = ({ images = [], onRemove, imagesClassNames }) => {
           }
           index={index}
         >
-          <div className="relative">
+          <div
+            className={classNames(
+              'relative w-24 h-24 xl:h-28 xl:w-28 2xl:h-32 2xl:w-32',
+              imageClassName,
+            )}
+          >
             {onRemove && (
               <button
                 onClick={(e) => {
@@ -141,14 +187,15 @@ const ImageViewer = ({ images = [], onRemove, imagesClassNames }) => {
                 <IoClose size={20} />
               </button>
             )}
-            <img
+            <LazyLoadImage
               src={
                 image instanceof File
                   ? FormattedUrlImage(image)
-                  : FormattedUrlImage(image.thumbnail)
+                  : FormattedUrlImage(image?.thumbnail || image.url)
               }
               alt={`Image ${index + 1}`}
-              className="w-full h-auto min-h-24 md:min-h-32 object-cover cursor-pointer shadow-md rounded-lg"
+              className="w-full h-full object-cover cursor-pointer shadow-md rounded-lg"
+              style={{ objectFit: 'cover' }}
             />
           </div>
         </PhotoView>

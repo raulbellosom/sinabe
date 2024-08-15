@@ -29,6 +29,10 @@ const ActionButtons = ({
   };
 
   const actions = [
+    ...extraActions.map((action) => ({
+      ...action,
+      permission: permisions.extraActions.includes(user.roleId),
+    })),
     {
       label: labelShow || 'Ver',
       action: onShow,
@@ -64,10 +68,6 @@ const ActionButtons = ({
       icon: MdCancel,
       permission: permisions.create.includes(user.roleId),
     },
-    ...extraActions.map((action) => ({
-      ...action,
-      permission: permisions.extraActions.includes(user.roleId),
-    })),
   ];
 
   const filteredActions = actions.filter(
@@ -98,7 +98,7 @@ const ActionButtons = ({
   return (
     <div
       className={classNames(
-        'w-fit flex justify-center md:justify-end items-center gap-2 border border-gray-200 rounded-md border-none md:p-0',
+        'w-fit flex justify-center md:justify-end items-center gap-2 rounded-md border-none md:p-0',
         positionClass,
       )}
     >
@@ -111,7 +111,7 @@ const ActionButtons = ({
           className="p-0 m-0"
         >
           {action.icon && <action.icon size={18} className="mr-2 mt-0.5" />}
-          <span>{action.label}</span>
+          <span className="sm:hidden md:block">{action.label}</span>
         </Button>
       ))}
     </div>

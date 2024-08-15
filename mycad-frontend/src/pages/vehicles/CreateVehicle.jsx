@@ -1,23 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import VehicleForm from '../../components/VehicleComponents/VehicleForm/VehicleForm';
+import React, { useEffect, useRef, useState } from 'react';
+import { useCatalogContext } from '../../context/CatalogContext';
 import { useVehicleContext } from '../../context/VehicleContext';
-import { FaCar } from 'react-icons/fa';
+import { FaCar, FaSave } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import { useAuthContext } from '../../context/AuthContext';
-import ModalForm from '../../components/Modals/ModalForm';
-import ModelForm from '../../components/VehicleComponents/ModelForm/ModelForm';
+const ActionButtons = React.lazy(
+  () => import('../../components/ActionButtons/ActionButtons'),
+);
+const VehicleForm = React.lazy(
+  () => import('../../components/VehicleComponents/VehicleForm/VehicleForm'),
+);
+const ModalForm = React.lazy(() => import('../../components/Modals/ModalForm'));
+const ModelForm = React.lazy(
+  () => import('../../components/VehicleComponents/ModelForm/ModelForm'),
+);
 
 const CreateVehicle = () => {
-  const {
-    createVehicle,
-    createVehicleModel,
-    vehicleTypes,
-    vehicleBrands,
-    vehicleModels,
-    vehicleConditions,
-  } = useVehicleContext();
-  const { user } = useAuthContext();
+  const formRef = useRef(null);
+  const { createVehicle, createVehicleModel } = useVehicleContext();
+  const { vehicleModels, vehicleBrands, vehicleTypes, vehicleConditions } =
+    useCatalogContext();
   const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,6 +105,12 @@ const CreateVehicle = () => {
     });
   };
 
+  const handleSubmitRef = () => {
+    if (formRef.current) {
+      formRef.current.submitForm();
+    }
+  };
+
   return (
     <div className="h-full bg-white p-4 rounded-md">
       <div className="flex flex-col-reverse md:flex-row items-center gap-4 w-full pb-1">
@@ -112,7 +119,14 @@ const CreateVehicle = () => {
           <h1 className="text-2xl font-bold">Crear Vehículo</h1>
         </div>
         <ActionButtons
-          userRole={user?.roleId}
+          extraActions={[
+            {
+              label: 'Guardar',
+              action: handleSubmitRef,
+              icon: FaSave,
+              color: 'green',
+            },
+          ]}
           onCancel={onCancel}
           labelCancel={'Descartar'}
         />
@@ -122,6 +136,7 @@ const CreateVehicle = () => {
         con * son obligatorios.
       </p>
       <VehicleForm
+        ref={formRef}
         initialValues={initialValues}
         onSubmit={handleSubmit}
         vehicleModels={formattedModels}

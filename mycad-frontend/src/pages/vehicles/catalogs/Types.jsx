@@ -1,19 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { useVehicleContext } from '../../../context/VehicleContext';
-import TypeForm from '../../../components/VehicleComponents/TypeForm/TypeForm';
-import ModalForm from '../../../components/Modals/ModalForm';
-import ModalRemove from '../../../components/Modals/ModalRemove';
+import { useCatalogContext } from '../../../context/CatalogContext';
 import CatalogList from '../../../components/VehicleComponents/CatalogList';
+const TypeForm = React.lazy(
+  () => import('../../../components/VehicleComponents/TypeForm/TypeForm'),
+);
+const ModalForm = React.lazy(
+  () => import('../../../components/Modals/ModalForm'),
+);
+const ModalRemove = React.lazy(
+  () => import('../../../components/Modals/ModalRemove'),
+);
 
 const Types = () => {
   const {
+    vehicleTypes,
     createVehicleType,
     updateVehicleType,
     deleteVehicleType,
     fetchVehicleTypes,
     loading,
-    vehicleTypes,
-  } = useVehicleContext();
+  } = useCatalogContext();
   const [types, setTypes] = useState([]);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -24,10 +30,6 @@ const Types = () => {
     id: '',
     count: 0,
   });
-
-  useEffect(() => {
-    fetchVehicleTypes();
-  }, []);
 
   useEffect(() => {
     const formattedTypes = vehicleTypes.map((type) => {

@@ -1,81 +1,164 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { useVehicleContext } from '../../context/VehicleContext';
-import Table from '../../components/Table/Table';
-import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import TableHeader from '../../components/Table/TableHeader';
-import TableActions from '../../components/Table/TableActions';
-import TableFooter from '../../components/Table/TableFooter';
-import LinkButton from '../../components/ActionButtons/LinkButton';
+const Table = React.lazy(() => import('../../components/Table/Table'));
+const ModalRemove = React.lazy(
+  () => import('../../components/Modals/ModalRemove'),
+);
+const ActionButtons = React.lazy(
+  () => import('../../components/ActionButtons/ActionButtons'),
+);
+const TableHeader = React.lazy(
+  () => import('../../components/Table/TableHeader'),
+);
+const TableActions = React.lazy(
+  () => import('../../components/Table/TableActions'),
+);
+const TableFooter = React.lazy(
+  () => import('../../components/Table/TableFooter'),
+);
+const LinkButton = React.lazy(
+  () => import('../../components/ActionButtons/LinkButton'),
+);
 import { FaEdit, FaEye } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import ModalRemove from '../../components/Modals/ModalRemove';
 import { Table as T } from 'flowbite-react';
+import { useQuery } from '@tanstack/react-query';
+import { searchVehicles } from '../../services/api';
+import Card from '../../components/Card/Card';
+import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
+import ImageViewer from '../../components/ImageViewer/ImageViewer';
 
 const vehicleColumns = [
   {
-    id: 'name',
+    id: 'images',
+    value: 'Imagen',
+    classes: 'w-20',
+  },
+
+  {
+    id: 'model.name',
     value: 'Nombre',
     classes: 'w-auto',
+    order: 'asc',
   },
   {
-    id: 'type',
+    id: 'model.type.name',
     value: 'Tipo',
     classes: 'w-auto',
+    order: 'asc',
   },
   {
-    id: 'brand',
+    id: 'model.brand.name',
     value: 'Marca',
     classes: 'w-auto',
+    order: 'asc',
   },
   {
-    id: 'year',
+    id: 'model.year',
     value: 'Año',
     classes: 'w-auto',
+    order: 'asc',
+  },
+  {
+    id: 'economicNumber',
+    value: 'Número económico',
+    classes: 'w-auto',
+    order: 'asc',
+  },
+  {
+    id: 'serialNumber',
+    value: 'Número de serie',
+    classes: 'w-auto',
+    order: 'asc',
+  },
+  {
+    id: 'plateNumber',
+    value: 'Número de placa',
+    classes: 'w-auto',
+    order: 'asc',
+  },
+  {
+    id: 'acquisitionDate',
+    value: 'Fecha de adquisición',
+    classes: 'w-auto',
+    order: 'asc',
+  },
+  {
+    id: 'cost',
+    value: 'Costo de adquisición',
+    classes: 'w-auto',
+    order: 'asc',
   },
   {
     id: 'status',
     value: 'Estatus',
-    classes: 'w-auto',
+    classes: 'w-fit',
+    order: 'asc',
   },
   {
     id: 'actions',
-    value: '',
-    classes: ' w-1',
+    value: 'Acciones',
+    classes: 'text-center w-1',
   },
 ];
 
 const Vehicles = () => {
-  const { vehicles, pagination, loading, deleteVehicle, searchVehicles } =
-    useVehicleContext();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { deleteVehicle } = useVehicleContext();
+  const [columns, setColumns] = useState([...vehicleColumns]);
   const navigate = useNavigate();
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const lastChange = useRef();
-  const TOTAL_VALUES_PER_PAGE = 5;
-  console.log('vehicles ', vehicles);
-
-  const { refetch, isLoading, isFetching } = searchVehicles({
-    searchTerm: searchTerm,
-    pageSize: TOTAL_VALUES_PER_PAGE,
+  const [searchFilters, setSearchFilters] = useState({
+    searchTerm: '',
+    pageSize: 5,
     page: currentPageNumber,
+    sortBy: 'createdAt',
+    order: 'asc',
+    conditionName: [],
+  });
+  // console.log('searchFilters ', searchFilters);
+  // const { refetch, isLoading, isFetching } = searchVehicles({searchTerm: searchTerm, pageSize: TOTAL_VALUES_PER_PAGE, page: currentPageNumber})
+  const {
+    data: vehicles,
+    refetch,
+    isLoading,
+    isPending,
+  } = useQuery({
+    queryKey: ['vehicles', { ...searchFilters }],
+    queryFn: ({ signal }) => searchVehicles({ ...searchFilters, signal }),
+    staleTime: Infinity,
   });
 
   useEffect(() => {
-    console.log('executing');
     refetch();
-  }, [searchTerm, currentPageNumber]);
+  }, [searchFilters]);
 
   const goOnPrevPage = useCallback(() => {
-    setCurrentPageNumber((prev) => prev - 1);
+    setSearchFilters((prevState) => {
+      return {
+        ...prevState,
+        page: prevState?.page - 1,
+      };
+    });
   }, []);
   const goOnNextPage = useCallback(() => {
-    setCurrentPageNumber((prev) => prev + 1);
+    setSearchFilters((prevState) => {
+      return {
+        ...prevState,
+        page: prevState?.page + 1,
+      };
+    });
   }, []);
   const handleSelectChange = useCallback((page) => {
-    setCurrentPageNumber(page);
+    setSearchFilters((prevState) => {
+      return {
+        ...prevState,
+        page,
+      };
+    });
   }, []);
 
   const handleSearch = useCallback(
@@ -86,12 +169,57 @@ const Vehicles = () => {
       }
       lastChange.current = setTimeout(() => {
         lastChange.current = null;
-        setSearchTerm(e.target.value);
+        setSearchFilters((prevState) => {
+          return {
+            ...prevState,
+            searchTerm: e.target.value,
+          };
+        });
       }, 600);
     },
-    [searchTerm],
+    [searchFilters?.searchTerm],
   );
-
+  const sortBy = (column) => {
+    const selectedHeaderIndex = columns?.findIndex((col) => col.id === column);
+    let updatedHeaders = [];
+    if (selectedHeaderIndex !== -1) {
+      const selectedHeader = columns[selectedHeaderIndex];
+      selectedHeader;
+      const updatedHeader = {
+        ...selectedHeader,
+        order: selectedHeader?.order === 'asc' ? 'desc' : 'asc',
+      };
+      console.log('updatedHeader ', updatedHeader);
+      updatedHeaders = [...columns];
+      updatedHeaders[selectedHeaderIndex] = updatedHeader;
+      setSearchFilters((prevState) => {
+        return {
+          ...prevState,
+          sortBy: column,
+          order: updatedHeader?.order,
+        };
+      });
+    }
+    setColumns(updatedHeaders);
+  };
+  const onCheckFilter = (value) => {
+    if (value !== '') {
+      let currentValues = [...searchFilters?.conditionName];
+      if (currentValues?.includes(value)) {
+        currentValues = currentValues.filter(
+          (condition) => condition !== value,
+        );
+      } else {
+        currentValues.push(value);
+      }
+      setSearchFilters((prevState) => {
+        return {
+          ...prevState,
+          conditionName: currentValues,
+        };
+      });
+    }
+  };
   const handleDeleteVehicle = () => {
     if (vehicleId) {
       deleteVehicle(vehicleId);
@@ -99,78 +227,215 @@ const Vehicles = () => {
       setIsOpenModal(false);
     }
   };
-  if (loading) {
-    return <div>Loading..</div>;
-  }
   // const { pagination } = data
+  // console.log('vehicles data ', vehicles?.data);
+
+  const getNestedValue = (obj, path) => {
+    return path.split('.').reduce((value, key) => value[key], obj);
+  };
 
   return (
-    <div>
-      <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 antialiased">
+    <>
+      <section className="flex flex-col gap-2 bg-white rounded-md dark:bg-gray-900 p-3 antialiased">
         <TableHeader
           title="Vehículos"
           labelButton="Nuevo vehículo"
           redirect="/vehicles/create"
         />
-        <TableActions handleSearchTerm={handleSearch} value={searchTerm} />
-        {vehicles && !isLoading && !isFetching ? (
-          <Table columns={vehicleColumns}>
-            {vehicles?.map((vehicle) => {
-              const { name, type, brand, year } = vehicle.model;
-              return (
-                <T.Row
-                  key={vehicle.id}
-                  className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <T.Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    {name}
-                  </T.Cell>
-                  <T.Cell>
-                    {/* <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300"> */}
-                    {type?.name}
-                    {/* </span> */}
-                  </T.Cell>
-                  <T.Cell>{brand?.name}</T.Cell>
-                  <T.Cell>{year}</T.Cell>
-                  <T.Cell>
-                    <div
-                      className={`flex items-center rounded text-center text-white justify-center w-2/3 ${vehicle?.status ? 'bg-green-500' : 'bg-red-600'}`}
-                    >
-                      {vehicle?.status ? 'Activo' : 'Inactivo'}
-                    </div>
-                  </T.Cell>
-                  <T.Cell className="p-4">
-                    <div className="w-full flex justify-center md:justify-end items-center gap-2 border border-gray-200 rounded-md p-2 md:border-none md:p-0">
-                      <LinkButton
-                        route={`/vehicles/edit/${vehicle.id}`}
-                        label="Editar"
-                        icon={FaEdit}
-                        color="yellow"
-                      />
-                      <LinkButton
-                        route={`/vehicles/view/${vehicle.id}`}
-                        label="Ver"
-                        icon={FaEye}
-                        color="cyan"
-                      />
-                      <ActionButtons
-                        onRemove={() => {
-                          setIsOpenModal(true);
-                          setVehicleId(vehicle.id);
+        <TableActions
+          handleSearchTerm={handleSearch}
+          onCheckFilter={onCheckFilter}
+          filters={searchFilters?.conditionName}
+          value={searchFilters?.searchTerm}
+        />
+        {vehicles && !isPending ? (
+          <>
+            <div className="hidden md:block">
+              <Table columns={columns} sortBy={sortBy}>
+                {vehicles &&
+                  !isPending &&
+                  vehicles?.data?.map((vehicle) => {
+                    return (
+                      <T.Row
+                        onDoubleClick={() =>
+                          navigate(`/vehicles/view/${vehicle.id}`)
+                        }
+                        onClick={(event) => {
+                          if (event.ctrlKey) {
+                            window.open(
+                              `/vehicles/view/${vehicle.id}`,
+                              '_blank',
+                            );
+                          }
                         }}
-                      />
-                    </div>
-                  </T.Cell>
-                </T.Row>
-              );
-            })}
-          </Table>
+                        key={vehicle.id}
+                        className="border-b dark:border-gray-600 text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                      >
+                        {vehicleColumns?.map((column) => {
+                          let content;
+                          if (column.id === 'cost') {
+                            content = parseToCurrency(
+                              getNestedValue(vehicle, column.id),
+                            );
+                          } else if (column.id === 'acquisitionDate') {
+                            content = parseToLocalDate(
+                              getNestedValue(vehicle, column.id),
+                            );
+                          } else {
+                            content = getNestedValue(vehicle, column.id);
+                          }
+
+                          if (
+                            column.id === 'images' &&
+                            vehicle?.images?.length > 0
+                          ) {
+                            return (
+                              <T.Cell key={column.id} className="w-20">
+                                <ImageViewer
+                                  images={[vehicle?.images[0]]}
+                                  imageClassName={
+                                    'first:w-12 first:h-12 first:rounded-md'
+                                  }
+                                />
+                              </T.Cell>
+                            );
+                          }
+
+                          if (column.id === 'model.name') {
+                            return (
+                              <T.Cell
+                                key={column.id}
+                                className="font-semibold whitespace-nowrap dark:text-white"
+                              >
+                                {getNestedValue(vehicle, column.id)}
+                              </T.Cell>
+                            );
+                          }
+                          if (column.id === 'status') {
+                            return (
+                              <T.Cell key={column.id}>
+                                <span
+                                  className={`px-4 py-1 rounded-full text-xs font-medium ${
+                                    vehicle.status
+                                      ? 'bg-green-100 text-green-800'
+                                      : 'bg-red-100 text-red-800'
+                                  }`}
+                                >
+                                  {vehicle.status ? 'Activo' : 'Inactivo'}
+                                </span>
+                              </T.Cell>
+                            );
+                          }
+                          if (column.id === 'actions') {
+                            return (
+                              <T.Cell key={column.id}>
+                                <div className="flex justify-center items-center gap-2">
+                                  <LinkButton
+                                    route={`/vehicles/edit/${vehicle.id}`}
+                                    label="Editar"
+                                    icon={FaEdit}
+                                    color="yellow"
+                                  />
+                                  <LinkButton
+                                    route={`/vehicles/view/${vehicle.id}`}
+                                    label="Ver"
+                                    icon={FaEye}
+                                    color="cyan"
+                                  />
+                                  <ActionButtons
+                                    onRemove={() => {
+                                      setIsOpenModal(true);
+                                      setVehicleId(vehicle.id);
+                                    }}
+                                  />
+                                </div>
+                              </T.Cell>
+                            );
+                          }
+                          return (
+                            <T.Cell className="text-nowrap" key={column.id}>
+                              {content}
+                            </T.Cell>
+                          );
+                        })}
+                      </T.Row>
+                    );
+                  })}
+              </Table>
+            </div>
+            <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 md:hidden">
+              {vehicles?.data?.map((vehicle) => {
+                const data = {
+                  image: { key: 'Imagen', value: vehicle?.images[0] ?? [] },
+                  title: {
+                    key: 'Vehiculo',
+                    value: `${vehicle.model.name} ${vehicle.model.year} (${vehicle.model.brand.name} ${vehicle.model.type.name})`,
+                  },
+                  subtitle: { key: 'Año', value: vehicle.economicNumber },
+                  tags: {
+                    key: 'Condiciones',
+                    value: vehicle.conditions.map(
+                      (condition) => condition.condition.name,
+                    ),
+                  },
+                  serialNumber: {
+                    key: 'Número de serie',
+                    value: vehicle.serialNumber,
+                  },
+                  plateNumber: {
+                    key: 'Número de placa',
+                    value: vehicle.plateNumber,
+                  },
+                  cost: {
+                    key: 'Costo de Adquisición',
+                    value: vehicle?.cost ? parseToCurrency(vehicle.cost) : '',
+                  },
+                  acquisitionDate: {
+                    key: 'F. de adquisición',
+                    value: vehicle?.acquisitionDate
+                      ? parseToLocalDate(vehicle.acquisitionDate)
+                      : '',
+                  },
+                  status: {
+                    key: 'Estatus',
+                    value: vehicle.status ? 'Activo' : 'Inactivo',
+                  },
+                  actions: {
+                    key: 'Acciones',
+                    value: (
+                      <div className="flex justify-center items-center gap-2">
+                        <LinkButton
+                          route={`/vehicles/edit/${vehicle.id}`}
+                          label="Editar"
+                          icon={FaEdit}
+                          color="yellow"
+                        />
+                        <LinkButton
+                          route={`/vehicles/view/${vehicle.id}`}
+                          label="Ver"
+                          icon={FaEye}
+                          color="cyan"
+                        />
+                        <ActionButtons
+                          onRemove={() => {
+                            setIsOpenModal(true);
+                            setVehicleId(vehicle.id);
+                          }}
+                        />
+                      </div>
+                    ),
+                  },
+                };
+                return <Card key={vehicle.id} data={data} showImage />;
+              })}
+            </div>
+          </>
         ) : (
           <Skeleton className="w-full h-10" count={10} />
         )}
-        {pagination && (
+        {vehicles?.pagination && (
           <TableFooter
-            pagination={pagination}
+            pagination={vehicles?.pagination}
             goOnNextPage={goOnNextPage}
             goOnPrevPage={goOnPrevPage}
             handleSelectChange={handleSelectChange}
@@ -182,7 +447,7 @@ const Vehicles = () => {
         onCloseModal={() => setIsOpenModal(false)}
         removeFunction={handleDeleteVehicle}
       />
-    </div>
+    </>
   );
 };
 

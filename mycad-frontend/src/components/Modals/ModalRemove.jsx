@@ -1,9 +1,7 @@
 import { Button, Modal } from 'flowbite-react';
-import { useState, useEffect, useRef } from 'react';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 
 const ModalRemove = ({ removeFunction, isOpenModal, onCloseModal }) => {
-
   return (
     <Modal
       show={isOpenModal}

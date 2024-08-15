@@ -1,8 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useVehicleContext } from '../../context/VehicleContext';
-import { useAuthContext } from '../../context/AuthContext';
+import { API_URL, downloadFile, getVehicle } from '../../services/api';
+import { useQuery } from '@tanstack/react-query';
 import VehicleProperty from '../../components/VehicleComponents/VehicleView/VehicleProperty';
+const ActionButtons = React.lazy(
+  () => import('../../components/ActionButtons/ActionButtons'),
+);
+const ModalRemove = React.lazy(
+  () => import('../../components/Modals/ModalRemove'),
+);
+const ImageViewer = React.lazy(
+  () => import('../../components/ImageViewer/ImageViewer'),
+);
+const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
 import { FaCar, FaTachometerAlt } from 'react-icons/fa';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import {
@@ -16,26 +26,31 @@ import { TbNumber123 } from 'react-icons/tb';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
 import { BiCategory, BiDollar } from 'react-icons/bi';
 import { MdGarage } from 'react-icons/md';
-import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import ModalRemove from '../../components/Modals/ModalRemove';
 import { Badge } from 'flowbite-react';
-import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import FileIcon from '../../components/FileIcon/FileIcon';
 import classNames from 'classnames';
+import { useVehicleContext } from '../../context/VehicleContext';
+import { IoCopyOutline } from 'react-icons/io5';
+import formatFileData from '../../utils/fileDataFormatter';
+import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
 
 const ViewVehicle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { fetchVehicle, vehicle, loading, deleteVehicle } = useVehicleContext();
-  const { user } = useAuthContext();
+  const { deleteVehicle } = useVehicleContext();
+  // const { refetch, isFetching } = fetchVehicle({id: id})
   const [vehicleData, setVehicleData] = useState(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [images, setImages] = useState([]);
   const [files, setFiles] = useState([]);
-
-  useEffect(() => {
-    fetchVehicle(id);
-  }, [id, fetchVehicle]);
+  const {
+    data: vehicle,
+    refetch,
+    isFetching,
+    isPending,
+  } = useQuery({
+    queryKey: ['vehicle', id],
+    queryFn: ({ signal }) => getVehicle({ id, signal }),
+  });
 
   useEffect(() => {
     const data = {
@@ -60,61 +75,50 @@ const ViewVehicle = () => {
         label: 'Año del Modelo',
       },
       plateNumber: {
-        name: vehicle.plateNumber,
+        name: vehicle?.plateNumber,
         icon: AiOutlineFieldNumber,
         label: 'Número de Placa',
       },
       economicNumber: {
-        name: vehicle.economicNumber,
+        name: vehicle?.economicNumber,
         icon: MdOutlineNumbers,
         label: 'Número Económico',
       },
       serialNumber: {
-        name: vehicle.serialNumber,
+        name: vehicle?.serialNumber,
         icon: TbNumber123,
         label: 'Número de Serie',
       },
       acquisitionDate: {
-        name: vehicle.acquisitionDate,
+        name: vehicle?.acquisitionDate
+          ? parseToLocalDate(vehicle?.acquisitionDate)
+          : '',
         icon: MdCalendarToday,
         label: 'Fecha de Adquisición',
       },
       cost: {
-        name: vehicle.cost,
+        name: vehicle?.cost ? parseToCurrency(vehicle?.cost) : '',
         icon: BiDollar,
         label: 'Costo de Adquisición',
       },
       mileage: {
-        name: vehicle.mileage,
+        name: vehicle?.mileage,
         icon: FaTachometerAlt,
         label: 'Kilometraje',
       },
       status: {
-        name: vehicle.status ? 'Activo' : 'Inactivo',
+        name: vehicle?.status ? 'Activo' : 'Inactivo',
         icon: MdInfo,
         label: 'Estado',
       },
       comments: {
-        name: vehicle.comments,
+        name: vehicle?.comments,
         icon: MdOutlineTextsms,
         label: 'Comentarios',
       },
     };
-
-    let filesState = [];
-    if (vehicle?.files && vehicle?.files?.length > 0) {
-      vehicle.files.map((file) => {
-        let fileData = {
-          url: file.url,
-          type: file.type,
-          name: file.metadata?.originalname,
-        };
-        filesState.push(fileData);
-      });
-    }
-
-    setFiles(filesState);
-    setImages(vehicle?.images || []);
+    setFiles(formatFileData(vehicle?.files || []));
+    setImages(formatFileData(vehicle?.images || []));
     setVehicleData(data);
   }, [vehicle]);
 
@@ -139,6 +143,16 @@ const ViewVehicle = () => {
     navigate('/vehicles/create');
   };
 
+  const handleDownloadImage = (img) => {
+    downloadFile(img);
+  };
+
+  const handleShareImage = (img) => {
+    const imgURL =
+      img instanceof File ? URL.createObjectURL(img) : `${API_URL}/${img.url}`;
+    navigator.clipboard.writeText(imgURL);
+  };
+
   return (
     <div className="h-full bg-white p-4 rounded-md">
       <div className="w-full flex flex-col-reverse lg:flex-row items-center justify-between gap-4 pb-1">
@@ -147,7 +161,6 @@ const ViewVehicle = () => {
           <h1 className="text-2xl font-bold">Detalles del Vehículo</h1>
         </div>
         <ActionButtons
-          userRole={user?.roleId}
           onEdit={onEdit}
           onCreate={onCreate}
           onRemove={onRemove}
@@ -165,7 +178,7 @@ const ViewVehicle = () => {
       <div className="h-fit grid grid-cols-12 gap-4">
         <div className="h-full col-span-12 lg:col-span-6">
           <div className="grid gap-2 grid-cols-12 md:gap-4 w-full h-full">
-            {loading || !vehicleData || Object?.keys(vehicle)?.length == 0 ? (
+            {isFetching && !vehicleData ? (
               <>
                 {Array.from({ length: 8 }).map((_, index) => (
                   <div key={index} className="col-span-12">
@@ -212,7 +225,19 @@ const ViewVehicle = () => {
                     : '',
                 )}
               >
-                {images.length > 0 && <ImageViewer images={images} />}
+                {images.length > 0 && (
+                  <ImageViewer
+                    images={images}
+                    onDownload={(img) => handleDownloadImage(img)}
+                    renderMenuOptions={[
+                      {
+                        label: 'Copiar URL',
+                        icon: IoCopyOutline,
+                        onClick: (img) => handleShareImage(img),
+                      },
+                    ]}
+                  />
+                )}
               </div>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { saveAs } from 'file-saver';
 
 export const BASE_API_URL =
   import.meta.env.VITE_API_URL || 'http://localhost:4000/';
@@ -98,8 +99,8 @@ export const getVehicles = async () => {
   return response.data;
 };
 
-export const getVehicle = async (vehicleId) => {
-  const response = await api.get(`/vehicles/${vehicleId}`);
+export const getVehicle = async ({ id: vehicleId, signal }) => {
+  const response = await api.get(`/vehicles/${vehicleId}`, { signal });
   return response.data;
 };
 
@@ -167,15 +168,15 @@ export const searchVehicles = async ({
   page,
   pageSize,
   conditionName,
-  signal
+  signal,
 }) => {
   try {
     const response = await api.get('/vehicles/search', {
       params: { searchTerm, sortBy, order, page, pageSize, conditionName },
-      signal: signal
-    },);
+      signal: signal,
+    });
     if (response.status !== 200) {
-      throw new Error(response.message || "Hubo un error al hacer la busqueda")
+      throw new Error(response.message || 'Hubo un error al hacer la busqueda');
     }
     return response.data;
   } catch (error) {
@@ -305,6 +306,15 @@ export const deleteVehicleCondition = async (vehicleConditionId) => {
     `/vehicles/vehicleConditions/${vehicleConditionId}`,
   );
   return response.data;
+};
+
+export const downloadFile = async (file) => {
+  const response = await api.get(file.url, {
+    responseType: 'blob',
+  });
+  const fileName = `${file?.name}`;
+
+  saveAs(response.data, fileName ?? 'file');
 };
 
 export default api;

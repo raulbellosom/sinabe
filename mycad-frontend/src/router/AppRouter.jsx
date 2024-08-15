@@ -1,22 +1,24 @@
 import React, { Suspense, lazy, useContext } from 'react';
-import AuthContext from '../context/AuthContext';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from 'react-router-dom';
-import Login from '../pages/login/Login';
-import Dashboard from '../pages/dashboard/Dashboard';
-import Vehicles from '../pages/vehicles/Vehicles';
-import NotFound from '../pages/notFound/NotFound';
-import ProtectedRoute from './ProtectedRoute';
-import LoadingModal from '../components/loadingModal/LoadingModal';
-import CreateVehicle from '../pages/vehicles/CreateVehicle';
-import UpdateVehicle from '../pages/vehicles/UpdateVehicle';
-import ViewVehicle from '../pages/vehicles/ViewVehicle';
-import Catalogs from '../pages/vehicles/catalogs/Catalogs';
+import AuthContext from '../context/AuthContext';
 const Sidebar = lazy(() => import('../components/sidebar/Sidebar'));
+const Login = lazy(() => import('../pages/login/Login'));
+const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
+const Vehicles = lazy(() => import('../pages/vehicles/Vehicles'));
+const NotFound = lazy(() => import('../pages/notFound/NotFound'));
+const ProtectedRoute = lazy(() => import('./ProtectedRoute'));
+const LoadingModal = lazy(
+  () => import('../components/loadingModal/LoadingModal'),
+);
+const CreateVehicle = lazy(() => import('../pages/vehicles/CreateVehicle'));
+const UpdateVehicle = lazy(() => import('../pages/vehicles/UpdateVehicle'));
+const ViewVehicle = lazy(() => import('../pages/vehicles/ViewVehicle'));
+const Catalogs = lazy(() => import('../pages/vehicles/catalogs/Catalogs'));
 
 const AppRouter = () => {
   const { user } = useContext(AuthContext);

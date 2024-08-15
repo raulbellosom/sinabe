@@ -1,32 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import VehicleForm from '../../components/VehicleComponents/VehicleForm/VehicleForm';
 import { useVehicleContext } from '../../context/VehicleContext';
+import { useCatalogContext } from '../../context/CatalogContext';
+import { getVehicle } from '../../services/api';
+import { useQuery } from '@tanstack/react-query';
 import Skeleton from 'react-loading-skeleton';
-import { FaCar } from 'react-icons/fa';
-import DateLocalParced from '../../utils/DateLocalParced';
-import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import ModalRemove from '../../components/Modals/ModalRemove';
-import { useAuthContext } from '../../context/AuthContext';
-import ModalForm from '../../components/Modals/ModalForm';
-import ModelForm from '../../components/VehicleComponents/ModelForm/ModelForm';
+const VehicleForm = React.lazy(
+  () => import('../../components/VehicleComponents/VehicleForm/VehicleForm'),
+);
+const ActionButtons = React.lazy(
+  () => import('../../components/ActionButtons/ActionButtons'),
+);
+const ModalRemove = React.lazy(
+  () => import('../../components/Modals/ModalRemove'),
+);
+const ModalForm = React.lazy(() => import('../../components/Modals/ModalForm'));
+const ModelForm = React.lazy(
+  () => import('../../components/VehicleComponents/ModelForm/ModelForm'),
+);
+import { FaCar, FaSave } from 'react-icons/fa';
 
 const UpdateVehicle = () => {
+  const formRef = useRef(null);
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuthContext();
+  const { updateVehicle, deleteVehicle } = useVehicleContext();
   const {
-    updateVehicle,
-    fetchVehicle,
-    deleteVehicle,
-    vehicle,
+    createVehicleModel,
+    vehicleConditions,
     vehicleTypes,
     vehicleBrands,
     vehicleModels,
-    vehicleConditions,
-    loading,
-    createVehicleModel,
-  } = useVehicleContext();
+  } = useCatalogContext();
+
   const [initialValues, setInitialValues] = useState({
     modelId: '',
     economicNumber: '',
@@ -50,13 +56,18 @@ const UpdateVehicle = () => {
     typeId: '',
   });
   const [formattedModels, setFormattedModels] = useState([]);
+  const {
+    data: vehicle,
+    refetch,
+    isFetching,
+    isPending,
+  } = useQuery({
+    queryKey: ['vehicle', id],
+    queryFn: ({ signal }) => getVehicle({ id, signal }),
+  });
 
   useEffect(() => {
-    fetchVehicle(id);
-  }, [id]);
-
-  useEffect(() => {
-    if (Object.keys(vehicle).length !== 0) {
+    if (vehicle && Object.keys(vehicle).length !== 0) {
       const formatedFiles = vehicle?.files?.map((file) => ({
         id: file.id,
         url: file.url,
@@ -72,7 +83,7 @@ const UpdateVehicle = () => {
         acquisitionDate: vehicle.acquisitionDate,
         cost: vehicle.cost || '',
         mileage: vehicle.mileage,
-        status: vehicle.status || '',
+        status: vehicle.status == 'true' ? true : false,
         images: vehicle.images || [],
         files: vehicle?.files ? formatedFiles : [],
         comments: vehicle.comments || '',
@@ -155,6 +166,12 @@ const UpdateVehicle = () => {
       typeId: '',
     });
   };
+
+  const handleSubmitRef = () => {
+    if (formRef.current) {
+      formRef.current.submitForm();
+    }
+  };
   return (
     <>
       <div className="h-full bg-white p-4 rounded-md">
@@ -164,9 +181,16 @@ const UpdateVehicle = () => {
             <h1 className="text-2xl font-bold">Actualizar Vehículo</h1>
           </div>
           <ActionButtons
-            userRole={user?.roleId}
+            extraActions={[
+              {
+                label: 'Guardar',
+                action: handleSubmitRef,
+                icon: FaSave,
+                color: 'green',
+              },
+            ]}
             onShow={onShow}
-            onCreate={onCreate}
+            // onCreate={onCreate}
             onRemove={onRemove}
           />
         </div>
@@ -174,7 +198,8 @@ const UpdateVehicle = () => {
           Llena el formulario para crear un nuevo vehículo. Los campos marcados
           con * son obligatorios.
         </p>
-        {loading ||
+        {isPending ||
+        isFetching ||
         (Object.keys(vehicle).length == 0 && vehicle.constructor === Object) ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 gap-y-6">
             <Skeleton className="h-10 rounded-md" />
@@ -189,6 +214,7 @@ const UpdateVehicle = () => {
           </div>
         ) : (
           <VehicleForm
+            ref={formRef}
             initialValues={initialValues}
             onSubmit={handleSubmit}
             vehicleModels={formattedModels}
