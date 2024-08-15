@@ -41,7 +41,7 @@ const TableActions = ({ handleSearchTerm, onCheckFilter, filters }) => {
     )
   }
   return (
-    <div className="flex flex-col md:flex-row items-stretch md:items-center md:space-x-3 space-y-3 md:space-y-0 justify-between  py-4 border-t dark:border-gray-700">
+    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between">
       <div className="w-full md:w-1/2">
         <form className="flex items-center">
           <div className="relative w-full">

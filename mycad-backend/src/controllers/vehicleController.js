@@ -522,8 +522,12 @@ export const searchVehicles = async (req, res) => {
             condition: true,
           },
         },
-        images: true,
-        files: true,
+        images: {
+          where: { enabled: true },
+        },
+        files: {
+          where: { enabled: true },
+        },
       },
       orderBy: formSortBy(orderField, orderDirection),
       skip,
@@ -535,6 +539,14 @@ export const searchVehicles = async (req, res) => {
     });
 
     const totalPages = Math.ceil(totalRecords / pageSize);
+
+    if (vehicles) {
+      vehicles.acquisitionDate
+        ? (vehicles.acquisitionDate = vehicles.acquisitionDate
+            .toISOString()
+            .split("T")[0])
+        : null;
+    }
 
     res.json({
       data: vehicles,

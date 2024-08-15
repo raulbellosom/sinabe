@@ -25,7 +25,7 @@ import { useNavigate } from 'react-router-dom';
 import { Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchVehicles } from '../../services/api';
-import { ThreeCircles } from 'react-loader-spinner';
+import Card from '../../components/Card/Card';
 
 const vehicleColumns = [
   {
@@ -59,8 +59,8 @@ const vehicleColumns = [
   },
   {
     id: 'actions',
-    value: '',
-    classes: ' w-1',
+    value: 'Acciones',
+    classes: 'text-center w-1',
   },
 ];
 
@@ -192,8 +192,8 @@ const Vehicles = () => {
   // const { pagination } = data
   console.log('vehicles data ', vehicles?.data);
   return (
-    <div>
-      <section className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 antialiased">
+    <>
+      <section className="flex flex-col gap-2 bg-white rounded-md dark:bg-gray-900 p-3 antialiased">
         <TableHeader
           title="Vehículos"
           labelButton="Nuevo vehículo"
@@ -205,58 +205,129 @@ const Vehicles = () => {
           filters={searchFilters?.conditionName}
           value={searchFilters?.searchTerm}
         />
-          <Table columns={columns} sortBy={sortBy}>
-            {/* {isPending || isLoading && <Skeleton className="w-full h-10" count={10} />} */}
-            {vehicles && !isPending && vehicles?.data?.map((vehicle) => {
-              const { name, type, brand, year } = vehicle.model;
-              return (
-                <T.Row
-                  key={vehicle.id}
-                  className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <T.Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    {name}
-                  </T.Cell>
-                  <T.Cell>
-                    {/* <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300"> */}
-                    {type?.name}
-                    {/* </span> */}
-                  </T.Cell>
-                  <T.Cell>{brand?.name}</T.Cell>
-                  <T.Cell>{year}</T.Cell>
-                  <T.Cell>
-                    <div
-                      className={`flex items-center rounded text-center text-white justify-center w-2/3 ${vehicle?.status ? 'bg-green-500' : 'bg-red-600'}`}
+        {/* {vehicles && !isPending ? ( */}
+          <>
+            <div className="hidden md:block">
+              <Table columns={columns} sortBy={sortBy}>
+                {vehicles && !isPending && vehicles?.data?.map((vehicle) => {
+                  const { name, type, brand, year } = vehicle.model;
+                  return (
+                    <T.Row
+                      key={vehicle.id}
+                      className="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
-                      {vehicle?.status ? 'Activo' : 'Inactivo'}
-                    </div>
-                  </T.Cell>
-                  <T.Cell className="p-4">
-                    <div className="w-full flex justify-center md:justify-end items-center gap-2 border border-gray-200 rounded-md p-2 md:border-none md:p-0">
-                      <LinkButton
-                        route={`/vehicles/edit/${vehicle.id}`}
-                        label="Editar"
-                        icon={FaEdit}
-                        color="yellow"
-                      />
-                      <LinkButton
-                        route={`/vehicles/view/${vehicle.id}`}
-                        label="Ver"
-                        icon={FaEye}
-                        color="cyan"
-                      />
-                      <ActionButtons
-                        onRemove={() => {
-                          setIsOpenModal(true);
-                          setVehicleId(vehicle.id);
-                        }}
-                      />
-                    </div>
-                  </T.Cell>
-                </T.Row>
-              );
-            })}
-          </Table>
+                      <T.Cell className="font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        {name}
+                      </T.Cell>
+                      <T.Cell>
+                        {/* <span className="bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-primary-900 dark:text-primary-300"> */}
+                        {type?.name}
+                        {/* </span> */}
+                      </T.Cell>
+                      <T.Cell>{brand?.name}</T.Cell>
+                      <T.Cell>{year}</T.Cell>
+                      <T.Cell>
+                        <div
+                          className={`flex items-center rounded text-center text-white justify-center px-2 ${vehicle?.status ? 'bg-green-500' : 'bg-red-600'}`}
+                        >
+                          {vehicle?.status ? 'Activo' : 'Inactivo'}
+                        </div>
+                      </T.Cell>
+                      <T.Cell className="p-4">
+                        <div className="w-full flex justify-center md:justify-end items-center gap-2 border border-gray-200 rounded-md p-2 md:border-none md:p-0">
+                          <LinkButton
+                            route={`/vehicles/edit/${vehicle.id}`}
+                            label="Editar"
+                            icon={FaEdit}
+                            color="yellow"
+                          />
+                          <LinkButton
+                            route={`/vehicles/view/${vehicle.id}`}
+                            label="Ver"
+                            icon={FaEye}
+                            color="cyan"
+                          />
+                          <ActionButtons
+                            onRemove={() => {
+                              setIsOpenModal(true);
+                              setVehicleId(vehicle.id);
+                            }}
+                          />
+                        </div>
+                      </T.Cell>
+                    </T.Row>
+                  );
+                })}
+              </Table>
+            </div>
+            <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 md:hidden">
+              {vehicles?.data?.map((vehicle) => {
+                const data = {
+                  image: { key: 'Imagen', value: vehicle?.images[0] ?? [] },
+                  title: {
+                    key: 'Vehiculo',
+                    value: `${vehicle.model.name} ${vehicle.model.year} (${vehicle.model.brand.name} ${vehicle.model.type.name})`,
+                  },
+                  subtitle: { key: 'Año', value: vehicle.economicNumber },
+                  tags: {
+                    key: 'Condiciones',
+                    value: vehicle.conditions.map(
+                      (condition) => condition.condition.name,
+                    ),
+                  },
+                  serialNumber: {
+                    key: 'Número de serie',
+                    value: vehicle.serialNumber,
+                  },
+                  plateNumber: {
+                    key: 'Número de placa',
+                    value: vehicle.plateNumber,
+                  },
+                  cost: {
+                    key: 'Costo de Adquisición',
+                    value: vehicle.cost,
+                  },
+                  acquisitionDate: {
+                    key: 'Fecha de adquisición',
+                    value: vehicle.acquisitionDate,
+                  },
+                  status: {
+                    key: 'Estatus',
+                    value: vehicle.status ? 'Activo' : 'Inactivo',
+                  },
+                  actions: {
+                    key: 'Acciones',
+                    value: (
+                      <div className="flex justify-center items-center gap-2">
+                        <LinkButton
+                          route={`/vehicles/edit/${vehicle.id}`}
+                          label="Editar"
+                          icon={FaEdit}
+                          color="yellow"
+                        />
+                        <LinkButton
+                          route={`/vehicles/view/${vehicle.id}`}
+                          label="Ver"
+                          icon={FaEye}
+                          color="cyan"
+                        />
+                        <ActionButtons
+                          onRemove={() => {
+                            setIsOpenModal(true);
+                            setVehicleId(vehicle.id);
+                          }}
+                        />
+                      </div>
+                    ),
+                  },
+                };
+                return <Card key={vehicle.id} data={data} showImage />;
+              })}
+            </div>
+          </>
+        {/* ) : (
+          <Skeleton className="w-full h-10" count={10} />
+        )} */}
         {vehicles?.pagination && (
           <TableFooter
             pagination={vehicles?.pagination}
@@ -271,7 +342,7 @@ const Vehicles = () => {
         onCloseModal={() => setIsOpenModal(false)}
         removeFunction={handleDeleteVehicle}
       />
-    </div>
+    </>
   );
 };
 

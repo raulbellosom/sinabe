@@ -156,32 +156,6 @@ const ImageViewer = ({
           </>
         );
       }}
-      // overlayRender={({ index }) => {
-      //   return (
-      //     <>
-      //       {onDownload && (
-      //         <Dropdown
-      //           label=""
-      //           dismissOnClick={false}
-      //           renderTrigger={() => (
-      //             <BsThreeDotsVertical
-      //               className="absolute left-0 top-0 p-2 w-full z-50"
-      //               size={32}
-      //             />
-      //           )}
-      //         >
-      //           <Dropdown.Item
-      //             className="bg-transparent text-slate-300 hover:bg-slate-100 hover:text-slate-500"
-      //             onClick={() => onDownload(images[index])}
-      //           >
-      //             <MdSaveAlt size={20} />
-      //             <span>Descargar</span>
-      //           </Dropdown.Item>
-      //         </Dropdown>
-      //       )}
-      //     </>
-      //   );
-      // }}
     >
       {images.map((image, index) => (
         <PhotoView
@@ -210,7 +184,7 @@ const ImageViewer = ({
               src={
                 image instanceof File
                   ? FormattedUrlImage(image)
-                  : FormattedUrlImage(image.thumbnail)
+                  : FormattedUrlImage(image?.thumbnail || image.url)
               }
               alt={`Image ${index + 1}`}
               className="w-full h-full object-cover cursor-pointer shadow-md rounded-lg"
