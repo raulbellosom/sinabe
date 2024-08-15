@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useVehicleContext } from '../../context/VehicleContext';
 import { useCatalogContext } from '../../context/CatalogContext';
-import { useAuthContext } from '../../context/AuthContext';
 import { getVehicle } from '../../services/api';
 import { useQuery } from '@tanstack/react-query';
 import Skeleton from 'react-loading-skeleton';
@@ -19,12 +18,12 @@ const ModalForm = React.lazy(() => import('../../components/Modals/ModalForm'));
 const ModelForm = React.lazy(
   () => import('../../components/VehicleComponents/ModelForm/ModelForm'),
 );
-import { FaCar } from 'react-icons/fa';
+import { FaCar, FaSave } from 'react-icons/fa';
 
 const UpdateVehicle = () => {
+  const formRef = useRef(null);
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuthContext();
   const { updateVehicle, deleteVehicle } = useVehicleContext();
   const {
     createVehicleModel,
@@ -84,7 +83,7 @@ const UpdateVehicle = () => {
         acquisitionDate: vehicle.acquisitionDate,
         cost: vehicle.cost || '',
         mileage: vehicle.mileage,
-        status: vehicle.status || '',
+        status: vehicle.status == 'true' ? true : false,
         images: vehicle.images || [],
         files: vehicle?.files ? formatedFiles : [],
         comments: vehicle.comments || '',
@@ -167,6 +166,12 @@ const UpdateVehicle = () => {
       typeId: '',
     });
   };
+
+  const handleSubmitRef = () => {
+    if (formRef.current) {
+      formRef.current.submitForm(); // Disparar el submit desde el componente padre
+    }
+  };
   return (
     <>
       <div className="h-full bg-white p-4 rounded-md">
@@ -176,9 +181,16 @@ const UpdateVehicle = () => {
             <h1 className="text-2xl font-bold">Actualizar Vehículo</h1>
           </div>
           <ActionButtons
-            userRole={user?.roleId}
+            extraActions={[
+              {
+                label: 'Guardar',
+                action: handleSubmitRef,
+                icon: FaSave,
+                color: 'green',
+              },
+            ]}
             onShow={onShow}
-            onCreate={onCreate}
+            // onCreate={onCreate}
             onRemove={onRemove}
           />
         </div>
@@ -202,6 +214,8 @@ const UpdateVehicle = () => {
           </div>
         ) : (
           <VehicleForm
+            ref={formRef}
+            onHandleSubmit={handleSubmit}
             initialValues={initialValues}
             onSubmit={handleSubmit}
             vehicleModels={formattedModels}

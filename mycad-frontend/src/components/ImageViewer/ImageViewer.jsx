@@ -8,12 +8,14 @@ import { Dropdown } from 'flowbite-react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import 'react-photo-view/dist/react-photo-view.css';
+import classNames from 'classnames';
 
 const ImageViewer = ({
   images = [],
   onRemove,
   onDownload,
   renderMenuOptions = [],
+  imageClassName,
 }) => {
   return (
     <PhotoProvider
@@ -28,7 +30,7 @@ const ImageViewer = ({
       pullClosable={false}
       maskClosable={false}
       loop={true}
-      speed={() => 500}
+      speed={() => 300}
       easing={(type) =>
         type === 2
           ? 'cubic-bezier(0.36, 0, 0.66, -0.56)'
@@ -167,7 +169,12 @@ const ImageViewer = ({
           }
           index={index}
         >
-          <div className="relative w-24 h-24 xl:h-28 xl:w-28 2xl:h-32 2xl:w-32">
+          <div
+            className={classNames(
+              'relative w-24 h-24 xl:h-28 xl:w-28 2xl:h-32 2xl:w-32',
+              imageClassName,
+            )}
+          >
             {onRemove && (
               <button
                 onClick={(e) => {
