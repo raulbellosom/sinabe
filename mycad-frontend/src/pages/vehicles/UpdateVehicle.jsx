@@ -169,7 +169,7 @@ const UpdateVehicle = () => {
 
   const handleSubmitRef = () => {
     if (formRef.current) {
-      formRef.current.submitForm(); // Disparar el submit desde el componente padre
+      formRef.current.submitForm();
     }
   };
   return (
@@ -215,7 +215,6 @@ const UpdateVehicle = () => {
         ) : (
           <VehicleForm
             ref={formRef}
-            onHandleSubmit={handleSubmit}
             initialValues={initialValues}
             onSubmit={handleSubmit}
             vehicleModels={formattedModels}
