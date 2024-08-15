@@ -31,6 +31,7 @@ import classNames from 'classnames';
 import { useVehicleContext } from '../../context/VehicleContext';
 import { IoCopyOutline } from 'react-icons/io5';
 import formatFileData from '../../utils/fileDataFormatter';
+import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
 
 const ViewVehicle = () => {
   const { id } = useParams();
@@ -89,12 +90,14 @@ const ViewVehicle = () => {
         label: 'Número de Serie',
       },
       acquisitionDate: {
-        name: vehicle?.acquisitionDate,
+        name: vehicle?.acquisitionDate
+          ? parseToLocalDate(vehicle?.acquisitionDate)
+          : '',
         icon: MdCalendarToday,
         label: 'Fecha de Adquisición',
       },
       cost: {
-        name: vehicle?.cost,
+        name: vehicle?.cost ? parseToCurrency(vehicle?.cost) : '',
         icon: BiDollar,
         label: 'Costo de Adquisición',
       },

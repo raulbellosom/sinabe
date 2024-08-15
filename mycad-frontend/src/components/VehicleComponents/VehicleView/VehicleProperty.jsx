@@ -13,7 +13,7 @@ const VehicleProperty = ({ label, value, icon: Icon }) => {
         {label}
       </h2>
       <p className="text-sm lg:text-base flex items-center gap-2 justify-start min-h-6 border-b border-neutral-100 pb-1">
-        {Icon && <Icon size={20} className="mr-2 inline text-orange-500" />}
+        {Icon && <Icon size={20} className="inline text-orange-500" />}
         <span dangerouslySetInnerHTML={{ __html: formattedValue }} />
       </p>
     </div>

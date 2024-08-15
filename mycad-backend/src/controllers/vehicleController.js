@@ -540,16 +540,20 @@ export const searchVehicles = async (req, res) => {
 
     const totalPages = Math.ceil(totalRecords / pageSize);
 
+    let vehiclesData = {};
     if (vehicles) {
-      vehicles.acquisitionDate
-        ? (vehicles.acquisitionDate = vehicles.acquisitionDate
-            .toISOString()
-            .split("T")[0])
-        : null;
+      vehiclesData = vehicles.map((vehicle) => {
+        vehicle.acquisitionDate
+          ? (vehicle.acquisitionDate = vehicle.acquisitionDate
+              .toISOString()
+              .split("T")[0])
+          : null;
+        return vehicle;
+      });
     }
 
     res.json({
-      data: vehicles,
+      data: vehiclesData,
       pagination: {
         totalRecords,
         totalPages,

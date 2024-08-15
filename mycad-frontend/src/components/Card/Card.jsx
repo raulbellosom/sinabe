@@ -58,7 +58,7 @@ const Card = ({ data = {}, showImage = false }) => {
           if (key === 'tags') return null;
           return (
             <div key={key} className="mb-2">
-              <h6 className="text-sm font-semibold text-gray-600">
+              <h6 className="text-sm font-semibold text-gray-600 truncate">
                 {data[key].key}
               </h6>
               <p className="text-sm font-semibold text-gray-800">
