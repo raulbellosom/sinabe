@@ -26,6 +26,7 @@ import { Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchVehicles } from '../../services/api';
 import Card from '../../components/Card/Card';
+import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
 
 const vehicleColumns = [
   {
@@ -235,11 +236,13 @@ const Vehicles = () => {
                   },
                   cost: {
                     key: 'Costo de Adquisición',
-                    value: vehicle.cost,
+                    value: vehicle?.cost ? parseToCurrency(vehicle.cost) : '',
                   },
                   acquisitionDate: {
-                    key: 'Fecha de adquisición',
-                    value: vehicle.acquisitionDate,
+                    key: 'F. de adquisición',
+                    value: vehicle?.acquisitionDate
+                      ? parseToLocalDate(vehicle.acquisitionDate)
+                      : '',
                   },
                   status: {
                     key: 'Estatus',
