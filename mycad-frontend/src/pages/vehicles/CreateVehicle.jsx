@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCatalogContext } from '../../context/CatalogContext';
-import { useAuthContext } from '../../context/AuthContext';
 import { useVehicleContext } from '../../context/VehicleContext';
 import { FaCar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -16,11 +15,10 @@ const ModelForm = React.lazy(
 );
 
 const CreateVehicle = () => {
+  const formRef = useRef(null);
   const { createVehicle, createVehicleModel } = useVehicleContext();
   const { vehicleModels, vehicleBrands, vehicleTypes, vehicleConditions } =
     useCatalogContext();
-
-  const { user } = useAuthContext();
   const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,6 +105,12 @@ const CreateVehicle = () => {
     });
   };
 
+  const handleSubmitRef = () => {
+    if (formRef.current) {
+      formRef.current.submitForm();
+    }
+  };
+
   return (
     <div className="h-full bg-white p-4 rounded-md">
       <div className="flex flex-col-reverse md:flex-row items-center gap-4 w-full pb-1">
@@ -115,7 +119,14 @@ const CreateVehicle = () => {
           <h1 className="text-2xl font-bold">Crear Vehículo</h1>
         </div>
         <ActionButtons
-          userRole={user?.roleId}
+          extraActions={[
+            {
+              label: 'Guardar',
+              action: handleSubmitRef,
+              icon: FaSave,
+              color: 'green',
+            },
+          ]}
           onCancel={onCancel}
           labelCancel={'Descartar'}
         />
@@ -125,6 +136,7 @@ const CreateVehicle = () => {
         con * son obligatorios.
       </p>
       <VehicleForm
+        ref={formRef}
         initialValues={initialValues}
         onSubmit={handleSubmit}
         vehicleModels={formattedModels}
