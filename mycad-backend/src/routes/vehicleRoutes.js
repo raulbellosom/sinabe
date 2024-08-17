@@ -30,6 +30,7 @@ import {
   getConditionById,
   getConditions,
 } from "../controllers/vehicleModelController.js";
+import { createMultipleVehicles } from "../controllers/VehicleExtrasController.js";
 import {
   processImages,
   upload,
@@ -65,6 +66,7 @@ router
   .get(protect, getConditions)
   .post(protect, createCondition);
 router.route("/search").get(protect, searchVehicles);
+router.route("/createMultiple").post(protect, createMultipleVehicles);
 
 router
   .route("/:id")

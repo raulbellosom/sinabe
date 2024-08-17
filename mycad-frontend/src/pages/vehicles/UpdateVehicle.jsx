@@ -183,7 +183,7 @@ const UpdateVehicle = () => {
           <ActionButtons
             extraActions={[
               {
-                label: 'Guardar',
+                label: 'Actualizar',
                 action: handleSubmitRef,
                 icon: FaSave,
                 color: 'green',
