@@ -1,4 +1,4 @@
-import { Card, TextInput } from 'flowbite-react';
+import { Card, FloatingLabel, TextInput } from 'flowbite-react';
 import React, { useState, useEffect } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import ActionButtons from '../ActionButtons/ActionButtons';
@@ -34,7 +34,7 @@ const CatalogList = ({
 
   return (
     <Card className="w-full flex-1 overflow-hidden">
-      <div className="mb-2 flex items-center justify-between">
+      <div className=" flex items-center justify-between">
         <h5 className="truncate text-base md:text-lg w-full font-bold leading-none text-orange-500 dark:text-white">
           {title}
         </h5>
@@ -52,14 +52,16 @@ const CatalogList = ({
       </div>
       <div
         className={classNames(
-          'overflow-hidden transition-all duration-500 ease-in-out',
-          colapse ? 'max-h-[50vh] opacity-100' : 'max-h-0 opacity-0',
+          'overflow-hidden transition-all duration-500 ease-in-out py-2',
+          colapse ? 'max-h-[52vh] opacity-100' : 'max-h-0 opacity-0',
         )}
       >
-        <TextInput
+        <FloatingLabel
           className="w-full mb-2"
-          placeholder="Buscar..."
+          label="Buscar"
+          variant="standard"
           value={search}
+          type="search"
           onChange={(e) => setSearch(e.target.value)}
         />
         <div className="max-h-[45vh] overflow-y-auto">

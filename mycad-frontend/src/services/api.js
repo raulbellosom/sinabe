@@ -185,6 +185,17 @@ export const searchVehicles = async ({
   }
 };
 
+export const createMultipleVehicles = async (csvFile, userId) => {
+  api.defaults.headers['Content-Type'] = 'multipart/form-data';
+  let data = new FormData();
+
+  data.append('csvFile', csvFile);
+  data.append('userId', JSON.stringify(userId));
+
+  const response = await api.post(`/vehicles/createMultipleVehicles`, data);
+  return response.data;
+};
+
 export const getVehicleModels = async () => {
   const response = await api.get(`/vehicles/vehicleModels`);
   return response.data;

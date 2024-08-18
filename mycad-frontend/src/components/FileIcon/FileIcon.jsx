@@ -129,20 +129,26 @@ const FileIcon = ({ file, className, size, onRemove }) => {
           title={selectedFile.name}
           isOpenModal={isModalOpen}
           onCloseModal={handleCloseModal}
-          dismissible={false}
+          dismissible={true}
           size="4xl"
         >
-          <embed
-            src={
-              file instanceof File
-                ? URL.createObjectURL(file)
-                : `${API_URL}/${file.url}`
-            }
-            type="application/pdf"
-            width="100%"
-            height="100%"
-            className="min-h-[80vh]"
-          />
+          {window.innerWidth < 768 ? (
+            <PDFReader
+              file={file instanceof File ? file : `${API_URL}/${file.url}`}
+            />
+          ) : (
+            <embed
+              src={
+                file instanceof File
+                  ? URL.createObjectURL(file)
+                  : `${API_URL}/${file.url}`
+              }
+              type="application/pdf"
+              width="100%"
+              height="100%"
+              className="min-h-[80vh]"
+            />
+          )}
         </ModalViewer>
       )}
       {isModalDownloadOpen && (

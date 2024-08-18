@@ -4,10 +4,11 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import { ThreeCircles } from 'react-loader-spinner';
 import { TbFileSad } from 'react-icons/tb';
+import classNames from 'classnames';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-const PDFReader = ({ file }) => {
+const PDFReader = ({ file, className }) => {
   const [numPages, setNumPages] = useState(null);
 
   function onDocumentLoadSuccess({ numPages }) {
@@ -15,7 +16,12 @@ const PDFReader = ({ file }) => {
   }
 
   const ErrorMessage = () => (
-    <div className="text-center text-red-500 p-4 flex flex-col justify-center items-center">
+    <div
+      className={classNames(
+        'text-center text-red-500 p-4 flex flex-col justify-center items-center',
+        classNames,
+      )}
+    >
       <span>
         <TbFileSad size={44} />
       </span>

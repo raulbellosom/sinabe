@@ -66,7 +66,9 @@ router
   .get(protect, getConditions)
   .post(protect, createCondition);
 router.route("/search").get(protect, searchVehicles);
-router.route("/createMultiple").post(protect, createMultipleVehicles);
+router
+  .route("/createMultipleVehicles")
+  .post(protect, upload.single("csvFile"), createMultipleVehicles);
 
 router
   .route("/:id")

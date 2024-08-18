@@ -5,8 +5,10 @@ const LinkButton = ({ route, color, icon: Icon, label, outline = true }) => {
   return (
     <Link className="bg-transparent" to={route}>
       <Button type="button" color={color} outline={outline}>
-        <Icon size={18} className="mr-2 mt-0.5" />
-        <span className="sm:hidden md:block">{label}</span>
+        <span>
+          <Icon size={18} className="mr-2 mt-0.5" />
+        </span>
+        <span>{label}</span>
       </Button>
     </Link>
   );
