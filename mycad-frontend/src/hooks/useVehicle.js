@@ -6,6 +6,7 @@ import {
   updateVehicle,
   deleteVehicle,
   searchVehicles as searchVehiclesAPI,
+  createMultipleVehicles,
 } from '../services/api';
 import { useLoading } from '../context/LoadingContext';
 import Notifies from '../components/Notifies/Notifies';
@@ -71,6 +72,21 @@ const useVehicle = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
+  const createMultipleVehiclesMutation = useMutation({
+    mutationFn: createMultipleVehicles,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries('vehicles');
+      dispatch({ type: 'CREATE_MULTIPLE_VEHICLES', payload: data });
+      Notifies('success', 'Vehiculos creados exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al crear los vehiculos');
+      return error;
+    },
+    onSettled: () => setLoading(false),
+  });
+
   const updateVehicleMutation = useMutation({
     mutationFn: updateVehicle,
     onMutate: () => setLoading(true),
@@ -103,6 +119,9 @@ const useVehicle = (dispatch) => {
     fetchVehicles: fetchVehicles.mutate,
     createVehicle: (values) => {
       return createVehicleMutation.mutateAsync(values);
+    },
+    createMultipleVehicles: (values) => {
+      return createMultipleVehiclesMutation.mutateAsync(values);
     },
     updateVehicle: (values) => {
       return updateVehicleMutation.mutateAsync(values);

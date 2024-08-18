@@ -4,6 +4,7 @@ export const getVehicleTypes = async (req, res) => {
   try {
     const vehicleTypes = await db.vehicleType.findMany({
       where: { enabled: true },
+      orderBy: { name: "asc" },
       include: {
         models: {
           include: {
@@ -167,6 +168,7 @@ export const deleteVehicleType = async (req, res) => {
 
     const data = await db.vehicleType.findMany({
       where: { enabled: true },
+      orderBy: { name: "asc" },
       include: {
         models: {
           include: {
@@ -195,6 +197,7 @@ export const getVehicleBrands = async (req, res) => {
   try {
     const vehicleBrands = await db.vehicleBrand.findMany({
       where: { enabled: true },
+      orderBy: { name: "asc" },
       include: {
         models: {
           include: {
@@ -360,6 +363,7 @@ export const deleteVehicleBrand = async (req, res) => {
 
     const vehicleBrands = await db.vehicleBrand.findMany({
       where: { enabled: true },
+      orderBy: { name: "asc" },
       include: {
         models: {
           include: {
@@ -391,6 +395,7 @@ export const getVehicleModels = async (req, res) => {
   try {
     const vehicleModels = await db.model.findMany({
       where: { enabled: true },
+      orderBy: { name: "asc" },
       include: {
         brand: true,
         type: true,
@@ -529,6 +534,7 @@ export const deleteVehicleModel = async (req, res) => {
 
     await db.model.update({
       where: { id: parseInt(id, 10), enabled: true },
+      orderBy: { name: "asc" },
       data: {
         enabled: false,
       },
@@ -553,6 +559,7 @@ export const getConditions = async (req, res) => {
   try {
     const conditions = await db.condition.findMany({
       where: { enabled: true },
+      orderBy: { name: "asc" },
       include: {
         vehicles: {
           select: { id: true },
@@ -713,6 +720,7 @@ export const deleteCondition = async (req, res) => {
 
     const data = await db.condition.findMany({
       where: { enabled: true },
+      orderBy: { name: "asc" },
       include: {
         vehicles: {
           select: { id: true },

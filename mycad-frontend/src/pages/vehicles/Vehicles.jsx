@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { act, useCallback, useEffect, useRef, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { useVehicleContext } from '../../context/VehicleContext';
 const Table = React.lazy(() => import('../../components/Table/Table'));
@@ -20,6 +20,12 @@ const TableFooter = React.lazy(
 const LinkButton = React.lazy(
   () => import('../../components/ActionButtons/LinkButton'),
 );
+const ModalViewer = React.lazy(
+  () => import('../../components/Modals/ModalViewer'),
+);
+const CreateMultipleVehicles = React.lazy(
+  () => import('./CreateMultipleVehicle'),
+);
 import { FaEdit, FaEye } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { Table as T } from 'flowbite-react';
@@ -28,6 +34,8 @@ import { searchVehicles } from '../../services/api';
 import Card from '../../components/Card/Card';
 import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
+import { MdCloudUpload } from 'react-icons/md';
+import { RiAddBoxFill } from 'react-icons/ri';
 
 const vehicleColumns = [
   {
@@ -107,10 +115,11 @@ const Vehicles = () => {
   const { deleteVehicle } = useVehicleContext();
   const [columns, setColumns] = useState([...vehicleColumns]);
   const navigate = useNavigate();
+  const lastChange = useRef();
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isOpenModalCreate, setIsOpenModalCreate] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
-  const lastChange = useRef();
   const [searchFilters, setSearchFilters] = useState({
     searchTerm: '',
     pageSize: 5,
@@ -236,17 +245,27 @@ const Vehicles = () => {
 
   return (
     <>
-      <section className="flex flex-col gap-2 bg-white rounded-md dark:bg-gray-900 p-3 antialiased">
-        <TableHeader
-          title="Vehículos"
-          labelButton="Nuevo vehículo"
-          redirect="/vehicles/create"
-        />
+      <section className="flex flex-col gap-3 bg-white rounded-md dark:bg-gray-900 p-3 antialiased">
+        <TableHeader title="Vehículos" />
         <TableActions
           handleSearchTerm={handleSearch}
           onCheckFilter={onCheckFilter}
           filters={searchFilters?.conditionName}
           value={searchFilters?.searchTerm}
+          actions={[
+            {
+              label: 'Cargar',
+              action: () => setIsOpenModalCreate(true),
+              color: 'indigo',
+              icon: MdCloudUpload,
+            },
+            {
+              label: 'Nuevo',
+              href: '/vehicles/create',
+              color: 'green',
+              icon: RiAddBoxFill,
+            },
+          ]}
         />
         {vehicles && !isPending ? (
           <>
@@ -442,6 +461,14 @@ const Vehicles = () => {
           />
         )}
       </section>
+      <ModalViewer
+        isOpenModal={isOpenModalCreate}
+        onCloseModal={() => setIsOpenModalCreate(false)}
+        title="Cargar vehículos"
+        dismissible
+      >
+        <CreateMultipleVehicles />
+      </ModalViewer>
       <ModalRemove
         isOpenModal={isOpenModal}
         onCloseModal={() => setIsOpenModal(false)}

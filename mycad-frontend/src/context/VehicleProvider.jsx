@@ -11,8 +11,13 @@ const VehicleProvider = ({ children }) => {
     loading: true,
   });
 
-  const { fetchVehicles, createVehicle, updateVehicle, deleteVehicle } =
-    useVehicle(dispatch);
+  const {
+    fetchVehicles,
+    createVehicle,
+    updateVehicle,
+    deleteVehicle,
+    createMultipleVehicles,
+  } = useVehicle(dispatch);
 
   return (
     <VehicleContext.Provider
@@ -22,6 +27,7 @@ const VehicleProvider = ({ children }) => {
         createVehicle,
         updateVehicle,
         deleteVehicle,
+        createMultipleVehicles,
       }}
     >
       {children}
