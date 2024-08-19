@@ -4,9 +4,9 @@ import { useVehicleContext } from '../../context/VehicleContext';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import ModalViewer from '../../components/Modals/ModalViewer';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import { FaEdit, FaEye } from 'react-icons/fa';
+import { FaEdit, FaEye, FaFileCsv } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { Table as T } from 'flowbite-react';
+import { Checkbox, Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchVehicles } from '../../services/api';
 import Card from '../../components/Card/Card';
@@ -109,8 +109,15 @@ const vehicleColumns = [
   },
 ];
 const formatVehicle = (vehicleData) => {
-  const {model, acquisitionDate, plateNumber, serialNumber, economicNumber, cost } = vehicleData
-  const vehicle = `\n${model.name},${model.type.name},${model.brand.name},${model.year},${economicNumber},${serialNumber},${plateNumber},${acquisitionDate},${cost}`
+  const {
+    model,
+    acquisitionDate,
+    plateNumber,
+    serialNumber,
+    economicNumber,
+    cost,
+  } = vehicleData;
+  const vehicle = `\n${model.name},${model.type.name},${model.brand.name},${model.year},${economicNumber},${serialNumber},${plateNumber},${acquisitionDate},${cost}`;
   /* let vehicle = {
     name: model.name,
     type: model.type.name,
@@ -122,13 +129,13 @@ const formatVehicle = (vehicleData) => {
     acquisitionDate,
     cost
   } */
-  return vehicle
-}
+  return vehicle;
+};
 const Vehicles = () => {
   const { deleteVehicle } = useVehicleContext();
   const [columns, setColumns] = useState([...vehicleColumns]);
-  const [selectAllCheckbox, setSelectAllCheckbox] = useState(false)
-  const [itemsToDownload, setItemsToDownload] = useState({})
+  const [selectAllCheckbox, setSelectAllCheckbox] = useState(false);
+  const [itemsToDownload, setItemsToDownload] = useState({});
   const navigate = useNavigate();
   const lastChange = useRef();
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -225,14 +232,14 @@ const Vehicles = () => {
     setColumns(updatedHeaders);
   };
   const selectAll = () => {
-    const { data: items } = vehicles
-    setSelectAllCheckbox(prevState => !prevState)
-    let vehiclesObj = {}
-    for (let i = 0; i< items?.length; i++) {
-      vehiclesObj[items[i].id] = formatVehicle(items[i])
+    const { data: items } = vehicles;
+    setSelectAllCheckbox((prevState) => !prevState);
+    let vehiclesObj = {};
+    for (let i = 0; i < items?.length; i++) {
+      vehiclesObj[items[i].id] = formatVehicle(items[i]);
     }
-    setItemsToDownload(!selectAllCheckbox ? vehiclesObj : {})
-  }
+    setItemsToDownload(!selectAllCheckbox ? vehiclesObj : {});
+  };
   const onCheckFilter = (value) => {
     if (value !== '') {
       let currentValues = [...searchFilters?.conditionName];
@@ -264,29 +271,29 @@ const Vehicles = () => {
   };
   const vehiclesToDownload = (vehicleId, vehicle) => {
     if (vehicleId) {
-      let items = {...itemsToDownload}
+      let items = { ...itemsToDownload };
       if (!items[vehicleId]) {
-        items[vehicleId] = formatVehicle(vehicle)
+        items[vehicleId] = formatVehicle(vehicle);
       } else {
-        delete items[vehicleId]
+        delete items[vehicleId];
       }
-      setItemsToDownload(items)
+      setItemsToDownload(items);
     }
-  }
+  };
   const downloadVehiclesCSV = () => {
     const items = Object.keys(itemsToDownload);
     if (items && items?.length > 0) {
-      let formattedString = "Nombre,Tipo,Marca,Año,Número económico,Número de serie,Número de placa,Fecha de adquisición,Costo"
-      for(let i=0; i< items.length; i++){
+      let formattedString =
+        'Nombre,Tipo,Marca,Año,Número económico,Número de serie,Número de placa,Fecha de adquisición,Costo';
+      for (let i = 0; i < items.length; i++) {
         const vehicle = items[i];
-        formattedString+= itemsToDownload[vehicle]
+        formattedString += itemsToDownload[vehicle];
       }
-      downloadCSV({data: formattedString, fileName: "vehicles"})
+      downloadCSV({ data: formattedString, fileName: 'vehicles' });
     } else {
       Notifies('error', 'Selecciona los vehículos a descargar');
     }
-
-  }
+  };
   return (
     <>
       <section className="flex flex-col gap-3 bg-white rounded-md dark:bg-gray-900 p-3 antialiased">
@@ -327,8 +334,8 @@ const Vehicles = () => {
                     if (selectAllCheckbox) {
                       vehicle = {
                         ...vehicle,
-                        checked: true
-                      }
+                        checked: true,
+                      };
                     }
                     return (
                       <T.Row
@@ -351,9 +358,16 @@ const Vehicles = () => {
                           if (column.id === 'checkbox') {
                             return (
                               <T.Cell key={column.id}>
-                                <Checkbox onChange={() => vehiclesToDownload(vehicle?.id, vehicle)} checked={itemsToDownload[vehicle?.id] ? true : false} />
+                                <Checkbox
+                                  onChange={() =>
+                                    vehiclesToDownload(vehicle?.id, vehicle)
+                                  }
+                                  checked={
+                                    itemsToDownload[vehicle?.id] ? true : false
+                                  }
+                                />
                               </T.Cell>
-                            )
+                            );
                           } else if (column.id === 'cost') {
                             content = parseToCurrency(
                               getNestedValue(vehicle, column.id),
