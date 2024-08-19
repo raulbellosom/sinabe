@@ -3,16 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { API_URL, downloadFile, getVehicle } from '../../services/api';
 import { useQuery } from '@tanstack/react-query';
 import VehicleProperty from '../../components/VehicleComponents/VehicleView/VehicleProperty';
-const ActionButtons = React.lazy(
-  () => import('../../components/ActionButtons/ActionButtons'),
-);
-const ModalRemove = React.lazy(
-  () => import('../../components/Modals/ModalRemove'),
-);
-const ImageViewer = React.lazy(
-  () => import('../../components/ImageViewer/ImageViewer'),
-);
-const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
+import ModalRemove from '../../components/Modals/ModalRemove';
+import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import { FaCar, FaTachometerAlt } from 'react-icons/fa';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import {
@@ -32,6 +24,10 @@ import { useVehicleContext } from '../../context/VehicleContext';
 import { IoCopyOutline } from 'react-icons/io5';
 import formatFileData from '../../utils/fileDataFormatter';
 import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
+const ActionButtons = React.lazy(
+  () => import('../../components/ActionButtons/ActionButtons'),
+);
+const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
 
 const ViewVehicle = () => {
   const { id } = useParams();
@@ -143,10 +139,6 @@ const ViewVehicle = () => {
     navigate('/vehicles/create');
   };
 
-  const handleDownloadImage = (img) => {
-    downloadFile(img);
-  };
-
   const handleShareImage = (img) => {
     const imgURL =
       img instanceof File ? URL.createObjectURL(img) : `${API_URL}/${img.url}`;
@@ -228,7 +220,6 @@ const ViewVehicle = () => {
                 {images.length > 0 && (
                   <ImageViewer
                     images={images}
-                    onDownload={(img) => handleDownloadImage(img)}
                     renderMenuOptions={[
                       {
                         label: 'Copiar URL',

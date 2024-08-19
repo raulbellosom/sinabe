@@ -185,6 +185,17 @@ export const searchVehicles = async ({
   }
 };
 
+export const createMultipleVehicles = async (csvFile, userId) => {
+  api.defaults.headers['Content-Type'] = 'multipart/form-data';
+  let data = new FormData();
+
+  data.append('csvFile', csvFile);
+  data.append('userId', JSON.stringify(userId));
+
+  const response = await api.post(`/vehicles/createMultipleVehicles`, data);
+  return response.data;
+};
+
 export const getVehicleModels = async () => {
   const response = await api.get(`/vehicles/vehicleModels`);
   return response.data;
@@ -312,7 +323,7 @@ export const downloadFile = async (file) => {
   const response = await api.get(file.url, {
     responseType: 'blob',
   });
-  const fileName = `${file?.name}`;
+  const fileName = `${file?.metadata?.originalname || file?.id}`;
 
   saveAs(response.data, fileName ?? 'file');
 };

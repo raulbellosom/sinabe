@@ -27,7 +27,6 @@ const FileIcon = ({ file, className, size, onRemove }) => {
   const [isModalDownloadOpen, setIsModalDownloadOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [isDownloadingError, setIsDownloadingError] = useState(false);
   const iconSize = size || 24;
@@ -69,11 +68,10 @@ const FileIcon = ({ file, className, size, onRemove }) => {
 
   const handleDownload = () => {
     setIsDownloading(true);
-    setDownloadProgress(0);
     setIsDownloadingError(false);
     setIsDownloaded(false);
 
-    downloadFile(file, setDownloadProgress)
+    downloadFile(file)
       .then(() => {
         setIsDownloaded(true);
       })
@@ -131,15 +129,26 @@ const FileIcon = ({ file, className, size, onRemove }) => {
           title={selectedFile.name}
           isOpenModal={isModalOpen}
           onCloseModal={handleCloseModal}
-          dismissible={false}
+          dismissible={true}
+          size="4xl"
         >
-          <PDFReader
-            file={
-              file instanceof File
-                ? URL.createObjectURL(selectedFile)
-                : `${API_URL}/${selectedFile.url}`
-            }
-          />
+          {window.innerWidth < 768 ? (
+            <PDFReader
+              file={file instanceof File ? file : `${API_URL}/${file.url}`}
+            />
+          ) : (
+            <embed
+              src={
+                file instanceof File
+                  ? URL.createObjectURL(file)
+                  : `${API_URL}/${file.url}`
+              }
+              type="application/pdf"
+              width="100%"
+              height="100%"
+              className="min-h-[80vh]"
+            />
+          )}
         </ModalViewer>
       )}
       {isModalDownloadOpen && (

@@ -18,10 +18,12 @@ const ModalViewer = ({
       dismissible={dismissible}
       popup
     >
-      <Modal.Header className="border-b border-neutral-50">
+      <Modal.Header className="border-b border-neutral-200 truncate">
         {title}
       </Modal.Header>
-      <Modal.Body className={classNames('flex', `justify-${contentPosition}`)}>
+      <Modal.Body
+        className={classNames('flex items-start', `justify-${contentPosition}`)}
+      >
         {children}
       </Modal.Body>
     </Modal>

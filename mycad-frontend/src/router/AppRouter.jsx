@@ -6,15 +6,13 @@ import {
   Navigate,
 } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
+import LoadingModal from '../components/loadingModal/LoadingModal';
 const Sidebar = lazy(() => import('../components/sidebar/Sidebar'));
 const Login = lazy(() => import('../pages/login/Login'));
 const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
 const Vehicles = lazy(() => import('../pages/vehicles/Vehicles'));
 const NotFound = lazy(() => import('../pages/notFound/NotFound'));
 const ProtectedRoute = lazy(() => import('./ProtectedRoute'));
-const LoadingModal = lazy(
-  () => import('../components/loadingModal/LoadingModal'),
-);
 const CreateVehicle = lazy(() => import('../pages/vehicles/CreateVehicle'));
 const UpdateVehicle = lazy(() => import('../pages/vehicles/UpdateVehicle'));
 const ViewVehicle = lazy(() => import('../pages/vehicles/ViewVehicle'));

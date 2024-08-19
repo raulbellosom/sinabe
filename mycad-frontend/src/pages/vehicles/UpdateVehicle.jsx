@@ -5,19 +5,16 @@ import { useCatalogContext } from '../../context/CatalogContext';
 import { getVehicle } from '../../services/api';
 import { useQuery } from '@tanstack/react-query';
 import Skeleton from 'react-loading-skeleton';
+import ModalForm from '../../components/Modals/ModalForm';
+import ModelForm from '../../components/VehicleComponents/ModelForm/ModelForm';
+import ModalRemove from '../../components/Modals/ModalRemove';
 const VehicleForm = React.lazy(
   () => import('../../components/VehicleComponents/VehicleForm/VehicleForm'),
 );
 const ActionButtons = React.lazy(
   () => import('../../components/ActionButtons/ActionButtons'),
 );
-const ModalRemove = React.lazy(
-  () => import('../../components/Modals/ModalRemove'),
-);
-const ModalForm = React.lazy(() => import('../../components/Modals/ModalForm'));
-const ModelForm = React.lazy(
-  () => import('../../components/VehicleComponents/ModelForm/ModelForm'),
-);
+
 import { FaCar, FaSave } from 'react-icons/fa';
 
 const UpdateVehicle = () => {
@@ -183,7 +180,7 @@ const UpdateVehicle = () => {
           <ActionButtons
             extraActions={[
               {
-                label: 'Guardar',
+                label: 'Actualizar',
                 action: handleSubmitRef,
                 icon: FaSave,
                 color: 'green',

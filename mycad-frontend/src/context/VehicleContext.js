@@ -11,6 +11,7 @@ const VehicleContext = createContext({
   updateVehicle: async () => {},
   deleteVehicle: async () => {},
   searchVehicles: async () => {},
+  createMultipleVehicles: async () => {},
 });
 export const useVehicleContext = () => useContext(VehicleContext);
 

@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { FaEdit, FaEye, FaPlus, FaTrash } from 'react-icons/fa';
 import { MdCancel } from 'react-icons/md';
 import { useAuthContext } from '../../context/AuthContext';
+import LinkButton from './LinkButton';
 
 const ActionButtons = ({
   onShow,
@@ -19,7 +20,6 @@ const ActionButtons = ({
   extraActions = [],
 }) => {
   const { user } = useAuthContext();
-
   const permisions = {
     show: [1, 2, 3],
     edit: [1, 2],
@@ -71,7 +71,9 @@ const ActionButtons = ({
   ];
 
   const filteredActions = actions.filter(
-    (action) => action.action && action.permission,
+    (action) =>
+      (action.action && action.permission) ||
+      (action.href && action.permission),
   );
 
   if (filteredActions.length === 0) {
@@ -98,22 +100,35 @@ const ActionButtons = ({
   return (
     <div
       className={classNames(
-        'w-fit flex justify-center md:justify-end items-center gap-2 rounded-md border-none md:p-0',
+        'w-fit flex items-center justify-center md:justify-end gap-1 rounded-md border-none md:p-0',
         positionClass,
       )}
     >
-      {filteredActions.map((action, index) => (
-        <Button
-          key={index}
-          onClick={action.action}
-          outline
-          color={action.color}
-          className="p-0 m-0"
-        >
-          {action.icon && <action.icon size={18} className="mr-2 mt-0.5" />}
-          <span className="sm:hidden md:block">{action.label}</span>
-        </Button>
-      ))}
+      {filteredActions.map((action, index) =>
+        action?.href ? (
+          <LinkButton
+            key={index}
+            route={action.href}
+            color={action.color}
+            icon={action.icon}
+            label={action.label}
+            outline
+          />
+        ) : (
+          <Button
+            key={index}
+            onClick={action.action}
+            outline
+            color={action.color}
+            className="p-0 m-0"
+          >
+            <span>
+              {action.icon && <action.icon size={18} className="mr-2 mt-0.5" />}
+            </span>
+            <span className="md:hidden lg:block">{action.label}</span>
+          </Button>
+        ),
+      )}
     </div>
   );
 };
