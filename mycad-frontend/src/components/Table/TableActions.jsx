@@ -12,10 +12,6 @@ const TableActions = ({
   actions,
 }) => {
   const { vehicleConditions } = useCatalogContext();
-  function checked(value) {
-    console.log('checked ', value);
-    onCheckFilter(value);
-  }
 
   const filterComponent = (
     <button

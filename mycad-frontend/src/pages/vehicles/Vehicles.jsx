@@ -26,24 +26,29 @@ const ModalViewer = React.lazy(
 const CreateMultipleVehicles = React.lazy(
   () => import('./CreateMultipleVehicle'),
 );
-import { FaEdit, FaEye } from 'react-icons/fa';
+import { FaEdit, FaEye, FaFileCsv } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { Table as T } from 'flowbite-react';
+import { Checkbox, Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchVehicles } from '../../services/api';
 import Card from '../../components/Card/Card';
 import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import { MdCloudUpload } from 'react-icons/md';
+import { MdCloudDownload, MdCloudUpload } from 'react-icons/md';
 import { RiAddBoxFill } from 'react-icons/ri';
-
+import { downloadCSV } from '../../utils/DownloadCSV';
+import Notifies from '../../components/Notifies/Notifies';
 const vehicleColumns = [
+  {
+    id: 'checkbox',
+    value: '',
+    classes: 'w-20',
+  },
   {
     id: 'images',
     value: 'Imagen',
     classes: 'w-20',
   },
-
   {
     id: 'model.name',
     value: 'Nombre',
@@ -110,14 +115,30 @@ const vehicleColumns = [
     classes: 'text-center w-1',
   },
 ];
-
+const formatVehicle = (vehicleData) => {
+  const {model, acquisitionDate, plateNumber, serialNumber, economicNumber, cost } = vehicleData
+  const vehicle = `\n${model.name},${model.type.name},${model.brand.name},${model.year},${economicNumber},${serialNumber},${plateNumber},${acquisitionDate},${cost}`
+  /* let vehicle = {
+    name: model.name,
+    type: model.type.name,
+    brand: model.brand.name,
+    year: model.year,
+    economicNumber,
+    serialNumber,
+    plateNumber,
+    acquisitionDate,
+    cost
+  } */
+  return vehicle
+}
 const Vehicles = () => {
   const { deleteVehicle } = useVehicleContext();
   const [columns, setColumns] = useState([...vehicleColumns]);
+  const [itemsToDownload, setItemsToDownload] = useState({})
   const navigate = useNavigate();
   const lastChange = useRef();
   const [isOpenModal, setIsOpenModal] = useState(false);
-  const [isOpenModalCreate, setIsOpenModalCreate] = useState(false);
+  const [isOpenModalUpload, setIsOpenModalUpload] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const [searchFilters, setSearchFilters] = useState({
@@ -242,7 +263,34 @@ const Vehicles = () => {
   const getNestedValue = (obj, path) => {
     return path.split('.').reduce((value, key) => value[key], obj);
   };
+  const vehiclesToDownload = (vehicleId, vehicle) => {
+    if (vehicleId) {
+      let items = {...itemsToDownload}
+      // const vehicleIndex = items?.findIndex((item) => item.id === vehicleId)
+      if (!items[vehicleId]) {
+        items[vehicleId] = formatVehicle(vehicle)
+      } else {
+        delete items[vehicleId]
+      }
+      console.log("items ", items)
+      setItemsToDownload(items)
+    }
+  }
+  const downloadVehiclesCSV = () => {
+    const items = Object.keys(itemsToDownload);
+    if (items && items?.length > 0) {
+      let formattedString = "Nombre,Tipo,Marca,Año,Número económico,Número de serie,Número de placa,Fecha de adquisición,Costo"
+      for(let i=0; i< items.length; i++){
+        const vehicle = items[i];
+        formattedString+= itemsToDownload[vehicle]
+      }
+      console.log(formattedString)
+      downloadCSV({data: formattedString, fileName: "vehicles"})
+    } else {
+      Notifies('error', 'Selecciona los vehículos a descargar');
+    }
 
+  }
   return (
     <>
       <section className="flex flex-col gap-3 bg-white rounded-md dark:bg-gray-900 p-3 antialiased">
@@ -255,9 +303,15 @@ const Vehicles = () => {
           actions={[
             {
               label: 'Cargar',
-              action: () => setIsOpenModalCreate(true),
+              action: () => setIsOpenModalUpload(true),
               color: 'indigo',
               icon: MdCloudUpload,
+            },
+            {
+              label: 'CSV',
+              action: downloadVehiclesCSV,
+              color: 'indigo',
+              icon: FaFileCsv,
             },
             {
               label: 'Nuevo',
@@ -292,7 +346,13 @@ const Vehicles = () => {
                       >
                         {vehicleColumns?.map((column) => {
                           let content;
-                          if (column.id === 'cost') {
+                          if (column.id === 'checkbox') {
+                            return (
+                              <T.Cell key={column.id}>
+                                <Checkbox onChange={() => vehiclesToDownload(vehicle?.id, vehicle)}/>
+                              </T.Cell>
+                            )
+                          } else if (column.id === 'cost') {
                             content = parseToCurrency(
                               getNestedValue(vehicle, column.id),
                             );
@@ -462,8 +522,8 @@ const Vehicles = () => {
         )}
       </section>
       <ModalViewer
-        isOpenModal={isOpenModalCreate}
-        onCloseModal={() => setIsOpenModalCreate(false)}
+        isOpenModal={isOpenModalUpload}
+        onCloseModal={() => setIsOpenModalUpload(false)}
         title="Cargar vehículos"
         dismissible
       >
