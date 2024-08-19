@@ -1,4 +1,4 @@
-import React, { act, useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { useVehicleContext } from '../../context/VehicleContext';
 const Table = React.lazy(() => import('../../components/Table/Table'));
@@ -34,7 +34,7 @@ import { searchVehicles } from '../../services/api';
 import Card from '../../components/Card/Card';
 import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import { MdCloudDownload, MdCloudUpload } from 'react-icons/md';
+import { MdCloudUpload } from 'react-icons/md';
 import { RiAddBoxFill } from 'react-icons/ri';
 import { downloadCSV } from '../../utils/DownloadCSV';
 import Notifies from '../../components/Notifies/Notifies';
@@ -134,6 +134,7 @@ const formatVehicle = (vehicleData) => {
 const Vehicles = () => {
   const { deleteVehicle } = useVehicleContext();
   const [columns, setColumns] = useState([...vehicleColumns]);
+  const [selectAllCheckbox, setSelectAllCheckbox] = useState(false)
   const [itemsToDownload, setItemsToDownload] = useState({})
   const navigate = useNavigate();
   const lastChange = useRef();
@@ -149,8 +150,7 @@ const Vehicles = () => {
     order: 'asc',
     conditionName: [],
   });
-  // console.log('searchFilters ', searchFilters);
-  // const { refetch, isLoading, isFetching } = searchVehicles({searchTerm: searchTerm, pageSize: TOTAL_VALUES_PER_PAGE, page: currentPageNumber})
+
   const {
     data: vehicles,
     refetch,
@@ -219,7 +219,6 @@ const Vehicles = () => {
         ...selectedHeader,
         order: selectedHeader?.order === 'asc' ? 'desc' : 'asc',
       };
-      console.log('updatedHeader ', updatedHeader);
       updatedHeaders = [...columns];
       updatedHeaders[selectedHeaderIndex] = updatedHeader;
       setSearchFilters((prevState) => {
@@ -232,6 +231,15 @@ const Vehicles = () => {
     }
     setColumns(updatedHeaders);
   };
+  const selectAll = () => {
+    const { data: items } = vehicles
+    setSelectAllCheckbox(prevState => !prevState)
+    let vehiclesObj = {}
+    for (let i = 0; i< items?.length; i++) {
+      vehiclesObj[items[i].id] = formatVehicle(items[i])
+    }
+    setItemsToDownload(!selectAllCheckbox ? vehiclesObj : {})
+  }
   const onCheckFilter = (value) => {
     if (value !== '') {
       let currentValues = [...searchFilters?.conditionName];
@@ -257,8 +265,6 @@ const Vehicles = () => {
       setIsOpenModal(false);
     }
   };
-  // const { pagination } = data
-  // console.log('vehicles data ', vehicles?.data);
 
   const getNestedValue = (obj, path) => {
     return path.split('.').reduce((value, key) => value[key], obj);
@@ -266,13 +272,11 @@ const Vehicles = () => {
   const vehiclesToDownload = (vehicleId, vehicle) => {
     if (vehicleId) {
       let items = {...itemsToDownload}
-      // const vehicleIndex = items?.findIndex((item) => item.id === vehicleId)
       if (!items[vehicleId]) {
         items[vehicleId] = formatVehicle(vehicle)
       } else {
         delete items[vehicleId]
       }
-      console.log("items ", items)
       setItemsToDownload(items)
     }
   }
@@ -284,7 +288,6 @@ const Vehicles = () => {
         const vehicle = items[i];
         formattedString+= itemsToDownload[vehicle]
       }
-      console.log(formattedString)
       downloadCSV({data: formattedString, fileName: "vehicles"})
     } else {
       Notifies('error', 'Selecciona los vehículos a descargar');
@@ -324,10 +327,16 @@ const Vehicles = () => {
         {vehicles && !isPending ? (
           <>
             <div className="hidden md:block">
-              <Table columns={columns} sortBy={sortBy}>
+              <Table columns={columns} sortBy={sortBy} selectAll={selectAll}>
                 {vehicles &&
                   !isPending &&
                   vehicles?.data?.map((vehicle) => {
+                    if (selectAllCheckbox) {
+                      vehicle = {
+                        ...vehicle,
+                        checked: true
+                      }
+                    }
                     return (
                       <T.Row
                         onDoubleClick={() =>
@@ -349,7 +358,7 @@ const Vehicles = () => {
                           if (column.id === 'checkbox') {
                             return (
                               <T.Cell key={column.id}>
-                                <Checkbox onChange={() => vehiclesToDownload(vehicle?.id, vehicle)}/>
+                                <Checkbox onChange={() => vehiclesToDownload(vehicle?.id, vehicle)} checked={itemsToDownload[vehicle?.id] ? true : false} />
                               </T.Cell>
                             )
                           } else if (column.id === 'cost') {
