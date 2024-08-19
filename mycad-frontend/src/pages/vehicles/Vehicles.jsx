@@ -1,4 +1,4 @@
-import React, { act, useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { useVehicleContext } from '../../context/VehicleContext';
 import ModalRemove from '../../components/Modals/ModalRemove';
@@ -33,11 +33,15 @@ const LinkButton = React.lazy(
 
 const vehicleColumns = [
   {
+    id: 'checkbox',
+    value: '',
+    classes: 'w-20',
+  },
+  {
     id: 'images',
     value: 'Imagen',
     classes: 'w-20',
   },
-
   {
     id: 'model.name',
     value: 'Nombre',
@@ -104,14 +108,31 @@ const vehicleColumns = [
     classes: 'text-center w-1',
   },
 ];
-
+const formatVehicle = (vehicleData) => {
+  const {model, acquisitionDate, plateNumber, serialNumber, economicNumber, cost } = vehicleData
+  const vehicle = `\n${model.name},${model.type.name},${model.brand.name},${model.year},${economicNumber},${serialNumber},${plateNumber},${acquisitionDate},${cost}`
+  /* let vehicle = {
+    name: model.name,
+    type: model.type.name,
+    brand: model.brand.name,
+    year: model.year,
+    economicNumber,
+    serialNumber,
+    plateNumber,
+    acquisitionDate,
+    cost
+  } */
+  return vehicle
+}
 const Vehicles = () => {
   const { deleteVehicle } = useVehicleContext();
   const [columns, setColumns] = useState([...vehicleColumns]);
+  const [selectAllCheckbox, setSelectAllCheckbox] = useState(false)
+  const [itemsToDownload, setItemsToDownload] = useState({})
   const navigate = useNavigate();
   const lastChange = useRef();
   const [isOpenModal, setIsOpenModal] = useState(false);
-  const [isOpenModalCreate, setIsOpenModalCreate] = useState(false);
+  const [isOpenModalUpload, setIsOpenModalUpload] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const [searchFilters, setSearchFilters] = useState({
@@ -122,8 +143,7 @@ const Vehicles = () => {
     order: 'asc',
     conditionName: [],
   });
-  // console.log('searchFilters ', searchFilters);
-  // const { refetch, isLoading, isFetching } = searchVehicles({searchTerm: searchTerm, pageSize: TOTAL_VALUES_PER_PAGE, page: currentPageNumber})
+
   const {
     data: vehicles,
     refetch,
@@ -192,7 +212,6 @@ const Vehicles = () => {
         ...selectedHeader,
         order: selectedHeader?.order === 'asc' ? 'desc' : 'asc',
       };
-      console.log('updatedHeader ', updatedHeader);
       updatedHeaders = [...columns];
       updatedHeaders[selectedHeaderIndex] = updatedHeader;
       setSearchFilters((prevState) => {
@@ -205,6 +224,15 @@ const Vehicles = () => {
     }
     setColumns(updatedHeaders);
   };
+  const selectAll = () => {
+    const { data: items } = vehicles
+    setSelectAllCheckbox(prevState => !prevState)
+    let vehiclesObj = {}
+    for (let i = 0; i< items?.length; i++) {
+      vehiclesObj[items[i].id] = formatVehicle(items[i])
+    }
+    setItemsToDownload(!selectAllCheckbox ? vehiclesObj : {})
+  }
   const onCheckFilter = (value) => {
     if (value !== '') {
       let currentValues = [...searchFilters?.conditionName];
@@ -230,13 +258,35 @@ const Vehicles = () => {
       setIsOpenModal(false);
     }
   };
-  // const { pagination } = data
-  // console.log('vehicles data ', vehicles?.data);
 
   const getNestedValue = (obj, path) => {
     return path.split('.').reduce((value, key) => value[key], obj);
   };
+  const vehiclesToDownload = (vehicleId, vehicle) => {
+    if (vehicleId) {
+      let items = {...itemsToDownload}
+      if (!items[vehicleId]) {
+        items[vehicleId] = formatVehicle(vehicle)
+      } else {
+        delete items[vehicleId]
+      }
+      setItemsToDownload(items)
+    }
+  }
+  const downloadVehiclesCSV = () => {
+    const items = Object.keys(itemsToDownload);
+    if (items && items?.length > 0) {
+      let formattedString = "Nombre,Tipo,Marca,Año,Número económico,Número de serie,Número de placa,Fecha de adquisición,Costo"
+      for(let i=0; i< items.length; i++){
+        const vehicle = items[i];
+        formattedString+= itemsToDownload[vehicle]
+      }
+      downloadCSV({data: formattedString, fileName: "vehicles"})
+    } else {
+      Notifies('error', 'Selecciona los vehículos a descargar');
+    }
 
+  }
   return (
     <>
       <section className="flex flex-col gap-3 bg-white rounded-md dark:bg-gray-900 p-3 antialiased">
@@ -249,9 +299,15 @@ const Vehicles = () => {
           actions={[
             {
               label: 'Cargar',
-              action: () => setIsOpenModalCreate(true),
+              action: () => setIsOpenModalUpload(true),
               color: 'indigo',
               icon: MdCloudUpload,
+            },
+            {
+              label: 'CSV',
+              action: downloadVehiclesCSV,
+              color: 'indigo',
+              icon: FaFileCsv,
             },
             {
               label: 'Nuevo',
@@ -264,10 +320,16 @@ const Vehicles = () => {
         {vehicles && !isPending ? (
           <>
             <div className="hidden md:block">
-              <Table columns={columns} sortBy={sortBy}>
+              <Table columns={columns} sortBy={sortBy} selectAll={selectAll}>
                 {vehicles &&
                   !isPending &&
                   vehicles?.data?.map((vehicle) => {
+                    if (selectAllCheckbox) {
+                      vehicle = {
+                        ...vehicle,
+                        checked: true
+                      }
+                    }
                     return (
                       <T.Row
                         onDoubleClick={() =>
@@ -286,7 +348,13 @@ const Vehicles = () => {
                       >
                         {vehicleColumns?.map((column) => {
                           let content;
-                          if (column.id === 'cost') {
+                          if (column.id === 'checkbox') {
+                            return (
+                              <T.Cell key={column.id}>
+                                <Checkbox onChange={() => vehiclesToDownload(vehicle?.id, vehicle)} checked={itemsToDownload[vehicle?.id] ? true : false} />
+                              </T.Cell>
+                            )
+                          } else if (column.id === 'cost') {
                             content = parseToCurrency(
                               getNestedValue(vehicle, column.id),
                             );
@@ -456,8 +524,8 @@ const Vehicles = () => {
         )}
       </section>
       <ModalViewer
-        isOpenModal={isOpenModalCreate}
-        onCloseModal={() => setIsOpenModalCreate(false)}
+        isOpenModal={isOpenModalUpload}
+        onCloseModal={() => setIsOpenModalUpload(false)}
         title="Cargar vehículos"
         dismissible
       >
