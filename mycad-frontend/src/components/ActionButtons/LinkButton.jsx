@@ -8,7 +8,7 @@ const LinkButton = ({ route, color, icon: Icon, label, outline = true }) => {
         <span>
           <Icon size={18} className="mr-2 mt-0.5" />
         </span>
-        <span>{label}</span>
+        <span className="md:hidden lg:block">{label}</span>
       </Button>
     </Link>
   );

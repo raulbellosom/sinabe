@@ -100,7 +100,7 @@ const ActionButtons = ({
   return (
     <div
       className={classNames(
-        'w-fit flex justify-center md:justify-end items-center gap-1 rounded-md border-none md:p-0',
+        'w-fit flex items-center justify-center md:justify-end gap-1 rounded-md border-none md:p-0',
         positionClass,
       )}
     >
@@ -122,8 +122,10 @@ const ActionButtons = ({
             color={action.color}
             className="p-0 m-0"
           >
-            {action.icon && <action.icon size={18} className="mr-2 mt-0.5" />}
-            <span>{action.label}</span>
+            <span>
+              {action.icon && <action.icon size={18} className="mr-2 mt-0.5" />}
+            </span>
+            <span className="md:hidden lg:block">{action.label}</span>
           </Button>
         ),
       )}
