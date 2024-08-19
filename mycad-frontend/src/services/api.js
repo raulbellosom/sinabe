@@ -323,7 +323,7 @@ export const downloadFile = async (file) => {
   const response = await api.get(file.url, {
     responseType: 'blob',
   });
-  const fileName = `${file?.name}`;
+  const fileName = `${file?.metadata?.originalname || file?.id}`;
 
   saveAs(response.data, fileName ?? 'file');
 };

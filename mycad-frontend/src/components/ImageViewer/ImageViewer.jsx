@@ -1,22 +1,28 @@
+import { useState } from 'react';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import NoImageFound from '../../assets/images/NoImageFound.jpg';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 import { IoClose } from 'react-icons/io5';
 import { MdSaveAlt } from 'react-icons/md';
 import { Dropdown } from 'flowbite-react';
 import { BsThreeDotsVertical } from 'react-icons/bs';
+import classNames from 'classnames';
+import NoImageFound from '../../assets/images/NoImageFound.jpg';
+import { downloadFile } from '../../services/api';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import 'react-photo-view/dist/react-photo-view.css';
-import classNames from 'classnames';
 
 const ImageViewer = ({
   images = [],
   onRemove,
-  onDownload,
+  isDownloadable = true,
   renderMenuOptions = [],
   imageClassName,
 }) => {
+  const handleDownloadImage = (img) => {
+    console.log(img);
+    downloadFile(img);
+  };
   return (
     <PhotoProvider
       brokenElement={
@@ -27,9 +33,9 @@ const ImageViewer = ({
         />
       }
       maskOpacity={0.8}
-      pullClosable={false}
+      // pullClosable={false}
       maskClosable={false}
-      loop={true}
+      loop={images.length > 1}
       speed={() => 300}
       easing={(type) =>
         type === 2
@@ -136,13 +142,15 @@ const ImageViewer = ({
                 inline
                 arrowIcon={null}
               >
-                <Dropdown.Item
-                  className="bg-white text-black hover:bg-slate-100 hover:text-slate-500"
-                  onClick={() => onDownload(images[index])}
-                  icon={MdSaveAlt}
-                >
-                  <span>Descargar</span>
-                </Dropdown.Item>
+                {isDownloadable && (
+                  <Dropdown.Item
+                    className="bg-white text-black hover:bg-slate-100 hover:text-slate-500"
+                    onClick={() => handleDownloadImage(images[index])}
+                    icon={MdSaveAlt}
+                  >
+                    <span>Descargar</span>
+                  </Dropdown.Item>
+                )}
                 {renderMenuOptions.map((option, index) => (
                   <Dropdown.Item
                     key={index}

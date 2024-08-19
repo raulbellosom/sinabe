@@ -59,12 +59,38 @@ const processImage = async (imagePath, fileName) => {
 
 const convertDateFormat = (dateStr) => {
   try {
+    if (!dateStr || dateStr.trim() === "") {
+      return null;
+    }
+
+    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!dateRegex.test(dateStr.trim())) {
+      console.error(`Formato de fecha inválido: ${dateStr}`);
+      return null;
+    }
+
     const parsedDate = parse(dateStr, "dd/MM/yyyy", new Date(), { locale: es });
+
+    if (isNaN(parsedDate)) {
+      console.error(`Fecha inválida tras el parseo: ${dateStr}`);
+      return null;
+    }
 
     return format(parsedDate, "MM/dd/yyyy");
   } catch (error) {
     console.error("Error al convertir la fecha:", error);
-    throw new Error("Fecha inválida");
+    return null;
+  }
+};
+
+const validateNotEmpty = (value, fieldName, errors, index) => {
+  if (
+    value === null ||
+    value === undefined ||
+    (typeof value === "string" && value.trim() === "") ||
+    (typeof value === "number" && isNaN(value))
+  ) {
+    errors.push(`Fila ${index + 1}: El campo '${fieldName}' es obligatorio`);
   }
 };
 
@@ -78,16 +104,18 @@ export const createMultipleVehicles = async (req, res) => {
 
   const vehicles = [];
   const errors = [];
-  const images = [];
+  const successfulVehicles = [];
 
   try {
-    // Leer y parsear el archivo CSV
     fs.createReadStream(csvFile.path)
       .pipe(csvParser())
       .on("data", (row) => {
-        // Aquí mapear los campos del CSV a los campos de tu modelo
+        console.log("Row:", row);
         vehicles.push({
           model: row["Nombre del Modelo"],
+          year: parseInt(row["Año del Modelo"], 10),
+          brand: row["Marca del Vehículo"],
+          type: row["Tipo de Vehículo"],
           economicNumber: row["Número Económico"],
           serialNumber: row["Número de Serie"],
           plateNumber: row["Número de Placa"],
@@ -95,33 +123,42 @@ export const createMultipleVehicles = async (req, res) => {
           acquisitionDate: convertDateFormat(row["Fecha de Adquisición"]),
           cost: parseFloat(row["Costo de Adquisición"]),
           status: row["Estado"] === "true",
-          comments: row["Observaciones"],
-          images: row["Imágenes"], // Aquí se asume que las URLs de las imágenes están en una sola columna separadas por comas
+          comments: row["Comentarios"],
+          images: row["Imágenes"],
         });
       })
       .on("end", async () => {
-        const userId = req.user.id;
-        const validatedVehicles = [];
-
-        // console.log("vehicles", vehicles);
+        const userId = user?.id;
         for (const [index, vehicle] of vehicles.entries()) {
-          // Aquí se mantiene la lógica de validación y procesamiento de imágenes que ya tienes
-          // console.log("vehicle", vehicle);
-          if (
-            !vehicle.acquisitionDate ||
+          validateNotEmpty(vehicle.model, "Nombre del Modelo", errors, index);
+          validateNotEmpty(vehicle.year, "Año del Modelo", errors, index);
+          validateNotEmpty(vehicle.brand, "Marca del Vehículo", errors, index);
+          validateNotEmpty(vehicle.type, "Tipo de Vehículo", errors, index);
+          validateNotEmpty(vehicle.mileage, "Kilometraje", errors, index);
+          validateNotEmpty(
+            vehicle.acquisitionDate,
+            "Fecha de Adquisición",
+            errors,
+            index
+          );
+          validateNotEmpty(vehicle.cost, "Costo de Adquisición", errors, index);
+          validateNotEmpty(vehicle.status, "Estado", errors, index);
+
+          !vehicle.acquisitionDate ||
             !vehicle.cost ||
             !vehicle.mileage ||
             vehicle.status === undefined ||
             !userId ||
-            !vehicle.model
-          ) {
-            errors.push(`Fila ${index + 1}: Faltan campos obligatorios`);
-            continue;
-          }
+            !vehicle.model ||
+            !vehicle.year ||
+            !vehicle.brand ||
+            !vehicle.type;
 
           if (vehicle.cost && isNaN(parseFloat(vehicle.cost))) {
             errors.push(
-              `Fila ${index + 1}: El campo 'cost' debe ser un número`
+              `Fila ${
+                index + 1
+              }: El campo 'Costo del Vehículo' debe ser un número`
             );
             continue;
           }
@@ -147,14 +184,22 @@ export const createMultipleVehicles = async (req, res) => {
             errors.push(
               `Fila ${
                 index + 1
-              }: El campo 'acquisitionDate' debe ser una fecha válida`
+              }: El campo 'Fecha de Adquisicón' debe ser una fecha válida`
             );
             continue;
           }
 
-          // Buscar el ID del modelo basado en el nombre
           const model = await db.model.findFirst({
-            where: { name: vehicle.model },
+            where: {
+              name: vehicle.model,
+              year: vehicle.year || undefined,
+              brand: {
+                name: vehicle.brand,
+              },
+              type: {
+                name: vehicle.type,
+              },
+            },
           });
           if (!model) {
             errors.push(
@@ -163,7 +208,6 @@ export const createMultipleVehicles = async (req, res) => {
             continue;
           }
 
-          // Validar que createdById exista
           const userExists = await db.user.findFirst({
             where: { id: user.id },
           });
@@ -176,10 +220,9 @@ export const createMultipleVehicles = async (req, res) => {
             continue;
           }
 
-          // Procesar las URLs de las imágenes y guardarlas en el servidor
           let imagePaths = [];
           if (vehicle.images) {
-            const imageUrls = vehicle.images.split(","); // Separar las URLs por comas
+            const imageUrls = vehicle.images.split(",");
             for (const imageUrl of imageUrls) {
               try {
                 const imageId = uuidv4();
@@ -189,7 +232,7 @@ export const createMultipleVehicles = async (req, res) => {
                 );
                 await downloadImage(imageUrl.trim(), imagePath);
 
-                const processedImages = await processImage(imagePath, imageId); // Procesar las versiones de la imagen
+                const processedImages = await processImage(imagePath, imageId);
                 imagePaths.push(processedImages);
               } catch (error) {
                 errors.push(
@@ -202,20 +245,30 @@ export const createMultipleVehicles = async (req, res) => {
           }
 
           try {
-            // Crear el vehículo individualmente para obtener el ID
+            delete vehicle.model;
+            delete vehicle.year;
+            delete vehicle.brand;
+            delete vehicle.type;
+
             const createdVehicle = await db.vehicle.create({
               data: {
                 ...vehicle,
                 createdById: user.id,
                 modelId: model.id,
                 enabled: true,
-                model: undefined,
                 acquisitionDate: new Date(vehicle.acquisitionDate),
                 images: undefined,
               },
+              include: {
+                model: {
+                  include: {
+                    brand: true,
+                    type: true,
+                  },
+                },
+              },
             });
 
-            // Crear imágenes asociadas al vehículo
             if (imagePaths.length > 0) {
               await db.image.createMany({
                 data: imagePaths.map((image) => ({
@@ -227,6 +280,8 @@ export const createMultipleVehicles = async (req, res) => {
                 })),
               });
             }
+
+            successfulVehicles.push(createdVehicle);
           } catch (error) {
             errors.push(
               `Fila ${index + 1}: Error al crear el vehículo: ${error.message}`
@@ -234,12 +289,6 @@ export const createMultipleVehicles = async (req, res) => {
           }
         }
 
-        if (errors.length > 0) {
-          return res
-            .status(400)
-            .json({ message: "Errores de validación", errors });
-        }
-        // get all vehicles
         const getAllVehicles = await db.vehicle.findMany({
           include: {
             model: {
@@ -261,10 +310,23 @@ export const createMultipleVehicles = async (req, res) => {
           },
         });
 
-        res.status(200).json({
-          message: "Vehículos creados exitosamente.",
+        const responsePayload = {
+          message:
+            errors.length > 0
+              ? "Algunos vehículos no pudieron ser creados"
+              : "Vehículos creados exitosamente.",
+          createdVehicles: successfulVehicles,
           data: getAllVehicles,
-        });
+          errors: errors.length > 0 ? errors : null,
+        };
+
+        if (errors.length > 0 && successfulVehicles.length === 0) {
+          return res.status(400).json(responsePayload);
+        } else if (errors.length > 0 && successfulVehicles.length > 0) {
+          return res.status(200).json(responsePayload);
+        } else {
+          return res.status(200).json(responsePayload);
+        }
       });
   } catch (error) {
     console.error("Error al procesar el archivo CSV:", error);
