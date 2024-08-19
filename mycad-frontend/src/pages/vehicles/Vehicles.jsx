@@ -1,10 +1,20 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { useVehicleContext } from '../../context/VehicleContext';
+import ModalRemove from '../../components/Modals/ModalRemove';
+import ModalViewer from '../../components/Modals/ModalViewer';
+import ImageViewer from '../../components/ImageViewer/ImageViewer';
+import { FaEdit, FaEye } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { Table as T } from 'flowbite-react';
+import { useQuery } from '@tanstack/react-query';
+import { searchVehicles } from '../../services/api';
+import Card from '../../components/Card/Card';
+import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
+import { MdCloudUpload } from 'react-icons/md';
+import { RiAddBoxFill } from 'react-icons/ri';
+import CreateMultipleVehicle from './CreateMultipleVehicle';
 const Table = React.lazy(() => import('../../components/Table/Table'));
-const ModalRemove = React.lazy(
-  () => import('../../components/Modals/ModalRemove'),
-);
 const ActionButtons = React.lazy(
   () => import('../../components/ActionButtons/ActionButtons'),
 );
@@ -20,24 +30,7 @@ const TableFooter = React.lazy(
 const LinkButton = React.lazy(
   () => import('../../components/ActionButtons/LinkButton'),
 );
-const ModalViewer = React.lazy(
-  () => import('../../components/Modals/ModalViewer'),
-);
-const CreateMultipleVehicles = React.lazy(
-  () => import('./CreateMultipleVehicle'),
-);
-import { FaEdit, FaEye, FaFileCsv } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import { Checkbox, Table as T } from 'flowbite-react';
-import { useQuery } from '@tanstack/react-query';
-import { searchVehicles } from '../../services/api';
-import Card from '../../components/Card/Card';
-import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
-import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import { MdCloudUpload } from 'react-icons/md';
-import { RiAddBoxFill } from 'react-icons/ri';
-import { downloadCSV } from '../../utils/DownloadCSV';
-import Notifies from '../../components/Notifies/Notifies';
+
 const vehicleColumns = [
   {
     id: 'checkbox',
@@ -536,7 +529,7 @@ const Vehicles = () => {
         title="Cargar vehículos"
         dismissible
       >
-        <CreateMultipleVehicles />
+        <CreateMultipleVehicle />
       </ModalViewer>
       <ModalRemove
         isOpenModal={isOpenModal}

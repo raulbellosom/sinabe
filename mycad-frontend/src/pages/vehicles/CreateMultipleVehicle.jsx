@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import uploadFilesImage from '../../assets/images/upload_files.jpg';
 import { Button, FileInput, Spinner } from 'flowbite-react';
-import { FaCloudUploadAlt } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaDownload } from 'react-icons/fa';
 import { useVehicleContext } from '../../context/VehicleContext';
 import { MdClose } from 'react-icons/md';
 import { useAuthContext } from '../../context/AuthContext';
@@ -11,6 +11,7 @@ const CreateMultipleVehicle = () => {
   const { user } = useAuthContext();
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [createdVehicles, setCreatedVehicles] = useState(null);
   const [error, setError] = useState(null);
 
   const handleSubmit = async () => {
@@ -18,22 +19,33 @@ const CreateMultipleVehicle = () => {
 
     await createMultipleVehicles(file, user?.id)
       .then((res) => {
+        console.log('res', res);
         setFile(null);
-        setError(null);
+        setCreatedVehicles(res?.createdVehicles);
+        if (res?.errors?.length) {
+          setError(res?.errors);
+        } else {
+          setError(null);
+        }
       })
       .catch((err) => {
-        console.log(err);
+        console.log('err', err);
         setError(err?.response?.data?.errors || 'Error al cargar el archivo');
       })
-      .finally(() => {
+      .finally((data) => {
+        console.log(data);
         setLoading(false);
       });
   };
 
   return (
-    <div className="h-full bg-white">
+    <div className="h-full w-full bg-white">
       <div className="flex flex-col items-center justify-center">
-        <img src={uploadFilesImage} alt="Upload files" className="w-1/4" />
+        <img
+          src={uploadFilesImage}
+          alt="Upload files"
+          className="w-1/2 md:w-1/4"
+        />
         <h1 className="text-3xl font-bold text-center mt-4">
           Cargar múltiples vehículos
         </h1>
@@ -46,11 +58,23 @@ const CreateMultipleVehicle = () => {
           <ol className="list-decimal pl-4">
             <li>
               Descargue la plantilla de vehículos y complete la información
-              solicitada.
+              solicitada. <br />
+              <a
+                href="/files/vehicles_template.csv"
+                download="vehicles_template.csv"
+                className="text-blue-500 font-bold"
+              >
+                <FaDownload size={18} className="mr-2 inline-flex" />
+                Descargar plantilla
+              </a>
             </li>
             <li>
-              Rellene la información de los vehículos en la plantilla descargada
+              Remueva las filas de ejemplo de la plantilla descargada
               conservando las cabeceras originales del archivo.
+            </li>
+            <li>
+              Rellene la información de los vehículos en la plantilla
+              descargada.
             </li>
             <li>
               Cargue el archivo CSV con la información de los vehículos y de
@@ -58,7 +82,7 @@ const CreateMultipleVehicle = () => {
             </li>
           </ol>
         </div>
-        <div className="mt-4 ">
+        <div className="mt-4">
           <form className="w-full flex flex-col gap-4">
             <FileInput
               onChange={(e) => setFile(e.target.files[0])}
@@ -84,11 +108,39 @@ const CreateMultipleVehicle = () => {
             </Button>
           </form>
         </div>
+        {createdVehicles && (
+          <div className="mt-4 w-full">
+            <div className="bg-green-100 w-full border border-green-400 text-green-700 px-4 py-3 rounded relative">
+              <div className="flex justify-between items-center gap-2">
+                <p className="font-bold">Vehículos creados con éxito</p>
+                <span
+                  className="cursor-pointer hover:bg-green-200 rounded-full p-1"
+                  onClick={() => setCreatedVehicles(null)}
+                >
+                  <MdClose size={20} className="text-green-500" />
+                </span>
+              </div>
+              <ul className="p-2">
+                {createdVehicles.map((vehicle, index) => (
+                  <li className="list-disc" key={index}>
+                    Vehículo{' '}
+                    {`${vehicle?.model?.name} ${vehicle?.model?.year}
+                    - ${vehicle?.model?.type?.name} ${vehicle?.model?.brand?.name}`}{' '}
+                    creado con éxito
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
         {
-          <div className="mt-4">
+          <div className="mt-4 w-full">
             {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-                <div className="flex justify-end">
+              <div className="bg-red-100 w-full border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                <div className="flex justify-between items-center gap-2">
+                  <p className="font-bold">
+                    Error al crear los siguientes registros:
+                  </p>
                   <span
                     className="cursor-pointer hover:bg-red-200 rounded-full p-1"
                     onClick={() => setError(null)}

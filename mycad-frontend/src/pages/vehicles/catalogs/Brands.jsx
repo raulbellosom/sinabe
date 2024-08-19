@@ -1,14 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useCatalogContext } from '../../../context/CatalogContext';
 import CatalogList from '../../../components/VehicleComponents/CatalogList';
+import ModalForm from '../../../components/Modals/ModalForm';
+import ModalRemove from '../../../components/Modals/ModalRemove';
 const BrandForm = React.lazy(
   () => import('../../../components/VehicleComponents/BrandForm/BrandForm'),
-);
-const ModalForm = React.lazy(
-  () => import('../../../components/Modals/ModalForm'),
-);
-const ModalRemove = React.lazy(
-  () => import('../../../components/Modals/ModalRemove'),
 );
 
 const Brands = () => {

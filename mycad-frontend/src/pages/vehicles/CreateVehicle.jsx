@@ -1,18 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useCatalogContext } from '../../context/CatalogContext';
 import { useVehicleContext } from '../../context/VehicleContext';
-import { FaCar, FaSave } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-const ActionButtons = React.lazy(
-  () => import('../../components/ActionButtons/ActionButtons'),
-);
+import ModalForm from '../../components/Modals/ModalForm';
+import ModelForm from '../../components/VehicleComponents/ModelForm/ModelForm';
 const VehicleForm = React.lazy(
   () => import('../../components/VehicleComponents/VehicleForm/VehicleForm'),
 );
-const ModalForm = React.lazy(() => import('../../components/Modals/ModalForm'));
-const ModelForm = React.lazy(
-  () => import('../../components/VehicleComponents/ModelForm/ModelForm'),
+const ActionButtons = React.lazy(
+  () => import('../../components/ActionButtons/ActionButtons'),
 );
+import { FaCar, FaSave } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const CreateVehicle = () => {
   const formRef = useRef(null);
