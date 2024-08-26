@@ -27,7 +27,9 @@ const Table = ({ columns, children, sortBy, selectAll }) => {
                       {col.order === 'desc' ? <FaArrowDown /> : <FaArrowUp />}
                     </div>
                   )}
-                  {col?.id === 'checkbox' && <Checkbox onChange={selectAll} />}
+                  {col?.id === 'checkbox' && (
+                    <Checkbox className="cursor-pointer" onChange={selectAll} />
+                  )}
                 </span>
               </T.HeadCell>
             ))}

@@ -4,18 +4,19 @@ import { useVehicleContext } from '../../context/VehicleContext';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import ModalViewer from '../../components/Modals/ModalViewer';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import { FaEdit, FaEye, FaFileCsv } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { LuFileSpreadsheet } from 'react-icons/lu';
+import { FaEdit, FaEye } from 'react-icons/fa';
 import { Checkbox, Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchVehicles } from '../../services/api';
 import Card from '../../components/Card/Card';
 import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
-import { MdCloudUpload } from 'react-icons/md';
-import { RiAddBoxFill } from 'react-icons/ri';
+import { MdOutlineFileUpload } from 'react-icons/md';
 import CreateMultipleVehicle from './CreateMultipleVehicle';
 import { downloadCSV } from '../../utils/DownloadCSV';
 import Notifies from '../../components/Notifies/Notifies';
+import { IoMdAdd } from 'react-icons/io';
 const Table = React.lazy(() => import('../../components/Table/Table'));
 const ActionButtons = React.lazy(
   () => import('../../components/ActionButtons/ActionButtons'),
@@ -144,6 +145,7 @@ const Vehicles = () => {
   const [isOpenModalUpload, setIsOpenModalUpload] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
+  const [searchHeaderState, setSearchHeaderState] = useState([]);
   const [searchFilters, setSearchFilters] = useState({
     searchTerm: '',
     pageSize: 5,
@@ -299,32 +301,38 @@ const Vehicles = () => {
   return (
     <>
       <section className="flex flex-col gap-3 bg-white rounded-md dark:bg-gray-900 p-3 antialiased">
-        <TableHeader title="Vehículos" />
+        <TableHeader
+          title="Vehículos"
+          actions={[
+            {
+              label: 'Cargar',
+              action: () => setIsOpenModalUpload(true),
+              color: 'blue',
+              icon: MdOutlineFileUpload,
+            },
+            {
+              label: 'CSV',
+              action: downloadVehiclesCSV,
+              color: 'green',
+              icon: LuFileSpreadsheet,
+            },
+            {
+              label: 'Nuevo',
+              href: '/vehicles/create',
+              color: 'black',
+              icon: IoMdAdd,
+              filled: true,
+            },
+          ]}
+        />
         <TableActions
           handleSearchTerm={handleSearch}
           onCheckFilter={onCheckFilter}
           filters={searchFilters?.conditionName}
           value={searchFilters?.searchTerm}
-          actions={[
-            {
-              label: 'Cargar',
-              action: () => setIsOpenModalUpload(true),
-              color: 'indigo',
-              icon: MdCloudUpload,
-            },
-            {
-              label: 'CSV',
-              action: downloadVehiclesCSV,
-              color: 'indigo',
-              icon: FaFileCsv,
-            },
-            {
-              label: 'Nuevo',
-              href: '/vehicles/create',
-              color: 'green',
-              icon: RiAddBoxFill,
-            },
-          ]}
+          headers={columns}
+          searchHeader={searchHeaderState}
+          setSearchHeader={setSearchHeaderState}
         />
         {vehicles && !isPending ? (
           <>
@@ -361,6 +369,7 @@ const Vehicles = () => {
                             return (
                               <T.Cell key={column.id}>
                                 <Checkbox
+                                  className="cursor-pointer"
                                   onChange={() =>
                                     vehiclesToDownload(vehicle?.id, vehicle)
                                   }

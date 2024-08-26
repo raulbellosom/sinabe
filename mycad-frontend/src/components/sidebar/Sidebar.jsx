@@ -26,7 +26,7 @@ import { MdGarage } from 'react-icons/md';
 const themes = {
   light: {
     sidebar: {
-      backgroundColor: '#F6E8DF',
+      backgroundColor: '#ffffff',
       color: '#312e81',
     },
     menu: {
@@ -186,7 +186,6 @@ const Sidebar = ({ children }) => {
         >
           <div>
             <AccountSidebar
-              // role={user.roleId === 1 ? 'Admin' : 'User'}
               role={user.email}
               name={user.firstName + ' ' + user.lastName}
               photo={user.photo}
