@@ -1,5 +1,5 @@
 import React from 'react';
-const ImageViewer = React.lazy(() => import('../ImageViewer/ImageViewer'));
+import ImageViewer from '../ImageViewer/ImageViewer';
 import { Badge, Card as FlowbiteCard } from 'flowbite-react';
 
 const Card = ({ data = {}, showImage = false }) => {
