@@ -1,53 +1,84 @@
 import classNames from 'classnames';
 import React from 'react';
+import { Select, Tooltip } from 'flowbite-react';
 
 const TableFooter = ({
   pagination,
   goOnPrevPage,
   goOnNextPage,
   handleSelectChange,
+  changePageSize,
 }) => {
-  const { totalRecords, totalPages, currentPage, pageSize } = pagination
-  const index =
-  pageSize * currentPage - pageSize + 1;
-  const paginationNumber = []
+  const { totalRecords, totalPages, currentPage, pageSize } = pagination;
+  const index = pageSize * currentPage - pageSize + 1;
+  const paginationNumber = [];
 
-  const activePagClass = "flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-primary-600 bg-primary-50 border border-primary-300 hover:bg-primary-100 hover:text-primary-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white";
-  const pagClass = "flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white";
-  const disablePagClass = "pointer-events-none opacity-60 flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white";
-  for(let i = 1; i<=totalPages; i++) {
-    const pagC = <li key={i} onClick={() => handleSelectChange(i)}>
-    {
+  const activePagClass =
+    'flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-orange-600 bg-orange-50 border border-orange-300 hover:bg-orange-100 hover:text-orange-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white';
+  const pagClass =
+    'flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white';
+  const disablePagClass =
+    'pointer-events-none opacity-60 flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white';
+  for (let i = 1; i <= totalPages; i++) {
+    const pagC = (
+      <li key={i} onClick={() => handleSelectChange(i)}>
+        {
           <a
             href="#"
-            className={classNames(
-              i == currentPage ? activePagClass : pagClass
-            )}
+            className={classNames(i == currentPage ? activePagClass : pagClass)}
           >
             {i}
           </a>
-    } </li>
-    paginationNumber.push(pagC)
+        }{' '}
+      </li>
+    );
+    paginationNumber.push(pagC);
   }
-  console.log("pagination values ", pagination)
+  console.log('pagination values ', pagination);
   return (
     <nav
       className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
       aria-label="Table navigation"
     >
-      <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-        Mostrando&nbsp;
-        <span className="font-semibold text-gray-900 dark:text-white">
-          {totalRecords === index
-            ? totalRecords
-            : `${index} - ${pageSize + index - 1 >= totalRecords ? totalRecords : pageSize + index - 1}`}
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+          Mostrando&nbsp;
+          <span className="font-semibold text-gray-900 dark:text-white">
+            {totalRecords === index
+              ? totalRecords
+              : `${index} - ${pageSize + index - 1 >= totalRecords ? totalRecords : pageSize + index - 1}`}
+          </span>
+          &nbsp;de&nbsp;
+          <span className="font-semibold text-gray-900 dark:text-white">
+            {totalRecords}
+          </span>
+          &nbsp;resultados
         </span>
-        &nbsp;de&nbsp;
-        <span className="font-semibold text-gray-900 dark:text-white">
-          {totalRecords}
-        </span>
-        &nbsp;resultados
-      </span>
+        <Tooltip
+          content={
+            totalRecords == 0 ? 'No hay resultados' : 'Resultados por pagina'
+          }
+        >
+          <Select
+            className="font-semibold"
+            style={{
+              backgroundColor: 'transparent',
+              borderRadius: '0',
+              border: 0,
+              borderBottom: '1px solid #e5e7eb',
+            }}
+            value={pageSize}
+            onChange={changePageSize}
+            disabled={totalRecords === 0}
+          >
+            {[5, 10, 20, 50, 100].map((item) => (
+              <option disabled={totalRecords < item} key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </Select>
+        </Tooltip>
+      </div>
       <ul className="inline-flex items-stretch -space-x-px">
         <li
           key="prev"
@@ -74,16 +105,16 @@ const TableFooter = ({
             </svg>
           </a>
         </li>
-        { paginationNumber?.map(( item ) => item)}
+        {paginationNumber?.map((item) => item)}
         <li
           onClick={goOnNextPage}
           className={
-            (pageSize + index - 1) >= totalRecords ? 'pointer-events-none opacity-60' : ''
+            pageSize + index - 1 >= totalRecords
+              ? 'pointer-events-none opacity-60'
+              : ''
           }
         >
-          <a
-            className="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-          >
+          <a className="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
             <span className="sr-only">Next</span>
             <svg
               className="w-5 h-5"

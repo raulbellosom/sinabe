@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import uploadFilesImage from '../../assets/images/upload_files.jpg';
 import { Button, FileInput, Spinner } from 'flowbite-react';
 import { FaCloudUploadAlt, FaDownload } from 'react-icons/fa';
@@ -7,6 +7,7 @@ import { MdClose } from 'react-icons/md';
 import { useAuthContext } from '../../context/AuthContext';
 
 const CreateMultipleVehicle = () => {
+  const ref = useRef(null);
   const { createMultipleVehicles } = useVehicleContext();
   const { user } = useAuthContext();
   const [file, setFile] = useState(null);
@@ -35,11 +36,13 @@ const CreateMultipleVehicle = () => {
       .finally((data) => {
         console.log(data);
         setLoading(false);
+        // move to bottom
+        ref.current.scrollIntoView({ block: 'end', behavior: 'smooth' });
       });
   };
 
   return (
-    <div className="h-full w-full bg-white">
+    <div ref={ref} className="h-full w-full bg-white">
       <div className="flex flex-col items-center justify-center">
         <img
           src={uploadFilesImage}

@@ -12,10 +12,10 @@ export const parseToLocalDateTime = (date) => {
   return formattedDate;
 };
 
-export const parseToCurrency = (value) => {
+export const parseToCurrency = (value, currency) => {
   if (!value) return '';
   return value.toLocaleString('en-GB', {
     style: 'currency',
-    currency: 'MXN',
+    currency: currency || 'MXN',
   });
 };

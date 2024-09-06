@@ -22,4 +22,4 @@ const ModalForm = ({
   );
 };
 
-export default ModalForm;
+export default React.memo(ModalForm);

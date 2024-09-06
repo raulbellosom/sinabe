@@ -1,30 +1,30 @@
 import classNames from 'classnames';
 
-export const getButtonClassNames = (color, filled) => {
+export const getButtonClassNames = (color, filled, disabled = false) => {
   const baseClasses =
-    'w-full md:w-fit text-sm transition ease-in-out duration-200 p-2 flex gap-2 items-center justify-center rounded-md border text-stone-800';
+    'w-full md:w-fit text-sm transition ease-in-out duration-200 p-2 px-4 flex items-center justify-center rounded-md border text-stone-800';
 
   let notFilledClasses = {
-    'hover:bg-red-500 hover:text-white': color === 'red',
-    'hover:bg-yellow-300 hover:text-white': color === 'yellow',
-    'hover:bg-cyan-500 hover:text-white': color === 'cyan',
-    'hover:bg-indigo-500 hover:text-white': color === 'indigo',
-    'hover:bg-green-500 hover:text-white': color === 'green',
-    'hover:bg-blue-500 hover:text-white': color === 'blue',
-    'hover:bg-purple-500 hover:text-white': color === 'purple',
-    'hover:bg-amber-500 hover:text-white': color === 'amber',
-    'hover:bg-gray-500 hover:text-white': color === 'gray',
-    'hover:bg-orange-400 hover:text-white': color === 'orange',
-    'hover:bg-pink-500 hover:text-white': color === 'pink',
-    'hover:bg-teal-500 hover:text-white': color === 'teal',
-    'hover:bg-lime-500 hover:text-white': color === 'lime',
-    'hover:bg-emerald-500 hover:text-white': color === 'emerald',
-    'hover:bg-violet-500 hover:text-white': color === 'violet',
-    'hover:bg-cyan-500 hover:text-white': color === 'cyan',
-    'hover:bg-rose-500 hover:text-white': color === 'rose',
-    'hover:bg-fuchsia-500 hover:text-white': color === 'fuchsia',
-    'hover:bg-white text-black': color === 'white',
-    'hover:bg-black': color === 'black',
+    'hover:bg-red-500 hover:text-white': color === 'red' && !disabled,
+    'hover:bg-yellow-300 hover:text-white': color === 'yellow' && !disabled,
+    'hover:bg-cyan-500 hover:text-white': color === 'cyan' && !disabled,
+    'hover:bg-indigo-500 hover:text-white': color === 'indigo' && !disabled,
+    'hover:bg-green-500 hover:text-white': color === 'green' && !disabled,
+    'hover:bg-blue-500 hover:text-white': color === 'blue' && !disabled,
+    'hover:bg-purple-500 hover:text-white': color === 'purple' && !disabled,
+    'hover:bg-amber-500 hover:text-white': color === 'amber' && !disabled,
+    'hover:bg-gray-500 hover:text-white': color === 'gray' && !disabled,
+    'hover:bg-orange-400 hover:text-white': color === 'orange' && !disabled,
+    'hover:bg-pink-500 hover:text-white': color === 'pink' && !disabled,
+    'hover:bg-teal-500 hover:text-white': color === 'teal' && !disabled,
+    'hover:bg-lime-500 hover:text-white': color === 'lime' && !disabled,
+    'hover:bg-emerald-500 hover:text-white': color === 'emerald' && !disabled,
+    'hover:bg-violet-500 hover:text-white': color === 'violet' && !disabled,
+    'hover:bg-cyan-500 hover:text-white': color === 'cyan' && !disabled,
+    'hover:bg-rose-500 hover:text-white': color === 'rose' && !disabled,
+    'hover:bg-fuchsia-500 hover:text-white': color === 'fuchsia' && !disabled,
+    'hover:bg-white text-black': color === 'white' && !disabled,
+    'hover:bg-black': color === 'black' && !disabled,
   };
   let filledClasses = {
     'bg-red-500 text-white border-red-500 hover:bg-red-700': color === 'red',
@@ -66,7 +66,12 @@ export const getButtonClassNames = (color, filled) => {
     'bg-black text-white border-black hover:border-gray-200 hover:text-black hover:bg-stone-200':
       color === 'black',
   };
+
+  const disabledClasses = {
+    'cursor-not-allowed hover:bg-white hover:text-stone-800': disabled,
+  };
+
   const colorClasses = classNames(filled ? filledClasses : notFilledClasses);
 
-  return classNames(baseClasses, colorClasses);
+  return classNames(baseClasses, colorClasses, disabledClasses);
 };

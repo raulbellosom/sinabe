@@ -42,6 +42,7 @@ const ActionButtons = forwardRef(
         color: 'cyan',
         icon: FaEye,
         permission: permisions.show.includes(user.roleId),
+        disabled: false,
       },
       {
         label: labelEdit || 'Editar',
@@ -49,6 +50,7 @@ const ActionButtons = forwardRef(
         color: 'yellow',
         icon: FaEdit,
         permission: permisions.edit.includes(user.roleId),
+        disabled: false,
       },
       {
         label: labelRemove || 'Eliminar',
@@ -56,6 +58,7 @@ const ActionButtons = forwardRef(
         color: 'red',
         icon: FaTrash,
         permission: permisions.remove.includes(user.roleId),
+        disabled: false,
       },
       {
         label: labelCreate || 'Nuevo',
@@ -63,6 +66,7 @@ const ActionButtons = forwardRef(
         color: 'indigo',
         icon: FaPlus,
         permission: permisions.create.includes(user.roleId),
+        disabled: false,
       },
       {
         label: labelCancel || 'Cancelar',
@@ -70,6 +74,7 @@ const ActionButtons = forwardRef(
         color: 'red',
         icon: MdCancel,
         permission: permisions.create.includes(user.roleId),
+        disabled: false,
       },
     ];
 
@@ -92,18 +97,25 @@ const ActionButtons = forwardRef(
           icon={action.icon}
           label={action.label}
           outline={action?.outline}
-          filled={action?.filled} // Pasar la propiedad filled a LinkButton
+          filled={action?.filled}
+          disabled={action?.disabled || false}
         />
       ) : (
         <button
           key={index}
-          ref={ref} // Pasar el ref aquí si es necesario
+          ref={ref}
           onClick={action.action}
-          className={getButtonClassNames(action?.color, action?.filled)}
+          className={getButtonClassNames(
+            action?.color,
+            action?.filled,
+            action?.disabled,
+          )}
           outline={action?.outline}
+          type="button"
+          disabled={action?.disabled || false}
         >
           <i>{action.icon && <action.icon size={18} />}</i>
-          <span>{action.label}</span>
+          <span className="ml-2">{action.label}</span>
         </button>
       ),
     );

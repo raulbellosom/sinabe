@@ -8,11 +8,27 @@ import { MdClose } from 'react-icons/md';
 import { FaTrashAlt } from 'react-icons/fa';
 
 const criteria = [
-  { value: 'equals', label: 'Es igual a' },
-  { value: 'contains', label: 'Contiene' },
-  { value: 'different', label: 'Diferente' },
-  { value: 'greater', label: 'Es Mayor que' },
-  { value: 'less', label: 'Es Menor que' },
+  {
+    value: 'equals',
+    label: 'Es igual a',
+    availableOn: ['text', 'number', 'date'],
+  },
+  {
+    value: 'startsWith',
+    label: 'Empieza con',
+    availableOn: ['text'],
+  },
+  {
+    value: 'endsWith',
+    label: 'Termina con',
+    availableOn: ['text'],
+  },
+  { value: 'contains', label: 'Contiene', availableOn: ['text'] },
+  { value: 'different', label: 'Diferente', availableOn: ['text'] },
+  { value: 'greater', label: 'Es Mayor que', availableOn: ['number'] },
+  { value: 'less', label: 'Es Menor que', availableOn: ['number'] },
+  { value: 'before', label: 'Antes de', availableOn: ['date'] },
+  { value: 'after', label: 'Después de', availableOn: ['date'] },
 ];
 
 const TableSearchByHeader = ({
@@ -117,7 +133,7 @@ const TableSearchByHeader = ({
 
   return (
     <>
-      <div className="flex gap-2 items-center">
+      <div className="flex flex-wrap gap-2 items-center">
         <Tooltip content="Agregar criterio de busqueda" position="top">
           <ActionButtons
             extraActions={[
@@ -130,11 +146,11 @@ const TableSearchByHeader = ({
             ]}
           />
         </Tooltip>
-        {currentFilters.length > 0 && (
-          <div className="flex gap-2">
+        {currentFilters?.length > 0 && (
+          <>
             {currentFilters.map((filter, index) => (
               <div
-                className="text-nowrap text-blue-600 bg-blue-100 hover:bg-red-100 hover:text-red-600 cursor-pointer p-2 rounded-lg flex gap-2 items-center"
+                className="text-nowrap text-xs text-blue-600 bg-blue-100 hover:bg-red-100 hover:text-red-600 cursor-pointer p-2 rounded-lg flex gap-2 items-center"
                 key={index}
                 onClick={() =>
                   setCurrentFilters(
@@ -159,11 +175,18 @@ const TableSearchByHeader = ({
               </div>
             ))}
             <Tooltip content="Limpiar criterios de busqueda" position="top">
-              <Button outline color="red" onClick={cleanFilters}>
-                <FaTrashAlt size={18} />
-              </Button>
+              <ActionButtons
+                extraActions={[
+                  {
+                    label: '',
+                    action: cleanFilters,
+                    color: 'red',
+                    icon: FaTrashAlt,
+                  },
+                ]}
+              />
             </Tooltip>
-          </div>
+          </>
         )}
       </div>
       {isModalOpen && (
@@ -191,7 +214,10 @@ const TableSearchByHeader = ({
               >
                 <option disabled value="" />
                 {headers.map((item) =>
-                  !item.value || item.id === 'images' ? null : (
+                  !item.value ||
+                  item.id === 'images' ||
+                  item.id === 'status' ||
+                  item.id === 'actions' ? null : (
                     <option
                       key={item.id}
                       value={item.id}
@@ -219,15 +245,19 @@ const TableSearchByHeader = ({
                 required
               >
                 <option disabled value="" />
-                {criteria.map((item) => (
-                  <option
-                    key={item.value}
-                    value={item.value}
-                    className="px-4 py-1.5 font-semibold hover:bg-stone-100 cursor-pointer text-blue-500 border-b border-gray-200"
-                  >
-                    {item.label}
-                  </option>
-                ))}
+                {criteria.map((item) =>
+                  !item.availableOn.includes(
+                    headers.find((item) => item.id === searchHeader)?.type,
+                  ) ? null : (
+                    <option
+                      key={item.value}
+                      value={item.value}
+                      className="px-4 py-1.5 font-semibold hover:bg-stone-100 cursor-pointer text-blue-500 border-b border-gray-200"
+                    >
+                      {item.label}
+                    </option>
+                  ),
+                )}
               </Select>
             </div>
             <div className="col-span-3 md:col-span-1 flex gap-2 flex-col justify-start">
@@ -236,7 +266,10 @@ const TableSearchByHeader = ({
               </Label>
               <TextInput
                 id="searchTerm"
-                type="text"
+                type={
+                  headers.find((item) => item.id === searchHeader)?.type ??
+                  'text'
+                }
                 placeholder="Busca un valor"
                 value={searchTerm}
                 onChange={(e) => handleChange('searchTerm', e.target.value)}

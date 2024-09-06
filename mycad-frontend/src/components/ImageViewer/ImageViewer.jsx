@@ -190,7 +190,7 @@ const ImageViewer = ({
                   e.preventDefault();
                   onRemove(index);
                 }}
-                className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md"
+                className="absolute top-2 right-2 hover:bg-red-500 hover:scale-110 transition-all ease-in-out hover:text-white p-1 bg-white rounded-full shadow-md"
               >
                 <IoClose size={20} />
               </button>

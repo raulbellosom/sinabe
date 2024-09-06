@@ -16,7 +16,7 @@ import {
 } from 'react-icons/fa';
 import { useAuthContext } from '../../context/AuthContext';
 import AccountSidebar from './AccountSidebar';
-import BgPattern from '../../assets/bg/pattern-randomized.png';
+import BgPattern from '../../assets/bg/bg_pattern_dark.png';
 import { Button } from 'flowbite-react';
 import Navbar from '../navbar/Navbar';
 import MainLayout from '../../Layout/MainLayout';
@@ -26,14 +26,14 @@ import { MdGarage } from 'react-icons/md';
 const themes = {
   light: {
     sidebar: {
-      backgroundColor: '#ffffff',
-      color: '#312e81',
+      backgroundColor: '#333333',
+      color: '#ffffff',
     },
     menu: {
       menuContent: '#fbfcfd',
-      icon: '#ff5a1f',
+      icon: '#ffffff',
       hover: {
-        backgroundColor: '#ff5a1f',
+        backgroundColor: '#f43f5e',
         color: '#fff',
       },
       disabled: {
@@ -41,7 +41,7 @@ const themes = {
       },
       active: {
         color: '#FFF',
-        backgroundColor: '#312e81',
+        backgroundColor: '#f43f5e',
       },
     },
   },
@@ -112,7 +112,7 @@ const Sidebar = ({ children }) => {
         level === 0
           ? hexToRgba(
               themes[theme].menu.menuContent,
-              hasImage && !collapsed ? 0.4 : 1,
+              hasImage && !collapsed ? 0.15 : 1,
             )
           : 'transparent',
     }),
@@ -170,7 +170,8 @@ const Sidebar = ({ children }) => {
         breakPoint="md"
         backgroundColor={hexToRgba(
           themes[theme].sidebar.backgroundColor,
-          hasImage ? 0.15 : 1,
+          hasImage ? 0.2 : 1,
+          // 1,
         )}
         rootStyles={{
           color: themes[theme].sidebar.color,
@@ -241,12 +242,23 @@ const Sidebar = ({ children }) => {
           <div className="p-4">
             <Button
               type="button"
-              gradientMonochrome="purple"
-              className="w-full border-none truncate flex justify-start items-center text-white transition-colors duration-100 ease-in-out"
+              gradientDuoTone="pinkToOrange"
+              className="w-full border-none truncate flex justify-start items-center"
               onClick={logout}
             >
-              <FaSignOutAlt className="text-lg mt-0.5 mr-4" />
-              Cerrar Sesión
+              <div
+                className="w-full"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'start',
+                  alignItems: 'center',
+                }}
+              >
+                <i>
+                  <FaSignOutAlt size={18} className="text-lg mt-0.5" />
+                </i>
+                {collapsed ? null : <span className="ml-4">Cerrar Sesión</span>}
+              </div>
             </Button>
           </div>
         </div>

@@ -34,6 +34,11 @@ const CreateVehicle = () => {
     plateNumber: '',
     acquisitionDate: '',
     cost: '',
+    costCurrency: '',
+    bookValue: '',
+    bookValueCurrency: '',
+    currentMarketValue: '',
+    currentMarketValueCurrency: '',
     mileage: '',
     status: '',
     images: [],
@@ -116,18 +121,20 @@ const CreateVehicle = () => {
           <FaCar size={24} className="mr-4" />
           <h1 className="text-2xl font-bold">Crear Vehículo</h1>
         </div>
-        <ActionButtons
-          extraActions={[
-            {
-              label: 'Guardar',
-              action: handleSubmitRef,
-              icon: FaSave,
-              color: 'green',
-            },
-          ]}
-          onCancel={onCancel}
-          labelCancel={'Descartar'}
-        />
+        <div className="flex justify-center gap-2">
+          <ActionButtons
+            extraActions={[
+              {
+                label: 'Guardar',
+                action: handleSubmitRef,
+                icon: FaSave,
+                color: 'green',
+              },
+            ]}
+            onCancel={onCancel}
+            labelCancel={'Descartar'}
+          />
+        </div>
       </div>
       <p className="mb-4 text-gray-800">
         Llena el formulario para crear un nuevo vehículo. Los campos marcados

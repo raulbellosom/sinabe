@@ -1,20 +1,19 @@
 import React from 'react';
 import TableSearchByHeader from './TableSearchByHeader';
 import { TextInput, Dropdown } from 'flowbite-react';
-import { useCatalogContext } from '../../context/CatalogContext';
 import { TbFilter } from 'react-icons/tb';
-import ActionButtons from '../ActionButtons/ActionButtons';
 import { LuSearch } from 'react-icons/lu';
+import { getButtonClassNames } from '../../utils/getButtonClassNames';
 
 const TableActions = ({
   handleSearchTerm,
   onCheckFilter,
   filters,
   headers,
-  searchHeader,
-  setSearchHeader,
+  deepSearch,
+  setDeepSearch,
+  vehicleConditions,
 }) => {
-  const { vehicleConditions } = useCatalogContext();
   const CustomDropdownItem = ({ name }) => {
     return (
       <li className="flex items-center cursor-pointer hover:bg-neutral-100 px-4 py-1.5">
@@ -42,12 +41,12 @@ const TableActions = ({
             <div className="relative w-full">
               <TextInput
                 icon={LuSearch}
+                type="search"
                 placeholder="Buscar vehículo"
-                className="bg-white"
+                className="bg-transparent"
                 onChange={handleSearchTerm}
                 style={{
-                  backgroundColor: 'white',
-                  border: 'none',
+                  backgroundColor: 'transparent',
                   borderRadius: '5px',
                   border: '1px solid #e2e8f0',
                 }}
@@ -58,35 +57,48 @@ const TableActions = ({
         <div className="flex justify-end">
           <Dropdown
             renderTrigger={() => (
-              <ActionButtons
-                extraActions={[
-                  {
-                    label: 'Filtrar',
-                    color: 'indigo',
-                    icon: TbFilter,
-                    action: () => {},
-                  },
-                ]}
-              />
+              <button className={getButtonClassNames('indigo', false)}>
+                <i>
+                  <TbFilter size={18} />
+                </i>
+                <span className="ml-2">Filtrar</span>
+              </button>
             )}
             placement="bottom-end"
             className="w-fit"
             outline
           >
-            {vehicleConditions &&
-              vehicleConditions?.map((condition) => (
-                <CustomDropdownItem
-                  key={condition?.id}
-                  name={condition?.name}
-                />
-              ))}
+            <>
+              <div className="flex items-center px-4 py-2">
+                <h2 className="text-sm font-semibold">
+                  Filtrar por Condiciones
+                </h2>
+              </div>
+              <Dropdown.Divider />
+              <CustomDropdownItem
+                key="all"
+                name={
+                  vehicleConditions?.length === filters?.length
+                    ? 'Quitar todos'
+                    : 'Seleccionar todos'
+                }
+              />
+              <Dropdown.Divider />
+              {vehicleConditions &&
+                vehicleConditions?.map((condition) => (
+                  <CustomDropdownItem
+                    key={condition?.id}
+                    name={condition?.name}
+                  />
+                ))}
+            </>
           </Dropdown>
         </div>
       </div>
-      <div className="w-full col-span-12 md:col-span-3 whitespace-nowrap flex flex-wrap">
+      <div className="w-full col-span-12 whitespace-nowrap flex flex-wrap">
         <TableSearchByHeader
-          currentFilters={searchHeader}
-          setCurrentFilters={setSearchHeader}
+          currentFilters={deepSearch}
+          setCurrentFilters={setDeepSearch}
           headers={headers}
         />
       </div>

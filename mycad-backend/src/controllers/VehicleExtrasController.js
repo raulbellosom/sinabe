@@ -3,6 +3,7 @@ import { db } from "../lib/db.js";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
+import sharp from "sharp";
 import csvParser from "csv-parser";
 import { v4 as uuidv4 } from "uuid";
 import { parse, format } from "date-fns";
@@ -29,11 +30,9 @@ const processImage = async (imagePath, fileName) => {
   const thumbnailDir = `${BASE_PATH}images/thumbnails/`;
   const mediumDir = `${BASE_PATH}images/medium/`;
   const largeDir = `${BASE_PATH}images/large/`;
-
   const thumbnailPath = `${thumbnailDir}${fileName}-thumbnail.jpg`;
   const mediumPath = `${mediumDir}${fileName}-medium.jpg`;
   const largePath = `${largeDir}${fileName}-large.jpg`;
-
   if (!fs.existsSync(thumbnailDir)) {
     fs.mkdirSync(thumbnailDir, { recursive: true });
   }
@@ -43,18 +42,17 @@ const processImage = async (imagePath, fileName) => {
   if (!fs.existsSync(largeDir)) {
     fs.mkdirSync(largeDir, { recursive: true });
   }
-
-  await sharp(imagePath).resize(150, 150).toFile(thumbnailPath);
+  const res = await sharp(imagePath).resize(150, 150).toFile(thumbnailPath);
   await sharp(imagePath).resize(500, 500).toFile(mediumPath);
   await sharp(imagePath).resize(1000, 1000).toFile(largePath);
-
   let urlRelativePath = BASE_PATH.replace("src/", "");
-  return {
+  const imageData = {
     url: `${urlRelativePath}images/${fileName}.jpg`,
     thumbnail: thumbnailPath.split("src/")[1],
     medium: mediumPath.split("src/")[1],
     large: largePath.split("src/")[1],
   };
+  return imageData;
 };
 
 const convertDateFormat = (dateStr) => {
@@ -110,7 +108,6 @@ export const createMultipleVehicles = async (req, res) => {
     fs.createReadStream(csvFile.path)
       .pipe(csvParser())
       .on("data", (row) => {
-        console.log("Row:", row);
         vehicles.push({
           model: row["Nombre del Modelo"],
           year: parseInt(row["Año del Modelo"], 10),
@@ -124,7 +121,7 @@ export const createMultipleVehicles = async (req, res) => {
           cost: parseFloat(row["Costo de Adquisición"]),
           status: row["Estado"] === "true",
           comments: row["Comentarios"],
-          images: row["Imágenes"],
+          images: JSON.parse(row["Imágenes"] || "[]").join(","),
         });
       })
       .on("end", async () => {
@@ -273,10 +270,12 @@ export const createMultipleVehicles = async (req, res) => {
               await db.image.createMany({
                 data: imagePaths.map((image) => ({
                   vehicleId: createdVehicle.id,
-                  path: image.url,
+                  url: image.url,
+                  type: "image/jpeg",
                   thumbnail: image.thumbnail,
                   medium: image.medium,
                   large: image.large,
+                  enabled: true,
                 })),
               });
             }

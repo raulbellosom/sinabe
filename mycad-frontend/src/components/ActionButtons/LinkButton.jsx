@@ -9,13 +9,17 @@ const LinkButton = ({
   icon: Icon,
   label,
   outline = false,
+  disabled = false,
 }) => {
   return (
-    <Link className={getButtonClassNames(color, filled)} to={route}>
+    <Link
+      className={getButtonClassNames(color, filled, disabled)}
+      to={!disabled ? route : null}
+    >
       <i>
         <Icon size={18} />
       </i>
-      <span>{label}</span>
+      <span className="ml-2">{label}</span>
     </Link>
   );
 };
