@@ -38,7 +38,7 @@ const CreateVehicle = () => {
     bookValue: '',
     bookValueCurrency: '',
     currentMarketValue: '',
-    currentMarketValueCurrency: '',
+    marketValueCurrency: '',
     mileage: '',
     status: '',
     images: [],

@@ -41,7 +41,7 @@ const UpdateVehicle = () => {
     bookValue: '',
     bookValueCurrency: '',
     currentMarketValue: '',
-    currentMarketValueCurrency: '',
+    marketValueCurrency: '',
     mileage: '',
     status: '',
     images: [],
