@@ -124,7 +124,7 @@ const ViewVehicle = () => {
             )
           : '',
         icon: BiDollar,
-        label: 'Valor de Mercado Actual',
+        label: 'Valor en el Mercado',
       },
       comments: {
         name: vehicle?.comments,
