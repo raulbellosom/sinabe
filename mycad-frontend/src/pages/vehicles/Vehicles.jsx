@@ -4,18 +4,22 @@ import { useVehicleContext } from '../../context/VehicleContext';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import ModalViewer from '../../components/Modals/ModalViewer';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import { FaEdit, FaEye, FaFileCsv } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { LuFileSpreadsheet } from 'react-icons/lu';
+import { FaEdit, FaEye } from 'react-icons/fa';
 import { Checkbox, Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchVehicles } from '../../services/api';
 import Card from '../../components/Card/Card';
 import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
-import { MdCloudUpload } from 'react-icons/md';
-import { RiAddBoxFill } from 'react-icons/ri';
+import { MdOutlineFileUpload } from 'react-icons/md';
 import CreateMultipleVehicle from './CreateMultipleVehicle';
 import { downloadCSV } from '../../utils/DownloadCSV';
 import Notifies from '../../components/Notifies/Notifies';
+import { IoMdAdd } from 'react-icons/io';
+import { vehicleColumns } from '../../utils/VehicleFields';
+import TableResultsNotFound from '../../components/Table/TableResultsNotFound';
+import { useCatalogContext } from '../../context/CatalogContext';
 const Table = React.lazy(() => import('../../components/Table/Table'));
 const ActionButtons = React.lazy(
   () => import('../../components/ActionButtons/ActionButtons'),
@@ -33,83 +37,6 @@ const LinkButton = React.lazy(
   () => import('../../components/ActionButtons/LinkButton'),
 );
 
-const vehicleColumns = [
-  {
-    id: 'checkbox',
-    value: '',
-    classes: 'w-20',
-  },
-  {
-    id: 'images',
-    value: 'Imagen',
-    classes: 'w-20',
-  },
-  {
-    id: 'model.name',
-    value: 'Nombre',
-    classes: 'w-auto',
-    order: 'asc',
-  },
-  {
-    id: 'model.type.name',
-    value: 'Tipo',
-    classes: 'w-auto',
-    order: 'asc',
-  },
-  {
-    id: 'model.brand.name',
-    value: 'Marca',
-    classes: 'w-auto',
-    order: 'asc',
-  },
-  {
-    id: 'model.year',
-    value: 'Año',
-    classes: 'w-auto',
-    order: 'asc',
-  },
-  {
-    id: 'economicNumber',
-    value: 'Número económico',
-    classes: 'w-auto',
-    order: 'asc',
-  },
-  {
-    id: 'serialNumber',
-    value: 'Número de serie',
-    classes: 'w-auto',
-    order: 'asc',
-  },
-  {
-    id: 'plateNumber',
-    value: 'Número de placa',
-    classes: 'w-auto',
-    order: 'asc',
-  },
-  {
-    id: 'acquisitionDate',
-    value: 'Fecha de adquisición',
-    classes: 'w-auto',
-    order: 'asc',
-  },
-  {
-    id: 'cost',
-    value: 'Costo de adquisición',
-    classes: 'w-auto',
-    order: 'asc',
-  },
-  {
-    id: 'status',
-    value: 'Estatus',
-    classes: 'w-fit',
-    order: 'asc',
-  },
-  {
-    id: 'actions',
-    value: 'Acciones',
-    classes: 'text-center w-1',
-  },
-];
 const formatVehicle = (vehicleData) => {
   const {
     model,
@@ -135,6 +62,7 @@ const formatVehicle = (vehicleData) => {
 };
 const Vehicles = () => {
   const { deleteVehicle } = useVehicleContext();
+  const { vehicleConditions } = useCatalogContext();
   const [columns, setColumns] = useState([...vehicleColumns]);
   const [selectAllCheckbox, setSelectAllCheckbox] = useState(false);
   const [itemsToDownload, setItemsToDownload] = useState({});
@@ -151,6 +79,7 @@ const Vehicles = () => {
     sortBy: 'createdAt',
     order: 'asc',
     conditionName: [],
+    deepSearch: [],
   });
 
   const {
@@ -211,6 +140,25 @@ const Vehicles = () => {
     },
     [searchFilters?.searchTerm],
   );
+
+  const handleDeepSearch = (value) => {
+    setSearchFilters((prevState) => {
+      return {
+        ...prevState,
+        deepSearch: value,
+      };
+    });
+  };
+
+  const changePageSize = (e) => {
+    setSearchFilters((prevState) => {
+      return {
+        ...prevState,
+        pageSize: e.target.value,
+      };
+    });
+  };
+
   const sortBy = (column) => {
     const selectedHeaderIndex = columns?.findIndex((col) => col.id === column);
     let updatedHeaders = [];
@@ -244,22 +192,39 @@ const Vehicles = () => {
   };
   const onCheckFilter = (value) => {
     if (value !== '') {
-      let currentValues = [...searchFilters?.conditionName];
-      if (currentValues?.includes(value)) {
-        currentValues = currentValues.filter(
-          (condition) => condition !== value,
-        );
+      if (value === 'Seleccionar todos') {
+        setSearchFilters((prevState) => {
+          return {
+            ...prevState,
+            conditionName: vehicleConditions.map((condition) => condition.name),
+          };
+        });
+      } else if (value === 'Quitar todos') {
+        setSearchFilters((prevState) => {
+          return {
+            ...prevState,
+            conditionName: [],
+          };
+        });
       } else {
-        currentValues.push(value);
+        let currentValues = [...searchFilters?.conditionName];
+        if (currentValues?.includes(value)) {
+          currentValues = currentValues.filter(
+            (condition) => condition !== value,
+          );
+        } else {
+          currentValues.push(value);
+        }
+        setSearchFilters((prevState) => {
+          return {
+            ...prevState,
+            conditionName: currentValues,
+          };
+        });
       }
-      setSearchFilters((prevState) => {
-        return {
-          ...prevState,
-          conditionName: currentValues,
-        };
-      });
     }
   };
+
   const handleDeleteVehicle = () => {
     if (vehicleId) {
       deleteVehicle(vehicleId);
@@ -298,235 +263,258 @@ const Vehicles = () => {
   };
   return (
     <>
-      <section className="flex flex-col gap-3 bg-white rounded-md dark:bg-gray-900 p-3 antialiased">
-        <TableHeader title="Vehículos" />
+      <section className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
+        <TableHeader
+          title="Vehículos"
+          actions={[
+            {
+              label: 'Exportar',
+              action: downloadVehiclesCSV,
+              color: 'green',
+              icon: LuFileSpreadsheet,
+              disabled: Object.keys(itemsToDownload).length === 0,
+            },
+            {
+              label: 'Cargar',
+              action: () => setIsOpenModalUpload(true),
+              color: 'blue',
+              icon: MdOutlineFileUpload,
+            },
+            {
+              label: 'Nuevo',
+              href: '/vehicles/create',
+              color: 'orange',
+              icon: IoMdAdd,
+              filled: true,
+            },
+          ]}
+        />
         <TableActions
           handleSearchTerm={handleSearch}
           onCheckFilter={onCheckFilter}
           filters={searchFilters?.conditionName}
           value={searchFilters?.searchTerm}
-          actions={[
-            {
-              label: 'Cargar',
-              action: () => setIsOpenModalUpload(true),
-              color: 'indigo',
-              icon: MdCloudUpload,
-            },
-            {
-              label: 'CSV',
-              action: downloadVehiclesCSV,
-              color: 'indigo',
-              icon: FaFileCsv,
-            },
-            {
-              label: 'Nuevo',
-              href: '/vehicles/create',
-              color: 'green',
-              icon: RiAddBoxFill,
-            },
-          ]}
+          headers={columns}
+          deepSearch={searchFilters?.deepSearch}
+          setDeepSearch={handleDeepSearch}
+          vehicleConditions={vehicleConditions}
         />
         {vehicles && !isPending ? (
-          <>
-            <div className="hidden md:block">
-              <Table columns={columns} sortBy={sortBy} selectAll={selectAll}>
-                {vehicles &&
-                  !isPending &&
-                  vehicles?.data?.map((vehicle) => {
-                    if (selectAllCheckbox) {
-                      vehicle = {
-                        ...vehicle,
-                        checked: true,
-                      };
-                    }
-                    return (
-                      <T.Row
-                        onDoubleClick={() =>
-                          navigate(`/vehicles/view/${vehicle.id}`)
-                        }
-                        onClick={(event) => {
-                          if (event.ctrlKey) {
-                            window.open(
-                              `/vehicles/view/${vehicle.id}`,
-                              '_blank',
-                            );
+          vehicles?.data?.length > 0 ? (
+            <>
+              <div className="hidden md:block">
+                <Table
+                  columns={columns}
+                  sortBy={sortBy}
+                  sortedBy={searchFilters.sortBy}
+                  selectAll={selectAll}
+                >
+                  {vehicles &&
+                    !isPending &&
+                    vehicles?.data?.map((vehicle) => {
+                      if (selectAllCheckbox) {
+                        vehicle = {
+                          ...vehicle,
+                          checked: true,
+                        };
+                      }
+                      return (
+                        <T.Row
+                          onDoubleClick={() =>
+                            navigate(`/vehicles/view/${vehicle.id}`)
                           }
-                        }}
-                        key={vehicle.id}
-                        className="border-b dark:border-gray-600 text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                      >
-                        {vehicleColumns?.map((column) => {
-                          let content;
-                          if (column.id === 'checkbox') {
-                            return (
-                              <T.Cell key={column.id}>
-                                <Checkbox
-                                  onChange={() =>
-                                    vehiclesToDownload(vehicle?.id, vehicle)
-                                  }
-                                  checked={
-                                    itemsToDownload[vehicle?.id] ? true : false
-                                  }
-                                />
-                              </T.Cell>
-                            );
-                          } else if (column.id === 'cost') {
-                            content = parseToCurrency(
-                              getNestedValue(vehicle, column.id),
-                            );
-                          } else if (column.id === 'acquisitionDate') {
-                            content = parseToLocalDate(
-                              getNestedValue(vehicle, column.id),
-                            );
-                          } else {
-                            content = getNestedValue(vehicle, column.id);
-                          }
+                          onClick={(event) => {
+                            if (event.ctrlKey) {
+                              window.open(
+                                `/vehicles/view/${vehicle.id}`,
+                                '_blank',
+                              );
+                            }
+                          }}
+                          key={vehicle.id}
+                          className="border-b dark:border-gray-600 text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                        >
+                          {vehicleColumns?.map((column) => {
+                            let content;
+                            if (column.id === 'checkbox') {
+                              return (
+                                <T.Cell className="py-2" key={column.id}>
+                                  <Checkbox
+                                    className="cursor-pointer text-orange-500 focus:ring-orange-500"
+                                    onChange={() =>
+                                      vehiclesToDownload(vehicle?.id, vehicle)
+                                    }
+                                    checked={
+                                      itemsToDownload[vehicle?.id]
+                                        ? true
+                                        : false
+                                    }
+                                  />
+                                </T.Cell>
+                              );
+                            } else if (column.id === 'cost') {
+                              content = parseToCurrency(
+                                getNestedValue(vehicle, column.id),
+                              );
+                            } else if (column.id === 'acquisitionDate') {
+                              content = parseToLocalDate(
+                                getNestedValue(vehicle, column.id),
+                              );
+                            } else {
+                              content = getNestedValue(vehicle, column.id);
+                            }
 
-                          if (
-                            column.id === 'images' &&
-                            vehicle?.images?.length > 0
-                          ) {
-                            return (
-                              <T.Cell key={column.id} className="w-20">
-                                <ImageViewer
-                                  images={[vehicle?.images[0]]}
-                                  imageClassName={
-                                    'first:w-12 first:h-12 first:rounded-md'
-                                  }
-                                />
-                              </T.Cell>
-                            );
-                          }
+                            if (
+                              column.id === 'images' &&
+                              vehicle?.images?.length > 0
+                            ) {
+                              return (
+                                <T.Cell key={column.id} className="w-20 py-2">
+                                  <ImageViewer
+                                    images={[vehicle?.images[0]]}
+                                    imageClassName={
+                                      'first:w-12 first:h-12 first:rounded-md'
+                                    }
+                                  />
+                                </T.Cell>
+                              );
+                            }
 
-                          if (column.id === 'model.name') {
+                            if (column.id === 'model.name') {
+                              return (
+                                <T.Cell
+                                  key={column.id}
+                                  className="font-semibold whitespace-nowrap dark:text-white py-2"
+                                >
+                                  {getNestedValue(vehicle, column.id)}
+                                </T.Cell>
+                              );
+                            }
+                            if (column.id === 'status') {
+                              return (
+                                <T.Cell className="py-2" key={column.id}>
+                                  <span
+                                    className={`px-4 py-1 rounded-full text-xs font-medium ${
+                                      vehicle.status
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-red-100 text-red-800'
+                                    }`}
+                                  >
+                                    {vehicle.status ? 'Activo' : 'Inactivo'}
+                                  </span>
+                                </T.Cell>
+                              );
+                            }
+                            if (column.id === 'actions') {
+                              return (
+                                <T.Cell className="py-2" key={column.id}>
+                                  <div className="flex justify-center items-center gap-2">
+                                    <LinkButton
+                                      route={`/vehicles/edit/${vehicle.id}`}
+                                      label="Editar"
+                                      icon={FaEdit}
+                                      color="yellow"
+                                    />
+                                    <LinkButton
+                                      route={`/vehicles/view/${vehicle.id}`}
+                                      label="Ver"
+                                      icon={FaEye}
+                                      color="cyan"
+                                    />
+                                    <ActionButtons
+                                      onRemove={() => {
+                                        setIsOpenModal(true);
+                                        setVehicleId(vehicle.id);
+                                      }}
+                                    />
+                                  </div>
+                                </T.Cell>
+                              );
+                            }
                             return (
                               <T.Cell
+                                className="text-nowrap py-2"
                                 key={column.id}
-                                className="font-semibold whitespace-nowrap dark:text-white"
                               >
-                                {getNestedValue(vehicle, column.id)}
+                                {content}
                               </T.Cell>
                             );
-                          }
-                          if (column.id === 'status') {
-                            return (
-                              <T.Cell key={column.id}>
-                                <span
-                                  className={`px-4 py-1 rounded-full text-xs font-medium ${
-                                    vehicle.status
-                                      ? 'bg-green-100 text-green-800'
-                                      : 'bg-red-100 text-red-800'
-                                  }`}
-                                >
-                                  {vehicle.status ? 'Activo' : 'Inactivo'}
-                                </span>
-                              </T.Cell>
-                            );
-                          }
-                          if (column.id === 'actions') {
-                            return (
-                              <T.Cell key={column.id}>
-                                <div className="flex justify-center items-center gap-2">
-                                  <LinkButton
-                                    route={`/vehicles/edit/${vehicle.id}`}
-                                    label="Editar"
-                                    icon={FaEdit}
-                                    color="yellow"
-                                  />
-                                  <LinkButton
-                                    route={`/vehicles/view/${vehicle.id}`}
-                                    label="Ver"
-                                    icon={FaEye}
-                                    color="cyan"
-                                  />
-                                  <ActionButtons
-                                    onRemove={() => {
-                                      setIsOpenModal(true);
-                                      setVehicleId(vehicle.id);
-                                    }}
-                                  />
-                                </div>
-                              </T.Cell>
-                            );
-                          }
-                          return (
-                            <T.Cell className="text-nowrap" key={column.id}>
-                              {content}
-                            </T.Cell>
-                          );
-                        })}
-                      </T.Row>
-                    );
-                  })}
-              </Table>
-            </div>
-            <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 md:hidden">
-              {vehicles?.data?.map((vehicle) => {
-                const data = {
-                  image: { key: 'Imagen', value: vehicle?.images[0] ?? [] },
-                  title: {
-                    key: 'Vehiculo',
-                    value: `${vehicle.model.name} ${vehicle.model.year} (${vehicle.model.brand.name} ${vehicle.model.type.name})`,
-                  },
-                  subtitle: { key: 'Año', value: vehicle.economicNumber },
-                  tags: {
-                    key: 'Condiciones',
-                    value: vehicle.conditions.map(
-                      (condition) => condition.condition.name,
-                    ),
-                  },
-                  serialNumber: {
-                    key: 'Número de serie',
-                    value: vehicle.serialNumber,
-                  },
-                  plateNumber: {
-                    key: 'Número de placa',
-                    value: vehicle.plateNumber,
-                  },
-                  cost: {
-                    key: 'Costo de Adquisición',
-                    value: vehicle?.cost ? parseToCurrency(vehicle.cost) : '',
-                  },
-                  acquisitionDate: {
-                    key: 'F. de adquisición',
-                    value: vehicle?.acquisitionDate
-                      ? parseToLocalDate(vehicle.acquisitionDate)
-                      : '',
-                  },
-                  status: {
-                    key: 'Estatus',
-                    value: vehicle.status ? 'Activo' : 'Inactivo',
-                  },
-                  actions: {
-                    key: 'Acciones',
-                    value: (
-                      <div className="flex justify-center items-center gap-2">
-                        <LinkButton
-                          route={`/vehicles/edit/${vehicle.id}`}
-                          label="Editar"
-                          icon={FaEdit}
-                          color="yellow"
-                        />
-                        <LinkButton
-                          route={`/vehicles/view/${vehicle.id}`}
-                          label="Ver"
-                          icon={FaEye}
-                          color="cyan"
-                        />
-                        <ActionButtons
-                          onRemove={() => {
-                            setIsOpenModal(true);
-                            setVehicleId(vehicle.id);
-                          }}
-                        />
-                      </div>
-                    ),
-                  },
-                };
-                return <Card key={vehicle.id} data={data} showImage />;
-              })}
-            </div>
-          </>
+                          })}
+                        </T.Row>
+                      );
+                    })}
+                </Table>
+              </div>
+              <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 md:hidden">
+                {vehicles?.data?.map((vehicle) => {
+                  const data = {
+                    image: { key: 'Imagen', value: vehicle?.images[0] ?? [] },
+                    title: {
+                      key: 'Vehiculo',
+                      value: `${vehicle.model.name} ${vehicle.model.year} (${vehicle.model.brand.name} ${vehicle.model.type.name})`,
+                    },
+                    subtitle: { key: 'Año', value: vehicle.economicNumber },
+                    tags: {
+                      key: 'Condiciones',
+                      value: vehicle.conditions.map(
+                        (condition) => condition.condition.name,
+                      ),
+                    },
+                    serialNumber: {
+                      key: 'Número de serie',
+                      value: vehicle.serialNumber,
+                    },
+                    plateNumber: {
+                      key: 'Número de placa',
+                      value: vehicle.plateNumber,
+                    },
+                    cost: {
+                      key: 'Costo de Adquisición',
+                      value: vehicle?.cost ? parseToCurrency(vehicle.cost) : '',
+                    },
+                    acquisitionDate: {
+                      key: 'F. de adquisición',
+                      value: vehicle?.acquisitionDate
+                        ? parseToLocalDate(vehicle.acquisitionDate)
+                        : '',
+                    },
+                    status: {
+                      key: 'Estatus',
+                      value: vehicle.status ? 'Activo' : 'Inactivo',
+                    },
+                    actions: {
+                      key: 'Acciones',
+                      value: (
+                        <div className="flex justify-center items-center gap-2">
+                          <LinkButton
+                            route={`/vehicles/edit/${vehicle.id}`}
+                            label="Editar"
+                            icon={FaEdit}
+                            color="yellow"
+                          />
+                          <LinkButton
+                            route={`/vehicles/view/${vehicle.id}`}
+                            label="Ver"
+                            icon={FaEye}
+                            color="cyan"
+                          />
+                          <ActionButtons
+                            onRemove={() => {
+                              setIsOpenModal(true);
+                              setVehicleId(vehicle.id);
+                            }}
+                          />
+                        </div>
+                      ),
+                    },
+                  };
+                  return <Card key={vehicle.id} data={data} showImage />;
+                })}
+              </div>
+            </>
+          ) : (
+            <TableResultsNotFound />
+          )
         ) : (
           <Skeleton className="w-full h-10" count={10} />
         )}
@@ -536,6 +524,7 @@ const Vehicles = () => {
             goOnNextPage={goOnNextPage}
             goOnPrevPage={goOnPrevPage}
             handleSelectChange={handleSelectChange}
+            changePageSize={changePageSize}
           />
         )}
       </section>

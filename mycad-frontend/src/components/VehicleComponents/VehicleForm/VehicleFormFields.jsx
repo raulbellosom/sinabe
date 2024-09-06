@@ -5,7 +5,12 @@ import SelectInput from '../../Inputs/SelectInput';
 import DateInput from '../../Inputs/DateInput';
 import TextArea from '../../Inputs/TextArea';
 import FileInput from '../../Inputs/FileInput';
-import { MdInfo, MdCalendarToday, MdOutlineNumbers } from 'react-icons/md';
+import {
+  MdInfo,
+  MdCalendarToday,
+  MdOutlineNumbers,
+  MdOutlineCurrencyExchange,
+} from 'react-icons/md';
 import { BiDollar } from 'react-icons/bi';
 import { IoLogoModelS } from 'react-icons/io';
 import MultiSelectInput from '../../Inputs/MultiSelectInput';
@@ -22,6 +27,20 @@ const VehicleFormFields = ({
   <div className="grid grid-cols-12 gap-4 lg:gap-0">
     <div className="col-span-12 lg:col-span-8 lg:w-[97%]">
       <div className="grid grid-cols-12 gap-2">
+        <p
+          style={{
+            width: '100%',
+            textAlign: 'center',
+            borderBottom: '1px solid #e2e8f0',
+            lineHeight: '0.1em',
+            margin: '10px 0 20px',
+          }}
+          className="col-span-12 text-base font-semibold"
+        >
+          <span style={{ background: '#fff', padding: '0 10px' }}>
+            Información General del Vehículo
+          </span>
+        </p>
         <Field
           name="modelId"
           id="modelId"
@@ -81,17 +100,6 @@ const VehicleFormFields = ({
           className="col-span-6 md:col-span-4"
         />
         <Field
-          name="cost"
-          id="cost"
-          component={TextInput}
-          icon={BiDollar}
-          label="Costo de Adquisición"
-          type="number"
-          className="col-span-6 md:col-span-4"
-          min={0}
-        />
-
-        <Field
           name="status"
           id="status"
           component={SelectInput}
@@ -103,6 +111,111 @@ const VehicleFormFields = ({
           ]}
           className="col-span-12 md:col-span-4"
         />
+        <p
+          style={{
+            width: '100%',
+            textAlign: 'center',
+            borderBottom: '1px solid #e2e8f0',
+            lineHeight: '0.1em',
+            margin: '10px 0 20px',
+          }}
+          className="col-span-12 text-base font-semibold pt-4"
+        >
+          <span style={{ background: '#fff', padding: '0 10px' }}>
+            Contabilidad del Vehículo
+          </span>
+        </p>
+
+        <Field
+          name="cost"
+          id="cost"
+          component={TextInput}
+          icon={BiDollar}
+          label="Costo de Adquisición"
+          type="number"
+          className="col-span-6"
+          min={0}
+        />
+        <Field
+          name="costCurrency"
+          id="costCurrency"
+          component={SelectInput}
+          icon={MdOutlineCurrencyExchange}
+          label="Moneda"
+          className="col-span-6"
+          options={[
+            { label: 'Pesos Mexicanos', value: 'MXN' },
+            { label: 'Dolares Americanos', value: 'USD' },
+          ].map((cost) => ({
+            label: cost.label,
+            value: cost.value,
+          }))}
+        />
+        <Field
+          name="bookValue"
+          id="bookValue"
+          component={TextInput}
+          icon={BiDollar}
+          label="Valor en Libros"
+          type="number"
+          className="col-span-6"
+          min={0}
+        />
+        <Field
+          name="bookValueCurrency"
+          id="bookValueCurrency"
+          component={SelectInput}
+          icon={MdOutlineCurrencyExchange}
+          label="Moneda"
+          className="col-span-6"
+          options={[
+            { label: 'Pesos Mexicanos', value: 'MXN' },
+            { label: 'Dolares Americanos', value: 'USD' },
+          ].map((cost) => ({
+            label: cost.label,
+            value: cost.value,
+          }))}
+        />
+        <Field
+          name="currentMarketValue"
+          id="currentMarketValue"
+          component={TextInput}
+          icon={BiDollar}
+          label="Valor de Mercado Actual"
+          type="number"
+          className="col-span-6"
+          min={0}
+        />
+        <Field
+          name="marketValueCurrency"
+          id="marketValueCurrency"
+          component={SelectInput}
+          icon={MdOutlineCurrencyExchange}
+          label="Moneda"
+          className="col-span-6"
+          options={[
+            { label: 'Pesos Mexicanos', value: 'MXN' },
+            { label: 'Dolares Americanos', value: 'USD' },
+          ].map((cost) => ({
+            label: cost.label,
+            value: cost.value,
+          }))}
+        />
+
+        <p
+          style={{
+            width: '100%',
+            textAlign: 'center',
+            borderBottom: '1px solid #e2e8f0',
+            lineHeight: '0.1em',
+            margin: '10px 0 20px',
+          }}
+          className="col-span-12 text-base font-semibold pt-4"
+        >
+          <span style={{ background: '#fff', padding: '0 10px' }}>
+            Información Adicional
+          </span>
+        </p>
         <Field
           name="conditions"
           id="conditions"

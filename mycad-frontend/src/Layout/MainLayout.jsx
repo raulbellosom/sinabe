@@ -14,7 +14,7 @@ const MainLayout = ({ children }) => {
   }, [location]);
 
   return (
-    <div className="flex flex-col flex-1 h-full bg-gray-200 p-4 overflow-auto">
+    <div className="flex flex-col flex-1 h-full bg-stone-200 p-4 overflow-auto">
       <Breadcrumbs breadcrumbs={breadcrumb} />
       <div className="flex-1">{children}</div>
     </div>

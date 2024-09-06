@@ -92,11 +92,6 @@ const ViewVehicle = () => {
         icon: MdCalendarToday,
         label: 'Fecha de Adquisición',
       },
-      cost: {
-        name: vehicle?.cost ? parseToCurrency(vehicle?.cost) : '',
-        icon: BiDollar,
-        label: 'Costo de Adquisición',
-      },
       mileage: {
         name: vehicle?.mileage,
         icon: FaTachometerAlt,
@@ -106,6 +101,30 @@ const ViewVehicle = () => {
         name: vehicle?.status ? 'Activo' : 'Inactivo',
         icon: MdInfo,
         label: 'Estado',
+      },
+      cost: {
+        name: vehicle?.cost
+          ? parseToCurrency(vehicle?.cost, vehicle?.costCurrency)
+          : '',
+        icon: BiDollar,
+        label: 'Costo de Adquisición',
+      },
+      bookValue: {
+        name: vehicle?.bookValue
+          ? parseToCurrency(vehicle?.bookValue, vehicle?.bookValueCurrency)
+          : '',
+        icon: BiDollar,
+        label: 'Valor en Libros',
+      },
+      currentMarketValue: {
+        name: vehicle?.currentMarketValue
+          ? parseToCurrency(
+              vehicle?.currentMarketValue,
+              vehicle?.marketValueCurrency,
+            )
+          : '',
+        icon: BiDollar,
+        label: 'Valor de Mercado Actual',
       },
       comments: {
         name: vehicle?.comments,
@@ -148,15 +167,17 @@ const ViewVehicle = () => {
   return (
     <div className="h-full bg-white p-4 rounded-md">
       <div className="w-full flex flex-col-reverse lg:flex-row items-center justify-between gap-4 pb-1">
-        <div className="w-full rounded-md flex items-center text-orange-500">
+        <div className="w-full rounded-md flex items-center justify-center lg:justify-start text-orange-500">
           <FaCar size={24} className="mr-4" />
           <h1 className="text-2xl font-bold">Detalles del Vehículo</h1>
         </div>
-        <ActionButtons
-          onEdit={onEdit}
-          onCreate={onCreate}
-          onRemove={onRemove}
-        />
+        <div className="w-full flex items-center justify-center lg:justify-end gap-2">
+          <ActionButtons
+            onEdit={onEdit}
+            onCreate={onCreate}
+            onRemove={onRemove}
+          />
+        </div>
       </div>
       <div className="flex flex-wrap gap-2 items-center justify-start pb-4">
         {vehicle?.conditions &&
@@ -194,21 +215,25 @@ const ViewVehicle = () => {
         <div className="col-span-12 lg:col-span-6">
           <div className="flex flex-col gap-4">
             <div>
-              <h2 className="text-sm md:text-lg font-semibold h-7">Archivos</h2>
+              <h2 className="text-sm 2xl:text-base font-semibold h-7">
+                Archivos
+              </h2>
               <div className="flex flex-col gap-2">
                 {files && files?.length > 0 ? (
                   files.map((file, index) => (
                     <FileIcon key={index} file={file} />
                   ))
                 ) : (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm 2xl:text-base text-gray-500">
                     No hay archivos adjuntos
                   </p>
                 )}
               </div>
             </div>
             <div>
-              <h2 className="text-sm md:text-lg font-semibold h-7">Imágenes</h2>
+              <h2 className="text-sm 2xl:text-base font-semibold h-7">
+                Imágenes
+              </h2>
               <div
                 className={classNames(
                   'h-fit max-h-fit grid gap-2 overflow-y-auto',
@@ -217,7 +242,7 @@ const ViewVehicle = () => {
                     : '',
                 )}
               >
-                {images.length > 0 && (
+                {images.length > 0 ? (
                   <ImageViewer
                     images={images}
                     renderMenuOptions={[
@@ -228,6 +253,10 @@ const ViewVehicle = () => {
                       },
                     ]}
                   />
+                ) : (
+                  <p className="text-sm 2xl:text-base text-gray-500">
+                    El vehículo no tiene imágenes
+                  </p>
                 )}
               </div>
             </div>

@@ -106,6 +106,11 @@ export const createVehicle = async (req, res) => {
     modelId,
     acquisitionDate,
     cost,
+    costCurrency,
+    bookValue,
+    bookValueCurrency,
+    currentMarketValue,
+    marketValueCurrency,
     mileage,
     status,
     comments,
@@ -125,6 +130,11 @@ export const createVehicle = async (req, res) => {
           serialNumber,
           acquisitionDate: new Date(acquisitionDate),
           cost,
+          costCurrency,
+          bookValue,
+          bookValueCurrency,
+          currentMarketValue,
+          marketValueCurrency,
           mileage,
           status: parseStatus(status),
           createdById: user.id,
@@ -207,6 +217,11 @@ export const updateVehicle = async (req, res) => {
     modelId,
     acquisitionDate,
     cost,
+    costCurrency,
+    bookValue,
+    bookValueCurrency,
+    currentMarketValue,
+    marketValueCurrency,
     mileage,
     status,
     comments,
@@ -238,6 +253,11 @@ export const updateVehicle = async (req, res) => {
           serialNumber,
           acquisitionDate: new Date(acquisitionDate),
           cost,
+          costCurrency,
+          bookValue,
+          bookValueCurrency,
+          currentMarketValue,
+          marketValueCurrency,
           mileage,
           status: parseStatus(status),
           comments,
@@ -418,6 +438,7 @@ export const searchVehicles = async (req, res) => {
       page = 1,
       pageSize = 10,
       conditionName,
+      deepSearch = [],
     } = req.query;
 
     const validSortFields = [
@@ -433,6 +454,89 @@ export const searchVehicles = async (req, res) => {
       "plateNumber",
       "serialNumber",
     ];
+
+    const mapSearchHeaderToColumn = (searchHeader) => {
+      const columnsMap = {
+        "model.name": "model.name",
+        "model.type.name": "model.type.name",
+        "model.brand.name": "model.brand.name",
+        "model.year": "model.year",
+        economicNumber: "economicNumber",
+        serialNumber: "serialNumber",
+        plateNumber: "plateNumber",
+        acquisitionDate: "acquisitionDate",
+        cost: "cost",
+      };
+      return columnsMap[searchHeader] || null;
+    };
+
+    const buildDeepSearchConditions = (deepSearchArray) => {
+      const conditions = [];
+
+      deepSearchArray.forEach(
+        ({ searchHeader, searchTerm, searchCriteria }) => {
+          const column = mapSearchHeaderToColumn(searchHeader);
+
+          if (!column || typeof column !== "string") return;
+
+          const path = column.split(".");
+          let condition = {};
+
+          switch (searchCriteria) {
+            case "equals":
+              condition = { [path[path.length - 1]]: { equals: searchTerm } };
+              break;
+            case "startsWith":
+              condition = {
+                [path[path.length - 1]]: { startsWith: searchTerm },
+              };
+              break;
+            case "endsWith":
+              condition = {
+                [path[path.length - 1]]: { endsWith: searchTerm },
+              };
+              break;
+            case "contains":
+              condition = { [path[path.length - 1]]: { contains: searchTerm } };
+              break;
+            case "different":
+              condition = { [path[path.length - 1]]: { not: searchTerm } };
+              break;
+            case "greater":
+              condition = {
+                [path[path.length - 1]]: { gt: Number(searchTerm) },
+              };
+              break;
+            case "less":
+              condition = {
+                [path[path.length - 1]]: { lt: Number(searchTerm) },
+              };
+              break;
+            case "before":
+              condition = {
+                [path[path.length - 1]]: { lt: new Date(searchTerm) },
+              };
+              break;
+            case "after":
+              condition = {
+                [path[path.length - 1]]: { gt: new Date(searchTerm) },
+              };
+              break;
+            default:
+              break;
+          }
+
+          let nestedCondition = condition;
+          for (let i = path.length - 2; i >= 0; i--) {
+            nestedCondition = { [path[i]]: nestedCondition };
+          }
+
+          conditions.push(nestedCondition);
+        }
+      );
+
+      return conditions.length > 0 ? { AND: conditions } : {};
+    };
 
     const orderField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
     const orderDirection = order === "desc" ? "desc" : "asc";
@@ -462,17 +566,6 @@ export const searchVehicles = async (req, res) => {
       return obj;
     };
 
-    // let acquisitionDateCondition = {};
-    // if (searchTerm && /^\d{2}\/\d{2}\/\d{4}$/.test(searchTerm)) {
-    //   const [day, month, year] = searchTerm.split("/");
-    //   const acquisitionDate = new Date(`${year}-${month}-${day}`);
-    //   acquisitionDateCondition = {
-    //     acquisitionDate: {
-    //       equals: acquisitionDate,
-    //     },
-    //   };
-    // }
-
     const textSearchConditions = searchTerm
       ? {
           OR: [
@@ -487,11 +580,15 @@ export const searchVehicles = async (req, res) => {
         }
       : {};
 
+    const deepSearchConditions = buildDeepSearchConditions(
+      JSON.parse(deepSearch)
+    );
+
     const skip = (page - 1) * pageSize;
     const take = parseInt(pageSize);
-
     const whereConditions = {
       ...textSearchConditions,
+      ...deepSearchConditions,
       enabled: true,
       ...(conditionName && {
         conditions: {
@@ -551,7 +648,6 @@ export const searchVehicles = async (req, res) => {
         return vehicle;
       });
     }
-
     res.json({
       data: vehiclesData,
       pagination: {

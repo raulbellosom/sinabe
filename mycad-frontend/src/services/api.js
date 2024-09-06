@@ -168,11 +168,21 @@ export const searchVehicles = async ({
   page,
   pageSize,
   conditionName,
+  deepSearch,
   signal,
 }) => {
   try {
+    const parsedDeepSearch = JSON.stringify(deepSearch);
     const response = await api.get('/vehicles/search', {
-      params: { searchTerm, sortBy, order, page, pageSize, conditionName },
+      params: {
+        searchTerm,
+        sortBy,
+        order,
+        page,
+        pageSize,
+        conditionName,
+        deepSearch: parsedDeepSearch,
+      },
       signal: signal,
     });
     if (response.status !== 200) {

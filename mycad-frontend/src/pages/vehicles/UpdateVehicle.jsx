@@ -37,6 +37,11 @@ const UpdateVehicle = () => {
     plateNumber: '',
     acquisitionDate: '',
     cost: '',
+    costCurrency: '',
+    bookValue: '',
+    bookValueCurrency: '',
+    currentMarketValue: '',
+    currentMarketValueCurrency: '',
     mileage: '',
     status: '',
     images: [],
@@ -177,22 +182,23 @@ const UpdateVehicle = () => {
             <FaCar size={24} className="mr-4" />
             <h1 className="text-2xl font-bold">Actualizar Vehículo</h1>
           </div>
-          <ActionButtons
-            extraActions={[
-              {
-                label: 'Actualizar',
-                action: handleSubmitRef,
-                icon: FaSave,
-                color: 'green',
-              },
-            ]}
-            onShow={onShow}
-            // onCreate={onCreate}
-            onRemove={onRemove}
-          />
+          <div className="flex justify-center gap-2">
+            <ActionButtons
+              extraActions={[
+                {
+                  label: 'Actualizar',
+                  action: handleSubmitRef,
+                  icon: FaSave,
+                  color: 'green',
+                },
+              ]}
+              onShow={onShow}
+              onRemove={onRemove}
+            />
+          </div>
         </div>
         <p className="mb-4 text-gray-800">
-          Llena el formulario para crear un nuevo vehículo. Los campos marcados
+          Llena el formulario para actualizar el vehículo. Los campos marcados
           con * son obligatorios.
         </p>
         {isPending ||

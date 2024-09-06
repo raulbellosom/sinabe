@@ -32,27 +32,32 @@ model Role {
 }
 
 model Vehicle {
-  id               String             @id @default(uuid())
-  acquisitionDate  DateTime
-  cost             Float
-  mileage          Int
-  status           Boolean
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  createdById      String
-  comments         String?
-  enabled          Boolean
-  modelId          Int
-  economicNumber   String?
-  plateNumber      String?
-  serialNumber     String?
-  files            File[]
-  images           Image[]            @relation("VehicleImages")
-  rentals          Rental[]
-  serviceHistories ServiceHistory[]
-  createdBy        User               @relation(fields: [createdById], references: [id])
-  model            Model              @relation(fields: [modelId], references: [id])
-  conditions       VehicleCondition[]
+  id                      String             @id @default(uuid())
+  acquisitionDate         DateTime
+  cost                    Float
+  costCurrency            String?
+  bookValue               Float?             
+  bookValueCurrency       String?
+  currentMarketValue      Float?
+  marketValueCurrency     String? 
+  mileage                 Int
+  status                  Boolean
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+  createdById             String
+  comments                String?
+  enabled                 Boolean
+  modelId                 Int
+  economicNumber          String?
+  plateNumber             String?
+  serialNumber            String?
+  files                   File[]
+  images                  Image[]            @relation("VehicleImages")
+  rentals                 Rental[]
+  serviceHistories        ServiceHistory[]
+  createdBy               User               @relation(fields: [createdById], references: [id])
+  model                   Model              @relation(fields: [modelId], references: [id])
+  conditions              VehicleCondition[]
 
   @@index([createdById], map: "Vehicle_createdById_fkey")
   @@index([modelId], map: "Vehicle_modelId_fkey")

@@ -29,7 +29,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [isDownloadingError, setIsDownloadingError] = useState(false);
-  const iconSize = size || 24;
+  const iconSize = size || 22;
 
   const getIcon = (file) => {
     if (file.type.includes('pdf')) {
@@ -93,7 +93,9 @@ const FileIcon = ({ file, className, size, onRemove }) => {
       >
         <div className="flex items-center truncate">
           <span>{getIcon(file)}</span>
-          <span className="ml-2 truncate text-sm md:text-lg">{file.name}</span>
+          <span className="ml-2 truncate text-sm md:text-base">
+            {file.name}
+          </span>
         </div>
         <div className="flex items-center justify-evenly gap-2">
           {file.type.includes('pdf') && (

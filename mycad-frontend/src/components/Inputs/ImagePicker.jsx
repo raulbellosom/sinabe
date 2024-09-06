@@ -34,7 +34,7 @@ const ImagePicker = ({
   return (
     <div
       className={classNames(
-        'w-full h-52 md:h-full lg:max-h-[70vh] xl:max-h-[60vh] 2xl:max-h-[70vh] overflow-hidden',
+        'w-full h-72 lg:h-full lg:max-h-[70vh] xl:max-h-[75vh] overflow-hidden',
         className,
       )}
     >
@@ -46,9 +46,9 @@ const ImagePicker = ({
       />
       <div
         className={classNames(
-          'mt-1 max-h-48 md:max-h-full grid gap-1 overflow-y-auto',
+          'mt-1 max-h-48 md:max-h-full grid gap-2 overflow-y-auto',
           field?.value.length > 0
-            ? 'grid-cols-[repeat(auto-fill,_minmax(6rem,_1fr))] lg:grid-cols-[repeat(auto-fill,_minmax(7rem,_1fr))]'
+            ? 'grid-cols-[repeat(auto-fill,_minmax(90px,_1fr))] xl:grid-cols-[repeat(auto-fill,_minmax(120px,_1fr))]'
             : 'h-full',
         )}
         style={{ maxHeight: '100%' }}

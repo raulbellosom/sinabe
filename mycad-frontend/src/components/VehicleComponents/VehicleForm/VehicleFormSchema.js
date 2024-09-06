@@ -17,6 +17,11 @@ export const VehicleFormSchema = Yup.object().shape({
   cost: Yup.number()
     .required('El costo es requerido')
     .positive('El costo debe ser positivo'),
+  costCurrency: Yup.string().required('La moneda es requerida'),
+  bookValue: Yup.number(),
+  bookValueCurrency: Yup.string(),
+  currentMarketValue: Yup.number(),
+  marketValueCurrency: Yup.string(),
   mileage: Yup.number()
     .min(0)
     .integer()
