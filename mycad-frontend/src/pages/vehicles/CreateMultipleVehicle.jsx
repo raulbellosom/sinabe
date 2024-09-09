@@ -57,8 +57,8 @@ const CreateMultipleVehicle = () => {
         </p>
         {/* instrucciones */}
         <div className="w-full md:w-4/5 mt-4">
-          <p className="text-lg font-bold">Instrucciones:</p>
-          <ol className="list-decimal pl-4">
+          <p className="text-base font-bold">Instrucciones:</p>
+          <ol className="list-decimal text-sm pl-4">
             <li>
               Descargue la plantilla de vehículos y complete la información
               solicitada. <br />
