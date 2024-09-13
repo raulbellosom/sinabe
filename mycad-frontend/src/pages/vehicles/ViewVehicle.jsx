@@ -24,9 +24,7 @@ import { useVehicleContext } from '../../context/VehicleContext';
 import { IoCopyOutline } from 'react-icons/io5';
 import formatFileData from '../../utils/fileDataFormatter';
 import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
-const ActionButtons = React.lazy(
-  () => import('../../components/ActionButtons/ActionButtons'),
-);
+import ActionButtons from '../../components/ActionButtons/ActionButtons';
 const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
 
 const ViewVehicle = () => {

@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import ModalViewer from '../Modals/ModalViewer';
 const PDFReader = React.lazy(() => import('../PDFReader/PDFReader'));
-const ActionButtons = React.lazy(
-  () => import('../ActionButtons/ActionButtons'),
-);
+import ActionButtons from '../ActionButtons/ActionButtons';
 import DownloadFileImage from '../../assets/images/download_file.webp';
 import { API_URL, downloadFile } from '../../services/api';
 import { BiError } from 'react-icons/bi';

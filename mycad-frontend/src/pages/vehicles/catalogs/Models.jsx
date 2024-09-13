@@ -14,12 +14,10 @@ import TableResultsNotFound from '../../../components/Table/TableResultsNotFound
 import { Table as T } from 'flowbite-react';
 import TableFooter from '../../../components/Table/TableFooter';
 import Card from '../../../components/Card/Card';
+import ActionButtons from '../../../components/ActionButtons/ActionButtons';
 const Table = React.lazy(() => import('../../../components/Table/Table'));
 const ModelForm = React.lazy(
   () => import('../../../components/VehicleComponents/ModelForm/ModelForm'),
-);
-const ActionButtons = React.lazy(
-  () => import('../../../components/ActionButtons/ActionButtons'),
 );
 
 const Models = () => {
