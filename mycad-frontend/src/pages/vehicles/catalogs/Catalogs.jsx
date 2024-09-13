@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Tabs } from 'flowbite-react';
 import { HiCubeTransparent } from 'react-icons/hi';
 import { BiCategory } from 'react-icons/bi';
@@ -8,9 +8,27 @@ const Types = React.lazy(() => import('./Types'));
 const Conditions = React.lazy(() => import('./Conditions'));
 
 const Catalogs = () => {
+  const tabsRef = useRef(null);
+
+  useEffect(() => {
+    const tab = localStorage.getItem('selectedTab');
+    if (tab) {
+      tabsRef.current.setActiveTab(parseInt(tab));
+    }
+  }, []);
+
+  const handleTabChange = (tabIndex) => {
+    localStorage.setItem('selectedTab', tabIndex);
+  };
+
   return (
     <div className="flex flex-col flex-1 h-full overflow-hidden rounded-md">
-      <Tabs aria-label="Default tabs" variant="fullWidth">
+      <Tabs
+        aria-label="Default tabs"
+        variant="fullWidth"
+        ref={tabsRef}
+        onActiveTabChange={(tab) => handleTabChange(tab)}
+      >
         <Tabs.Item title="Modelos" icon={HiCubeTransparent}>
           <div className="h-full overflow-auto">
             <Models />

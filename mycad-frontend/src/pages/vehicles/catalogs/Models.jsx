@@ -1,9 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useCatalogContext } from '../../../context/CatalogContext';
-import { Checkbox, Table } from 'flowbite-react';
 import Skeleton from 'react-loading-skeleton';
 import ModalForm from '../../../components/Modals/ModalForm';
 import ModalRemove from '../../../components/Modals/ModalRemove';
+import { searchModels } from '../../../services/api';
+import { modelColumns } from '../../../utils/CatalogsFields';
+import { useQuery } from '@tanstack/react-query';
+import TableHeader from '../../../components/Table/TableHeader';
+import { IoMdAdd } from 'react-icons/io';
+import { MdOutlineFileUpload } from 'react-icons/md';
+import TableActions from '../../../components/Table/TableActions';
+import TableResultsNotFound from '../../../components/Table/TableResultsNotFound';
+import { Table as T } from 'flowbite-react';
+import TableFooter from '../../../components/Table/TableFooter';
+import Card from '../../../components/Card/Card';
+const Table = React.lazy(() => import('../../../components/Table/Table'));
 const ModelForm = React.lazy(
   () => import('../../../components/VehicleComponents/ModelForm/ModelForm'),
 );
@@ -13,15 +24,14 @@ const ActionButtons = React.lazy(
 
 const Models = () => {
   const {
-    vehicleModels,
     vehicleBrands,
     vehicleTypes,
     createVehicleModel,
     updateVehicleModel,
     deleteVehicleModel,
-    loading,
   } = useCatalogContext();
-  const [models, setModels] = useState([]);
+  const [columns, setColumns] = useState([...modelColumns]);
+  const lastChange = useRef();
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
@@ -33,21 +43,108 @@ const Models = () => {
     year: '',
     id: '',
   });
+  const [vehicleId, setVehicleId] = useState(null);
+  const [currentPageNumber, setCurrentPageNumber] = useState(1);
+  const [searchFilters, setSearchFilters] = useState({
+    searchTerm: '',
+    pageSize: 5,
+    page: currentPageNumber,
+    sortBy: 'name',
+    order: 'asc',
+  });
+
+  const {
+    data: models,
+    refetch,
+    isLoading,
+    isPending,
+  } = useQuery({
+    queryKey: ['models', { ...searchFilters }],
+    queryFn: ({ signal }) => searchModels({ ...searchFilters, signal }),
+    staleTime: Infinity,
+  });
 
   useEffect(() => {
-    const formattedModels = vehicleModels.map((model) => {
+    refetch();
+  }, [searchFilters]);
+
+  const goOnPrevPage = useCallback(() => {
+    setSearchFilters((prevState) => {
       return {
-        id: model.id,
-        name: model.name,
-        brand: model.brand.name,
-        type: model.type.name,
-        year: model.year,
-        typeId: model.typeId,
-        brandId: model.brandId,
+        ...prevState,
+        page: prevState?.page - 1,
       };
     });
-    setModels(formattedModels);
-  }, [vehicleModels]);
+  }, []);
+
+  const goOnNextPage = useCallback(() => {
+    setSearchFilters((prevState) => {
+      return {
+        ...prevState,
+        page: prevState?.page + 1,
+      };
+    });
+  }, []);
+
+  const handleSelectChange = useCallback((page) => {
+    setSearchFilters((prevState) => {
+      return {
+        ...prevState,
+        page,
+      };
+    });
+  }, []);
+
+  const handleSearch = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (lastChange.current) {
+        clearTimeout(lastChange.current);
+      }
+      lastChange.current = setTimeout(() => {
+        lastChange.current = null;
+        setSearchFilters((prevState) => {
+          return {
+            ...prevState,
+            searchTerm: e.target.value,
+          };
+        });
+      }, 600);
+    },
+    [searchFilters?.searchTerm],
+  );
+
+  const changePageSize = (e) => {
+    setSearchFilters((prevState) => {
+      return {
+        ...prevState,
+        pageSize: e.target.value,
+      };
+    });
+  };
+
+  const sortBy = (column) => {
+    const selectedHeaderIndex = columns?.findIndex((col) => col.id === column);
+    let updatedHeaders = [];
+    if (selectedHeaderIndex !== -1) {
+      const selectedHeader = columns[selectedHeaderIndex];
+      selectedHeader;
+      const updatedHeader = {
+        ...selectedHeader,
+        order: selectedHeader?.order === 'asc' ? 'desc' : 'asc',
+      };
+      updatedHeaders = [...columns];
+      updatedHeaders[selectedHeaderIndex] = updatedHeader;
+      setSearchFilters((prevState) => {
+        return {
+          ...prevState,
+          sortBy: column,
+          order: updatedHeader?.order,
+        };
+      });
+    }
+    setColumns(updatedHeaders);
+  };
 
   const onEditModel = (model) => {
     setEditMode(true);
@@ -104,78 +201,121 @@ const Models = () => {
   };
 
   return (
-    <div className="w-full h-full p-2 bg-white rounded-md">
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center text-nowrap mb-2">
-        <h1 className="text-xl font-bold ml-4 text-orange-500">
-          Modelos de Vehiculos
-        </h1>
-        <ActionButtons
-          onCreate={() => setIsOpenModal(true)}
-          labelCreate={'Crear Modelo de Vehiculo'}
-        />
-      </div>
-      <div className="overflow-x-auto">
-        {models && !loading ? (
-          <Table hoverable>
-            <Table.Head>
-              <Table.HeadCell className="p-4">
-                <Checkbox />
-              </Table.HeadCell>
-              <Table.HeadCell>#</Table.HeadCell>
-              <Table.HeadCell>Modelo</Table.HeadCell>
-              <Table.HeadCell>Marca</Table.HeadCell>
-              <Table.HeadCell>Tipo de Vehiculo</Table.HeadCell>
-              <Table.HeadCell>Año</Table.HeadCell>
-              <Table.HeadCell>
-                <span className="sr-only">Edit</span>
-              </Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="divide-y">
-              {models.map((model, index) => (
-                <Table.Row
-                  key={model.id}
-                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <Table.Cell className="p-4">
-                    <Checkbox />
-                  </Table.Cell>
-                  <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    {index + 1}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <span className="text-gray-900 dark:text-white">
-                      {model.name}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <span className="text-gray-900 dark:text-white">
-                      {model.brand}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <span className="text-gray-900 dark:text-white">
-                      {model.type}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <span className="text-gray-900 dark:text-white">
-                      {model.year}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <ActionButtons
-                      onEdit={() => onEditModel(model)}
-                      onRemove={() => onDeleteModel(model.id)}
-                    />
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
+    <div className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
+      <TableHeader
+        title={'Modelos'}
+        actions={[
+          {
+            label: 'Cargar',
+            action: () => console.log('clic'),
+            color: 'blue',
+            icon: MdOutlineFileUpload,
+          },
+          {
+            label: 'Nuevo',
+            action: () => setIsOpenModal(true),
+            color: 'mycad',
+            icon: IoMdAdd,
+            filled: true,
+          },
+        ]}
+      />
+      <TableActions handleSearchTerm={handleSearch} headers={columns} />
+      {models && !isPending ? (
+        models?.data?.length > 0 ? (
+          <>
+            <div className="hidden md:block">
+              <Table
+                columns={columns}
+                sortBy={sortBy}
+                sortedBy={searchFilters.sortBy}
+              >
+                {models &&
+                  !isPending &&
+                  models?.data?.map((model, index) => {
+                    const parseModel = {
+                      model: model.name,
+                      'brand.name': model.brand.name,
+                      'type.name': model.type.name,
+                      year: model.year,
+                    };
+                    return (
+                      <T.Row key={model.id}>
+                        {columns.map((column) =>
+                          column.id === 'model' ||
+                          column.id === 'brand.name' ||
+                          column.id === 'type.name' ||
+                          column.id === 'year' ? (
+                            <T.Cell
+                              className={`${column?.id === 'model' ? 'font-bold' : ''}`}
+                              key={column.id}
+                            >
+                              {parseModel[column.id]}
+                            </T.Cell>
+                          ) : (
+                            <T.Cell key={column?.id}>
+                              <div className="flex justify-center items-center gap-2">
+                                <ActionButtons
+                                  onEdit={() => onEditModel(model)}
+                                  onRemove={() => onDeleteModel(model.id)}
+                                />
+                              </div>
+                            </T.Cell>
+                          ),
+                        )}
+                      </T.Row>
+                    );
+                  })}
+              </Table>
+            </div>
+            <div className="md:hidden py-2 flex flex-col gap-6">
+              {models?.data?.map((model, index) => {
+                const parseModel = {
+                  model: {
+                    key: 'Modelo',
+                    value: model.name,
+                  },
+                  brand: {
+                    key: 'Marca',
+                    value: model.brand.name,
+                  },
+                  type: {
+                    key: 'Tipo',
+                    value: model.type.name,
+                  },
+                  year: {
+                    key: 'Año',
+                    value: model.year,
+                  },
+                  actions: {
+                    key: 'Acciones',
+                    value: (
+                      <ActionButtons
+                        onEdit={() => onEditModel(model)}
+                        onRemove={() => onDeleteModel(model.id)}
+                      />
+                    ),
+                  },
+                };
+                return <Card key={model.id} data={parseModel} />;
+              })}
+            </div>
+          </>
         ) : (
-          <Skeleton className="w-full h-10" count={10} />
-        )}
-      </div>
+          <TableResultsNotFound />
+        )
+      ) : (
+        <Skeleton count={10} className="h-10" />
+      )}
+      {models?.pagination && (
+        <TableFooter
+          pagination={models?.pagination}
+          goOnNextPage={goOnNextPage}
+          goOnPrevPage={goOnPrevPage}
+          handleSelectChange={handleSelectChange}
+          changePageSize={changePageSize}
+        />
+      )}
       <ModalForm
         onClose={onCloseModal}
         title={editMode ? 'Editar Modelo' : 'Crear Nuevo Modelo'}

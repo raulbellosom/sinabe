@@ -34,21 +34,23 @@ const CatalogList = ({
 
   return (
     <Card className="w-full flex-1 overflow-hidden">
-      <div className=" flex items-center justify-between">
-        <h5 className="truncate text-base md:text-lg w-full font-bold leading-none text-orange-500 dark:text-white">
+      <div className=" flex gap-2 items-center justify-between">
+        <h5 className="text-wrap text-sm md:text-lg w-full font-bold leading-none text-orange-500 dark:text-white">
           {title}
         </h5>
-        <ActionButtons
-          onCreate={onCreate}
-          extraActions={[
-            {
-              label: '',
-              action: handleColapse,
-              color: 'stone',
-              icon: colapse ? FaChevronUp : FaChevronDown,
-            },
-          ]}
-        />
+        <div className="flex gap-2">
+          <ActionButtons
+            onCreate={onCreate}
+            extraActions={[
+              {
+                label: '',
+                action: handleColapse,
+                color: 'stone',
+                icon: colapse ? FaChevronUp : FaChevronDown,
+              },
+            ]}
+          />
+        </div>
       </div>
       <div
         className={classNames(
@@ -72,22 +74,23 @@ const CatalogList = ({
                 <li key={item.id} className="py-3 sm:py-4">
                   <div className="flex justify-between text-wrap items-center space-x-4">
                     <div className="min-w-0 inline-flex-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <p className="text-sm md:text-base font-medium text-gray-900 dark:text-white">
                         {item.name}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {item.count} {item.count > 1 ? 'Vehiculos' : 'Vehiculo'}
                       </p>
                     </div>
-                    <ActionButtons
-                      position="center"
-                      onEdit={() => onEdit(item)}
-                      onRemove={() => onRemove(item)}
-                      onDisable={() => onDisable(item)}
-                      onEnable={() => onEnable(item)}
-                      labelEdit={colapseText ? ' ' : null}
-                      labelRemove={colapseText ? ' ' : null}
-                    />
+                    <div className="flex gap-2">
+                      <ActionButtons
+                        onEdit={() => onEdit(item)}
+                        onRemove={() => onRemove(item)}
+                        onDisable={() => onDisable(item)}
+                        onEnable={() => onEnable(item)}
+                        labelEdit={colapseText ? ' ' : null}
+                        labelRemove={colapseText ? ' ' : null}
+                      />
+                    </div>
                   </div>
                 </li>
               ))}

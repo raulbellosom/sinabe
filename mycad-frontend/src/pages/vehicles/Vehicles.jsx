@@ -60,6 +60,7 @@ const formatVehicle = (vehicleData) => {
   } */
   return vehicle;
 };
+
 const Vehicles = () => {
   const { deleteVehicle } = useVehicleContext();
   const { vehicleConditions } = useCatalogContext();
@@ -105,6 +106,7 @@ const Vehicles = () => {
       };
     });
   }, []);
+
   const goOnNextPage = useCallback(() => {
     setSearchFilters((prevState) => {
       return {
@@ -113,6 +115,7 @@ const Vehicles = () => {
       };
     });
   }, []);
+
   const handleSelectChange = useCallback((page) => {
     setSearchFilters((prevState) => {
       return {
@@ -181,6 +184,7 @@ const Vehicles = () => {
     }
     setColumns(updatedHeaders);
   };
+
   const selectAll = () => {
     const { data: items } = vehicles;
     setSelectAllCheckbox((prevState) => !prevState);
@@ -190,6 +194,7 @@ const Vehicles = () => {
     }
     setItemsToDownload(!selectAllCheckbox ? vehiclesObj : {});
   };
+
   const onCheckFilter = (value) => {
     if (value !== '') {
       if (value === 'Seleccionar todos') {
@@ -236,6 +241,7 @@ const Vehicles = () => {
   const getNestedValue = (obj, path) => {
     return path.split('.').reduce((value, key) => value[key], obj);
   };
+
   const vehiclesToDownload = (vehicleId, vehicle) => {
     if (vehicleId) {
       let items = { ...itemsToDownload };
@@ -247,6 +253,7 @@ const Vehicles = () => {
       setItemsToDownload(items);
     }
   };
+
   const downloadVehiclesCSV = () => {
     const items = Object.keys(itemsToDownload);
     if (items && items?.length > 0) {
@@ -283,7 +290,7 @@ const Vehicles = () => {
             {
               label: 'Nuevo',
               href: '/vehicles/create',
-              color: 'orange',
+              color: 'mycad',
               icon: IoMdAdd,
               filled: true,
             },
@@ -292,8 +299,7 @@ const Vehicles = () => {
         <TableActions
           handleSearchTerm={handleSearch}
           onCheckFilter={onCheckFilter}
-          filters={searchFilters?.conditionName}
-          value={searchFilters?.searchTerm}
+          selectedFilters={searchFilters?.conditionName}
           headers={columns}
           deepSearch={searchFilters?.deepSearch}
           setDeepSearch={handleDeepSearch}
@@ -485,26 +491,28 @@ const Vehicles = () => {
                     actions: {
                       key: 'Acciones',
                       value: (
-                        <div className="flex justify-center items-center gap-2">
-                          <LinkButton
-                            route={`/vehicles/edit/${vehicle.id}`}
-                            label="Editar"
-                            icon={FaEdit}
-                            color="yellow"
-                          />
-                          <LinkButton
-                            route={`/vehicles/view/${vehicle.id}`}
-                            label="Ver"
-                            icon={FaEye}
-                            color="cyan"
-                          />
-                          <ActionButtons
-                            onRemove={() => {
-                              setIsOpenModal(true);
-                              setVehicleId(vehicle.id);
-                            }}
-                          />
-                        </div>
+                        <ActionButtons
+                          extraActions={[
+                            {
+                              label: 'Ver',
+                              icon: FaEye,
+                              color: 'cyan',
+                              action: () =>
+                                navigate(`/vehicles/view/${vehicle.id}`),
+                            },
+                            {
+                              label: 'Editar',
+                              icon: FaEdit,
+                              color: 'yellow',
+                              action: () =>
+                                navigate(`/vehicles/edit/${vehicle.id}`),
+                            },
+                          ]}
+                          onRemove={() => {
+                            setIsOpenModal(true);
+                            setVehicleId(vehicle.id);
+                          }}
+                        />
                       ),
                     },
                   };

@@ -34,7 +34,6 @@ const TableFooter = ({
     );
     paginationNumber.push(pagC);
   }
-  console.log('pagination values ', pagination);
   return (
     <nav
       className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
@@ -71,7 +70,7 @@ const TableFooter = ({
             onChange={changePageSize}
             disabled={totalRecords === 0}
           >
-            {[5, 10, 20, 50, 100].map((item) => (
+            {[5, 10, 20, 30, 50, 100].map((item) => (
               <option disabled={totalRecords < item} key={item} value={item}>
                 {item}
               </option>
@@ -107,11 +106,12 @@ const TableFooter = ({
         </li>
         {paginationNumber?.map((item) => item)}
         <li
+          key="next"
           onClick={goOnNextPage}
           className={
             pageSize + index - 1 >= totalRecords
               ? 'pointer-events-none opacity-60'
-              : ''
+              : 'cursor-pointer'
           }
         >
           <a className="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">

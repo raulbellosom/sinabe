@@ -13,7 +13,6 @@ const Brands = () => {
     createVehicleBrand,
     updateVehicleBrand,
     deleteVehicleBrand,
-    fetchVehicleBrands,
     loading,
   } = useCatalogContext();
 

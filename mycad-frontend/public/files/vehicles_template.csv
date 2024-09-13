@@ -1,2 +1,2 @@
-﻿ID,Nombre del Modelo,Año del Modelo,Marca del Vehículo,Tipo de Vehículo,Número Económico,Número de Serie,Número de Placa,Kilometraje,Fecha de Adquisición,Costo de Adquisición,Estado,Comentarios
-1,Camaro,2019,Chevrolet,Deportivo,98765,2G1FP22G0P2123456,CAMROXY,15000,30/03/2023,35000,true,Just detailed
+﻿ID,Nombre del Modelo,Año del Modelo,Marca del Vehículo,Tipo de Vehículo,Número Económico,Número de Serie,Número de Placa,Kilometraje,Fecha de Adquisición,Costo de Adquisición,Estado,Comentarios,Imágenes
+1,Camaro,2019,Chevrolet,Deportivo,98765,2G1FP22G0P2123456,CAMROXY,15000,30/03/2023,35000,true,Just detailed,"[""https://www.ejemplo.com/de/imagen.jpg"",""https://hips.hearstapps.com/hmg-prod/images/2018-chevrolet-camaro-zl1-1le-001-1561050025.jpg""]"

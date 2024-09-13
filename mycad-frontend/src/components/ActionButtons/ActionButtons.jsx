@@ -99,6 +99,7 @@ const ActionButtons = forwardRef(
           outline={action?.outline}
           filled={action?.filled}
           disabled={action?.disabled || false}
+          className={action?.className}
         />
       ) : (
         <button
@@ -109,13 +110,16 @@ const ActionButtons = forwardRef(
             action?.color,
             action?.filled,
             action?.disabled,
+            action?.className,
           )}
           outline={action?.outline}
           type="button"
           disabled={action?.disabled || false}
         >
           <i>{action.icon && <action.icon size={18} />}</i>
-          <span className="ml-2">{action.label}</span>
+          <span className={`${action?.label?.length > 0 && 'ml-2'}`}>
+            {action.label}
+          </span>
         </button>
       ),
     );

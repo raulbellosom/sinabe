@@ -42,17 +42,16 @@ const processImage = async (imagePath, fileName) => {
   if (!fs.existsSync(largeDir)) {
     fs.mkdirSync(largeDir, { recursive: true });
   }
-  const res = await sharp(imagePath).resize(150, 150).toFile(thumbnailPath);
+  await sharp(imagePath).resize(150, 150).toFile(thumbnailPath);
   await sharp(imagePath).resize(500, 500).toFile(mediumPath);
   await sharp(imagePath).resize(1000, 1000).toFile(largePath);
   let urlRelativePath = BASE_PATH.replace("src/", "");
-  const imageData = {
+  return {
     url: `${urlRelativePath}images/${fileName}.jpg`,
     thumbnail: thumbnailPath.split("src/")[1],
     medium: mediumPath.split("src/")[1],
     large: largePath.split("src/")[1],
   };
-  return imageData;
 };
 
 const convertDateFormat = (dateStr) => {
@@ -81,6 +80,26 @@ const convertDateFormat = (dateStr) => {
   }
 };
 
+const parseImages = (rawImages) => {
+  try {
+    if (rawImages.startsWith("'") && rawImages.endsWith("'")) {
+      rawImages = rawImages.slice(1, -1);
+    }
+
+    rawImages = rawImages.replace(/'/g, '"');
+
+    console.log("Raw images string:", rawImages);
+
+    const parsedImages = JSON.parse(rawImages);
+
+    return Array.isArray(parsedImages) ? parsedImages : [];
+  } catch (error) {
+    console.error("Error parsing images:", error);
+    console.error("Problematic JSON string:", rawImages);
+    return [];
+  }
+};
+
 const validateNotEmpty = (value, fieldName, errors, index) => {
   if (
     value === null ||
@@ -89,6 +108,54 @@ const validateNotEmpty = (value, fieldName, errors, index) => {
     (typeof value === "number" && isNaN(value))
   ) {
     errors.push(`Fila ${index + 1}: El campo '${fieldName}' es obligatorio`);
+  }
+};
+
+const validateFields = (vehicle, userId, index, errors) => {
+  validateNotEmpty(vehicle.model, "Nombre del Modelo", errors, index);
+  validateNotEmpty(vehicle.year, "Año del Modelo", errors, index);
+  validateNotEmpty(vehicle.brand, "Marca del Vehículo", errors, index);
+  validateNotEmpty(vehicle.type, "Tipo de Vehículo", errors, index);
+  validateNotEmpty(vehicle.mileage, "Kilometraje", errors, index);
+  validateNotEmpty(
+    vehicle.acquisitionDate,
+    "Fecha de Adquisición",
+    errors,
+    index
+  );
+  validateNotEmpty(vehicle.cost, "Costo de Adquisición", errors, index);
+  validateNotEmpty(vehicle.status, "Estado", errors, index);
+
+  if (vehicle.cost && isNaN(parseFloat(vehicle.cost))) {
+    errors.push(
+      `Fila ${index + 1}: El campo 'Costo del Vehículo' debe ser un número`
+    );
+  }
+
+  if (vehicle.mileage && isNaN(parseInt(vehicle.mileage, 10))) {
+    errors.push(
+      `Fila ${index + 1}: El campo 'Kilometraje' debe ser un número entero`
+    );
+  }
+
+  if (vehicle.status && typeof vehicle.status !== "boolean") {
+    errors.push(`Fila ${index + 1}: El campo 'Estado' debe ser un booleano`);
+  }
+
+  if (vehicle.acquisitionDate && isNaN(Date.parse(vehicle.acquisitionDate))) {
+    errors.push(
+      `Fila ${
+        index + 1
+      }: El campo 'Fecha de Adquisición' debe ser una fecha válida`
+    );
+  }
+
+  if (!userId) {
+    errors.push(
+      `Fila ${
+        index + 1
+      }: El usuario no es válido, por favor inicie sesión nuevamente`
+    );
   }
 };
 
@@ -108,6 +175,7 @@ export const createMultipleVehicles = async (req, res) => {
     fs.createReadStream(csvFile.path)
       .pipe(csvParser())
       .on("data", (row) => {
+        const parsedImages = parseImages(row["Imágenes"] || "[]");
         vehicles.push({
           model: row["Nombre del Modelo"],
           year: parseInt(row["Año del Modelo"], 10),
@@ -121,70 +189,13 @@ export const createMultipleVehicles = async (req, res) => {
           cost: parseFloat(row["Costo de Adquisición"]),
           status: row["Estado"] === "true",
           comments: row["Comentarios"],
-          images: JSON.parse(row["Imágenes"] || "[]").join(","),
+          images: parsedImages.join(","),
         });
       })
       .on("end", async () => {
         const userId = user?.id;
         for (const [index, vehicle] of vehicles.entries()) {
-          validateNotEmpty(vehicle.model, "Nombre del Modelo", errors, index);
-          validateNotEmpty(vehicle.year, "Año del Modelo", errors, index);
-          validateNotEmpty(vehicle.brand, "Marca del Vehículo", errors, index);
-          validateNotEmpty(vehicle.type, "Tipo de Vehículo", errors, index);
-          validateNotEmpty(vehicle.mileage, "Kilometraje", errors, index);
-          validateNotEmpty(
-            vehicle.acquisitionDate,
-            "Fecha de Adquisición",
-            errors,
-            index
-          );
-          validateNotEmpty(vehicle.cost, "Costo de Adquisición", errors, index);
-          validateNotEmpty(vehicle.status, "Estado", errors, index);
-
-          !vehicle.acquisitionDate ||
-            !vehicle.cost ||
-            !vehicle.mileage ||
-            vehicle.status === undefined ||
-            !userId ||
-            !vehicle.model ||
-            !vehicle.year ||
-            !vehicle.brand ||
-            !vehicle.type;
-
-          if (vehicle.cost && isNaN(parseFloat(vehicle.cost))) {
-            errors.push(
-              `Fila ${
-                index + 1
-              }: El campo 'Costo del Vehículo' debe ser un número`
-            );
-            continue;
-          }
-
-          if (vehicle.mileage && isNaN(parseInt(vehicle.mileage, 10))) {
-            errors.push(
-              `Fila ${index + 1}: El campo 'mileage' debe ser un número entero`
-            );
-            continue;
-          }
-
-          if (vehicle.status && typeof vehicle.status !== "boolean") {
-            errors.push(
-              `Fila ${index + 1}: El campo 'status' debe ser un booleano`
-            );
-            continue;
-          }
-
-          if (
-            vehicle.acquisitionDate &&
-            isNaN(Date.parse(vehicle.acquisitionDate))
-          ) {
-            errors.push(
-              `Fila ${
-                index + 1
-              }: El campo 'Fecha de Adquisicón' debe ser una fecha válida`
-            );
-            continue;
-          }
+          validateFields(vehicle, userId, index, errors);
 
           const model = await db.model.findFirst({
             where: {

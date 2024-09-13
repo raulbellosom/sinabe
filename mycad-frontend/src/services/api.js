@@ -34,6 +34,12 @@ api.interceptors.request.use(
   },
 );
 
+const headerFormData = {
+  headers: {
+    'Content-Type': 'multipart/form-data',
+  },
+};
+
 export const login = async (credentials) => {
   try {
     const response = await api.post('/auth/login', credentials);
@@ -74,6 +80,42 @@ export const logout = async () => {
   }
 };
 
+export const updateProfile = async (profile) => {
+  try {
+    const response = await api.put('/auth/updateProfile', profile);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const updatePassword = async (passwords) => {
+  try {
+    const response = await api.put('/auth/updatePassword', passwords);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const updateProfileImage = async (profileImage) => {
+  try {
+    let data = new FormData();
+    data.append('profileImage', profileImage);
+    const response = await api.put(
+      '/auth/updateProfileImage',
+      data,
+      headerFormData,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const getUsers = async () => {
   const response = await api.get(`/users`);
   return response.data;
@@ -105,7 +147,6 @@ export const getVehicle = async ({ id: vehicleId, signal }) => {
 };
 
 export const createVehicle = async (vehicle) => {
-  api.defaults.headers['Content-Type'] = 'multipart/form-data';
   let data = new FormData();
 
   if (vehicle.images && vehicle.images.length > 0) {
@@ -121,12 +162,11 @@ export const createVehicle = async (vehicle) => {
   }
 
   data.append('vehicle', JSON.stringify(vehicle));
-  const response = await api.post(`/vehicles`, data);
+  const response = await api.post(`/vehicles`, data, headerFormData);
   return response.data;
 };
 
 export const updateVehicle = async (vehicle) => {
-  api.defaults.headers['Content-Type'] = 'multipart/form-data';
   const id = vehicle.id;
   let data = new FormData();
   let currentImages = vehicle.images.filter((image) => image instanceof File);
@@ -147,7 +187,7 @@ export const updateVehicle = async (vehicle) => {
   }
 
   data.append('vehicle', JSON.stringify(vehicle));
-  const response = await api.put(`/vehicles/${id}`, data);
+  const response = await api.put(`/vehicles/${id}`, data, headerFormData);
   return response.data;
 };
 
@@ -196,13 +236,16 @@ export const searchVehicles = async ({
 };
 
 export const createMultipleVehicles = async (csvFile, userId) => {
-  api.defaults.headers['Content-Type'] = 'multipart/form-data';
   let data = new FormData();
 
   data.append('csvFile', csvFile);
   data.append('userId', JSON.stringify(userId));
 
-  const response = await api.post(`/vehicles/createMultipleVehicles`, data);
+  const response = await api.post(
+    `/vehicles/createMultipleVehicles`,
+    data,
+    headerFormData,
+  );
   return response.data;
 };
 
@@ -234,6 +277,35 @@ export const deleteVehicleModel = async (vehicleModelId) => {
     `/vehicles/vehicleModels/${vehicleModelId}`,
   );
   return response.data;
+};
+
+export const searchModels = async ({
+  searchTerm,
+  sortBy,
+  order,
+  page,
+  pageSize,
+  signal,
+}) => {
+  try {
+    const response = await api.get('/vehicles/vehicleModels/search', {
+      params: {
+        searchTerm,
+        sortBy,
+        order,
+        page,
+        pageSize,
+      },
+      signal: signal,
+    });
+    if (response.status !== 200) {
+      throw new Error(response.message || 'Hubo un error al hacer la busqueda');
+    }
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getVehicleTypes = async () => {

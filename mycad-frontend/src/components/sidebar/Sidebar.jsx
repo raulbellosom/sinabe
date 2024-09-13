@@ -26,7 +26,7 @@ import { MdGarage } from 'react-icons/md';
 const themes = {
   light: {
     sidebar: {
-      backgroundColor: '#333333',
+      backgroundColor: '#0D0D0D',
       color: '#ffffff',
     },
     menu: {
@@ -231,8 +231,8 @@ const Sidebar = ({ children }) => {
                 Usuarios
               </MenuItem>
               <MenuItem
-                component={<Link to={'/profile'} />}
-                active={isActivePath('/profile')}
+                component={<Link to={'/account'} />}
+                active={isActivePath('/account')}
                 icon={<FaUserEdit />}
               >
                 Editar Perfil

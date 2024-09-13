@@ -5,6 +5,8 @@ import { FaCloudUploadAlt, FaDownload } from 'react-icons/fa';
 import { useVehicleContext } from '../../context/VehicleContext';
 import { MdClose } from 'react-icons/md';
 import { useAuthContext } from '../../context/AuthContext';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 const CreateMultipleVehicle = () => {
   const ref = useRef(null);
@@ -17,7 +19,7 @@ const CreateMultipleVehicle = () => {
 
   const handleSubmit = async () => {
     setLoading(true);
-
+    console.log(user);
     await createMultipleVehicles(file, user?.id)
       .then((res) => {
         console.log('res', res);
@@ -44,11 +46,14 @@ const CreateMultipleVehicle = () => {
   return (
     <div ref={ref} className="h-full w-full bg-white">
       <div className="flex flex-col items-center justify-center">
-        <img
-          src={uploadFilesImage}
-          alt="Upload files"
-          className="w-1/2 md:w-1/4"
-        />
+        <div className="w-1/2 md:w-1/4 flex justify-center">
+          <LazyLoadImage
+            effect="blur"
+            src={uploadFilesImage}
+            alt="Upload files"
+            className="w-full"
+          />
+        </div>
         <h1 className="text-3xl font-bold text-center mt-4">
           Cargar múltiples vehículos
         </h1>
@@ -57,8 +62,8 @@ const CreateMultipleVehicle = () => {
         </p>
         {/* instrucciones */}
         <div className="w-full md:w-4/5 mt-4">
-          <p className="text-lg font-bold">Instrucciones:</p>
-          <ol className="list-decimal pl-4">
+          <p className="text-base font-bold">Instrucciones:</p>
+          <ol className="list-decimal text-sm pl-4">
             <li>
               Descargue la plantilla de vehículos y complete la información
               solicitada. <br />

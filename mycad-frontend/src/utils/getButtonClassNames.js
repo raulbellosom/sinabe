@@ -1,10 +1,21 @@
 import classNames from 'classnames';
 
-export const getButtonClassNames = (color, filled, disabled = false) => {
+export const getButtonClassNames = (
+  color,
+  filled,
+  disabled = false,
+  className,
+) => {
   const baseClasses =
     'w-full md:w-fit text-sm transition ease-in-out duration-200 p-2 md:px-4 flex items-center justify-center rounded-md border text-stone-800';
 
   let notFilledClasses = {
+    'hover:bg-orange-500 hover:text-white': color === 'mycad' && !disabled,
+    'hover:bg-mycad-danger hover:text-white': color === 'danger' && !disabled,
+    'hover:bg-mycad-warning hover:text-white': color === 'warning' && !disabled,
+    'hover:bg-mycad-success hover:text-white': color === 'success' && !disabled,
+    'hover:bg-mycad-info hover:text-white': color === 'info' && !disabled,
+    'hover:bg-mycad-dark hover:text-white': color === 'dark' && !disabled,
     'hover:bg-red-500 hover:text-white': color === 'red' && !disabled,
     'hover:bg-yellow-300 hover:text-white': color === 'yellow' && !disabled,
     'hover:bg-cyan-500 hover:text-white': color === 'cyan' && !disabled,
@@ -27,6 +38,18 @@ export const getButtonClassNames = (color, filled, disabled = false) => {
     'hover:bg-black': color === 'black' && !disabled,
   };
   let filledClasses = {
+    'bg-orange-500 text-white border-mycad hover:bg-orange-600':
+      color === 'mycad',
+    'bg-mycad-danger text-white border-mycad-danger hover:bg-mycad-rose':
+      color === 'danger',
+    'bg-mycad-warning text-white border-mycad-warning hover:bg-mycad-salmon':
+      color === 'warning',
+    'bg-mycad-success text-white border-mycad-success hover:bg-mycad-success':
+      color === 'success',
+    'bg-mycad-info text-white border-mycad-info hover:bg-mycad-info':
+      color === 'info',
+    'bg-mycad-dark text-white border-mycad-dark hover:bg-mycad-dark':
+      color === 'dark',
     'bg-red-500 text-white border-red-500 hover:bg-red-700': color === 'red',
     'bg-yellow-300 text-white border-yellow-300 hover:bg-yellow-400':
       color === 'yellow',
@@ -68,10 +91,11 @@ export const getButtonClassNames = (color, filled, disabled = false) => {
   };
 
   const disabledClasses = {
-    'cursor-not-allowed hover:bg-white hover:text-stone-800': disabled,
+    'cursor-not-allowed hover:bg-white hover:text-stone-800 hover:animate-shake':
+      disabled,
   };
 
   const colorClasses = classNames(filled ? filledClasses : notFilledClasses);
 
-  return classNames(baseClasses, colorClasses, disabledClasses);
+  return classNames(baseClasses, colorClasses, disabledClasses, className);
 };

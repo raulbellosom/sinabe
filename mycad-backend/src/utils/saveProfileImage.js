@@ -1,0 +1,79 @@
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { v4 } from "uuid";
+import sharp from "sharp";
+
+const BASE_PATH = "src/uploads/profile/";
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    if (!fs.existsSync(BASE_PATH)) {
+      fs.mkdirSync(BASE_PATH, { recursive: true });
+    }
+    cb(null, BASE_PATH);
+  },
+  filename: (req, file, cb) => {
+    const name = v4();
+    cb(null, name + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
+
+const saveProfileImage = async (req, res, next) => {
+  if (!req.file) {
+    return next();
+  }
+
+  const image = req.files["profileImage"] || [];
+
+  const profileImage = await Promise.all(
+    image.map(async (file) => {
+      const { mimetype } = file;
+      const fileName = path.parse(file.filename).name;
+
+      const thumbnailDir = `${BASE_PATH}thumbnails/`;
+      const mediumDir = `${BASE_PATH}medium/`;
+      const largeDir = `${BASE_PATH}large/`;
+
+      const thumbnailPath = `${thumbnailDir}${fileName}-thumbnail.jpg`;
+      const mediumPath = `${mediumDir}${fileName}-medium.jpg`;
+      const largePath = `${largeDir}${fileName}-large.jpg`;
+
+      if (!fs.existsSync(thumbnailDir)) {
+        fs.mkdirSync(thumbnailDir, { recursive: true });
+      }
+      if (!fs.existsSync(mediumDir)) {
+        fs.mkdirSync(mediumDir, { recursive: true });
+      }
+      if (!fs.existsSync(largeDir)) {
+        fs.mkdirSync(largeDir, { recursive: true });
+      }
+
+      await sharp(file.path).resize(150, 150).toFile(thumbnailPath);
+
+      await sharp(file.path).resize(500, 500).toFile(mediumPath);
+
+      await sharp(file.path).resize(1000, 1000).toFile(largePath);
+
+      let urlRelativePath = BASE_PATH.replace("src/", "");
+      let thumbnailRelativePath = thumbnailPath.replace("src/", "")[1];
+      let mediumRelativePath = mediumPath.replace("src/", "")[1];
+      let largeRelativePath = largePath.replace("src/", "")[1];
+
+      return {
+        url: `${urlRelativePath}profile/${file.filename}`,
+        type: mimetype,
+        metadata: { ...file },
+        thumbnail: thumbnailRelativePath,
+        medium: mediumRelativePath,
+        large: largeRelativePath,
+      };
+    })
+  );
+  req.profileImage = profileImage;
+  next();
+};
+
+export { upload, saveProfileImage };

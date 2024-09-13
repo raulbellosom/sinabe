@@ -15,6 +15,7 @@ import {
   getVehicleBrandById,
   getVehicleModels,
   getVehicleModelById,
+  searchModels,
   createVehicleBrand,
   updateVehicleBrand,
   createVehicleModel,
@@ -69,7 +70,7 @@ router.route("/search").get(protect, searchVehicles);
 router
   .route("/createMultipleVehicles")
   .post(protect, upload.single("csvFile"), createMultipleVehicles);
-
+router.route("/vehicleModels/search").get(protect, searchModels);
 router
   .route("/:id")
   .get(protect, getVehicleById)
