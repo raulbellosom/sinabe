@@ -11,9 +11,7 @@ import ModalRemove from '../../components/Modals/ModalRemove';
 const VehicleForm = React.lazy(
   () => import('../../components/VehicleComponents/VehicleForm/VehicleForm'),
 );
-const ActionButtons = React.lazy(
-  () => import('../../components/ActionButtons/ActionButtons'),
-);
+import ActionButtons from '../../components/ActionButtons/ActionButtons';
 
 import { FaCar, FaSave } from 'react-icons/fa';
 

@@ -20,10 +20,8 @@ import { IoMdAdd } from 'react-icons/io';
 import { vehicleColumns } from '../../utils/VehicleFields';
 import TableResultsNotFound from '../../components/Table/TableResultsNotFound';
 import { useCatalogContext } from '../../context/CatalogContext';
+import ActionButtons from '../../components/ActionButtons/ActionButtons';
 const Table = React.lazy(() => import('../../components/Table/Table'));
-const ActionButtons = React.lazy(
-  () => import('../../components/ActionButtons/ActionButtons'),
-);
 const TableHeader = React.lazy(
   () => import('../../components/Table/TableHeader'),
 );
@@ -33,9 +31,7 @@ const TableActions = React.lazy(
 const TableFooter = React.lazy(
   () => import('../../components/Table/TableFooter'),
 );
-const LinkButton = React.lazy(
-  () => import('../../components/ActionButtons/LinkButton'),
-);
+import LinkButton from '../../components/ActionButtons/LinkButton';
 
 const formatVehicle = (vehicleData) => {
   const {
