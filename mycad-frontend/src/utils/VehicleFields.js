@@ -11,7 +11,7 @@ export const vehicleColumns = [
   },
   {
     id: 'model.name',
-    value: 'Nombre',
+    value: 'Modelo',
     classes: 'w-auto',
     order: 'asc',
     type: 'text',

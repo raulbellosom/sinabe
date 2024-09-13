@@ -16,6 +16,7 @@ import CreateVehicle from '../pages/vehicles/CreateVehicle';
 import UpdateVehicle from '../pages/vehicles/UpdateVehicle';
 import ViewVehicle from '../pages/vehicles/ViewVehicle';
 import Catalogs from '../pages/vehicles/catalogs/Catalogs';
+import Account from '../pages/account/Account';
 
 import ProtectedRoute from './ProtectedRoute';
 
@@ -46,6 +47,7 @@ const AuthorizedRoute = ({ user }) => {
                 <Route element={<ProtectedRoute user={user} />}>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/account" element={<Account />} />
                   <Route path="/vehicles" element={<Vehicles />} />
                   <Route path="/vehicles/create" element={<CreateVehicle />} />
                   <Route

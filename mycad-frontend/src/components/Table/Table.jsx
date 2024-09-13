@@ -12,13 +12,15 @@ const Table = ({ columns, children, sortBy, sortedBy, selectAll }) => {
               <T.HeadCell
                 key={col?.id}
                 scope="col"
-                className={`${col?.order || col?.id === 'checkbox' ? '' : 'pointer-events-none'} p-4 bg-stone-700 text-white ${col?.id !== 'checkbox' ? 'cursor-pointer hover:bg-orange-500 hover:text-white transition-colors ease-in-out duration-100' : ''} ${col?.id === sortedBy && 'bg-orange-500'} ${col?.classes}`}
+                className={`${col?.order || col?.id === 'checkbox' ? '' : 'pointer-events-none'} p-4 bg-mycad-gray-dark text-white ${col?.id !== 'checkbox' ? 'cursor-pointer hover:bg-orange-500 hover:text-white transition-colors ease-in-out duration-100' : ''} ${col?.id === sortedBy && 'bg-orange-500'} ${col?.classes}`}
                 onClick={col?.id !== 'checkbox' ? () => sortBy(col.id) : null}
               >
                 <span
                   className={classNames(
                     'flex flew-row gap-2 items-center',
-                    col?.id === 'checkbox' ? 'justify-center' : 'justify-start',
+                    col?.id === 'checkbox' || col?.id === 'actions'
+                      ? 'justify-center'
+                      : 'justify-start',
                   )}
                 >
                   {col.value}

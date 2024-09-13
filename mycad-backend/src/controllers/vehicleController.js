@@ -581,7 +581,7 @@ export const searchVehicles = async (req, res) => {
       : {};
 
     const deepSearchConditions = buildDeepSearchConditions(
-      JSON.parse(deepSearch)
+      JSON?.parse(deepSearch)
     );
 
     const skip = (page - 1) * pageSize;

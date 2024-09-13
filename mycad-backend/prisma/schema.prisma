@@ -13,6 +13,7 @@ model User {
   firstName String
   lastName  String
   email     String    @unique
+  phone     String?
   password  String
   photo     String?
   roleId    Int

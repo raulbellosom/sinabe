@@ -10,7 +10,15 @@ const AuthProvider = ({ children }) => {
     loading: true,
   });
 
-  const { login, logout, register, loadUser } = useAuthData(dispatch);
+  const {
+    login,
+    logout,
+    register,
+    loadUser,
+    updatePassword,
+    updateProfile,
+    updateProfileImage,
+  } = useAuthData(dispatch);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -37,7 +45,16 @@ const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ ...state, login, logout, register, dispatch }}
+      value={{
+        ...state,
+        login,
+        logout,
+        register,
+        dispatch,
+        updatePassword,
+        updateProfile,
+        updateProfileImage,
+      }}
     >
       {children}
     </AuthContext.Provider>

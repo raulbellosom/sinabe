@@ -8,11 +8,11 @@ import { getButtonClassNames } from '../../utils/getButtonClassNames';
 const TableActions = ({
   handleSearchTerm,
   onCheckFilter,
-  filters,
+  selectedFilters,
   headers,
   deepSearch,
   setDeepSearch,
-  vehicleConditions,
+  filters,
 }) => {
   const CustomDropdownItem = ({ name }) => {
     return (
@@ -20,7 +20,7 @@ const TableActions = ({
         <input
           id={name}
           type="checkbox"
-          checked={filters?.includes(name)}
+          checked={selectedFilters?.includes(name)}
           className="w-4 h-4 bg-gray-100 border-gray-300 cursor-pointer rounded text-purple-600 focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
           onChange={() => onCheckFilter(name)}
         />
@@ -42,7 +42,7 @@ const TableActions = ({
               <TextInput
                 icon={LuSearch}
                 type="search"
-                placeholder="Buscar vehículo"
+                placeholder="Buscar"
                 className="bg-transparent"
                 onChange={handleSearchTerm}
                 style={{
@@ -54,54 +54,58 @@ const TableActions = ({
             </div>
           </form>
         </div>
-        <div className="flex justify-end">
-          <Dropdown
-            renderTrigger={() => (
-              <button className={getButtonClassNames('indigo', false)}>
-                <i>
-                  <TbFilter size={18} />
-                </i>
-                <span className="ml-2">Filtrar</span>
-              </button>
-            )}
-            placement="bottom-end"
-            className="w-fit"
-            outline
-          >
-            <>
-              <div className="flex items-center px-4 py-2">
-                <h2 className="text-sm font-semibold">
-                  Filtrar por Condiciones
-                </h2>
-              </div>
-              <Dropdown.Divider />
-              <CustomDropdownItem
-                key="all"
-                name={
-                  vehicleConditions?.length === filters?.length
-                    ? 'Quitar todos'
-                    : 'Seleccionar todos'
-                }
-              />
-              <Dropdown.Divider />
-              {vehicleConditions &&
-                vehicleConditions?.map((condition) => (
-                  <CustomDropdownItem
-                    key={condition?.id}
-                    name={condition?.name}
-                  />
-                ))}
-            </>
-          </Dropdown>
+        {filters && (
+          <div className="flex justify-end">
+            <Dropdown
+              renderTrigger={() => (
+                <button className={getButtonClassNames('indigo', false)}>
+                  <i>
+                    <TbFilter size={18} />
+                  </i>
+                  <span className="ml-2">Filtrar</span>
+                </button>
+              )}
+              placement="bottom-end"
+              className="w-fit"
+              outline
+            >
+              <>
+                <div className="flex items-center px-4 py-2">
+                  <h2 className="text-sm font-semibold">
+                    Filtrar por Condiciones
+                  </h2>
+                </div>
+                <Dropdown.Divider />
+                <CustomDropdownItem
+                  key="all"
+                  name={
+                    filters?.length === selectedFilters?.length
+                      ? 'Quitar todos'
+                      : 'Seleccionar todos'
+                  }
+                />
+                <Dropdown.Divider />
+                {filters &&
+                  filters?.map((condition) => (
+                    <CustomDropdownItem
+                      key={condition?.id}
+                      name={condition?.name}
+                    />
+                  ))}
+              </>
+            </Dropdown>
+          </div>
+        )}
+      </div>
+      {deepSearch && (
+        <div className="w-full col-span-12 whitespace-nowrap flex flex-wrap">
+          <TableSearchByHeader
+            currentFilters={deepSearch}
+            setCurrentFilters={setDeepSearch}
+            headers={headers}
+          />
         </div>
-      </div>
-      <div className="w-full col-span-12 whitespace-nowrap flex flex-wrap">
-        <TableSearchByHeader
-          currentFilters={deepSearch}
-          setCurrentFilters={setDeepSearch}
-          headers={headers}
-        />
-      </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { login, logout, register, loadUser } from '../services/api';
+import {
+  login,
+  logout,
+  register,
+  loadUser,
+  updateProfile,
+  updatePassword,
+  updateProfileImage,
+} from '../services/api';
 import { useLoading } from '../context/LoadingContext';
 import Notifies from '../components/Notifies/Notifies';
 
@@ -10,7 +18,7 @@ export const useAuthData = (dispatch) => {
   const setLoading = (loading) => {
     loadingDispatch({ type: 'SET_LOADING', payload: loading });
   };
-  
+
   const loginMutation = useMutation({
     mutationFn: login,
     onMutate: () => setLoading(true),
@@ -61,10 +69,59 @@ export const useAuthData = (dispatch) => {
     return null;
   };
 
+  const updateProfileMutation = useMutation({
+    mutationFn: updateProfile,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.setQueryData('user', data);
+      localStorage.setItem('user', JSON.stringify(data));
+      Notifies('success', 'Perfil actualizado');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al actualizar el perfil');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const updatePasswordMutation = useMutation({
+    mutationFn: updatePassword,
+    onMutate: () => setLoading(true),
+    onSuccess: () => {
+      Notifies('success', 'Contraseña actualizada');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al actualizar la contraseña');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const updateProfileImageMutation = useMutation({
+    mutationFn: updateProfileImage,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.setQueryData('user', data);
+      localStorage.setItem('user', JSON.stringify(data));
+      Notifies('success', 'Imagen de perfil actualizada');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al actualizar la imagen de perfil');
+    },
+    onSettled: () => setLoading(false),
+  });
+
   return {
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,
     logout: logoutMutation.mutateAsync,
     loadUser: loadUserData,
+    updateProfile: (values) => {
+      return updateProfileMutation.mutateAsync(values);
+    },
+    updatePassword: (values) => {
+      return updatePasswordMutation.mutateAsync(values);
+    },
+    updateProfileImage: (values) => {
+      return updateProfileImageMutation.mutateAsync(values);
+    },
   };
 };

@@ -20,7 +20,6 @@ const ImageViewer = ({
   imageClassName,
 }) => {
   const handleDownloadImage = (img) => {
-    console.log(img);
     downloadFile(img);
   };
   return (

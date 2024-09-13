@@ -7,6 +7,9 @@ const AuthContext = createContext({
   logout: async () => {},
   register: async () => {},
   dispatch: () => {},
+  updatePassword: async () => {},
+  updateProfile: async () => {},
+  updateProfileImage: async () => {},
 });
 
 export const useAuthContext = () => useContext(AuthContext);

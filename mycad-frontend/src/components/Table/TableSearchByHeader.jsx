@@ -3,7 +3,7 @@ import ActionButtons from '../ActionButtons/ActionButtons';
 import { RiMenuSearchLine } from 'react-icons/ri';
 import ModalForm from '../Modals/ModalForm';
 import { Button, Label, Select, TextInput, Tooltip } from 'flowbite-react';
-import { IoIosArrowForward } from 'react-icons/io';
+import { IoIosArrowForward, IoMdAdd } from 'react-icons/io';
 import { MdClose } from 'react-icons/md';
 import { FaTrashAlt } from 'react-icons/fa';
 
@@ -197,7 +197,7 @@ const TableSearchByHeader = ({
           size={'4xl'}
           position="center"
         >
-          <div className="rounded-md grid grid-cols-3 gap-4">
+          <div className="rounded-md grid grid-cols-3 gap-4 my-4">
             <div className="col-span-3 md:col-span-1 flex gap-2 flex-col justify-start">
               <Label
                 color={getErrorColor('searchHeader')}
@@ -252,7 +252,7 @@ const TableSearchByHeader = ({
                     <option
                       key={item.value}
                       value={item.value}
-                      className="px-4 py-1.5 font-semibold hover:bg-stone-100 cursor-pointer text-blue-500 border-b border-gray-200"
+                      className="px-4 py-1.5 hover:bg-stone-100 cursor-pointer text-blue-500"
                     >
                       {item.label}
                     </option>
@@ -279,12 +279,39 @@ const TableSearchByHeader = ({
               />
             </div>
           </div>
-          <button
-            onClick={handleSearch}
-            className="w-full bg-purple-500 text-white rounded-lg py-2 mt-8"
-          >
-            Agregar búsqueda
-          </button>
+
+          <div className="flex flex-wrap gap-4 items-center justify-end mt-10">
+            <ActionButtons
+              extraActions={[
+                {
+                  label: 'Cerrar',
+                  action: handleCloseModal,
+                  color: 'red',
+                  icon: MdClose,
+                },
+                {
+                  label: 'Limpiar filtros',
+                  action: () => {
+                    setSearchTerm('');
+                    setSearchHeader('');
+                    setSearchCriteria('');
+                    setErrors({});
+                    setTouched({});
+                  },
+                  color: 'gray',
+                  icon: FaTrashAlt,
+                },
+
+                {
+                  label: 'Agregar búsqueda',
+                  action: handleSearch,
+                  color: 'success',
+                  icon: IoMdAdd,
+                  filled: true,
+                },
+              ]}
+            />
+          </div>
         </ModalForm>
       )}
     </>

@@ -555,6 +555,97 @@ export const deleteVehicleModel = async (req, res) => {
   }
 };
 
+export const searchModels = async (req, res) => {
+  const {
+    searchTerm,
+    sortBy = "name",
+    order = "asc",
+    page = 1,
+    pageSize = 10,
+  } = req.query;
+
+  try {
+    const validSortFields = ["name", "year", "brand.name", "type.name"];
+
+    const orderField = validSortFields.includes(sortBy) ? sortBy : "name";
+    const orderDirection = order === "desc" ? "desc" : "asc";
+
+    const formSortBy = (value, order) => {
+      let arr = value.split(".");
+      let obj = {};
+      if (arr.length === 3) {
+        obj = {
+          [arr[0]]: {
+            [arr[1]]: {
+              [arr[2]]: order,
+            },
+          },
+        };
+      } else if (arr.length === 2) {
+        obj = {
+          [arr[0]]: {
+            [arr[1]]: order,
+          },
+        };
+      } else {
+        obj = {
+          [arr[0]]: order,
+        };
+      }
+      return obj;
+    };
+
+    const textSearchConditions = searchTerm
+      ? {
+          OR: [
+            { name: { contains: searchTerm } },
+            { brand: { name: { contains: searchTerm } } },
+            { type: { name: { contains: searchTerm } } },
+          ],
+        }
+      : {};
+
+    const skip = (page - 1) * pageSize;
+    const take = parseInt(pageSize);
+
+    const whereConditions = {
+      enabled: true,
+      ...textSearchConditions,
+    };
+
+    const models = await db.model.findMany({
+      where: whereConditions,
+      orderBy: formSortBy(orderField, orderDirection),
+      include: {
+        brand: true,
+        type: true,
+      },
+      skip,
+      take,
+    });
+
+    const totalRecords = await db.model.count({
+      where: whereConditions,
+    });
+
+    const totalPages = Math.ceil(totalRecords / pageSize);
+
+    res.json({
+      data: models,
+      pagination: {
+        totalRecords,
+        totalPages,
+        currentPage: parseInt(page),
+        page: parseInt(page),
+        pageSize: parseInt(pageSize),
+      },
+    });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getConditions = async (req, res) => {
   try {
     const conditions = await db.condition.findMany({
