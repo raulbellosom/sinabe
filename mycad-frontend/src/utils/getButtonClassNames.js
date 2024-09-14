@@ -25,6 +25,7 @@ export const getButtonClassNames = (
     'hover:bg-purple-500 hover:text-white': color === 'purple' && !disabled,
     'hover:bg-amber-500 hover:text-white': color === 'amber' && !disabled,
     'hover:bg-gray-500 hover:text-white': color === 'gray' && !disabled,
+    'hover:bg-stone-200 hover:text-stone-800': color === 'stone' && !disabled,
     'hover:bg-orange-400 hover:text-white': color === 'orange' && !disabled,
     'hover:bg-pink-500 hover:text-white': color === 'pink' && !disabled,
     'hover:bg-teal-500 hover:text-white': color === 'teal' && !disabled,
@@ -67,6 +68,8 @@ export const getButtonClassNames = (
       color === 'amber',
     'bg-gray-500 text-white border-gray-500 hover:bg-gray-700':
       color === 'gray',
+    'bg-stone-200 text-stone-800 border-stone-200 hover:bg-stone-300':
+      color === 'stone',
     'bg-orange-400 text-white border-orange-400 hover:bg-orange-700':
       color === 'orange',
     'bg-pink-500 text-white border-pink-500 hover:bg-pink-700':

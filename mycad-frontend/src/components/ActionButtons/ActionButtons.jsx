@@ -113,7 +113,7 @@ const ActionButtons = forwardRef(
             action?.className,
           )}
           outline={action?.outline}
-          type="button"
+          type={action?.type || 'button'}
           disabled={action?.disabled || false}
         >
           <i>{action.icon && <action.icon size={18} />}</i>

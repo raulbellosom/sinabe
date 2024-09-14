@@ -2,20 +2,33 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuthContext } from '../../context/AuthContext';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import { RiImageEditLine } from 'react-icons/ri';
-import { MdImageSearch } from 'react-icons/md';
+import { RiImageEditLine, RiLockPasswordFill } from 'react-icons/ri';
+import { MdImageSearch, MdPassword } from 'react-icons/md';
 import { LuImageOff } from 'react-icons/lu';
 import AccountFields from '../../components/AccountFields/AccountFields';
+import ModalForm from '../../components/Modals/ModalForm';
+import ChangePasswordForm from '../../components/AccountFields/ChangePassword/ChangePasswordForm';
+import { FaSave } from 'react-icons/fa';
+import { IoMdClose } from 'react-icons/io';
+import { AiFillEdit } from 'react-icons/ai';
 
 const Account = () => {
   const inputRef = useRef(null);
-  const { user, updateProfileImage } = useAuthContext();
+  const { user, updateProfileImage, updateProfile, updatePassword } =
+    useAuthContext();
+  const [isOpenModal, setIsOpenModal] = useState(false);
   const [extraActions, setExtraActions] = useState([]);
   const [image, setImage] = useState(user?.photo || '');
   const [userFields, setUserFields] = useState([]);
+  const [passwordFields, setPasswordFields] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: '',
+  });
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    if (image) {
+    if (image && image instanceof File && image !== user?.photo) {
       setExtraActions([
         {
           label: 'Descartar cambios',
@@ -37,7 +50,7 @@ const Account = () => {
           label: 'Seleccionar imagen',
           icon: MdImageSearch,
           action: () => inputRef.current.click(),
-          color: 'blue',
+          color: 'stone',
         },
       ]);
     }
@@ -51,8 +64,7 @@ const Account = () => {
         name: 'firstName',
         value: user.firstName,
         onChange: handleFieldChange,
-        enableEdit: true,
-        onCancele: handleDiscardFieldChanges,
+        allowEdit: true,
       },
       {
         id: 'lastName',
@@ -60,8 +72,7 @@ const Account = () => {
         name: 'lastName',
         value: user.lastName,
         onChange: handleFieldChange,
-        enableEdit: true,
-        onCancele: handleDiscardFieldChanges,
+        allowEdit: true,
       },
       {
         id: 'email',
@@ -69,8 +80,7 @@ const Account = () => {
         name: 'email',
         value: user.email,
         onChange: handleFieldChange,
-        enableEdit: true,
-        onCancele: handleDiscardFieldChanges,
+        allowEdit: user.role.name === 'Admin' ? true : false,
       },
       {
         id: 'phone',
@@ -78,8 +88,8 @@ const Account = () => {
         name: 'phone',
         value: user.phone,
         onChange: handleFieldChange,
-        enableEdit: true,
-        onCancele: handleDiscardFieldChanges,
+        allowEdit: true,
+        inputType: 'tel',
       },
     ]);
   }, [user]);
@@ -97,50 +107,85 @@ const Account = () => {
     });
   };
 
-  const handleDiscardFieldChanges = () => {
-    setUserFields((prev) => {
-      return prev.map((field) => {
-        return { ...field, value: user[field.name] };
-      });
-    });
-  };
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
 
     setImage(file);
   };
 
-  const handleImageUpload = () => {
-    updateProfileImage(image);
+  const handleImageUpload = async () => {
+    if (image && image instanceof File) {
+      const res = await updateProfileImage(image);
+      if (res) {
+        setImage(res.photo);
+      }
+    }
+  };
+
+  const onSaveFieldChanges = () => {
+    const data = userFields.reduce((acc, field) => {
+      return { ...acc, [field.name]: field.value };
+    }, {});
+    updateProfile({ ...data, userId: user.id });
+    setIsEditing(false);
+  };
+
+  const handleDiscardFieldChanges = () => {
+    setUserFields((prev) => {
+      return prev.map((field) => {
+        return { ...field, value: user[field.name] };
+      });
+    });
+    setIsEditing(false);
+  };
+
+  const onChangePassword = async (values, { setSubmitting, resetForm }) => {
+    try {
+      await updatePassword(values);
+      setSubmitting(false);
+      resetForm();
+      setPasswordFields({
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: '',
+      });
+    } catch (error) {
+      console.log(error);
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className="flex flex-col gap-6">
       <section className="bg-white shadow-md p-4 rounded-lg">
-        <form className="flex gap-4">
-          <ImageViewer
-            imageClassName={'rounded-full overflow-hidden'}
-            images={[image]}
-          />
-          <div>
-            <p className="text-xl font-semibold">Cambiar imagen de perfil</p>
+        <h1 className="text-2xl font-bold text-orange-500 mb-2">Mi cuenta</h1>
+        <form className="flex flex-col items-center justify-center gap-4">
+          <div className="flex justify-start w-full">
+            <h2 className="text-lg font-semibold">Imagen del perfil</h2>
             <input
               ref={inputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg, image/png, image/jpg, image/webp"
               hidden
+              className="hidden"
               onChange={handleImageChange}
             />
-            <div className="flex gap-2">
-              <ActionButtons extraActions={extraActions} />
-            </div>
+          </div>
+          <div className="rounded-full ring-4 ring-orange-500 p-1">
+            <ImageViewer
+              containerStyles={
+                'rounded-full overflow-hidden ring-2 ring-stone-100'
+              }
+              images={image ? [image] : ['https://via.placeholder.com/150']}
+            />
+          </div>
+          <div className="flex gap-2">
+            <ActionButtons extraActions={extraActions} />
           </div>
         </form>
-      </section>
-      <section className="bg-white shadow-md p-4 rounded-lg">
-        <div>
-          <h2 className="text-xl font-bold mb-4">Información de la cuenta</h2>
+        <hr className="my-4" />
+        <form>
+          <h2 className="text-lg font-bold mb-4">Información de la cuenta</h2>
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             {user &&
               userFields.map((field) => {
@@ -152,12 +197,77 @@ const Account = () => {
                     name={field.name}
                     value={field.value}
                     onChange={field.onChange}
-                    onCancele={field.onCancele}
-                    enableEdit={field.enableEdit}
+                    allowEdit={field.allowEdit}
+                    isEditing={isEditing}
+                    inputType={field?.inputType}
                   />
                 );
               })}
           </div>
+          <div className="flex flex-col md:flex-row justify-end gap-4 mt-4">
+            {isEditing ? (
+              <ActionButtons
+                extraActions={[
+                  {
+                    label: 'Descartar cambios',
+                    icon: IoMdClose,
+                    action: handleDiscardFieldChanges,
+                    color: 'red',
+                  },
+                  {
+                    label: 'Guardar cambios',
+                    icon: FaSave,
+                    action: onSaveFieldChanges,
+                    color: 'orange',
+                    filled: true,
+                  },
+                ]}
+              />
+            ) : (
+              <ActionButtons
+                extraActions={[
+                  {
+                    label: 'Editar',
+                    icon: AiFillEdit,
+                    action: () => setIsEditing(true),
+                    color: 'stone',
+                  },
+                ]}
+              />
+            )}
+          </div>
+        </form>
+        <hr className="my-4" />
+        {/* section to change password */}
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-bold">
+            <span className="inline-block mr-2">
+              <RiLockPasswordFill size={20} />
+            </span>
+            Cambiar contraseña
+          </h2>
+          <ActionButtons
+            extraActions={[
+              {
+                label: 'Cambiar contraseña',
+                icon: MdPassword,
+                action: () => setIsOpenModal(true),
+                color: 'stone',
+                filled: true,
+              },
+            ]}
+          />
+          <ModalForm
+            isOpenModal={isOpenModal}
+            onClose={() => setIsOpenModal(false)}
+            title={'Cambiar contraseña'}
+            size={'xl'}
+          >
+            <ChangePasswordForm
+              initialValues={passwordFields}
+              onSubmit={onChangePassword}
+            />
+          </ModalForm>
         </div>
       </section>
     </div>

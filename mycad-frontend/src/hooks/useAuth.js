@@ -76,6 +76,7 @@ export const useAuthData = (dispatch) => {
       queryClient.setQueryData('user', data);
       localStorage.setItem('user', JSON.stringify(data));
       Notifies('success', 'Perfil actualizado');
+      dispatch({ type: 'PROFILE_UPDATED', payload: data });
     },
     onError: (error) => {
       Notifies('error', 'Error al actualizar el perfil');
@@ -102,6 +103,7 @@ export const useAuthData = (dispatch) => {
       queryClient.setQueryData('user', data);
       localStorage.setItem('user', JSON.stringify(data));
       Notifies('success', 'Imagen de perfil actualizada');
+      dispatch({ type: 'PROFILE_IMAGE_UPDATED', payload: data });
     },
     onError: (error) => {
       Notifies('error', 'Error al actualizar la imagen de perfil');

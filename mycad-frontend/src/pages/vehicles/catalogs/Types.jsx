@@ -13,7 +13,6 @@ const Types = () => {
     createVehicleType,
     updateVehicleType,
     deleteVehicleType,
-    fetchVehicleTypes,
     loading,
   } = useCatalogContext();
   const [types, setTypes] = useState([]);

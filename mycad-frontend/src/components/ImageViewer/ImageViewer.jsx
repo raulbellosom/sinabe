@@ -17,7 +17,8 @@ const ImageViewer = ({
   onRemove,
   isDownloadable = true,
   renderMenuOptions = [],
-  imageClassName,
+  containerStyles,
+  imageStyles,
 }) => {
   const handleDownloadImage = (img) => {
     downloadFile(img);
@@ -172,14 +173,15 @@ const ImageViewer = ({
           src={
             image instanceof File
               ? FormattedUrlImage(image)
-              : FormattedUrlImage(image.url)
+              : FormattedUrlImage(image?.url || image?.thumbnail || image)
           }
           index={index}
         >
           <div
             className={classNames(
               'relative w-24 h-24 xl:h-28 xl:w-28 2xl:h-32 2xl:w-32',
-              imageClassName,
+              containerStyles,
+              imageStyles,
             )}
           >
             {onRemove && (
@@ -198,11 +200,11 @@ const ImageViewer = ({
               src={
                 image instanceof File
                   ? FormattedUrlImage(image)
-                  : FormattedUrlImage(image?.thumbnail || image.url)
+                  : FormattedUrlImage(image?.thumbnail || image?.url)
               }
               alt={`Image ${index + 1}`}
               className="w-full h-full object-cover cursor-pointer shadow-md rounded-lg"
-              style={{ objectFit: 'cover' }}
+              style={imageStyles}
             />
           </div>
         </PhotoView>

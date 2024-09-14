@@ -12,7 +12,7 @@ import {
   FaCar,
   FaUserCircle,
   FaSignOutAlt,
-  FaUserEdit,
+  FaUserCog,
 } from 'react-icons/fa';
 import { useAuthContext } from '../../context/AuthContext';
 import AccountSidebar from './AccountSidebar';
@@ -231,9 +231,9 @@ const Sidebar = ({ children }) => {
                 Usuarios
               </MenuItem>
               <MenuItem
-                component={<Link to={'/account'} />}
-                active={isActivePath('/account')}
-                icon={<FaUserEdit />}
+                component={<Link to={'/account-settings'} />}
+                active={isActivePath('/account-settings')}
+                icon={<FaUserCog />}
               >
                 Editar Perfil
               </MenuItem>
