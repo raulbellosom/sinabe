@@ -9,7 +9,7 @@ const Card = ({ data = {}, showImage = false }) => {
         {showImage && data.image && (
           <div className="w-24 h-24">
             <ImageViewer
-              imageClassName={'h-20 w-20'}
+              containerStyles={'h-20 w-20'}
               images={[data?.image?.value]}
             />
           </div>

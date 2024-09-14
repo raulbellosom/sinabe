@@ -22,58 +22,63 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 const saveProfileImage = async (req, res, next) => {
-  if (!req.file) {
-    return next();
+  const file = req.file || null;
+  if (!file) {
+    return res.status(400).json({ message: "No image uploaded" });
   }
+  try {
+    const { mimetype, filename } = file;
+    const fileName = path.parse(filename).name;
 
-  const image = req.files["profileImage"] || [];
+    const thumbnailDir = path.join(BASE_PATH, "thumbnails");
+    const mediumDir = path.join(BASE_PATH, "medium");
+    const largeDir = path.join(BASE_PATH, "large");
 
-  const profileImage = await Promise.all(
-    image.map(async (file) => {
-      const { mimetype } = file;
-      const fileName = path.parse(file.filename).name;
+    const thumbnailPath = path.join(
+      thumbnailDir,
+      `${fileName}-thumbnail${path.extname(filename)}`
+    );
+    const mediumPath = path.join(
+      mediumDir,
+      `${fileName}-medium${path.extname(filename)}`
+    );
+    const largePath = path.join(
+      largeDir,
+      `${fileName}-large${path.extname(filename)}`
+    );
 
-      const thumbnailDir = `${BASE_PATH}thumbnails/`;
-      const mediumDir = `${BASE_PATH}medium/`;
-      const largeDir = `${BASE_PATH}large/`;
+    // Crear directorios si no existen
+    if (!fs.existsSync(thumbnailDir))
+      fs.mkdirSync(thumbnailDir, { recursive: true });
+    if (!fs.existsSync(mediumDir)) fs.mkdirSync(mediumDir, { recursive: true });
+    if (!fs.existsSync(largeDir)) fs.mkdirSync(largeDir, { recursive: true });
 
-      const thumbnailPath = `${thumbnailDir}${fileName}-thumbnail.jpg`;
-      const mediumPath = `${mediumDir}${fileName}-medium.jpg`;
-      const largePath = `${largeDir}${fileName}-large.jpg`;
+    await sharp(file.path).resize(150, 150).toFile(thumbnailPath);
+    await sharp(file.path).resize(500, 500).toFile(mediumPath);
+    await sharp(file.path).resize(1000, 1000).toFile(largePath);
 
-      if (!fs.existsSync(thumbnailDir)) {
-        fs.mkdirSync(thumbnailDir, { recursive: true });
-      }
-      if (!fs.existsSync(mediumDir)) {
-        fs.mkdirSync(mediumDir, { recursive: true });
-      }
-      if (!fs.existsSync(largeDir)) {
-        fs.mkdirSync(largeDir, { recursive: true });
-      }
+    const urlRelativePath = path.relative(
+      "src",
+      path.join(BASE_PATH, filename)
+    );
+    const thumbnailRelativePath = path.relative("src", thumbnailPath);
+    const mediumRelativePath = path.relative("src", mediumPath);
+    const largeRelativePath = path.relative("src", largePath);
 
-      await sharp(file.path).resize(150, 150).toFile(thumbnailPath);
+    req.profileImage = {
+      url: urlRelativePath,
+      type: mimetype,
+      metadata: { ...file },
+      thumbnail: thumbnailRelativePath,
+      medium: mediumRelativePath,
+      large: largeRelativePath,
+    };
 
-      await sharp(file.path).resize(500, 500).toFile(mediumPath);
-
-      await sharp(file.path).resize(1000, 1000).toFile(largePath);
-
-      let urlRelativePath = BASE_PATH.replace("src/", "");
-      let thumbnailRelativePath = thumbnailPath.replace("src/", "")[1];
-      let mediumRelativePath = mediumPath.replace("src/", "")[1];
-      let largeRelativePath = largePath.replace("src/", "")[1];
-
-      return {
-        url: `${urlRelativePath}profile/${file.filename}`,
-        type: mimetype,
-        metadata: { ...file },
-        thumbnail: thumbnailRelativePath,
-        medium: mediumRelativePath,
-        large: largeRelativePath,
-      };
-    })
-  );
-  req.profileImage = profileImage;
-  next();
+    next();
+  } catch (error) {
+    console.error("Error processing profile image:", error);
+    return res.status(500).json({ message: "Error processing profile image" });
+  }
 };
 
 export { upload, saveProfileImage };

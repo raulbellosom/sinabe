@@ -1,6 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import MyCAD_ICON from '../../assets/logo/mycad_icon.webp';
+import ImageViewer from '../ImageViewer/ImageViewer';
 
 const AccountSidebar = ({ name, role, photo, collapsed }) => {
   const logoClasses = classNames(
@@ -32,11 +33,11 @@ const AccountSidebar = ({ name, role, photo, collapsed }) => {
           'w-full whitespace-nowrap overflow-hidden flex justify-start gap-4 items-center',
         )}
       >
-        <img
-          src={photo || 'https://via.placeholder.com/150'}
-          alt="User Photo"
-          className={`w-10 h-10 mt-2 rounded-full bg-stone-400`}
-        />
+        <div className="flex justify-center items-center h-10 w-10 overflow-hidden rounded-full bg-stone-400">
+          <ImageViewer
+            images={photo ? [photo] : ['https://via.placeholder.com/150']}
+          />
+        </div>
         <div className={'truncate whitespace-nowrap text-nowrap'}>
           <h2
             className={classNames(

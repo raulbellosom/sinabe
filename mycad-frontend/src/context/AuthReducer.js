@@ -6,6 +6,18 @@ const authReducer = (state, action) => {
         user: action.payload,
         loading: false,
       };
+    case 'PROFILE_UPDATED':
+      return {
+        ...state,
+        user: action.payload,
+        loading: false,
+      };
+    case 'PROFILE_IMAGE_UPDATED':
+      return {
+        ...state,
+        user: action.payload,
+        loading: false,
+      };
     case 'LOGIN_SUCCESS':
       return {
         ...state,

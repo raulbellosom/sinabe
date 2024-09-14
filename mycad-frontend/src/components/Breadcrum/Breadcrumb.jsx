@@ -11,8 +11,8 @@ const Breadcrumbs = ({ breadcrumbs = [] }) => {
         to="/"
         className="text-neutral-700 hover:text-indigo-900 cursor-pointer p-0 m-0 group flex items-center"
       >
-        <HiHome className="mr-2 h-4 w-4" />
-        <span className="text-sm font-semibold">Home</span>
+        <HiHome className="h-4 w-4 p-0" />
+        <span className="text-sm font-semibold">&nbsp;</span>
       </Link>
       {breadcrumbs &&
         breadcrumbs?.map((route, index) => (

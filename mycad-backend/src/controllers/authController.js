@@ -39,10 +39,12 @@ export const login = async (req, res) => {
   try {
     const user = await db.user.findUnique({
       where: { email },
-      include: { role: true },
+      include: { role: true, photo: true },
     });
 
     if (user && (await bcrypt.compare(password, user.password))) {
+      user.password = undefined;
+      user.photo = user?.photo?.[0] || null;
       res.json({
         user,
         token: generateToken(user.id),
@@ -60,14 +62,17 @@ export const loadUser = async (req, res) => {
 
   try {
     if (user) {
-      const loadedUser = await db.user.findUnique({
+      const loadedUser = await db.user.findFirst({
         where: { id: user.id },
-        include: { role: true },
+        include: { role: true, photo: true },
       });
+
+      loadedUser.password = undefined;
+      loadedUser.photo = loadedUser?.photo?.[0] || null;
 
       res.json(loadedUser);
     } else {
-      res.status(401).json({ message: "Not authorized, token failed 3" });
+      res.status(401).json({ message: "Not authorized, token failed" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -79,21 +84,21 @@ export const logout = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  const { user } = req;
-  const { firstName, lastName, email, password } = req.body;
-
+  const { firstName, lastName, email, phone, userId } = req.body;
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const updatedUser = await db.user.update({
-      where: { id: user.id },
+      where: { id: userId },
       data: {
         firstName,
         lastName,
         email,
-        password: hashedPassword,
+        phone,
       },
+      include: { role: true, photo: true },
     });
+
+    updatedUser.password = undefined;
+    updatedUser.photo = updatedUser?.photo?.[0] || null;
 
     res.json(updatedUser);
   } catch (error) {
@@ -103,15 +108,48 @@ export const updateProfile = async (req, res) => {
 
 export const updateProfileImage = async (req, res) => {
   const { user } = req;
-  const { profileImage } = req.body;
-
+  const { profileImage } = req;
   try {
-    const updatedUser = await db.user.update({
-      where: { id: user.id },
+    if (!profileImage) {
+      res.status(400).json({ message: "No file uploaded" });
+      return;
+    }
+    const currentUserImage = await db.userImage.findFirst({
+      where: { userId: user.id, enabled: true },
+    });
+
+    await db.userImage.create({
       data: {
-        profileImage,
+        url: profileImage.url,
+        thumbnail: profileImage.thumbnail,
+        medium: profileImage.medium,
+        large: profileImage.large,
+        type: profileImage.type,
+        metadata: profileImage.metadata,
+        enabled: true,
+        userId: user.id,
       },
     });
+
+    if (currentUserImage) {
+      await db.userImage.update({
+        where: { id: currentUserImage.id },
+        data: { enabled: false },
+      });
+    }
+
+    const updatedUser = await db.user.findUnique({
+      where: { id: user.id },
+      include: {
+        role: true,
+        photo: {
+          where: { enabled: true },
+        },
+      },
+    });
+
+    updatedUser.password = undefined;
+    updatedUser.photo = updatedUser?.photo?.[0] || null;
 
     res.json(updatedUser);
   } catch (error) {
@@ -121,10 +159,17 @@ export const updateProfileImage = async (req, res) => {
 
 export const updatePassword = async (req, res) => {
   const { user } = req;
-  const { password } = req.body;
-
+  const { currentPassword, newPassword } = req.body;
+  console.log(currentPassword, newPassword);
   try {
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isValid) {
+      res.status(400).json({ message: "Invalid current password" });
+      return;
+    }
+
+    const isMatch = await bcrypt.compare(newPassword, user.password);
 
     if (isMatch) {
       res
@@ -133,14 +178,18 @@ export const updatePassword = async (req, res) => {
       return;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     const updatedUser = await db.user.update({
       where: { id: user.id },
       data: {
         password: hashedPassword,
       },
+      include: { role: true, photo: true },
     });
+
+    updatedUser.password = undefined;
+    updatedUser.photo = updatedUser?.photo?.[0] || null;
 
     res.json(updatedUser);
   } catch (error) {

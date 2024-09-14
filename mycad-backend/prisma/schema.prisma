@@ -9,18 +9,18 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
+  id        String            @id @default(uuid())
   firstName String
   lastName  String
-  email     String    @unique
+  email     String            @unique
   phone     String?
   password  String
-  photo     String?
+  photo     UserImage[]       @relation("UserImages")
   roleId    Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
   enabled   Boolean
-  role      Role      @relation(fields: [roleId], references: [id])
+  role      Role              @relation(fields: [roleId], references: [id])
   vehicles  Vehicle[]
 
   @@index([roleId], map: "User_roleId_fkey")
@@ -186,4 +186,20 @@ model Image {
   vehicle   Vehicle? @relation("VehicleImages", fields: [vehicleId], references: [id])
 
   @@index([vehicleId])
+}
+
+model UserImage {
+  id        String   @id @default(uuid())
+  url       String
+  thumbnail String?
+  medium    String?
+  large     String?
+  type      String
+  metadata  Json?
+  enabled   Boolean
+  createdAt DateTime @default(now())
+  userId    String?
+  user      User?    @relation("UserImages", fields: [userId], references: [id])
+
+  @@index([userId])
 }

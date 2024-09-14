@@ -1,4 +1,4 @@
-import { FaCar, FaUserCircle, FaUserEdit } from 'react-icons/fa';
+import { FaCar, FaUserCircle, FaUserCog } from 'react-icons/fa';
 import { HiHome } from 'react-icons/hi';
 import { MdChecklist } from 'react-icons/md';
 import { PiStackPlusFill } from 'react-icons/pi';
@@ -69,9 +69,9 @@ const BreadcrumbsBuilder = (path) => {
       icon: null,
     },
     {
-      label: 'Perfil',
-      href: '/profile',
-      icon: FaUserEdit,
+      label: 'Configuracion de la Cuenta',
+      href: '/account-settings',
+      icon: FaUserCog,
     },
   ];
 
