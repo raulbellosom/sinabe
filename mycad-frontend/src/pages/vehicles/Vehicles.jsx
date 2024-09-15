@@ -453,14 +453,21 @@ const Vehicles = () => {
                     image: { key: 'Imagen', value: vehicle?.images[0] ?? [] },
                     title: {
                       key: 'Vehiculo',
-                      value: `${vehicle.model.name} ${vehicle.model.year} (${vehicle.model.brand.name} ${vehicle.model.type.name})`,
+                      value: `${vehicle.model.name} ${vehicle.model.year}`,
                     },
-                    subtitle: { key: 'Año', value: vehicle.economicNumber },
+                    subtitle: {
+                      key: 'Marca y Tipo',
+                      value: `${vehicle.model.brand.name} ${vehicle.model.type.name}`,
+                    },
                     tags: {
                       key: 'Condiciones',
                       value: vehicle.conditions.map(
                         (condition) => condition.condition.name,
                       ),
+                    },
+                    economicNumber: {
+                      key: 'Número económico',
+                      value: vehicle.economicNumber,
                     },
                     serialNumber: {
                       key: 'Número de serie',

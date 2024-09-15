@@ -92,7 +92,6 @@ export const updateProfile = async (profile) => {
 
 export const updatePassword = async (passwords) => {
   try {
-    console.log(passwords);
     const response = await api.put('/auth/updatePassword', passwords);
     return response.data;
   } catch (error) {

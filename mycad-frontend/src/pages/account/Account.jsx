@@ -26,6 +26,7 @@ const Account = () => {
     confirmNewPassword: '',
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (image && image instanceof File && image !== user?.photo) {
@@ -149,8 +150,12 @@ const Account = () => {
         newPassword: '',
         confirmNewPassword: '',
       });
+      setIsOpenModal(false);
     } catch (error) {
       console.log(error);
+      setError(
+        error.response?.data?.message || 'Error al actualizar la contraseña',
+      );
       setSubmitting(false);
     }
   };
@@ -179,7 +184,7 @@ const Account = () => {
               images={image ? [image] : ['https://via.placeholder.com/150']}
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col md:flex-row justify-start gap-2">
             <ActionButtons extraActions={extraActions} />
           </div>
         </form>
@@ -238,7 +243,6 @@ const Account = () => {
           </div>
         </form>
         <hr className="my-4" />
-        {/* section to change password */}
         <div className="flex flex-col gap-4">
           <h2 className="text-lg font-bold">
             <span className="inline-block mr-2">
@@ -266,6 +270,7 @@ const Account = () => {
             <ChangePasswordForm
               initialValues={passwordFields}
               onSubmit={onChangePassword}
+              error={error}
             />
           </ModalForm>
         </div>
