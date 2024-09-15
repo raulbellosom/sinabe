@@ -6,7 +6,7 @@ import ModalViewer from '../../components/Modals/ModalViewer';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import { useNavigate } from 'react-router-dom';
 import { LuFileSpreadsheet } from 'react-icons/lu';
-import { FaEdit, FaEye, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaEye } from 'react-icons/fa';
 import { Checkbox, Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchVehicles } from '../../services/api';
@@ -411,30 +411,23 @@ const Vehicles = () => {
                               return (
                                 <T.Cell className="py-2" key={column.id}>
                                   <div className="flex justify-center items-center gap-2">
+                                    <LinkButton
+                                      route={`/vehicles/edit/${vehicle.id}`}
+                                      label="Editar"
+                                      icon={FaEdit}
+                                      color="yellow"
+                                    />
+                                    <LinkButton
+                                      route={`/vehicles/view/${vehicle.id}`}
+                                      label="Ver"
+                                      icon={FaEye}
+                                      color="cyan"
+                                    />
                                     <ActionButtons
-                                      extraActions={[
-                                        {
-                                          label: 'Ver',
-                                          icon: FaEye,
-                                          color: 'cyan',
-                                          href: `/vehicles/view/${vehicle.id}`,
-                                        },
-                                        {
-                                          label: 'Editar',
-                                          icon: FaEdit,
-                                          color: 'yellow',
-                                          href: `/vehicles/edit/${vehicle.id}`,
-                                        },
-                                        {
-                                          label: 'Eliminar',
-                                          icon: FaTrash,
-                                          color: 'red',
-                                          action: () => {
-                                            setIsOpenModal(true);
-                                            setVehicleId(vehicle.id);
-                                          },
-                                        },
-                                      ]}
+                                      onRemove={() => {
+                                        setIsOpenModal(true);
+                                        setVehicleId(vehicle.id);
+                                      }}
                                     />
                                   </div>
                                 </T.Cell>
