@@ -39,7 +39,12 @@ export const login = async (req, res) => {
   try {
     const user = await db.user.findUnique({
       where: { email },
-      include: { role: true, photo: true },
+      include: {
+        role: true,
+        photo: {
+          where: { enabled: true },
+        },
+      },
     });
 
     if (user && (await bcrypt.compare(password, user.password))) {
@@ -64,7 +69,12 @@ export const loadUser = async (req, res) => {
     if (user) {
       const loadedUser = await db.user.findFirst({
         where: { id: user.id },
-        include: { role: true, photo: true },
+        include: {
+          role: true,
+          photo: {
+            where: { enabled: true },
+          },
+        },
       });
 
       loadedUser.password = undefined;
@@ -94,7 +104,12 @@ export const updateProfile = async (req, res) => {
         email,
         phone,
       },
-      include: { role: true, photo: true },
+      include: {
+        role: true,
+        photo: {
+          where: { enabled: true },
+        },
+      },
     });
 
     updatedUser.password = undefined;
@@ -130,8 +145,9 @@ export const updateProfileImage = async (req, res) => {
         userId: user.id,
       },
     });
-
     if (currentUserImage) {
+      console.log("entre aqui");
+      console.log("currentUserImage", currentUserImage);
       await db.userImage.update({
         where: { id: currentUserImage.id },
         data: { enabled: false },
@@ -165,16 +181,16 @@ export const updatePassword = async (req, res) => {
     const isValid = await bcrypt.compare(currentPassword, user.password);
 
     if (!isValid) {
-      res.status(400).json({ message: "Invalid current password" });
+      res.status(400).json({ message: "Contraseña actual invalida" });
       return;
     }
 
     const isMatch = await bcrypt.compare(newPassword, user.password);
 
     if (isMatch) {
-      res
-        .status(400)
-        .json({ message: "Password is the same as current password" });
+      res.status(400).json({
+        message: "La contraseña actual no puede ser la misma que la anterior.",
+      });
       return;
     }
 
@@ -185,13 +201,18 @@ export const updatePassword = async (req, res) => {
       data: {
         password: hashedPassword,
       },
-      include: { role: true, photo: true },
+      include: {
+        role: true,
+        photo: {
+          where: { enabled: true },
+        },
+      },
     });
 
     updatedUser.password = undefined;
     updatedUser.photo = updatedUser?.photo?.[0] || null;
 
-    res.json(updatedUser);
+    res.status(200).json(updatedUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

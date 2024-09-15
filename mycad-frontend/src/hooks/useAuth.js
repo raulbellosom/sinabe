@@ -87,11 +87,13 @@ export const useAuthData = (dispatch) => {
   const updatePasswordMutation = useMutation({
     mutationFn: updatePassword,
     onMutate: () => setLoading(true),
-    onSuccess: () => {
+    onSuccess: (data) => {
       Notifies('success', 'Contraseña actualizada');
+      return data;
     },
     onError: (error) => {
       Notifies('error', 'Error al actualizar la contraseña');
+      return error;
     },
     onSettled: () => setLoading(false),
   });

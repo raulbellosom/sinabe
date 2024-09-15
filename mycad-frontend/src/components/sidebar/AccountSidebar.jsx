@@ -36,6 +36,11 @@ const AccountSidebar = ({ name, role, photo, collapsed }) => {
         <div className="flex justify-center items-center h-10 w-10 overflow-hidden rounded-full bg-stone-400">
           <ImageViewer
             images={photo ? [photo] : ['https://via.placeholder.com/150']}
+            imageStyles={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
           />
         </div>
         <div className={'truncate whitespace-nowrap text-nowrap'}>

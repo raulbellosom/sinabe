@@ -2,13 +2,14 @@ import React, { useRef } from 'react';
 import { FormikProvider, useFormik, Form } from 'formik';
 import { ChangePasswordSchema } from './ChangePasswordSchema';
 import ChangePasswordFormFields from './ChangePasswordFormFields';
-import { Button } from 'flowbite-react';
-import { FaRegTrashAlt, FaSave } from 'react-icons/fa';
+import { Badge } from 'flowbite-react';
+import { FaRegTrashAlt } from 'react-icons/fa';
 import ResetPassowrd from '../../../assets/images/Reset-Password.svg';
 import ActionButtons from '../../ActionButtons/ActionButtons';
 import { RiLockPasswordFill } from 'react-icons/ri';
+import { BiError } from 'react-icons/bi';
 
-const ChangePasswordForm = ({ initialValues, onSubmit }) => {
+const ChangePasswordForm = ({ initialValues, onSubmit, error }) => {
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: initialValues,
@@ -30,7 +31,13 @@ const ChangePasswordForm = ({ initialValues, onSubmit }) => {
           Completa los campos para cambiar tu contraseña
         </p>
         <ChangePasswordFormFields />
-        <div className="flex justify-end items-center space-x-4 pt-4">
+        {error && (
+          <Badge size={'sm'} color="red" className="text-center">
+            <BiError className="inline-block mr-2 mb-1" size={20} />
+            {error}
+          </Badge>
+        )}
+        <div className="flex flex-col md:flex-row justify-end items-center gap-4 pt-4">
           <ActionButtons
             extraActions={[
               {

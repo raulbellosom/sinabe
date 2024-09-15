@@ -6,7 +6,7 @@ export const ChangePasswordSchema = Yup.object().shape({
     .required('La nueva contraseña es requerida')
     .min(8, 'La contraseña debe tener al menos 8 caracteres')
     .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/,
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]{8,}$/,
       'La contraseña debe tener al menos una mayúscula, una minúscula y un número',
     ),
   confirmNewPassword: Yup.string()
