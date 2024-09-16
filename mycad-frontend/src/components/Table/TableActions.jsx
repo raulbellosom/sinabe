@@ -4,6 +4,8 @@ import { TextInput, Dropdown } from 'flowbite-react';
 import { TbFilter } from 'react-icons/tb';
 import { LuSearch } from 'react-icons/lu';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
+import ActionButtons from '../ActionButtons/ActionButtons';
+import { IoMdRefresh } from 'react-icons/io';
 
 const TableActions = ({
   handleSearchTerm,
@@ -13,6 +15,7 @@ const TableActions = ({
   deepSearch,
   setDeepSearch,
   filters,
+  onRefreshData,
 }) => {
   const CustomDropdownItem = ({ name }) => {
     return (
@@ -34,8 +37,8 @@ const TableActions = ({
     );
   };
   return (
-    <div className="w-full flex flex-wrap gap-4 justify-stretch">
-      <div className="w-full flex gap-4 justify-between">
+    <div className="w-full flex flex-wrap gap-4 md:gap-2 justify-stretch">
+      <div className="w-full flex flex-col md:flex-row gap-4 md:gap-2 justify-between">
         <div className="w-full md:w-[40vw]">
           <form className="flex items-center">
             <div className="relative w-full">
@@ -49,53 +52,63 @@ const TableActions = ({
                   backgroundColor: 'transparent',
                   borderRadius: '5px',
                   border: '1px solid #e2e8f0',
+                  height: '36px',
                 }}
               />
             </div>
           </form>
         </div>
-        {filters && (
-          <div className="flex justify-end">
-            <Dropdown
-              renderTrigger={() => (
-                <button className={getButtonClassNames('indigo', false)}>
-                  <i>
-                    <TbFilter size={18} />
-                  </i>
-                  <span className="ml-2">Filtrar</span>
-                </button>
-              )}
-              placement="bottom-end"
-              className="w-fit"
-              outline
-            >
-              <>
-                <div className="flex items-center px-4 py-2">
-                  <h2 className="text-sm font-semibold">
-                    Filtrar por Condiciones
-                  </h2>
-                </div>
-                <Dropdown.Divider />
-                <CustomDropdownItem
-                  key="all"
-                  name={
-                    filters?.length === selectedFilters?.length
-                      ? 'Quitar todos'
-                      : 'Seleccionar todos'
-                  }
-                />
-                <Dropdown.Divider />
-                {filters &&
-                  filters?.map((condition) => (
-                    <CustomDropdownItem
-                      key={condition?.id}
-                      name={condition?.name}
-                    />
-                  ))}
-              </>
-            </Dropdown>
-          </div>
-        )}
+        <div className="flex justify-end gap-4 md:gap-2 h-full">
+          <Dropdown
+            renderTrigger={() => (
+              <button className={getButtonClassNames('indigo', false)}>
+                <i>
+                  <TbFilter size={18} />
+                </i>
+                <span className="ml-2">Filtrar</span>
+              </button>
+            )}
+            placement="left-start"
+            className="w-fit"
+            outline
+          >
+            <>
+              <div className="flex items-center px-4 py-2">
+                <h2 className="text-sm font-semibold">
+                  Filtrar por Condiciones
+                </h2>
+              </div>
+              <Dropdown.Divider />
+              <CustomDropdownItem
+                key="all"
+                name={
+                  filters?.length === selectedFilters?.length
+                    ? 'Quitar todos'
+                    : 'Seleccionar todos'
+                }
+              />
+              <Dropdown.Divider />
+              {filters &&
+                filters?.map((condition) => (
+                  <CustomDropdownItem
+                    key={condition?.id}
+                    name={condition?.name}
+                  />
+                ))}
+            </>
+          </Dropdown>
+          <ActionButtons
+            extraActions={[
+              {
+                label: 'Refrescar',
+                action: onRefreshData || null,
+                color: 'stone',
+                icon: IoMdRefresh,
+                filled: true,
+              },
+            ]}
+          />
+        </div>
       </div>
       {deepSearch && (
         <div className="w-full col-span-12 whitespace-nowrap flex flex-wrap">

@@ -24,7 +24,7 @@ const VehicleReducer = (state, action) => {
     case 'CREATE_MULTIPLE_VEHICLES':
       return {
         ...state,
-        vehicles: action.payload,
+        vehicles: [...state.vehicles, ...action.payload?.createdVehicles],
         loading: false,
       };
     case 'UPDATE_VEHICLE':

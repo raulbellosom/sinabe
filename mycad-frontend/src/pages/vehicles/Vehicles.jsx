@@ -43,17 +43,6 @@ const formatVehicle = (vehicleData) => {
     cost,
   } = vehicleData;
   const vehicle = `\n${model.name},${model.type.name},${model.brand.name},${model.year},${economicNumber},${serialNumber},${plateNumber},${acquisitionDate},${cost}`;
-  /* let vehicle = {
-    name: model.name,
-    type: model.type.name,
-    brand: model.brand.name,
-    year: model.year,
-    economicNumber,
-    serialNumber,
-    plateNumber,
-    acquisitionDate,
-    cost
-  } */
   return vehicle;
 };
 
@@ -69,6 +58,7 @@ const Vehicles = () => {
   const [isOpenModalUpload, setIsOpenModalUpload] = useState(false);
   const [vehicleId, setVehicleId] = useState(null);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
+  const [refreshData, setRefreshData] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
     searchTerm: '',
     pageSize: 5,
@@ -92,7 +82,8 @@ const Vehicles = () => {
 
   useEffect(() => {
     refetch();
-  }, [searchFilters]);
+    setRefreshData(false);
+  }, [searchFilters, refreshData]);
 
   const goOnPrevPage = useCallback(() => {
     setSearchFilters((prevState) => {
@@ -264,6 +255,12 @@ const Vehicles = () => {
       Notifies('error', 'Selecciona los vehículos a descargar');
     }
   };
+
+  const handleGetChanges = () => {
+    setRefreshData(true);
+    Notifies('success', 'Vehículos actualizados');
+  };
+
   return (
     <>
       <section className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
@@ -271,7 +268,7 @@ const Vehicles = () => {
           title="Vehículos"
           actions={[
             {
-              label: 'Exportar',
+              label: 'Descargar',
               action: downloadVehiclesCSV,
               color: 'green',
               icon: LuFileSpreadsheet,
@@ -296,10 +293,12 @@ const Vehicles = () => {
           handleSearchTerm={handleSearch}
           onCheckFilter={onCheckFilter}
           selectedFilters={searchFilters?.conditionName}
+          filters={vehicleConditions}
           headers={columns}
           deepSearch={searchFilters?.deepSearch}
           setDeepSearch={handleDeepSearch}
           vehicleConditions={vehicleConditions}
+          onRefreshData={handleGetChanges}
         />
         {vehicles && !isPending ? (
           vehicles?.data?.length > 0 ? (

@@ -301,7 +301,6 @@ const TableSearchByHeader = ({
                   color: 'gray',
                   icon: FaTrashAlt,
                 },
-
                 {
                   label: 'Agregar búsqueda',
                   action: handleSearch,

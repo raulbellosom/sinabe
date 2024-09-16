@@ -15,6 +15,8 @@ import { Table as T } from 'flowbite-react';
 import TableFooter from '../../../components/Table/TableFooter';
 import Card from '../../../components/Card/Card';
 import ActionButtons from '../../../components/ActionButtons/ActionButtons';
+import CreateMultipleModels from './CreateMultipleModels';
+import Notifies from '../../../components/Notifies/Notifies';
 const Table = React.lazy(() => import('../../../components/Table/Table'));
 const ModelForm = React.lazy(
   () => import('../../../components/VehicleComponents/ModelForm/ModelForm'),
@@ -31,6 +33,8 @@ const Models = () => {
   const [columns, setColumns] = useState([...modelColumns]);
   const lastChange = useRef();
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [createMultipleModelsModal, setCreateMultipleModelsModal] =
+    useState(false);
   const [editMode, setEditMode] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const [deleteModelId, setDeleteModelId] = useState(null);
@@ -41,7 +45,8 @@ const Models = () => {
     year: '',
     id: '',
   });
-  const [vehicleId, setVehicleId] = useState(null);
+  // const [vehicleId, setVehicleId] = useState(null);
+  const [refreshData, setRefreshData] = useState(false);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const [searchFilters, setSearchFilters] = useState({
     searchTerm: '',
@@ -64,7 +69,8 @@ const Models = () => {
 
   useEffect(() => {
     refetch();
-  }, [searchFilters]);
+    setRefreshData(false);
+  }, [searchFilters, refreshData]);
 
   const goOnPrevPage = useCallback(() => {
     setSearchFilters((prevState) => {
@@ -198,6 +204,11 @@ const Models = () => {
     }
   };
 
+  const handleRefreshData = () => {
+    setRefreshData(true);
+    Notifies('success', 'Datos actualizados correctamente');
+  };
+
   return (
     <div className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
       <TableHeader
@@ -205,7 +216,7 @@ const Models = () => {
         actions={[
           {
             label: 'Cargar',
-            action: () => console.log('clic'),
+            action: () => setCreateMultipleModelsModal(true),
             color: 'blue',
             icon: MdOutlineFileUpload,
           },
@@ -218,7 +229,11 @@ const Models = () => {
           },
         ]}
       />
-      <TableActions handleSearchTerm={handleSearch} headers={columns} />
+      <TableActions
+        onRefreshData={handleRefreshData}
+        handleSearchTerm={handleSearch}
+        headers={columns}
+      />
       {models && !isPending ? (
         models?.data?.length > 0 ? (
           <>
@@ -332,6 +347,15 @@ const Models = () => {
         onCloseModal={() => setIsRemoveModalOpen(false)}
         removeFunction={handleRemoveModel}
       />
+      {createMultipleModelsModal && (
+        <ModalForm
+          onClose={() => setCreateMultipleModelsModal(false)}
+          title="Cargar múltiples modelos"
+          isOpenModal={createMultipleModelsModal}
+        >
+          <CreateMultipleModels />
+        </ModalForm>
+      )}
     </div>
   );
 };
