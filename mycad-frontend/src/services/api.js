@@ -9,7 +9,6 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-// append access control allow origin header
 api.interceptors.request.use(
   (config) => {
     config.headers['Access-Control-Allow-Origin'] = '*';
@@ -20,7 +19,6 @@ api.interceptors.request.use(
   },
 );
 
-// Interceptor to add token to headers
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -117,78 +115,118 @@ export const updateProfileImage = async (profileImage) => {
 };
 
 export const getUsers = async () => {
-  const response = await api.get(`/users`);
-  return response.data;
+  try {
+    const response = await api.get(`/users`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const createUser = async (user) => {
-  const response = await api.post(`/users`, user);
-  return response.data;
+  try {
+    const response = await api.post(`/users`, user);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const updateUser = async (user) => {
-  const response = await api.put(`/users/${user.id}`, user);
-  return response.data;
+  try {
+    const response = await api.put(`/users/${user.id}`, user);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const deleteUser = async (userId) => {
-  const response = await api.delete(`/users/${userId}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getVehicles = async () => {
-  const response = await api.get(`/vehicles`);
-  return response.data;
+  try {
+    const response = await api.get(`/vehicles`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getVehicle = async ({ id: vehicleId, signal }) => {
-  const response = await api.get(`/vehicles/${vehicleId}`, { signal });
-  return response.data;
+  try {
+    const response = await api.get(`/vehicles/${vehicleId}`, { signal });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const createVehicle = async (vehicle) => {
-  let data = new FormData();
+  try {
+    let data = new FormData();
 
-  if (vehicle.images && vehicle.images.length > 0) {
-    vehicle.images.forEach((image) => {
-      data.append('images', image);
-    });
+    if (vehicle.images && vehicle.images.length > 0) {
+      vehicle.images.forEach((image) => {
+        data.append('images', image);
+      });
+    }
+
+    if (vehicle.files && vehicle.files.length > 0) {
+      vehicle.files.forEach((file) => {
+        data.append('files', file);
+      });
+    }
+
+    data.append('vehicle', JSON.stringify(vehicle));
+    const response = await api.post(`/vehicles`, data, headerFormData);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
-
-  if (vehicle.files && vehicle.files.length > 0) {
-    vehicle.files.forEach((file) => {
-      data.append('files', file);
-    });
-  }
-
-  data.append('vehicle', JSON.stringify(vehicle));
-  const response = await api.post(`/vehicles`, data, headerFormData);
-  return response.data;
 };
 
 export const updateVehicle = async (vehicle) => {
-  const id = vehicle.id;
-  let data = new FormData();
-  let currentImages = vehicle.images.filter((image) => image instanceof File);
-  vehicle.images = vehicle.images.filter((image) => !(image instanceof File));
-  let currentFiles = vehicle.files.filter((file) => file instanceof File);
-  vehicle.files = vehicle.files.filter((file) => !(file instanceof File));
+  try {
+    const id = vehicle.id;
+    let data = new FormData();
+    let currentImages = vehicle.images.filter((image) => image instanceof File);
+    vehicle.images = vehicle.images.filter((image) => !(image instanceof File));
+    let currentFiles = vehicle.files.filter((file) => file instanceof File);
+    vehicle.files = vehicle.files.filter((file) => !(file instanceof File));
 
-  if (currentImages && currentImages.length > 0) {
-    currentImages.forEach((image) => {
-      data.append('images', image);
-    });
+    if (currentImages && currentImages.length > 0) {
+      currentImages.forEach((image) => {
+        data.append('images', image);
+      });
+    }
+
+    if (currentFiles && currentFiles.length > 0) {
+      currentFiles.forEach((file) => {
+        data.append('files', file);
+      });
+    }
+
+    data.append('vehicle', JSON.stringify(vehicle));
+    const response = await api.put(`/vehicles/${id}`, data, headerFormData);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
-
-  if (currentFiles && currentFiles.length > 0) {
-    currentFiles.forEach((file) => {
-      data.append('files', file);
-    });
-  }
-
-  data.append('vehicle', JSON.stringify(vehicle));
-  const response = await api.put(`/vehicles/${id}`, data, headerFormData);
-  return response.data;
 };
 
 export const deleteVehicle = async (vehicleId) => {
@@ -236,47 +274,98 @@ export const searchVehicles = async ({
 };
 
 export const createMultipleVehicles = async (csvFile, userId) => {
-  let data = new FormData();
+  try {
+    let data = new FormData();
 
-  data.append('csvFile', csvFile);
-  data.append('userId', JSON.stringify(userId));
+    data.append('csvFile', csvFile);
+    data.append('userId', JSON.stringify(userId));
 
-  const response = await api.post(
-    `/vehicles/createMultipleVehicles`,
-    data,
-    headerFormData,
-  );
-  return response.data;
+    const response = await api.post(
+      `/vehicles/createMultipleVehicles`,
+      data,
+      headerFormData,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getVehicleModels = async () => {
-  const response = await api.get(`/vehicles/vehicleModels`);
-  return response.data;
+  try {
+    const response = await api.get(`/vehicles/vehicleModels`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getVehicleModel = async (vehicleModelId) => {
-  const response = await api.post(`/vehicles/vehicleModels/${vehicleModelId}`);
-  return response.data;
+  try {
+    const response = await api.post(
+      `/vehicles/vehicleModels/${vehicleModelId}`,
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const createVehicleModel = async (vehicleModel) => {
-  const response = await api.post(`/vehicles/vehicleModels`, vehicleModel);
-  return response.data;
+  try {
+    const response = await api.post(`/vehicles/vehicleModels`, vehicleModel);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const updateVehicleModel = async (vehicleModel) => {
-  const response = await api.put(
-    `/vehicles/vehicleModels/${vehicleModel.id}`,
-    vehicleModel,
-  );
-  return response.data;
+  try {
+    const response = await api.put(
+      `/vehicles/vehicleModels/${vehicleModel.id}`,
+      vehicleModel,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const deleteVehicleModel = async (vehicleModelId) => {
-  const response = await api.delete(
-    `/vehicles/vehicleModels/${vehicleModelId}`,
-  );
-  return response.data;
+  try {
+    const response = await api.delete(
+      `/vehicles/vehicleModels/${vehicleModelId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const createMultipleModels = async (csvFile) => {
+  try {
+    let data = new FormData();
+
+    data.append('csvFile', csvFile);
+
+    const response = await api.post(
+      `/vehicles/vehicleModels/createMultipleModels`,
+      data,
+      headerFormData,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const searchModels = async ({
@@ -309,105 +398,189 @@ export const searchModels = async ({
 };
 
 export const getVehicleTypes = async () => {
-  const response = await api.get(`/vehicles/vehicleTypes`);
-  return response.data;
+  try {
+    const response = await api.get(`/vehicles/vehicleTypes`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getVehicleType = async (vehicleTypeId) => {
-  const response = await api.post(`/vehicles/vehicleTypes/${vehicleTypeId}`);
-  return response.data;
+  try {
+    const response = await api.post(`/vehicles/vehicleTypes/${vehicleTypeId}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const createVehicleType = async (vehicleType) => {
-  const response = await api.post(`/vehicles/vehicleTypes`, vehicleType);
-  return response.data;
+  try {
+    const response = await api.post(`/vehicles/vehicleTypes`, vehicleType);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const updateVehicleType = async (vehicleType) => {
-  const response = await api.put(
-    `/vehicles/vehicleTypes/${vehicleType.id}`,
-    vehicleType,
-  );
-  return response.data;
+  try {
+    const response = await api.put(
+      `/vehicles/vehicleTypes/${vehicleType.id}`,
+      vehicleType,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const deleteVehicleType = async (vehicleTypeId) => {
-  const response = await api.delete(`/vehicles/vehicleTypes/${vehicleTypeId}`);
-  return response.data;
+  try {
+    const response = await api.delete(
+      `/vehicles/vehicleTypes/${vehicleTypeId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getVehicleBrands = async () => {
-  const response = await api.get(`/vehicles/vehicleBrands`);
-  return response.data;
+  try {
+    const response = await api.get(`/vehicles/vehicleBrands`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getVehicleBrand = async (vehicleBrandId) => {
-  const response = await api.post(`/vehicles/vehicleBrands/${vehicleBrandId}`);
-  return response.data;
+  try {
+    const response = await api.post(
+      `/vehicles/vehicleBrands/${vehicleBrandId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const createVehicleBrand = async (vehicleBrand) => {
-  const response = await api.post(`/vehicles/vehicleBrands`, vehicleBrand);
-  return response.data;
+  try {
+    const response = await api.post(`/vehicles/vehicleBrands`, vehicleBrand);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const updateVehicleBrand = async (vehicleBrand) => {
-  const response = await api.put(
-    `/vehicles/vehicleBrands/${vehicleBrand.id}`,
-    vehicleBrand,
-  );
-  return response.data;
+  try {
+    const response = await api.put(
+      `/vehicles/vehicleBrands/${vehicleBrand.id}`,
+      vehicleBrand,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const deleteVehicleBrand = async (vehicleBrandId) => {
-  const response = await api.delete(
-    `/vehicles/vehicleBrands/${vehicleBrandId}`,
-  );
-  return response.data;
+  try {
+    const response = await api.delete(
+      `/vehicles/vehicleBrands/${vehicleBrandId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getVehicleConditions = async () => {
-  const response = await api.get(`/vehicles/vehicleConditions`);
-  return response.data;
+  try {
+    const response = await api.get(`/vehicles/vehicleConditions`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getVehicleCondition = async (vehicleConditionId) => {
-  const response = await api.post(
-    `/vehicles/vehicleConditions/${vehicleConditionId}`,
-  );
-  return response.data;
+  try {
+    const response = await api.post(
+      `/vehicles/vehicleConditions/${vehicleConditionId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const createVehicleCondition = async (vehicleCondition) => {
-  const response = await api.post(
-    `/vehicles/vehicleConditions`,
-    vehicleCondition,
-  );
-  return response.data;
+  try {
+    const response = await api.post(
+      `/vehicles/vehicleConditions`,
+      vehicleCondition,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const updateVehicleCondition = async (vehicleCondition) => {
-  const response = await api.put(
-    `/vehicles/vehicleConditions/${vehicleCondition.id}`,
-    vehicleCondition,
-  );
-  return response.data;
+  try {
+    const response = await api.put(
+      `/vehicles/vehicleConditions/${vehicleCondition.id}`,
+      vehicleCondition,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const deleteVehicleCondition = async (vehicleConditionId) => {
-  const response = await api.delete(
-    `/vehicles/vehicleConditions/${vehicleConditionId}`,
-  );
-  return response.data;
+  try {
+    const response = await api.delete(
+      `/vehicles/vehicleConditions/${vehicleConditionId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export const downloadFile = async (file) => {
-  const response = await api.get(file.url, {
-    responseType: 'blob',
-  });
-  const fileName = `${file?.metadata?.originalname || file?.id}`;
+  try {
+    const response = await api.get(file.url, {
+      responseType: 'blob',
+    });
+    const fileName = `${file?.metadata?.originalname || file?.id}`;
 
-  saveAs(response.data, fileName ?? 'file');
+    saveAs(response.data, fileName ?? 'file');
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 export default api;

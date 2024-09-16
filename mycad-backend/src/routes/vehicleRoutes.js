@@ -32,6 +32,7 @@ import {
   getConditions,
 } from "../controllers/vehicleModelController.js";
 import { createMultipleVehicles } from "../controllers/VehicleExtrasController.js";
+import { createMultipleModels } from "../controllers/vehicleModelExtrasController.js";
 import {
   processImages,
   upload,
@@ -71,6 +72,9 @@ router
   .route("/createMultipleVehicles")
   .post(protect, upload.single("csvFile"), createMultipleVehicles);
 router.route("/vehicleModels/search").get(protect, searchModels);
+router
+  .route("/vehicleModels/createMultipleModels")
+  .post(protect, upload.single("csvFile"), createMultipleModels);
 router
   .route("/:id")
   .get(protect, getVehicleById)

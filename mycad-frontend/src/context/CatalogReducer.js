@@ -91,7 +91,7 @@ const CatalogReducer = (state, action) => {
       return {
         ...state,
         vehicleModel: action.payload,
-        vehicleModels: state.vehicleModels.map((vehicleModel) =>
+        vehicleModels: state?.vehicleModels?.map((vehicleModel) =>
           vehicleModel.id === action.payload.id ? action.payload : vehicleModel,
         ),
         loading: false,
@@ -100,6 +100,15 @@ const CatalogReducer = (state, action) => {
       return {
         ...state,
         vehicleModels: action.payload,
+        loading: false,
+      };
+    case 'CREATE_MULTIPLE_MODELS':
+      return {
+        ...state,
+        vehicleModels: [
+          ...state.vehicleModels,
+          ...action.payload?.createdModels,
+        ],
         loading: false,
       };
     case 'FETCH_VEHICLE_CONDITIONS':

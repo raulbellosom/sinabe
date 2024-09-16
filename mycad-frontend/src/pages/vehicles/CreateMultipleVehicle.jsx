@@ -19,10 +19,8 @@ const CreateMultipleVehicle = () => {
 
   const handleSubmit = async () => {
     setLoading(true);
-    console.log(user);
     await createMultipleVehicles(file, user?.id)
       .then((res) => {
-        console.log('res', res);
         setFile(null);
         setCreatedVehicles(res?.createdVehicles);
         if (res?.errors?.length) {
@@ -36,9 +34,7 @@ const CreateMultipleVehicle = () => {
         setError(err?.response?.data?.errors || 'Error al cargar el archivo');
       })
       .finally((data) => {
-        console.log(data);
         setLoading(false);
-        // move to bottom
         ref.current.scrollIntoView({ block: 'end', behavior: 'smooth' });
       });
   };
@@ -129,14 +125,15 @@ const CreateMultipleVehicle = () => {
                 </span>
               </div>
               <ul className="p-2">
-                {createdVehicles.map((vehicle, index) => (
-                  <li className="list-disc" key={index}>
-                    Vehículo{' '}
-                    {`${vehicle?.model?.name} ${vehicle?.model?.year}
+                {createdVehicles &&
+                  createdVehicles.map((vehicle, index) => (
+                    <li className="list-disc" key={index}>
+                      Vehículo{' '}
+                      {`${vehicle?.model?.name} ${vehicle?.model?.year}
                     - ${vehicle?.model?.type?.name} ${vehicle?.model?.brand?.name}`}{' '}
-                    creado con éxito
-                  </li>
-                ))}
+                      creado con éxito
+                    </li>
+                  ))}
               </ul>
             </div>
           </div>

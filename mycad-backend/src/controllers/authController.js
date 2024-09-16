@@ -146,8 +146,6 @@ export const updateProfileImage = async (req, res) => {
       },
     });
     if (currentUserImage) {
-      console.log("entre aqui");
-      console.log("currentUserImage", currentUserImage);
       await db.userImage.update({
         where: { id: currentUserImage.id },
         data: { enabled: false },
@@ -176,7 +174,6 @@ export const updateProfileImage = async (req, res) => {
 export const updatePassword = async (req, res) => {
   const { user } = req;
   const { currentPassword, newPassword } = req.body;
-  console.log(currentPassword, newPassword);
   try {
     const isValid = await bcrypt.compare(currentPassword, user.password);
 

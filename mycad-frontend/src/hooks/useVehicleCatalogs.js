@@ -15,6 +15,7 @@ import {
   createVehicleModel,
   updateVehicleModel,
   deleteVehicleModel,
+  createMultipleModels,
   getVehicleConditions,
   getVehicleCondition,
   createVehicleCondition,
@@ -189,6 +190,7 @@ const useVehicleCatalogs = (dispatch) => {
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('vehicleModels');
+      console.log(data);
       dispatch({ type: 'UPDATE_VEHICLE_MODEL', payload: data });
       Notifies('success', 'Modelo de vehiculo actualizado exitosamente');
     },
@@ -208,6 +210,20 @@ const useVehicleCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al eliminar el modelo de vehiculo');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const createMultipleModelsMutation = useMutation({
+    mutationFn: createMultipleModels,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries('vehicleModels');
+      dispatch({ type: 'CREATE_MULTIPLE_MODELS', payload: data });
+      Notifies('success', 'Modelos de vehiculos creados exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al crear los modelos de vehiculos');
     },
     onSettled: () => setLoading(false),
   });
@@ -300,6 +316,9 @@ const useVehicleCatalogs = (dispatch) => {
       return updateVehicleModelMutation.mutateAsync(values);
     },
     deleteVehicleModel: deleteVehicleModelMutation.mutate,
+    createMultipleModels: (values) => {
+      return createMultipleModelsMutation.mutateAsync(values);
+    },
     fetchVehicleConditions: fetchVehicleConditions.mutate,
     fetchVehicleCondition: fetchVehicleCondition.mutate,
     createVehicleCondition: (values) => {

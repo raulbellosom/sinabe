@@ -8,17 +8,26 @@ import {
 import AuthContext from '../context/AuthContext';
 import LoadingModal from '../components/loadingModal/LoadingModal';
 import Sidebar from '../components/sidebar/Sidebar';
+import ProtectedRoute from './ProtectedRoute';
+
 import Login from '../pages/login/Login';
 import Dashboard from '../pages/dashboard/Dashboard';
 import Vehicles from '../pages/vehicles/Vehicles';
-import NotFound from '../pages/notFound/NotFound';
 import CreateVehicle from '../pages/vehicles/CreateVehicle';
 import UpdateVehicle from '../pages/vehicles/UpdateVehicle';
 import ViewVehicle from '../pages/vehicles/ViewVehicle';
 import Catalogs from '../pages/vehicles/catalogs/Catalogs';
 import Account from '../pages/account/Account';
-
-import ProtectedRoute from './ProtectedRoute';
+import NotFound from '../pages/notFound/NotFound';
+// const Login = lazy(() => import('../pages/login/Login'));
+// const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
+// const Vehicles = lazy(() => import('../pages/vehicles/Vehicles'));
+// const CreateVehicle = lazy(() => import('../pages/vehicles/CreateVehicle'));
+// const UpdateVehicle = lazy(() => import('../pages/vehicles/UpdateVehicle'));
+// const ViewVehicle = lazy(() => import('../pages/vehicles/ViewVehicle'));
+// const Catalogs = lazy(() => import('../pages/vehicles/catalogs/Catalogs'));
+// const Account = lazy(() => import('../pages/account/Account'));
+// const NotFound = lazy(() => import('../pages/notFound/NotFound'));
 
 const AppRouter = () => {
   const { user } = useContext(AuthContext);

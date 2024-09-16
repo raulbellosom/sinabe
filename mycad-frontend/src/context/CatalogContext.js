@@ -25,6 +25,7 @@ const CatalogContext = createContext({
   createVehicleModel: async () => {},
   updateVehicleModel: async () => {},
   deleteVehicleModel: async () => {},
+  createMultipleModels: async () => {},
   fetchVehicleConditions: async () => {},
   fetchVehicleCondition: async () => {},
   createVehicleCondition: async () => {},

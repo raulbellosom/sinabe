@@ -88,8 +88,6 @@ const parseImages = (rawImages) => {
 
     rawImages = rawImages.replace(/'/g, '"');
 
-    console.log("Raw images string:", rawImages);
-
     const parsedImages = JSON.parse(rawImages);
 
     return Array.isArray(parsedImages) ? parsedImages : [];
@@ -207,6 +205,7 @@ export const createMultipleVehicles = async (req, res) => {
               type: {
                 name: vehicle.type,
               },
+              enabled: true,
             },
           });
           if (!model) {
@@ -257,6 +256,12 @@ export const createMultipleVehicles = async (req, res) => {
             delete vehicle.year;
             delete vehicle.brand;
             delete vehicle.type;
+
+            // const hasErrors = errors.some((error) =>
+            //   error.includes(`Fila ${index + 1}`)
+            // );
+
+            // if (!hasErrors) {
 
             const createdVehicle = await db.vehicle.create({
               data: {
