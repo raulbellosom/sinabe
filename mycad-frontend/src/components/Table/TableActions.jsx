@@ -59,44 +59,46 @@ const TableActions = ({
           </form>
         </div>
         <div className="flex justify-end gap-4 md:gap-2 h-full">
-          <Dropdown
-            renderTrigger={() => (
-              <button className={getButtonClassNames('indigo', false)}>
-                <i>
-                  <TbFilter size={18} />
-                </i>
-                <span className="ml-2">Filtrar</span>
-              </button>
-            )}
-            placement="left-start"
-            className="w-fit"
-            outline
-          >
-            <>
-              <div className="flex items-center px-4 py-2">
-                <h2 className="text-sm font-semibold">
-                  Filtrar por Condiciones
-                </h2>
-              </div>
-              <Dropdown.Divider />
-              <CustomDropdownItem
-                key="all"
-                name={
-                  filters?.length === selectedFilters?.length
-                    ? 'Quitar todos'
-                    : 'Seleccionar todos'
-                }
-              />
-              <Dropdown.Divider />
-              {filters &&
-                filters?.map((condition) => (
-                  <CustomDropdownItem
-                    key={condition?.id}
-                    name={condition?.name}
-                  />
-                ))}
-            </>
-          </Dropdown>
+          {filters && (
+            <Dropdown
+              renderTrigger={() => (
+                <button className={getButtonClassNames('indigo', false)}>
+                  <i>
+                    <TbFilter size={18} />
+                  </i>
+                  <span className="ml-2">Filtrar</span>
+                </button>
+              )}
+              placement="left-start"
+              className="w-fit"
+              outline
+            >
+              <>
+                <div className="flex items-center px-4 py-2">
+                  <h2 className="text-sm font-semibold">
+                    Filtrar por Condiciones
+                  </h2>
+                </div>
+                <Dropdown.Divider />
+                <CustomDropdownItem
+                  key="all"
+                  name={
+                    filters?.length === selectedFilters?.length
+                      ? 'Quitar todos'
+                      : 'Seleccionar todos'
+                  }
+                />
+                <Dropdown.Divider />
+                {filters &&
+                  filters?.map((condition) => (
+                    <CustomDropdownItem
+                      key={condition?.id}
+                      name={condition?.name}
+                    />
+                  ))}
+              </>
+            </Dropdown>
+          )}
           <ActionButtons
             extraActions={[
               {

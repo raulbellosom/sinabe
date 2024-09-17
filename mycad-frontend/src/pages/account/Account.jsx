@@ -178,7 +178,7 @@ const Account = () => {
           </div>
           <div className="rounded-full ring-4 ring-orange-500 p-1">
             <ImageViewer
-              containerStyles={
+              containerClassNames={
                 'rounded-full overflow-hidden ring-2 ring-stone-100'
               }
               images={image ? [image] : ['https://via.placeholder.com/150']}

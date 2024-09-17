@@ -1,5 +1,14 @@
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 
-const UserContext = createContext();
+const UserContext = createContext({
+  users: [],
+  user: null,
+  dispatch: () => {},
+  createUser: async () => {},
+  updateUser: async () => {},
+  deleteUser: async () => {},
+});
+
+export const useUserContext = () => useContext(UserContext);
 
 export default UserContext;

@@ -373,7 +373,7 @@ const Vehicles = () => {
                                 <T.Cell key={column.id} className="w-20 py-2">
                                   <ImageViewer
                                     images={[vehicle?.images[0]]}
-                                    containerStyles={
+                                    containerClassNames={
                                       'first:w-12 first:h-12 first:rounded-md'
                                     }
                                   />

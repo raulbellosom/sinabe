@@ -223,13 +223,15 @@ const Sidebar = ({ children }) => {
                   Catálogos
                 </MenuItem>
               </SubMenu>
-              <MenuItem
-                component={<Link to={'/users'} />}
-                active={isActivePath('/users')}
-                icon={<FaUserCircle />}
-              >
-                Usuarios
-              </MenuItem>
+              {user.roleId <= 2 && (
+                <MenuItem
+                  component={<Link to={'/users'} />}
+                  active={isActivePath('/users')}
+                  icon={<FaUserCircle />}
+                >
+                  Usuarios
+                </MenuItem>
+              )}
               <MenuItem
                 component={<Link to={'/account-settings'} />}
                 active={isActivePath('/account-settings')}

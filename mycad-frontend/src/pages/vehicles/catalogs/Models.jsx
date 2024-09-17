@@ -1,24 +1,30 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useCatalogContext } from '../../../context/CatalogContext';
+import React, { useCallback, useEffect, useRef, useState, lazy } from 'react';
+
 import Skeleton from 'react-loading-skeleton';
+import { useQuery } from '@tanstack/react-query';
+import { IoMdAdd } from 'react-icons/io';
+import { MdOutlineFileUpload } from 'react-icons/md';
+import { Table as T } from 'flowbite-react';
+
+import { useCatalogContext } from '../../../context/CatalogContext';
 import ModalForm from '../../../components/Modals/ModalForm';
 import ModalRemove from '../../../components/Modals/ModalRemove';
 import { searchModels } from '../../../services/api';
 import { modelColumns } from '../../../utils/CatalogsFields';
-import { useQuery } from '@tanstack/react-query';
-import TableHeader from '../../../components/Table/TableHeader';
-import { IoMdAdd } from 'react-icons/io';
-import { MdOutlineFileUpload } from 'react-icons/md';
-import TableActions from '../../../components/Table/TableActions';
-import TableResultsNotFound from '../../../components/Table/TableResultsNotFound';
-import { Table as T } from 'flowbite-react';
-import TableFooter from '../../../components/Table/TableFooter';
-import Card from '../../../components/Card/Card';
 import ActionButtons from '../../../components/ActionButtons/ActionButtons';
 import CreateMultipleModels from './CreateMultipleModels';
 import Notifies from '../../../components/Notifies/Notifies';
-const Table = React.lazy(() => import('../../../components/Table/Table'));
-const ModelForm = React.lazy(
+const Card = lazy(() => import('../../../components/Card/Card'));
+const TableHeader = lazy(() => import('../../../components/Table/TableHeader'));
+const TableFooter = lazy(() => import('../../../components/Table/TableFooter'));
+const TableActions = lazy(
+  () => import('../../../components/Table/TableActions'),
+);
+const TableResultsNotFound = lazy(
+  () => import('../../../components/Table/TableResultsNotFound'),
+);
+const Table = lazy(() => import('../../../components/Table/Table'));
+const ModelForm = lazy(
   () => import('../../../components/VehicleComponents/ModelForm/ModelForm'),
 );
 
@@ -223,7 +229,7 @@ const Models = () => {
           {
             label: 'Nuevo',
             action: () => setIsOpenModal(true),
-            color: 'mycad',
+            color: 'orange',
             icon: IoMdAdd,
             filled: true,
           },

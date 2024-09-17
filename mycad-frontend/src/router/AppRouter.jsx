@@ -18,6 +18,7 @@ import UpdateVehicle from '../pages/vehicles/UpdateVehicle';
 import ViewVehicle from '../pages/vehicles/ViewVehicle';
 import Catalogs from '../pages/vehicles/catalogs/Catalogs';
 import Account from '../pages/account/Account';
+import Users from '../pages/users/Users';
 import NotFound from '../pages/notFound/NotFound';
 // const Login = lazy(() => import('../pages/login/Login'));
 // const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
@@ -57,6 +58,7 @@ const AuthorizedRoute = ({ user }) => {
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/account-settings" element={<Account />} />
+                  <Route path="/users" element={<Users />} />
                   <Route path="/vehicles" element={<Vehicles />} />
                   <Route path="/vehicles/create" element={<CreateVehicle />} />
                   <Route

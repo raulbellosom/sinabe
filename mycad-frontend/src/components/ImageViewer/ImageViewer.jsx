@@ -17,7 +17,7 @@ const ImageViewer = ({
   onRemove,
   isDownloadable = true,
   renderMenuOptions = [],
-  containerStyles,
+  containerClassNames,
   imageStyles,
 }) => {
   const handleDownloadImage = (img) => {
@@ -180,8 +180,7 @@ const ImageViewer = ({
           <div
             className={classNames(
               'relative w-24 h-24 xl:h-28 xl:w-28 2xl:h-32 2xl:w-32',
-              containerStyles,
-              imageStyles,
+              containerClassNames,
             )}
           >
             {onRemove && (
