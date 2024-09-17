@@ -37,40 +37,22 @@ const processImages = async (req, res, next) => {
       const fileName = path.parse(file.filename).name;
 
       const thumbnailDir = `${BASE_PATH}images/thumbnails/`;
-      const mediumDir = `${BASE_PATH}images/medium/`;
-      const largeDir = `${BASE_PATH}images/large/`;
 
       const thumbnailPath = `${thumbnailDir}${fileName}-thumbnail.jpg`;
-      const mediumPath = `${mediumDir}${fileName}-medium.jpg`;
-      const largePath = `${largeDir}${fileName}-large.jpg`;
 
       if (!fs.existsSync(thumbnailDir)) {
         fs.mkdirSync(thumbnailDir, { recursive: true });
       }
-      if (!fs.existsSync(mediumDir)) {
-        fs.mkdirSync(mediumDir, { recursive: true });
-      }
-      if (!fs.existsSync(largeDir)) {
-        fs.mkdirSync(largeDir, { recursive: true });
-      }
 
       await sharp(file.path).resize(150, 150).toFile(thumbnailPath);
 
-      await sharp(file.path).resize(500, 500).toFile(mediumPath);
-
-      await sharp(file.path).resize(1000, 1000).toFile(largePath);
-
       let urlRelativePath = BASE_PATH.replace("src/", "");
       let thumbnailRelativePath = thumbnailPath.split("src/")[1];
-      let mediumRelativePath = mediumPath.split("src/")[1];
-      let largeRelativePath = largePath.split("src/")[1];
       return {
         url: `${urlRelativePath}images/${file.filename}`,
         type: file.mimetype,
         metadata: { ...file },
         thumbnail: thumbnailRelativePath,
-        medium: mediumRelativePath,
-        large: largeRelativePath,
       };
     })
   );

@@ -25,8 +25,6 @@ export const getVehicles = async (req, res) => {
             url: true,
             type: true,
             thumbnail: true,
-            medium: true,
-            large: true,
             metadata: true,
           },
         },
@@ -73,8 +71,6 @@ export const getVehicleById = async (req, res) => {
             url: true,
             type: true,
             thumbnail: true,
-            medium: true,
-            large: true,
             metadata: true,
           },
         },
@@ -174,8 +170,6 @@ export const createVehicle = async (req, res) => {
           url: file.url,
           type: file.type,
           thumbnail: file.thumbnail,
-          medium: file.medium,
-          large: file.large,
           vehicleId: vehicle.id,
           enabled: true,
         }));
@@ -299,8 +293,6 @@ export const updateVehicle = async (req, res) => {
           url: file.url,
           type: file.type,
           thumbnail: file.thumbnail,
-          medium: file.medium,
-          large: file.large,
           vehicleId: id,
           metadata: file.metadata,
           enabled: true,
@@ -362,8 +354,6 @@ export const updateVehicle = async (req, res) => {
             url: true,
             type: true,
             thumbnail: true,
-            medium: true,
-            large: true,
             metadata: true,
           },
         },
@@ -605,7 +595,7 @@ export const searchVehicles = async (req, res) => {
       }),
     };
 
-    const vehicles = await prisma.vehicle.findMany({
+    const vehicles = await db.vehicle.findMany({
       where: whereConditions,
       include: {
         model: {
@@ -631,7 +621,7 @@ export const searchVehicles = async (req, res) => {
       take,
     });
 
-    const totalRecords = await prisma.vehicle.count({
+    const totalRecords = await db.vehicle.count({
       where: whereConditions,
     });
 

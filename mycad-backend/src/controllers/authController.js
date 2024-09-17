@@ -137,8 +137,6 @@ export const updateProfileImage = async (req, res) => {
       data: {
         url: profileImage.url,
         thumbnail: profileImage.thumbnail,
-        medium: profileImage.medium,
-        large: profileImage.large,
         type: profileImage.type,
         metadata: profileImage.metadata,
         enabled: true,
