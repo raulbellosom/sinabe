@@ -70,7 +70,11 @@ export const loadUser = async (req, res) => {
       const loadedUser = await db.user.findFirst({
         where: { id: user.id },
         include: {
-          role: true,
+          role: {
+            include: {
+              permissions: true,
+            },
+          },
           photo: {
             where: { enabled: true },
           },

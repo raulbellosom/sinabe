@@ -179,9 +179,23 @@ export const deleteUser = async (req, res) => {
   const { id } = req.params;
 
   try {
+    const userExists = await db.user.findFirst({ where: { id } });
+
+    if (!userExists) {
+      return res.status(400).json({ message: "El usuario no existe." });
+    }
+
+    const user = await db.user.findUnique({
+      where: { id },
+    });
+
+    const email = user.email;
+    const emailParts = email.split("@");
+    const newEmail = `rm_${emailParts[0]}@${emailParts[1]}`;
+
     await db.user.update({
       where: { id },
-      data: { enabled: false },
+      data: { enabled: false, email: newEmail },
     });
 
     res.json({ message: "Usuario eliminado." });

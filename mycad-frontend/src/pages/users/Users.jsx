@@ -296,20 +296,22 @@ const Users = () => {
                     email: user.email,
                     phone: user.phone,
                     'role.name': user.role.name,
-                    photo: user.photo?.[0] ?? [],
+                    photo: user?.photo?.[0] ? [user.photo?.[0]] : [],
                     status: user.status,
                   };
+                  console.log(formatedUser);
                   return (
                     <T.Row key={user.id}>
                       {columns.map((column) =>
                         column.id === 'photo' ? (
                           <T.Cell key={column.id}>
-                            {formatedUser[column.id] ? (
+                            {formatedUser[column.id] &&
+                            formatedUser[column.id].length > 0 ? (
                               <ImageViewer
                                 containerClassNames={
                                   'first:w-12 first:h-12 first:rounded-md'
                                 }
-                                images={[formatedUser[column.id]]}
+                                images={formatedUser[column.id]}
                                 alt={`${formatedUser.firstName} ${formatedUser.lastName}`}
                               />
                             ) : (

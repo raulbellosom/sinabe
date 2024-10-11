@@ -176,6 +176,17 @@ async function main() {
       createdPermissions.map((perm) =>
         prisma.rolePermission.create({
           data: {
+            roleId: rootRole.id,
+            permissionId: perm.id,
+          },
+        })
+      )
+    );
+
+    await Promise.all(
+      createdPermissions.map((perm) =>
+        prisma.rolePermission.create({
+          data: {
             roleId: adminRole.id,
             permissionId: perm.id,
           },
