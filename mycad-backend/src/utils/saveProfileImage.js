@@ -23,40 +23,41 @@ const upload = multer({ storage });
 
 const saveProfileImage = async (req, res, next) => {
   const file = req.file || null;
-  if (!file) {
-    return res.status(400).json({ message: "No image uploaded" });
-  }
   try {
-    const { mimetype, filename } = file;
-    const fileName = path.parse(filename).name;
+    if (!file) {
+      next();
+    } else {
+      const { mimetype, filename } = file;
+      const fileName = path.parse(filename).name;
 
-    const thumbnailDir = path.join(BASE_PATH, "thumbnails");
+      const thumbnailDir = path.join(BASE_PATH, "thumbnails");
 
-    const thumbnailPath = path.join(
-      thumbnailDir,
-      `${fileName}-thumbnail${path.extname(filename)}`
-    );
+      const thumbnailPath = path.join(
+        thumbnailDir,
+        `${fileName}-thumbnail${path.extname(filename)}`
+      );
 
-    // Crear directorios si no existen
-    if (!fs.existsSync(thumbnailDir))
-      fs.mkdirSync(thumbnailDir, { recursive: true });
+      // Crear directorios si no existen
+      if (!fs.existsSync(thumbnailDir))
+        fs.mkdirSync(thumbnailDir, { recursive: true });
 
-    await sharp(file.path).resize(150, 150).toFile(thumbnailPath);
+      await sharp(file.path).resize(150, 150).toFile(thumbnailPath);
 
-    const urlRelativePath = path.relative(
-      "src",
-      path.join(BASE_PATH, filename)
-    );
-    const thumbnailRelativePath = path.relative("src", thumbnailPath);
+      const urlRelativePath = path.relative(
+        "src",
+        path.join(BASE_PATH, filename)
+      );
+      const thumbnailRelativePath = path.relative("src", thumbnailPath);
 
-    req.profileImage = {
-      url: urlRelativePath,
-      type: mimetype,
-      metadata: { ...file },
-      thumbnail: thumbnailRelativePath,
-    };
+      req.profileImage = {
+        url: urlRelativePath,
+        type: mimetype,
+        metadata: { ...file },
+        thumbnail: thumbnailRelativePath,
+      };
 
-    next();
+      next();
+    }
   } catch (error) {
     console.error("Error processing profile image:", error);
     return res.status(500).json({ message: "Error processing profile image" });

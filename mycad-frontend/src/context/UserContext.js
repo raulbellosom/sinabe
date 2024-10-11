@@ -4,9 +4,10 @@ const UserContext = createContext({
   users: [],
   user: null,
   dispatch: () => {},
-  createUser: async () => {},
-  updateUser: async () => {},
-  deleteUser: async () => {},
+  useCreateUser: async () => {},
+  useUpdateUser: async () => {},
+  useDeleteUser: async () => {},
+  useChangePasswordUser: async () => {},
 });
 
 export const useUserContext = () => useContext(UserContext);

@@ -8,29 +8,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Permission {
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String?
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  id           Int         @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+  role         Role        @relation(fields: [roleId], references: [id])
+  permission   Permission  @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+}
+
+model Role {
+  id         Int             @id @default(autoincrement())
+  name       String
+  users      User[]
+  permissions RolePermission[]
+}
+
 model User {
-  id        String            @id @default(uuid())
+  id        String      @id @default(uuid())
   firstName String
   lastName  String
-  email     String            @unique
+  email     String      @unique
   phone     String?
   password  String
   status    Boolean?
   roleId    Int
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-  enabled   Boolean
-  photo     UserImage[]       @relation("UserImages")
-  role      Role              @relation(fields: [roleId], references: [id])
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  enabled   Boolean     @default(true)
+  photo     UserImage[] @relation("UserImages")
+  role      Role        @relation(fields: [roleId], references: [id])
   vehicles  Vehicle[]
-
-  @@index([roleId], map: "User_roleId_fkey")
-}
-
-model Role {
-  id    Int    @id @default(autoincrement())
-  name  String
-  users User[]
 }
 
 model Vehicle {
@@ -48,7 +64,7 @@ model Vehicle {
   updatedAt               DateTime           @updatedAt
   createdById             String
   comments                String?
-  enabled                 Boolean
+  enabled                 Boolean             @default(true)
   modelId                 Int
   economicNumber          String?
   plateNumber             String?
@@ -67,15 +83,16 @@ model Vehicle {
 
 model VehicleType {
   id      Int     @id @default(autoincrement())
-  enabled Boolean
+  enabled Boolean @default(true)
   name    String
+  economicGroup String
   models  Model[]
 }
 
 model VehicleBrand {
   id      Int     @id @default(autoincrement())
   name    String
-  enabled Boolean
+  enabled Boolean @default(true)
   models  Model[]
 }
 
@@ -85,7 +102,7 @@ model Model {
   year     Int
   typeId   Int
   brandId  Int
-  enabled  Boolean
+  enabled  Boolean      @default(true)
   brand    VehicleBrand @relation(fields: [brandId], references: [id])
   type     VehicleType  @relation(fields: [typeId], references: [id])
   vehicles Vehicle[]
@@ -95,16 +112,16 @@ model Model {
 }
 
 model ServiceHistory {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   vehicleId   String
   serviceDate DateTime
   description String
   cost        Float
   comments    String?
-  createdAt   DateTime @default(now())
-  enabled     Boolean
-  updatedAt   DateTime @updatedAt
-  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id])
+  createdAt   DateTime  @default(now())
+  enabled     Boolean   @default(true)
+  updatedAt   DateTime  @updatedAt
+  vehicle     Vehicle   @relation(fields: [vehicleId], references: [id])
 
   @@index([vehicleId], map: "ServiceHistory_vehicleId_fkey")
 }
@@ -120,7 +137,7 @@ model Rental {
   status    String
   comments  String?
   createdAt DateTime @default(now())
-  enabled   Boolean
+  enabled   Boolean   @default(true)
   updatedAt DateTime @updatedAt
   client    Client   @relation(fields: [clientId], references: [id])
   vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
@@ -137,7 +154,7 @@ model Client {
   phoneNumber String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  enabled     Boolean
+  enabled     Boolean   @default(true)
   rentals     Rental[]
 }
 
@@ -147,7 +164,7 @@ model File {
   metadata   Json?
   uploadedAt DateTime @default(now())
   createdAt  DateTime @default(now())
-  enabled    Boolean
+  enabled    Boolean  @default(true)
   type       String
   url        String
   vehicle    Vehicle  @relation(fields: [vehicleId], references: [id])
@@ -158,7 +175,7 @@ model File {
 model Condition {
   id       Int                @id @default(autoincrement())
   name     String
-  enabled  Boolean
+  enabled  Boolean            @default(true)
   vehicles VehicleCondition[]
 }
 
@@ -180,7 +197,7 @@ model Image {
   type      String
   metadata  Json?
   createdAt DateTime @default(now())
-  enabled   Boolean
+  enabled   Boolean  @default(true)
   vehicleId String?
   vehicle   Vehicle? @relation("VehicleImages", fields: [vehicleId], references: [id])
 
@@ -193,7 +210,7 @@ model UserImage {
   thumbnail String?
   type      String
   metadata  Json?
-  enabled   Boolean
+  enabled   Boolean   @default(true)
   createdAt DateTime @default(now())
   userId    String?
   user      User?    @relation("UserImages", fields: [userId], references: [id])

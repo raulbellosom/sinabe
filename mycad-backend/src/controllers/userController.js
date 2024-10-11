@@ -1,4 +1,6 @@
 import { db } from "../lib/db.js";
+import bcrypt from "bcryptjs";
+import { parseStatus } from "./vehicleController.js";
 
 export const getUsers = async (req, res) => {
   try {
@@ -38,18 +40,28 @@ export const getUserById = async (req, res) => {
 
 export const createUser = async (req, res) => {
   try {
-    const { profileImage, userData } = req;
+    const { userData } = req.body;
+    const { profileImage } = req;
 
-    const { firstName, lastName, email, password, roleId } =
+    const { firstName, lastName, email, password, phone, role } =
       JSON.parse(userData);
 
+    const userExists = await db.user.findFirst({
+      where: { email, enabled: true },
+    });
+
+    if (userExists) {
+      return res.status(400).json({ message: "El email ya está registrado." });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
     const createdUser = await db.user.create({
       data: {
         firstName,
         lastName,
         email,
-        password,
-        roleId,
+        phone,
+        password: hashedPassword,
+        roleId: parseInt(role),
         enabled: true,
         status: true,
       },
@@ -89,20 +101,49 @@ export const createUser = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
-    const { profileImage, userData } = req;
-    const { id, firstName, lastName, email, roleId } = JSON.parse(userData);
+    const { userData } = req.body;
+    const { profileImage } = req;
 
+    const { id, firstName, lastName, email, phone, role, status } =
+      JSON.parse(userData);
+
+    const userExists = await db.user.findFirst({ where: { id } });
+
+    if (!userExists) {
+      return res.status(400).json({ message: "El usuario no existe." });
+    }
+
+    const emailExists = await db.user.findFirst({
+      where: { email, NOT: { id }, enabled: true },
+    });
+
+    if (emailExists) {
+      return res.status(400).json({ message: "El email ya está registrado." });
+    }
     const updatedUser = await db.user.update({
       where: { id },
       data: {
         firstName,
         lastName,
         email,
-        roleId,
+        phone,
+        status: parseStatus(status),
+        roleId: parseInt(role),
+      },
+      include: {
+        role: true,
+        photo: {
+          where: { enabled: true },
+        },
       },
     });
 
     if (profileImage) {
+      await db.userImage.updateMany({
+        where: { userId: id, enabled: true },
+        data: { enabled: false },
+      });
+
       await db.userImage.create({
         data: {
           url: profileImage.url,
@@ -127,10 +168,10 @@ export const updateUser = async (req, res) => {
 
     newUser.password = undefined;
 
-    res.json(newUser);
+    return res.json(newUser);
   } catch (error) {
     console.log("error on updateUser", error);
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -146,7 +187,26 @@ export const deleteUser = async (req, res) => {
     res.json({ message: "Usuario eliminado." });
   } catch (error) {
     console.log("error on deleteUser", error);
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const changeUserPassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.user.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
+
+    res.json({ message: "Contraseña actualizada." });
+  } catch (error) {
+    console.log("error on changeUserPassword", error);
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -212,8 +272,7 @@ export const searchUsers = async (req, res) => {
     const whereConditions = {
       ...textSearchConditions,
       enabled: true,
-      // id is different from the user id
-      id: { not: currentUser.id },
+      role: { name: { not: "Root" } },
     };
 
     const users = await db.user.findMany({
@@ -240,7 +299,7 @@ export const searchUsers = async (req, res) => {
 
     const totalPages = Math.ceil(totalRecords / pageSize);
 
-    res.json({
+    return res.json({
       data: usersWithoutPassword,
       pagination: {
         totalRecords,
@@ -251,6 +310,6 @@ export const searchUsers = async (req, res) => {
     });
   } catch (error) {
     console.log("error on searchUsers", error);
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };

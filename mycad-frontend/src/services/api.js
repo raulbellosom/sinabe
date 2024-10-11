@@ -127,8 +127,25 @@ export const getUsers = async () => {
 export const createUser = async (user) => {
   try {
     let data = new FormData();
-    data.append('profileImage', user.photo);
-    data.append('userData', JSON.stringify(user));
+
+    const image = user?.photo[0] || null;
+
+    if (image instanceof File) {
+      data.append('profileImage', image);
+    }
+
+    data.append(
+      'userData',
+      JSON.stringify({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        password: user.password,
+        repeatPassword: user.repeatPassword,
+      }),
+    );
     const response = await api.post(`/users`, data, headerFormData);
     return response.data;
   } catch (error) {
@@ -140,9 +157,36 @@ export const createUser = async (user) => {
 export const updateUser = async (user) => {
   try {
     let data = new FormData();
-    data.append('profileImage', user.photo);
-    data.append('userData', JSON.stringify(user));
+    const image = user?.photo[0] || null;
+
+    if (image instanceof File) {
+      data.append('profileImage', image);
+    }
+    data.append(
+      'userData',
+      JSON.stringify({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        status: user.status,
+        password: user.password,
+        repeatPassword: user.repeatPassword,
+      }),
+    );
     const response = await api.put(`/users/${user.id}`, data, headerFormData);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const changePasswordUser = async (user) => {
+  try {
+    const response = await api.put(`/users/changePassword/${user.id}`, user);
     return response.data;
   } catch (error) {
     console.error(error);

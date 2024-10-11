@@ -59,15 +59,20 @@ export const useAuthData = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
-  const loadUserData = async () => {
-    const data = await loadUser();
-    if (data) {
+  const loadUserData = useMutation({
+    mutationFn: loadUser,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
       queryClient.setQueryData('user', data);
       localStorage.setItem('user', JSON.stringify(data));
       return data;
-    }
-    return null;
-  };
+    },
+    onError: (error) => {
+      dispatch({ type: 'AUTH_ERROR', payload: error });
+      return error;
+    },
+    onSettled: () => setLoading(false),
+  });
 
   const updateProfileMutation = useMutation({
     mutationFn: updateProfile,
@@ -117,7 +122,7 @@ export const useAuthData = (dispatch) => {
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,
     logout: logoutMutation.mutateAsync,
-    loadUser: loadUserData,
+    loadUser: loadUserData.mutateAsync,
     updateProfile: (values) => {
       return updateProfileMutation.mutateAsync(values);
     },

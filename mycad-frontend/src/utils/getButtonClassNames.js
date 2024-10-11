@@ -7,7 +7,7 @@ export const getButtonClassNames = (
   className,
 ) => {
   const baseClasses =
-    'w-full md:w-fit h-9 text-sm transition ease-in-out duration-200 p-2 md:px-4 flex items-center justify-center rounded-md border text-stone-800';
+    'w-full md:w-fit h-9 xl:h-10 text-sm xl:text-base transition ease-in-out duration-200 p-2 xl:p-4 flex items-center justify-center rounded-md border text-stone-800';
 
   let notFilledClasses = {
     'hover:bg-orange-500 hover:text-white': color === 'mycad' && !disabled,
@@ -36,7 +36,7 @@ export const getButtonClassNames = (
     'hover:bg-rose-500 hover:text-white': color === 'rose' && !disabled,
     'hover:bg-fuchsia-500 hover:text-white': color === 'fuchsia' && !disabled,
     'hover:bg-white text-black': color === 'white' && !disabled,
-    'hover:bg-black': color === 'black' && !disabled,
+    'hover:bg-black hover:text-white': color === 'black' && !disabled,
   };
   let filledClasses = {
     'bg-orange-500 text-white border-mycad hover:bg-orange-600':

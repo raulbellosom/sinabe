@@ -52,7 +52,7 @@ const CreateVehicle = () => {
   useEffect(() => {
     if (vehicleModels) {
       const formattedModels = vehicleModels?.map((model) => ({
-        name: `${model.name} ${model.year} - ${model.brand.name} - ${model.type.name}`,
+        name: `(${model.type.economicGroup}) ${model.name} ${model.year} - ${model.brand.name} - ${model.type.name}`,
         id: model.id,
       }));
       setFormattedModels(formattedModels);

@@ -20,6 +20,7 @@ import Catalogs from '../pages/vehicles/catalogs/Catalogs';
 import Account from '../pages/account/Account';
 import Users from '../pages/users/Users';
 import NotFound from '../pages/notFound/NotFound';
+import Roles from '../pages/roles/Roles';
 // const Login = lazy(() => import('../pages/login/Login'));
 // const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
 // const Vehicles = lazy(() => import('../pages/vehicles/Vehicles'));
@@ -67,6 +68,7 @@ const AuthorizedRoute = ({ user }) => {
                   />
                   <Route path="/vehicles/view/:id" element={<ViewVehicle />} />
                   <Route path="/catalogs" element={<Catalogs />} />
+                  <Route path="/roles" element={<Roles />} />
                   <Route
                     path="/login"
                     element={

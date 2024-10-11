@@ -68,10 +68,11 @@ const ViewVehicle = () => {
         icon: MdGarage,
         label: 'Año del Modelo',
       },
-      plateNumber: {
-        name: vehicle?.plateNumber,
-        icon: AiOutlineFieldNumber,
-        label: 'Número de Placa',
+
+      economicGroup: {
+        name: vehicle?.model?.type?.economicGroup,
+        icon: MdOutlineNumbers,
+        label: 'Grupo Económico',
       },
       economicNumber: {
         name: vehicle?.economicNumber,
@@ -82,6 +83,11 @@ const ViewVehicle = () => {
         name: vehicle?.serialNumber,
         icon: TbNumber123,
         label: 'Número de Serie',
+      },
+      plateNumber: {
+        name: vehicle?.plateNumber,
+        icon: AiOutlineFieldNumber,
+        label: 'Número de Placa',
       },
       acquisitionDate: {
         name: vehicle?.acquisitionDate

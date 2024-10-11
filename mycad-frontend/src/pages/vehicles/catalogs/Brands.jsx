@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useCatalogContext } from '../../../context/CatalogContext';
 import CatalogList from '../../../components/VehicleComponents/CatalogList';
-import ModalForm from '../../../components/Modals/ModalForm';
 import ModalRemove from '../../../components/Modals/ModalRemove';
-const BrandForm = React.lazy(
-  () => import('../../../components/VehicleComponents/BrandForm/BrandForm'),
-);
+import ModalFormikForm from '../../../components/Modals/ModalFormikForm';
+import BrandFormFields from '../../../components/VehicleComponents/BrandForm/BrandFormFields';
+import { BrandFormSchema } from '../../../components/VehicleComponents/BrandForm/BrandFormSchema';
+import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 
 const Brands = () => {
   const {
@@ -35,6 +35,7 @@ const Brands = () => {
         count: brand.count,
       };
     });
+    formattedBrands.sort((a, b) => a.name.localeCompare(b.name));
     setBrands(formattedBrands);
   }, [vehicleBrands]);
 
@@ -95,33 +96,31 @@ const Brands = () => {
 
   return (
     <div className="w-full h-full">
-      {brands && brands.length > 0 && !loading ? (
+      {brands && !loading ? (
         <CatalogList
+          icon={PiTrademarkRegisteredBold}
           data={brands}
           title="Marcas de Vehiculos"
           onCreate={() => setIsOpenModal(true)}
-          position="center"
           onEdit={(type) => onEditBrand(type)}
           onRemove={(type) => onRemoveBrand(type.id)}
         />
       ) : (
         <CatalogList.Skeleton />
       )}
-      <ModalForm
-        onClose={onCloseModal}
-        isOpenModal={isOpenModal}
-        title={
-          editMode
-            ? 'Editar Marca de Vehiculos'
-            : 'Agregar Nueva Marca de Vehiculos'
-        }
-      >
-        <BrandForm
+      {isOpenModal && (
+        <ModalFormikForm
+          onClose={onCloseModal}
+          isOpenModal={isOpenModal}
+          dismissible
+          title={editMode ? 'Editar Marca' : 'Crear Marca'}
+          schema={BrandFormSchema}
           initialValues={initialValues}
           onSubmit={handleSubmit}
-          isUpdate={editMode}
+          formFields={<BrandFormFields />}
+          saveLabel={editMode ? 'Actualizar' : 'Guardar'}
         />
-      </ModalForm>
+      )}
       <ModalRemove
         isOpenModal={isDeleteModalOpen}
         onCloseModal={() => setIsDeleteModalOpen(false)}

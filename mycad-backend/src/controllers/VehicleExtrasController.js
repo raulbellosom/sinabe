@@ -196,7 +196,9 @@ export const createMultipleVehicles = async (req, res) => {
           });
           if (!model) {
             errors.push(
-              `Fila ${index + 1}: El modelo '${vehicle.model}' no existe`
+              `Fila ${index + 1}: El modelo '${vehicle.model}' (${
+                vehicle.year
+              }) - ${vehicle.brand} ${vehicle.type} no existe`
             );
             continue;
           }

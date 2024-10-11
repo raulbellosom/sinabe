@@ -14,6 +14,10 @@ import { modelColumns } from '../../../utils/CatalogsFields';
 import ActionButtons from '../../../components/ActionButtons/ActionButtons';
 import CreateMultipleModels from './CreateMultipleModels';
 import Notifies from '../../../components/Notifies/Notifies';
+import ModelFormFields from '../../../components/VehicleComponents/ModelForm/ModelFormFields';
+import ModalFormikForm from '../../../components/Modals/ModalFormikForm';
+import { ModelFormSchema } from '../../../components/VehicleComponents/ModelForm/ModelFormSchema';
+import { HiCubeTransparent } from 'react-icons/hi';
 const Card = lazy(() => import('../../../components/Card/Card'));
 const TableHeader = lazy(() => import('../../../components/Table/TableHeader'));
 const TableFooter = lazy(() => import('../../../components/Table/TableFooter'));
@@ -24,9 +28,6 @@ const TableResultsNotFound = lazy(
   () => import('../../../components/Table/TableResultsNotFound'),
 );
 const Table = lazy(() => import('../../../components/Table/Table'));
-const ModelForm = lazy(
-  () => import('../../../components/VehicleComponents/ModelForm/ModelForm'),
-);
 
 const Models = () => {
   const {
@@ -176,6 +177,13 @@ const Models = () => {
       setSubmitting(false);
       resetForm();
       setEditMode(false);
+      setInitialValues({
+        id: '',
+        name: '',
+        brandId: '',
+        typeId: '',
+        year: '',
+      });
       setIsOpenModal(false);
     } catch (error) {
       console.error(error);
@@ -216,8 +224,9 @@ const Models = () => {
   };
 
   return (
-    <div className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
+    <div className="flex min-h-[77dvh] h-full flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
       <TableHeader
+        icon={HiCubeTransparent}
         title={'Modelos'}
         actions={[
           {
@@ -255,7 +264,7 @@ const Models = () => {
                     const parseModel = {
                       model: model.name,
                       'brand.name': model.brand.name,
-                      'type.name': model.type.name,
+                      'type.name': `${model.type.economicGroup} ${model.type.name}`,
                       year: model.year,
                     };
                     return (
@@ -300,7 +309,7 @@ const Models = () => {
                   },
                   type: {
                     key: 'Tipo',
-                    value: model.type.name,
+                    value: `(${model.type.economicGroup}) ${model.type.name}`,
                   },
                   year: {
                     key: 'Año',
@@ -335,19 +344,29 @@ const Models = () => {
           changePageSize={changePageSize}
         />
       )}
-      <ModalForm
-        onClose={onCloseModal}
-        title={editMode ? 'Editar Modelo' : 'Crear Nuevo Modelo'}
-        isOpenModal={isOpenModal}
-      >
-        <ModelForm
-          onSubmit={handleSubmit}
+      {isOpenModal && (
+        <ModalFormikForm
+          onClose={onCloseModal}
+          isOpenModal={isOpenModal}
+          dismissible
+          title={editMode ? 'Editar Modelo' : 'Crear Modelo'}
+          schema={ModelFormSchema}
           initialValues={initialValues}
-          vehicleBrands={vehicleBrands}
-          vehicleTypes={vehicleTypes}
-          isUpdate={editMode}
+          onSubmit={handleSubmit}
+          formFields={
+            <ModelFormFields
+              vehicleBrands={vehicleBrands}
+              vehicleTypes={vehicleTypes?.map((type) => {
+                return {
+                  ...type,
+                  name: `${type.economicGroup} ${type.name}`,
+                };
+              })}
+            />
+          }
+          saveLabel={editMode ? 'Actualizar' : 'Guardar'}
         />
-      </ModalForm>
+      )}
       <ModalRemove
         isOpenModal={isRemoveModalOpen}
         onCloseModal={() => setIsRemoveModalOpen(false)}

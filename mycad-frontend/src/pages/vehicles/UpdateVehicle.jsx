@@ -83,7 +83,7 @@ const UpdateVehicle = () => {
         acquisitionDate: vehicle.acquisitionDate,
         cost: vehicle.cost || '',
         mileage: vehicle.mileage,
-        status: vehicle.status == 'true' ? true : false,
+        status: vehicle.status == 'true' || vehicle.status == true,
         images: vehicle.images || [],
         files: vehicle?.files ? formatedFiles : [],
         comments: vehicle.comments || '',

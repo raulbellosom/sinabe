@@ -1,6 +1,6 @@
 import { db } from "../lib/db.js";
 
-const parseStatus = (status) => status == "true" || status == true;
+export const parseStatus = (status) => status == "true" || status == true;
 
 export const getVehicles = async (req, res) => {
   try {
@@ -95,28 +95,28 @@ export const getVehicleById = async (req, res) => {
 };
 
 export const createVehicle = async (req, res) => {
-  const { vehicle } = req.body;
-  const user = req.user;
-  const vehicleData = JSON.parse(vehicle);
-  const {
-    modelId,
-    acquisitionDate,
-    cost,
-    costCurrency,
-    bookValue,
-    bookValueCurrency,
-    currentMarketValue,
-    marketValueCurrency,
-    mileage,
-    status,
-    comments,
-    conditions,
-    plateNumber,
-    economicNumber,
-    serialNumber,
-  } = vehicleData;
-
   try {
+    const { vehicle } = req.body;
+    const user = req.user;
+    const vehicleData = JSON.parse(vehicle);
+    const {
+      modelId,
+      acquisitionDate,
+      cost,
+      costCurrency,
+      bookValue,
+      bookValueCurrency,
+      currentMarketValue,
+      marketValueCurrency,
+      mileage,
+      status,
+      comments,
+      conditions,
+      plateNumber,
+      economicNumber,
+      serialNumber,
+    } = vehicleData;
+
     const createdVehicle = await db.$transaction(async (prisma) => {
       const vehicle = await prisma.vehicle.create({
         data: {
@@ -439,6 +439,7 @@ export const searchVehicles = async (req, res) => {
       "model.name",
       "model.brand.name",
       "model.type.name",
+      "model.type.economicGroup",
       "model.year",
       "economicNumber",
       "plateNumber",
@@ -449,6 +450,7 @@ export const searchVehicles = async (req, res) => {
       const columnsMap = {
         "model.name": "model.name",
         "model.type.name": "model.type.name",
+        "model.type.economicGroup": "model.type.economicGroup",
         "model.brand.name": "model.brand.name",
         "model.year": "model.year",
         economicNumber: "economicNumber",
@@ -562,6 +564,7 @@ export const searchVehicles = async (req, res) => {
             { model: { name: { contains: searchTerm } } },
             { model: { brand: { name: { contains: searchTerm } } } },
             { model: { type: { name: { contains: searchTerm } } } },
+            { model: { type: { economicGroup: { contains: searchTerm } } } },
             { economicNumber: { contains: searchTerm } },
             { plateNumber: { contains: searchTerm } },
             { serialNumber: { contains: searchTerm } },

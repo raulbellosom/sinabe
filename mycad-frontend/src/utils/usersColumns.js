@@ -35,6 +35,12 @@ const usersColumns = [
     type: 'text',
   },
   {
+    id: 'status',
+    value: 'Estado',
+    order: 'asc',
+    type: 'boolean',
+  },
+  {
     id: 'actions',
     value: 'Acciones',
     type: 'actions',

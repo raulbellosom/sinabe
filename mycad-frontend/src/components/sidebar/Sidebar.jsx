@@ -13,6 +13,7 @@ import {
   FaUserCircle,
   FaSignOutAlt,
   FaUserCog,
+  FaUserShield,
 } from 'react-icons/fa';
 import { useAuthContext } from '../../context/AuthContext';
 import AccountSidebar from './AccountSidebar';
@@ -21,7 +22,7 @@ import { Button } from 'flowbite-react';
 import Navbar from '../navbar/Navbar';
 import MainLayout from '../../Layout/MainLayout';
 import { BiCategory } from 'react-icons/bi';
-import { MdGarage } from 'react-icons/md';
+import { MdAdminPanelSettings, MdGarage } from 'react-icons/md';
 
 const themes = {
   light: {
@@ -30,7 +31,7 @@ const themes = {
       color: '#ffffff',
     },
     menu: {
-      menuContent: '#fbfcfd',
+      menuContent: '#0D0D0D',
       icon: '#ffffff',
       hover: {
         backgroundColor: '#f43f5e',
@@ -96,7 +97,7 @@ const Sidebar = ({ children }) => {
 
   const menuItemStyles = {
     root: {
-      fontSize: '16px',
+      fontSize: '18px',
       fontWeight: 600,
     },
     icon: {
@@ -114,13 +115,13 @@ const Sidebar = ({ children }) => {
               themes[theme].menu.menuContent,
               hasImage && !collapsed ? 0.15 : 1,
             )
-          : 'transparent',
+          : '',
     }),
     SubMenuExpandIcon: {
       display: 'flex',
       justifyContent: 'center',
       alignContent: 'center',
-      transform: ' scale(1.5)',
+      transform: ' scale(1.75)',
     },
     button: {
       [`&:hover, &${menuClasses.SubMenuExpandIcon}`]: {
@@ -171,7 +172,6 @@ const Sidebar = ({ children }) => {
         backgroundColor={hexToRgba(
           themes[theme].sidebar.backgroundColor,
           hasImage ? 0.2 : 1,
-          // 1,
         )}
         rootStyles={{
           color: themes[theme].sidebar.color,
@@ -197,13 +197,13 @@ const Sidebar = ({ children }) => {
               <MenuItem
                 component={<Link to={'/dashboard'} />}
                 active={isActivePath('/dashboard')}
-                icon={<FaTachometerAlt />}
+                icon={<FaTachometerAlt size={23} />}
               >
                 Dashboard
               </MenuItem>
-              <SubMenu label="Vehículos" icon={<MdGarage />}>
+              <SubMenu label="Vehículos" icon={<MdGarage size={23} />}>
                 <MenuItem
-                  icon={<FaCar />}
+                  icon={<FaCar size={23} />}
                   active={isActivePath('/vehicles')}
                   component={<Link to={'/vehicles'} />}
                   onClick={() => {
@@ -213,7 +213,7 @@ const Sidebar = ({ children }) => {
                   Mis Vehículos
                 </MenuItem>
                 <MenuItem
-                  icon={<BiCategory />}
+                  icon={<BiCategory size={23} />}
                   active={isActivePath('/catalogs')}
                   component={<Link to={'/catalogs'} />}
                   onClick={() => {
@@ -224,18 +224,30 @@ const Sidebar = ({ children }) => {
                 </MenuItem>
               </SubMenu>
               {user.roleId <= 2 && (
-                <MenuItem
-                  component={<Link to={'/users'} />}
-                  active={isActivePath('/users')}
-                  icon={<FaUserCircle />}
+                <SubMenu
+                  label="Usuarios"
+                  icon={<MdAdminPanelSettings size={23} />}
                 >
-                  Usuarios
-                </MenuItem>
+                  <MenuItem
+                    component={<Link to={'/users'} />}
+                    active={isActivePath('/users')}
+                    icon={<FaUserCircle size={23} />}
+                  >
+                    Usuarios
+                  </MenuItem>
+                  <MenuItem
+                    component={<Link to={'/roles'} />}
+                    active={isActivePath('/roles')}
+                    icon={<FaUserShield size={23} />}
+                  >
+                    Roles
+                  </MenuItem>
+                </SubMenu>
               )}
               <MenuItem
                 component={<Link to={'/account-settings'} />}
                 active={isActivePath('/account-settings')}
-                icon={<FaUserCog />}
+                icon={<FaUserCog size={23} />}
               >
                 Editar Perfil
               </MenuItem>

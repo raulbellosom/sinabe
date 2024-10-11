@@ -30,7 +30,6 @@ const ActionButtons = forwardRef(
       create: [1, 2],
       extraActions: [1, 2, 3],
     };
-
     const actions = [
       ...extraActions.map((action) => ({
         ...action,

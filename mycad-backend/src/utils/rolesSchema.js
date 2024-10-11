@@ -7,6 +7,43 @@ const actions = {
 };
 
 const rolesSchema = {
+  Root: {
+    users: [
+      actions.CREATE,
+      actions.READ,
+      actions.UPDATE,
+      actions.DELETE,
+      actions.ALL,
+    ],
+    roles: [
+      actions.CREATE,
+      actions.READ,
+      actions.UPDATE,
+      actions.DELETE,
+      actions.ALL,
+    ],
+    vehicles: [
+      actions.CREATE,
+      actions.READ,
+      actions.UPDATE,
+      actions.DELETE,
+      actions.ALL,
+    ],
+    brands: [
+      actions.CREATE,
+      actions.READ,
+      actions.UPDATE,
+      actions.DELETE,
+      actions.ALL,
+    ],
+    models: [
+      actions.CREATE,
+      actions.READ,
+      actions.UPDATE,
+      actions.DELETE,
+      actions.ALL,
+    ],
+  },
   Admin: {
     users: [
       actions.CREATE,

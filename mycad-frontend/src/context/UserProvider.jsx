@@ -1,4 +1,4 @@
-import { useReducer, useEffect } from 'react';
+import { useReducer } from 'react';
 import UserReducer from './UserReducer';
 import UserContext from './UserContext';
 import useUser from '../hooks/useUser';
@@ -9,7 +9,8 @@ const UserProvider = ({ children }) => {
     user: null,
   });
 
-  const { useCreateUser, useDeleteUser, useUpdateUser } = useUser();
+  const { useCreateUser, useDeleteUser, useUpdateUser, useChangePasswordUser } =
+    useUser({ dispatch });
 
   return (
     <UserContext.Provider
@@ -19,6 +20,7 @@ const UserProvider = ({ children }) => {
         useCreateUser,
         useDeleteUser,
         useUpdateUser,
+        useChangePasswordUser,
       }}
     >
       {children}

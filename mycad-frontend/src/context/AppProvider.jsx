@@ -3,8 +3,10 @@ import AuthProvider from './AuthProvider';
 import UserProvider from './UserProvider';
 import VehicleProvider from './VehicleProvider';
 import LoadingProvider from './LoadingProvider';
-import { BreadcrumbProvider } from './BreadcrumbContext';
 import CatalogProvider from './CatalogProvider';
+import RoleProvider from './RoleProvider';
+import PermissionProvider from './PermissionProvider';
+import { BreadcrumbProvider } from './BreadcrumbContext';
 
 const AppProvider = ({ children }) => {
   return (
@@ -13,7 +15,11 @@ const AppProvider = ({ children }) => {
         <UserProvider>
           <VehicleProvider>
             <CatalogProvider>
-              <BreadcrumbProvider>{children}</BreadcrumbProvider>
+              <PermissionProvider>
+                <RoleProvider>
+                  <BreadcrumbProvider>{children}</BreadcrumbProvider>
+                </RoleProvider>
+              </PermissionProvider>
             </CatalogProvider>
           </VehicleProvider>
         </UserProvider>
