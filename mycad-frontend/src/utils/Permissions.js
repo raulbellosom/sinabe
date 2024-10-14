@@ -62,4 +62,8 @@ export const PermissionsByGroup = {
       'change_account_image',
     ],
   },
+  dashboard: {
+    name: 'Dashboard',
+    permissions: ['view_dashboard'],
+  },
 };

@@ -32,6 +32,7 @@ const TableFooter = React.lazy(
   () => import('../../components/Table/TableFooter'),
 );
 import LinkButton from '../../components/ActionButtons/LinkButton';
+import withPermission from '../../utils/withPermissions';
 
 const formatVehicle = (vehicleData) => {
   const {
@@ -556,4 +557,6 @@ const Vehicles = () => {
   );
 };
 
-export default Vehicles;
+const ProtectedVehiclesView = withPermission(Vehicles, 'view_vehicles');
+
+export default ProtectedVehiclesView;

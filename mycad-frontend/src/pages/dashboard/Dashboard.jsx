@@ -1,5 +1,6 @@
 import React from 'react';
 import UnderConstruction from '../../assets/images/under_construction.jpg';
+import withPermission from '../../utils/withPermissions';
 const Dashboard = () => {
   return (
     <div className="h-full bg-white rounded-lg p-4">
@@ -18,4 +19,6 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+const ProtectedVehiclesView = withPermission(Dashboard, 'view_dashboard');
+
+export default ProtectedVehiclesView;

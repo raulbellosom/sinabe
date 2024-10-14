@@ -81,6 +81,10 @@ export const loadUser = async (req, res) => {
         },
       });
 
+      if (!loadedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
       loadedUser.password = undefined;
       loadedUser.photo = loadedUser?.photo?.[0] || null;
 

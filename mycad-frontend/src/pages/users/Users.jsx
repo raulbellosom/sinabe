@@ -299,7 +299,6 @@ const Users = () => {
                     photo: user?.photo?.[0] ? [user.photo?.[0]] : [],
                     status: user.status,
                   };
-                  console.log(formatedUser);
                   return (
                     <T.Row key={user.id}>
                       {columns.map((column) =>
