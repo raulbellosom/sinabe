@@ -136,6 +136,7 @@ const useRole = (dispatch) => {
     },
     onSuccess: (data) => {
       dispatch({ type: 'GET_ROLE_PERMISSION_BY_ROLE_ID', payload: data });
+      return data;
     },
     onError: (error) => {
       console.log('error on getRolePermissionByRoleId', error);

@@ -1,7 +1,6 @@
 import React, { forwardRef } from 'react';
 import { FaEdit, FaEye, FaPlus, FaTrash } from 'react-icons/fa';
 import { MdCancel } from 'react-icons/md';
-import { useAuthContext } from '../../context/AuthContext';
 import LinkButton from './LinkButton';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
 
@@ -22,25 +21,15 @@ const ActionButtons = forwardRef(
     },
     ref,
   ) => {
-    const { user } = useAuthContext();
-    const permisions = {
-      show: [1, 2, 3],
-      edit: [1, 2],
-      remove: [1],
-      create: [1, 2],
-      extraActions: [1, 2, 3],
-    };
     const actions = [
       ...extraActions.map((action) => ({
         ...action,
-        permission: permisions.extraActions.includes(user.roleId),
       })),
       {
         label: labelShow || 'Ver',
         action: onShow,
         color: 'cyan',
         icon: FaEye,
-        permission: permisions.show.includes(user.roleId),
         disabled: false,
       },
       {
@@ -48,7 +37,6 @@ const ActionButtons = forwardRef(
         action: onEdit,
         color: 'yellow',
         icon: FaEdit,
-        permission: permisions.edit.includes(user.roleId),
         disabled: false,
       },
       {
@@ -56,7 +44,6 @@ const ActionButtons = forwardRef(
         action: onRemove,
         color: 'red',
         icon: FaTrash,
-        permission: permisions.remove.includes(user.roleId),
         disabled: false,
       },
       {
@@ -64,7 +51,6 @@ const ActionButtons = forwardRef(
         action: onCreate,
         color: 'indigo',
         icon: FaPlus,
-        permission: permisions.create.includes(user.roleId),
         disabled: false,
       },
       {
@@ -72,15 +58,11 @@ const ActionButtons = forwardRef(
         action: onCancel,
         color: 'red',
         icon: MdCancel,
-        permission: permisions.create.includes(user.roleId),
         disabled: false,
       },
     ];
-
     const filteredActions = actions.filter(
-      (action) =>
-        (action.action && action.permission) ||
-        (action.href && action.permission),
+      (action) => action.action || action.href,
     );
 
     if (filteredActions.length === 0) {

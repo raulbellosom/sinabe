@@ -64,7 +64,7 @@ const ModalForm = ({
             {
               label: saveLabel ? saveLabel : 'Guardar',
               action: formik.submitForm,
-              color: 'orange',
+              color: 'mycad',
               filled: true,
               icon: FaSave,
               type: 'submit',

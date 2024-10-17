@@ -36,6 +36,8 @@ const TableResultsNotFound = React.lazy(
 const Table = React.lazy(() => import('../../components/Table/Table'));
 import classNames from 'classnames';
 import UserChangePasswordFormFields from '../../components/Users/UserChangePasswordFormFields';
+import withPermission from '../../utils/withPermissions';
+import useCheckPermissions from '../../hooks/useCheckPermissions';
 
 const Users = () => {
   const lastChange = useRef();
@@ -259,6 +261,10 @@ const Users = () => {
     }
   };
 
+  const isCreateUserPermission = useCheckPermissions('create_users');
+  const isEditUserPermission = useCheckPermissions('edit_users');
+  const isRemoveUserPermission = useCheckPermissions('delete_users');
+
   return (
     <div className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
       <TableHeader
@@ -267,8 +273,9 @@ const Users = () => {
         actions={[
           {
             label: 'Nuevo',
-            action:
-              sesionUser?.role.id <= 2 ? () => setIsOpenModal(true) : null,
+            action: isCreateUserPermission.hasPermission
+              ? () => setIsOpenModal(true)
+              : null,
             color: 'mycad',
             icon: IoMdAdd,
             filled: true,
@@ -350,19 +357,29 @@ const Users = () => {
                           <T.Cell key={column?.id}>
                             <div className="flex justify-center items-center gap-2">
                               <ActionButtons
-                                onEdit={() => onEditUser(user)}
-                                onRemove={() => onRemoveUser(user.id)}
+                                onEdit={
+                                  isEditUserPermission.hasPermission
+                                    ? () => onEditUser(user)
+                                    : null
+                                }
+                                onRemove={
+                                  isRemoveUserPermission.hasPermission
+                                    ? () => onRemoveUser(user.id)
+                                    : null
+                                }
                                 extraActions={[
                                   {
                                     label: 'Cambiar contraseña',
-                                    action: () => {
-                                      setInitialValues({
-                                        id: user.id,
-                                        password: '',
-                                        repeatPassword: '',
-                                      });
-                                      setChangePasswordModal(true);
-                                    },
+                                    action: isEditUserPermission.hasPermission
+                                      ? () => {
+                                          setInitialValues({
+                                            id: user.id,
+                                            password: '',
+                                            repeatPassword: '',
+                                          });
+                                          setChangePasswordModal(true);
+                                        }
+                                      : null,
                                     color: 'indigo',
                                     icon: FaLock,
                                   },
@@ -408,19 +425,29 @@ const Users = () => {
                     key: 'Acciones',
                     value: (
                       <ActionButtons
-                        onEdit={() => onEditUser(user)}
-                        onRemove={() => onRemoveUser(user.id)}
+                        onEdit={
+                          isEditUserPermission.hasPermission
+                            ? () => onEditUser(user)
+                            : null
+                        }
+                        onRemove={
+                          isRemoveUserPermission.hasPermission
+                            ? () => onRemoveUser(user.id)
+                            : null
+                        }
                         extraActions={[
                           {
                             label: 'Cambiar contraseña',
-                            action: () => {
-                              setInitialValues({
-                                id: user.id,
-                                password: '',
-                                repeatPassword: '',
-                              });
-                              setChangePasswordModal(true);
-                            },
+                            action: isEditUserPermission.hasPermission
+                              ? () => {
+                                  setInitialValues({
+                                    id: user.id,
+                                    password: '',
+                                    repeatPassword: '',
+                                  });
+                                  setChangePasswordModal(true);
+                                }
+                              : null,
                             color: 'indigo',
                             icon: FaLock,
                           },
@@ -492,4 +519,6 @@ const Users = () => {
   );
 };
 
-export default Users;
+const ProtectedUserView = withPermission(Users, 'view_users');
+
+export default ProtectedUserView;

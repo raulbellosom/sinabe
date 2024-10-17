@@ -1,43 +1,18 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useAuthContext } from '../context/AuthContext';
-import { useRoleContext } from '../context/RoleContext';
 import NotFound from '../pages/notFound/NotFound';
 
 const withPermission = (WrappedComponent, requiredPermission) => {
   return (props) => {
-    const [isLoading, setIsLoading] = useState(true);
-    const { user } = useAuthContext();
-    const { rolePermissions, useGetRolePermissionByRoleId } = useRoleContext();
-
-    useEffect(() => {
-      const fetchPermissions = async () => {
-        if (user && user.role) {
-          try {
-            await useGetRolePermissionByRoleId(user.role.id);
-          } catch (error) {
-            console.error('Error fetching permissions:', error);
-          } finally {
-            setIsLoading(false);
-          }
-        } else {
-          setIsLoading(false);
-        }
-      };
-
-      fetchPermissions();
-    }, []);
+    const { user, loading } = useAuthContext();
+    const { authPermissions } = user;
 
     const userPermissions = useMemo(() => {
-      return (
-        rolePermissions?.map(
-          (rolePermission) => rolePermission?.permission?.name,
-        ) || []
-      );
-    }, [rolePermissions]);
-
+      return authPermissions;
+    }, [authPermissions]);
     const hasPermission = userPermissions?.includes(requiredPermission);
 
-    if (isLoading) {
+    if (loading) {
       return null;
     }
 

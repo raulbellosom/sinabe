@@ -6,6 +6,12 @@ const authReducer = (state, action) => {
         user: action.payload,
         loading: false,
       };
+    case 'LOAD_PERMISSIONS':
+      return {
+        ...state,
+        authPermissions: action.payload,
+        loading: false,
+      };
     case 'PROFILE_UPDATED':
       return {
         ...state,
@@ -29,6 +35,7 @@ const authReducer = (state, action) => {
       return {
         ...state,
         user: null,
+        token: null,
         loading: false,
       };
     default:

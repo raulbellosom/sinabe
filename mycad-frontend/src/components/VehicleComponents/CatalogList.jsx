@@ -17,7 +17,7 @@ const CatalogList = ({
 }) => {
   const [search, setSearch] = useState('');
   const filteredData = data.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase()),
+    item?.name?.toLowerCase()?.includes(search?.toLowerCase()),
   );
 
   return (
@@ -31,7 +31,7 @@ const CatalogList = ({
               {
                 label: 'Nuevo',
                 action: onCreate,
-                color: 'orange',
+                color: 'mycad',
                 icon: IoMdAdd,
                 filled: true,
               },
@@ -57,28 +57,34 @@ const CatalogList = ({
                     {item.count} {item.count > 1 ? 'Vehiculos' : 'Vehiculo'}
                   </p>
                 </div>
-                <div className="absolute right-1 top-1">
-                  <Dropdown
-                    className="min-w-[100px] w-36"
-                    label={
-                      <BsThreeDotsVertical
-                        size={32}
-                        className="p-2 rounded-full top-2 right-2 hover:bg-neutral-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                      />
-                    }
-                    dismissOnClick={false}
-                    inline
-                    arrowIcon={null}
-                    placement="right"
-                  >
-                    <Dropdown.Item onClick={() => onEdit(item)}>
-                      <span>Editar</span>
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={() => onRemove(item)}>
-                      <span>Eliminar</span>
-                    </Dropdown.Item>
-                  </Dropdown>
-                </div>
+                {(onEdit || onRemove) && (
+                  <div className="absolute right-1 top-1">
+                    <Dropdown
+                      className="min-w-[100px] w-36"
+                      label={
+                        <BsThreeDotsVertical
+                          size={32}
+                          className="p-2 rounded-full top-2 right-2 hover:bg-neutral-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                        />
+                      }
+                      dismissOnClick={false}
+                      inline
+                      arrowIcon={null}
+                      placement="right"
+                    >
+                      {onEdit && (
+                        <Dropdown.Item onClick={() => onEdit(item)}>
+                          <span>Editar</span>
+                        </Dropdown.Item>
+                      )}
+                      {onRemove && (
+                        <Dropdown.Item onClick={() => onRemove(item)}>
+                          <span>Eliminar</span>
+                        </Dropdown.Item>
+                      )}
+                    </Dropdown>
+                  </div>
+                )}
               </div>
             ))}
         </div>
@@ -103,7 +109,7 @@ CatalogList.Skeleton = () => {
                   {
                     label: 'Nuevo',
                     action: () => {},
-                    color: 'orange',
+                    color: 'mycad',
                     icon: IoMdAdd,
                     filled: true,
                   },

@@ -6,6 +6,8 @@ import TypeFormFields from '../../../components/VehicleComponents/TypeForm/TypeF
 import { TypeFormSchema } from '../../../components/VehicleComponents/TypeForm/TypeFormSchema';
 import ModalFormikForm from '../../../components/Modals/ModalFormikForm';
 import { BiCategory } from 'react-icons/bi';
+import useCheckPermissions from '../../../hooks/useCheckPermissions';
+import withPermission from '../../../utils/withPermissions';
 
 const Types = () => {
   const {
@@ -37,7 +39,7 @@ const Types = () => {
       };
     });
     formattedTypes.sort((a, b) =>
-      a.economicGroup.localeCompare(b.economicGroup),
+      a?.economicGroup?.localeCompare(b?.economicGroup),
     );
     setTypes(formattedTypes);
   }, [vehicleTypes]);
@@ -100,6 +102,11 @@ const Types = () => {
     setRemoveTypeId(id);
     setIsDeleteModalOpen(true);
   };
+
+  const isCreatePermission = useCheckPermissions('create_vehicles_types');
+  const isEditPermission = useCheckPermissions('edit_vehicles_types');
+  const isDeletePermission = useCheckPermissions('delete_vehicles_types');
+
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       <div className="h-full overflow-auto">
@@ -108,9 +115,19 @@ const Types = () => {
             icon={BiCategory}
             data={types}
             title="Tipos de Vehiculos"
-            onCreate={() => setIsOpenModal(true)}
-            onEdit={(type) => onEditType(type)}
-            onRemove={(type) => onRemoveType(type.id)}
+            onCreate={
+              isCreatePermission.hasPermission
+                ? () => setIsOpenModal(true)
+                : null
+            }
+            onEdit={
+              isEditPermission.hasPermission ? (type) => onEditType(type) : null
+            }
+            onRemove={
+              isDeletePermission.hasPermission
+                ? (type) => onRemoveType(type.id)
+                : null
+            }
           />
         ) : (
           <CatalogList.Skeleton />
@@ -140,4 +157,6 @@ const Types = () => {
   );
 };
 
-export default Types;
+const ProtectedTypesView = withPermission(Types, 'view_vehicles_types');
+
+export default ProtectedTypesView;

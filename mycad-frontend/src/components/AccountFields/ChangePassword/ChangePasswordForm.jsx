@@ -50,7 +50,7 @@ const ChangePasswordForm = ({ initialValues, onSubmit, error }) => {
                 label: 'Cambiar contraseña',
                 action: () => formRef.current.submitForm,
                 icon: RiLockPasswordFill,
-                color: 'orange',
+                color: 'mycad',
                 filled: true,
                 type: 'submit',
               },

@@ -9,6 +9,7 @@ const VehicleForm = React.lazy(
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import { FaCar, FaSave } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import withPermission from '../../utils/withPermissions';
 
 const CreateVehicle = () => {
   const formRef = useRef(null);
@@ -162,4 +163,6 @@ const CreateVehicle = () => {
   );
 };
 
-export default CreateVehicle;
+const ProtectedCreateVehicle = withPermission(CreateVehicle, 'create_vehicles');
+
+export default ProtectedCreateVehicle;

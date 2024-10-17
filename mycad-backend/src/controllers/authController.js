@@ -40,7 +40,19 @@ export const login = async (req, res) => {
     const user = await db.user.findUnique({
       where: { email },
       include: {
-        role: true,
+        role: {
+          include: {
+            permissions: {
+              include: {
+                permission: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         photo: {
           where: { enabled: true },
         },
@@ -50,6 +62,9 @@ export const login = async (req, res) => {
     if (user && (await bcrypt.compare(password, user.password))) {
       user.password = undefined;
       user.photo = user?.photo?.[0] || null;
+      user.authPermissions = user.role.permissions.map(
+        (rolePermission) => rolePermission.permission.name
+      );
       res.json({
         user,
         token: generateToken(user.id),
@@ -72,7 +87,15 @@ export const loadUser = async (req, res) => {
         include: {
           role: {
             include: {
-              permissions: true,
+              permissions: {
+                include: {
+                  permission: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
             },
           },
           photo: {
@@ -85,15 +108,22 @@ export const loadUser = async (req, res) => {
         return res.status(404).json({ message: "User not found" });
       }
 
+      loadedUser.authPermissions = loadedUser.role.permissions.map(
+        (rolePermission) => rolePermission.permission.name
+      );
+
       loadedUser.password = undefined;
       loadedUser.photo = loadedUser?.photo?.[0] || null;
 
       res.json(loadedUser);
     } else {
+      console.log("Error: User not found");
       res.status(401).json({ message: "Not authorized, token failed" });
     }
   } catch (error) {
+    console.log("Error on loadUser: ", error.message);
     res.status(500).json({ message: error.message });
+    c;
   }
 };
 
@@ -113,7 +143,19 @@ export const updateProfile = async (req, res) => {
         phone,
       },
       include: {
-        role: true,
+        role: {
+          include: {
+            permissions: {
+              include: {
+                permission: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         photo: {
           where: { enabled: true },
         },
@@ -122,6 +164,9 @@ export const updateProfile = async (req, res) => {
 
     updatedUser.password = undefined;
     updatedUser.photo = updatedUser?.photo?.[0] || null;
+    updatedUser.authPermissions = updatedUser.role.permissions.map(
+      (rolePermission) => rolePermission.permission.name
+    );
 
     res.json(updatedUser);
   } catch (error) {
@@ -161,7 +206,19 @@ export const updateProfileImage = async (req, res) => {
     const updatedUser = await db.user.findUnique({
       where: { id: user.id },
       include: {
-        role: true,
+        role: {
+          include: {
+            permissions: {
+              include: {
+                permission: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         photo: {
           where: { enabled: true },
         },
@@ -170,6 +227,9 @@ export const updateProfileImage = async (req, res) => {
 
     updatedUser.password = undefined;
     updatedUser.photo = updatedUser?.photo?.[0] || null;
+    updatedUser.authPermissions = updatedUser.role.permissions.map(
+      (rolePermission) => rolePermission.permission.name
+    );
 
     res.json(updatedUser);
   } catch (error) {
@@ -205,7 +265,19 @@ export const updatePassword = async (req, res) => {
         password: hashedPassword,
       },
       include: {
-        role: true,
+        role: {
+          include: {
+            permissions: {
+              include: {
+                permission: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         photo: {
           where: { enabled: true },
         },
@@ -214,6 +286,9 @@ export const updatePassword = async (req, res) => {
 
     updatedUser.password = undefined;
     updatedUser.photo = updatedUser?.photo?.[0] || null;
+    updatedUser.authPermissions = updatedUser.role.permissions.map(
+      (rolePermission) => rolePermission.permission.name
+    );
 
     res.status(200).json(updatedUser);
   } catch (error) {

@@ -193,6 +193,7 @@ export const deleteVehicleType = async (req, res) => {
     const vehicleTypesWithCount = data.map((type) => ({
       id: type.id,
       name: type.name,
+      economicGroup: type.economicGroup,
       count: type.models.reduce((acc, model) => acc + model._count.vehicles, 0),
     }));
 

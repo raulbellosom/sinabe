@@ -6,6 +6,8 @@ import ModalFormikForm from '../../../components/Modals/ModalFormikForm';
 import BrandFormFields from '../../../components/VehicleComponents/BrandForm/BrandFormFields';
 import { BrandFormSchema } from '../../../components/VehicleComponents/BrandForm/BrandFormSchema';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
+import useCheckPermissions from '../../../hooks/useCheckPermissions';
+import withPermission from '../../../utils/withPermissions';
 
 const Brands = () => {
   const {
@@ -94,6 +96,10 @@ const Brands = () => {
     setIsDeleteModalOpen(true);
   };
 
+  const isCreatePermission = useCheckPermissions('create_vehicles_brands');
+  const isEditPermission = useCheckPermissions('edit_vehicles_brands');
+  const isDeletePermission = useCheckPermissions('delete_vehicles_brands');
+
   return (
     <div className="w-full h-full">
       {brands && !loading ? (
@@ -101,9 +107,17 @@ const Brands = () => {
           icon={PiTrademarkRegisteredBold}
           data={brands}
           title="Marcas de Vehiculos"
-          onCreate={() => setIsOpenModal(true)}
-          onEdit={(type) => onEditBrand(type)}
-          onRemove={(type) => onRemoveBrand(type.id)}
+          onCreate={
+            isCreatePermission.hasPermission ? () => setIsOpenModal(true) : null
+          }
+          onEdit={
+            isEditPermission.hasPermission ? (type) => onEditBrand(type) : null
+          }
+          onRemove={
+            isDeletePermission.hasPermission
+              ? (type) => onRemoveBrand(type.id)
+              : null
+          }
         />
       ) : (
         <CatalogList.Skeleton />
@@ -130,4 +144,6 @@ const Brands = () => {
   );
 };
 
-export default Brands;
+const ProtectedBrandsView = withPermission(Brands, 'view_vehicles_brands');
+
+export default ProtectedBrandsView;

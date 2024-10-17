@@ -25,6 +25,7 @@ import { IoCopyOutline } from 'react-icons/io5';
 import formatFileData from '../../utils/fileDataFormatter';
 import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
+import withPermission from '../../utils/withPermissions';
 const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
 
 const ViewVehicle = () => {
@@ -276,4 +277,6 @@ const ViewVehicle = () => {
   );
 };
 
-export default ViewVehicle;
+const ProtectedVehiclesView = withPermission(ViewVehicle, 'view_vehicles');
+
+export default ProtectedVehiclesView;

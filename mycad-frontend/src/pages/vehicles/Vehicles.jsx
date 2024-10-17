@@ -33,6 +33,7 @@ const TableFooter = React.lazy(
 );
 import LinkButton from '../../components/ActionButtons/LinkButton';
 import withPermission from '../../utils/withPermissions';
+import useCheckPermissions from '../../hooks/useCheckPermissions';
 
 const formatVehicle = (vehicleData) => {
   const {
@@ -262,6 +263,8 @@ const Vehicles = () => {
     Notifies('success', 'Vehículos actualizados');
   };
 
+  const isCreatePermission = useCheckPermissions('create_vehicles');
+
   return (
     <>
       <section className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
@@ -278,13 +281,17 @@ const Vehicles = () => {
             },
             {
               label: 'Cargar',
-              action: () => setIsOpenModalUpload(true),
+              action: isCreatePermission.hasPermission
+                ? () => setIsOpenModalUpload(true)
+                : null,
               color: 'blue',
               icon: MdOutlineFileUpload,
             },
             {
               label: 'Nuevo',
-              href: '/vehicles/create',
+              href: isCreatePermission.hasPermission
+                ? '/vehicles/create'
+                : null,
               color: 'mycad',
               icon: IoMdAdd,
               filled: true,

@@ -18,6 +18,8 @@ import ModelFormFields from '../../../components/VehicleComponents/ModelForm/Mod
 import ModalFormikForm from '../../../components/Modals/ModalFormikForm';
 import { ModelFormSchema } from '../../../components/VehicleComponents/ModelForm/ModelFormSchema';
 import { HiCubeTransparent } from 'react-icons/hi';
+import withPermission from '../../../utils/withPermissions';
+import useCheckPermissions from '../../../hooks/useCheckPermissions';
 const Card = lazy(() => import('../../../components/Card/Card'));
 const TableHeader = lazy(() => import('../../../components/Table/TableHeader'));
 const TableFooter = lazy(() => import('../../../components/Table/TableFooter'));
@@ -139,7 +141,6 @@ const Models = () => {
     let updatedHeaders = [];
     if (selectedHeaderIndex !== -1) {
       const selectedHeader = columns[selectedHeaderIndex];
-      selectedHeader;
       const updatedHeader = {
         ...selectedHeader,
         order: selectedHeader?.order === 'asc' ? 'desc' : 'asc',
@@ -223,6 +224,9 @@ const Models = () => {
     Notifies('success', 'Datos actualizados correctamente');
   };
 
+  const isEditpermissions = useCheckPermissions('edit_vehicles_models');
+  const isCreatepermissions = useCheckPermissions('create_vehicles_models');
+  const isDeletepermissions = useCheckPermissions('delete_vehicles_models');
   return (
     <div className="flex min-h-[77dvh] h-full flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
       <TableHeader
@@ -231,14 +235,18 @@ const Models = () => {
         actions={[
           {
             label: 'Cargar',
-            action: () => setCreateMultipleModelsModal(true),
+            action: isCreatepermissions.hasPermission
+              ? () => setCreateMultipleModelsModal(true)
+              : null,
             color: 'blue',
             icon: MdOutlineFileUpload,
           },
           {
             label: 'Nuevo',
-            action: () => setIsOpenModal(true),
-            color: 'orange',
+            action: isCreatepermissions.hasPermission
+              ? () => setIsOpenModal(true)
+              : null,
+            color: 'mycad',
             icon: IoMdAdd,
             filled: true,
           },
@@ -260,37 +268,51 @@ const Models = () => {
               >
                 {models &&
                   !isPending &&
-                  models?.data?.map((model, index) => {
-                    const parseModel = {
-                      model: model.name,
-                      'brand.name': model.brand.name,
-                      'type.name': `${model.type.economicGroup} ${model.type.name}`,
-                      year: model.year,
-                    };
+                  models?.data?.map((model) => {
                     return (
                       <T.Row key={model.id}>
-                        {columns.map((column) =>
-                          column.id === 'model' ||
-                          column.id === 'brand.name' ||
-                          column.id === 'type.name' ||
-                          column.id === 'year' ? (
-                            <T.Cell
-                              className={`${column?.id === 'model' ? 'font-bold' : ''}`}
-                              key={column.id}
-                            >
-                              {parseModel[column.id]}
-                            </T.Cell>
-                          ) : (
+                        {columns.map((column) => {
+                          let cellValue;
+                          if (column.id === 'model') {
+                            cellValue = model.name;
+                          } else if (column.id === 'brand.name') {
+                            cellValue = model.brand?.name;
+                          } else if (column.id === 'type.name') {
+                            cellValue = `${model.type?.economicGroup || ''} ${model.type?.name || ''}`;
+                          } else if (column.id === 'year') {
+                            cellValue = model.year;
+                          }
+
+                          if (cellValue !== undefined) {
+                            return (
+                              <T.Cell
+                                className={`${column?.id === 'model' ? 'font-bold' : ''}`}
+                                key={column.id}
+                              >
+                                {cellValue}
+                              </T.Cell>
+                            );
+                          }
+
+                          return (
                             <T.Cell key={column?.id}>
                               <div className="flex justify-center items-center gap-2">
                                 <ActionButtons
-                                  onEdit={() => onEditModel(model)}
-                                  onRemove={() => onDeleteModel(model.id)}
+                                  onEdit={
+                                    isEditpermissions.hasPermission
+                                      ? () => onEditModel(model)
+                                      : null
+                                  }
+                                  onRemove={
+                                    isDeletepermissions.hasPermission
+                                      ? () => onDeleteModel(model.id)
+                                      : null
+                                  }
                                 />
                               </div>
                             </T.Cell>
-                          ),
-                        )}
+                          );
+                        })}
                       </T.Row>
                     );
                   })}
@@ -319,8 +341,16 @@ const Models = () => {
                     key: 'Acciones',
                     value: (
                       <ActionButtons
-                        onEdit={() => onEditModel(model)}
-                        onRemove={() => onDeleteModel(model.id)}
+                        onEdit={
+                          isEditpermissions.hasPermission
+                            ? () => onEditModel(model)
+                            : null
+                        }
+                        onRemove={
+                          isDeletepermissions.hasPermission
+                            ? () => onDeleteModel(model.id)
+                            : null
+                        }
                       />
                     ),
                   },
@@ -385,4 +415,6 @@ const Models = () => {
   );
 };
 
-export default Models;
+const ProtectedModels = withPermission(Models, 'view_vehicles_models');
+
+export default ProtectedModels;

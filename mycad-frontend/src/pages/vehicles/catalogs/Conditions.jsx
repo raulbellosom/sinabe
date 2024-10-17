@@ -6,6 +6,8 @@ import ModalFormikForm from '../../../components/Modals/ModalFormikForm';
 import { ConditionFormSchema } from '../../../components/VehicleComponents/ConditionForm/ConditionFormSchema';
 import ConditionFormFields from '../../../components/VehicleComponents/ConditionForm/ConditionFormFields';
 import { FaListAlt } from 'react-icons/fa';
+import useCheckPermissions from '../../../hooks/useCheckPermissions';
+import withPermission from '../../../utils/withPermissions';
 
 const Conditions = () => {
   const {
@@ -92,6 +94,11 @@ const Conditions = () => {
     setRemoveConditionId(id);
     setIsDeleteModalOpen(true);
   };
+
+  const isCreatePermission = useCheckPermissions('create_vehicles_conditions');
+  const isEditPermission = useCheckPermissions('edit_vehicles_conditions');
+  const isDeletePermission = useCheckPermissions('delete_vehicles_conditions');
+
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       <div className="h-full overflow-auto">
@@ -100,9 +107,21 @@ const Conditions = () => {
             icon={FaListAlt}
             data={conditions}
             title="Condición de los Vehiculos"
-            onCreate={() => setIsOpenModal(true)}
-            onEdit={(type) => onEditCondition(type)}
-            onRemove={(type) => onRemoveCondition(type.id)}
+            onCreate={
+              isCreatePermission.hasPermission
+                ? () => setIsOpenModal(true)
+                : null
+            }
+            onEdit={
+              isEditPermission.hasPermission
+                ? (type) => onEditCondition(type)
+                : null
+            }
+            onRemove={
+              isDeletePermission.hasPermission
+                ? (type) => onRemoveCondition(type.id)
+                : null
+            }
           />
         ) : (
           <CatalogList.Skeleton />
@@ -130,4 +149,9 @@ const Conditions = () => {
   );
 };
 
-export default Conditions;
+const ProtectedConditionsView = withPermission(
+  Conditions,
+  'view_vehicles_conditions',
+);
+
+export default ProtectedConditionsView;

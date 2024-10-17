@@ -8,24 +8,30 @@ import RoleProvider from './RoleProvider';
 import PermissionProvider from './PermissionProvider';
 import { BreadcrumbProvider } from './BreadcrumbContext';
 
-const AppProvider = ({ children }) => {
-  return (
-    <LoadingProvider>
-      <AuthProvider>
-        <UserProvider>
-          <VehicleProvider>
-            <CatalogProvider>
-              <PermissionProvider>
-                <RoleProvider>
-                  <BreadcrumbProvider>{children}</BreadcrumbProvider>
-                </RoleProvider>
-              </PermissionProvider>
-            </CatalogProvider>
-          </VehicleProvider>
-        </UserProvider>
-      </AuthProvider>
-    </LoadingProvider>
-  );
-};
+const SecurityProvider = ({ children }) => (
+  <AuthProvider>
+    <RoleProvider>
+      <PermissionProvider>{children}</PermissionProvider>
+    </RoleProvider>
+  </AuthProvider>
+);
+
+const DataProvider = ({ children }) => (
+  <UserProvider>
+    <VehicleProvider>
+      <CatalogProvider>{children}</CatalogProvider>
+    </VehicleProvider>
+  </UserProvider>
+);
+
+const AppProvider = ({ children }) => (
+  <LoadingProvider>
+    <SecurityProvider>
+      <DataProvider>
+        <BreadcrumbProvider>{children}</BreadcrumbProvider>
+      </DataProvider>
+    </SecurityProvider>
+  </LoadingProvider>
+);
 
 export default AppProvider;

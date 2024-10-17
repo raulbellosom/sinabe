@@ -17,6 +17,8 @@ import RoleFormFields from '../../components/Roles/RoleFormFields';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import { MdRemoveModerator } from 'react-icons/md';
 import ModalRemove from '../../components/Modals/ModalRemove';
+import withPermission from '../../utils/withPermissions';
+import useCheckPermissions from '../../hooks/useCheckPermissions';
 
 const Roles = () => {
   const {
@@ -40,6 +42,10 @@ const Roles = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const isCreateRolesPermission = useCheckPermissions('create_roles');
+  const isEditRolesPermission = useCheckPermissions('edit_roles');
+  const isDeleteRolesPermission = useCheckPermissions('delete_roles');
 
   useEffect(() => {
     useGetPermissions();
@@ -157,21 +163,41 @@ const Roles = () => {
                     key={permission.id || permission.name}
                     className="flex items-center gap-2 hover:bg-neutral-100 group-hover:bg-neutral-100 p-2 rounded-md cursor-pointer"
                   >
-                    <TextInput
-                      color={'warning'}
-                      type="checkbox"
-                      name={permission.name}
-                      value={permission.name}
-                      disabled={isDisabled}
-                      checked={
-                        !!rolePermissions?.find(
-                          (p) => p?.permissionId === permission?.id,
-                        )
-                      }
-                      onChange={(e) =>
-                        updateRolePermission(permission, e.target.checked)
-                      }
-                    />
+                    {isDeleteRolesPermission.hasPermission ? (
+                      <TextInput
+                        color={'warning'}
+                        type="checkbox"
+                        name={permission.name}
+                        value={permission.name}
+                        disabled={
+                          isDisabled || !isDeleteRolesPermission.hasPermission
+                        }
+                        checked={
+                          !!rolePermissions?.find(
+                            (p) => p?.permissionId === permission?.id,
+                          )
+                        }
+                        onChange={(e) =>
+                          updateRolePermission(permission, e.target.checked)
+                        }
+                      />
+                    ) : (
+                      <TextInput
+                        color={'warning'}
+                        type="checkbox"
+                        name={permission.name}
+                        value={permission.name}
+                        disabled={
+                          isDisabled || !isDeleteRolesPermission.hasPermission
+                        }
+                        checked={
+                          !!rolePermissions?.find(
+                            (p) => p?.permissionId === permission?.id,
+                          )
+                        }
+                        onChange={null}
+                      />
+                    )}
                     <span className="text-sm lg:text-base">
                       {permission.description}
                     </span>
@@ -194,7 +220,9 @@ const Roles = () => {
           actions={[
             {
               label: 'Agregar Rol',
-              action: () => setIsModalOpen(true),
+              action: isCreateRolesPermission.hasPermission
+                ? () => setIsModalOpen(true)
+                : null,
               color: 'mycad',
               icon: IoMdAdd,
               filled: true,
@@ -250,46 +278,53 @@ const Roles = () => {
                   seleccionado
                 </p>
               </div>
-              <Dropdown
-                label={
-                  <BsThreeDotsVertical
-                    size={36}
-                    className="p-2 rounded-full hover:bg-neutral-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100"
-                  />
-                }
-                dismissOnClick={false}
-                inline
-                arrowIcon={null}
-              >
-                <ActionButtons
-                  extraActions={[
-                    {
-                      label: 'Editar rol',
-                      action: () => {
-                        setEditMode(true);
-                        setIsModalOpen(true);
-                      },
-                      color: 'transparent',
-                      icon: FiEdit,
-                      className:
-                        'md:min-w-full border-none hover:bg-neutral-100',
-                    },
-                  ]}
-                />
-                <ActionButtons
-                  extraActions={[
-                    {
-                      label: 'Eliminar rol',
-                      action: () => setIsDeleteModalOpen(true),
-                      color: 'transparent',
-                      filled: true,
-                      icon: MdRemoveModerator,
-                      className:
-                        'md:min-w-full border-none hover:bg-neutral-100',
-                    },
-                  ]}
-                />
-              </Dropdown>
+              {(isDeleteRolesPermission.hasPermission ||
+                isEditRolesPermission.hasPermission) && (
+                <Dropdown
+                  label={
+                    <BsThreeDotsVertical
+                      size={36}
+                      className="p-2 rounded-full hover:bg-neutral-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                    />
+                  }
+                  dismissOnClick={false}
+                  inline
+                  arrowIcon={null}
+                >
+                  {isEditRolesPermission.hasPermission && (
+                    <ActionButtons
+                      extraActions={[
+                        {
+                          label: 'Editar rol',
+                          action: () => {
+                            setEditMode(true);
+                            setIsModalOpen(true);
+                          },
+                          color: 'transparent',
+                          icon: FiEdit,
+                          className:
+                            'md:min-w-full border-none hover:bg-neutral-100',
+                        },
+                      ]}
+                    />
+                  )}
+                  {isDeleteRolesPermission.hasPermission && (
+                    <ActionButtons
+                      extraActions={[
+                        {
+                          label: 'Eliminar rol',
+                          action: () => setIsDeleteModalOpen(true),
+                          color: 'transparent',
+                          filled: true,
+                          icon: MdRemoveModerator,
+                          className:
+                            'md:min-w-full border-none hover:bg-neutral-100',
+                        },
+                      ]}
+                    />
+                  )}
+                </Dropdown>
+              )}
             </div>
             <div className="overflow-y-auto h-full md:max-h-[69dvh] w-full">
               {activeTab && <Accordion data={handleContentTabs() ?? []} />}
@@ -331,4 +366,6 @@ const Roles = () => {
   );
 };
 
-export default React.memo(Roles);
+const ProtectedRolesView = withPermission(Roles, 'view_roles');
+
+export default React.memo(ProtectedRolesView);
