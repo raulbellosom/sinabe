@@ -98,7 +98,7 @@ const Sidebar = ({ children }) => {
 
   const menuItemStyles = {
     root: {
-      fontSize: '18px',
+      fontSize: '16px',
       fontWeight: 600,
     },
     icon: {
