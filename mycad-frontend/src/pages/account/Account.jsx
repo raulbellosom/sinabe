@@ -11,6 +11,8 @@ import ChangePasswordForm from '../../components/AccountFields/ChangePassword/Ch
 import { FaSave } from 'react-icons/fa';
 import { IoMdClose } from 'react-icons/io';
 import { AiFillEdit } from 'react-icons/ai';
+import withPermission from '../../utils/withPermissions';
+import useCheckPermissions from '../../hooks/useCheckPermissions';
 
 const Account = () => {
   const inputRef = useRef(null);
@@ -42,7 +44,7 @@ const Account = () => {
           icon: RiImageEditLine,
           action: () => handleImageUpload(),
           filled: image ? true : false,
-          color: 'orange',
+          color: 'mycad',
         },
       ]);
     } else {
@@ -151,6 +153,7 @@ const Account = () => {
         confirmNewPassword: '',
       });
       setIsOpenModal(false);
+      setError(null);
     } catch (error) {
       console.log(error);
       setError(
@@ -160,6 +163,10 @@ const Account = () => {
     }
   };
 
+  const isEditAccountPermission = useCheckPermissions('edit_account');
+  const isChangePassPermission = useCheckPermissions('change_password');
+  const isUpdateImagePermission = useCheckPermissions('change_account_image');
+
   return (
     <div className="flex flex-col gap-6">
       <section className="bg-white shadow-md p-4 rounded-lg">
@@ -167,26 +174,28 @@ const Account = () => {
         <form className="flex flex-col items-center justify-center gap-4">
           <div className="flex justify-start w-full">
             <h2 className="text-lg font-semibold">Imagen del perfil</h2>
-            <input
-              ref={inputRef}
-              type="file"
-              accept="image/jpeg, image/png, image/jpg, image/webp"
-              hidden
-              className="hidden"
-              onChange={handleImageChange}
-            />
+            {isUpdateImagePermission.hasPermission && (
+              <input
+                ref={inputRef}
+                type="file"
+                accept="image/jpeg, image/png, image/jpg, image/webp"
+                hidden
+                className="hidden"
+                onChange={handleImageChange}
+              />
+            )}
           </div>
-          <div className="rounded-full ring-4 ring-orange-500 p-1">
+          <div className="rounded-full h- ring-4 ring-orange-500 p-1.5">
             <ImageViewer
-              containerStyles={
-                'rounded-full overflow-hidden ring-2 ring-stone-100'
-              }
-              images={image ? [image] : ['https://via.placeholder.com/150']}
+              containerClassNames={'rounded-full overflow-hidden'}
+              images={image ? [image] : []}
             />
           </div>
-          <div className="flex flex-col md:flex-row justify-start gap-2">
-            <ActionButtons extraActions={extraActions} />
-          </div>
+          {isUpdateImagePermission.hasPermission && (
+            <div className="flex flex-col md:flex-row justify-start gap-2">
+              <ActionButtons extraActions={extraActions} />
+            </div>
+          )}
         </form>
         <hr className="my-4" />
         <form>
@@ -223,7 +232,7 @@ const Account = () => {
                     label: 'Guardar cambios',
                     icon: FaSave,
                     action: onSaveFieldChanges,
-                    color: 'orange',
+                    color: 'mycad',
                     filled: true,
                   },
                 ]}
@@ -234,7 +243,9 @@ const Account = () => {
                   {
                     label: 'Editar',
                     icon: AiFillEdit,
-                    action: () => setIsEditing(true),
+                    action: isEditAccountPermission.hasPermission
+                      ? () => setIsEditing(true)
+                      : null,
                     color: 'stone',
                   },
                 ]}
@@ -243,40 +254,46 @@ const Account = () => {
           </div>
         </form>
         <hr className="my-4" />
-        <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-bold">
-            <span className="inline-block mr-2">
-              <RiLockPasswordFill size={20} />
-            </span>
-            Cambiar contraseña
-          </h2>
-          <ActionButtons
-            extraActions={[
-              {
-                label: 'Cambiar contraseña',
-                icon: MdPassword,
-                action: () => setIsOpenModal(true),
-                color: 'stone',
-                filled: true,
-              },
-            ]}
-          />
-          <ModalForm
-            isOpenModal={isOpenModal}
-            onClose={() => setIsOpenModal(false)}
-            title={'Cambiar contraseña'}
-            size={'xl'}
-          >
-            <ChangePasswordForm
-              initialValues={passwordFields}
-              onSubmit={onChangePassword}
-              error={error}
+        {isChangePassPermission.hasPermission && (
+          <div className="flex flex-col gap-4">
+            <h2 className="text-lg font-bold">
+              <span className="inline-block mr-2">
+                <RiLockPasswordFill size={20} />
+              </span>
+              Cambiar contraseña
+            </h2>
+            <ActionButtons
+              extraActions={[
+                {
+                  label: 'Cambiar contraseña',
+                  icon: MdPassword,
+                  action: () => setIsOpenModal(true),
+                  color: 'stone',
+                  filled: true,
+                },
+              ]}
             />
-          </ModalForm>
-        </div>
+            {isOpenModal && (
+              <ModalForm
+                isOpenModal={isOpenModal}
+                onClose={() => setIsOpenModal(false)}
+                title={'Cambiar contraseña'}
+                size={'xl'}
+              >
+                <ChangePasswordForm
+                  initialValues={passwordFields}
+                  onSubmit={onChangePassword}
+                  error={error}
+                />
+              </ModalForm>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );
 };
 
-export default Account;
+const ProtectedAccountView = withPermission(Account, 'view_account');
+
+export default ProtectedAccountView;

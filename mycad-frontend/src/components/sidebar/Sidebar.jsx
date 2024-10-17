@@ -13,6 +13,7 @@ import {
   FaUserCircle,
   FaSignOutAlt,
   FaUserCog,
+  FaUserShield,
 } from 'react-icons/fa';
 import { useAuthContext } from '../../context/AuthContext';
 import AccountSidebar from './AccountSidebar';
@@ -21,7 +22,8 @@ import { Button } from 'flowbite-react';
 import Navbar from '../navbar/Navbar';
 import MainLayout from '../../Layout/MainLayout';
 import { BiCategory } from 'react-icons/bi';
-import { MdGarage } from 'react-icons/md';
+import { MdAdminPanelSettings, MdGarage } from 'react-icons/md';
+import useCheckPermissions from '../../hooks/useCheckPermissions';
 
 const themes = {
   light: {
@@ -30,7 +32,7 @@ const themes = {
       color: '#ffffff',
     },
     menu: {
-      menuContent: '#fbfcfd',
+      menuContent: '#0D0D0D',
       icon: '#ffffff',
       hover: {
         backgroundColor: '#f43f5e',
@@ -96,7 +98,7 @@ const Sidebar = ({ children }) => {
 
   const menuItemStyles = {
     root: {
-      fontSize: '16px',
+      fontSize: '18px',
       fontWeight: 600,
     },
     icon: {
@@ -114,13 +116,13 @@ const Sidebar = ({ children }) => {
               themes[theme].menu.menuContent,
               hasImage && !collapsed ? 0.15 : 1,
             )
-          : 'transparent',
+          : '',
     }),
     SubMenuExpandIcon: {
       display: 'flex',
       justifyContent: 'center',
       alignContent: 'center',
-      transform: ' scale(1.5)',
+      transform: ' scale(1.75)',
     },
     button: {
       [`&:hover, &${menuClasses.SubMenuExpandIcon}`]: {
@@ -152,6 +154,24 @@ const Sidebar = ({ children }) => {
     return location.pathname?.includes(currentPath);
   };
 
+  const isDashBoardPermission = useCheckPermissions('view_dashboard');
+  const isUsersPermission = useCheckPermissions('view_users');
+  const isAccountPermission = useCheckPermissions('view_account');
+  const isRolesPermission = useCheckPermissions('view_roles');
+  const isVehiclesPermission = useCheckPermissions('view_vehicles');
+  const isModelsPermission = useCheckPermissions('view_vehicles_models');
+  const isBrandsPermission = useCheckPermissions('view_vehicles_brands');
+  const isTypesPermission = useCheckPermissions('view_vehicles_types');
+  const isConditionsPermission = useCheckPermissions(
+    'view_vehicles_conditions',
+  );
+
+  const isCatalogsPermission =
+    isModelsPermission.hasPermission ||
+    isBrandsPermission.hasPermission ||
+    isTypesPermission.hasPermission ||
+    isConditionsPermission.hasPermission;
+
   return (
     <div
       style={{
@@ -171,7 +191,6 @@ const Sidebar = ({ children }) => {
         backgroundColor={hexToRgba(
           themes[theme].sidebar.backgroundColor,
           hasImage ? 0.2 : 1,
-          // 1,
         )}
         rootStyles={{
           color: themes[theme].sidebar.color,
@@ -194,49 +213,78 @@ const Sidebar = ({ children }) => {
             />
             <div className="border-t border-gray-300 py-1" />
             <Menu menuItemStyles={menuItemStyles}>
-              <MenuItem
-                component={<Link to={'/dashboard'} />}
-                active={isActivePath('/dashboard')}
-                icon={<FaTachometerAlt />}
-              >
-                Dashboard
-              </MenuItem>
-              <SubMenu label="Vehículos" icon={<MdGarage />}>
+              {isDashBoardPermission.hasPermission && (
                 <MenuItem
-                  icon={<FaCar />}
-                  active={isActivePath('/vehicles')}
-                  component={<Link to={'/vehicles'} />}
-                  onClick={() => {
-                    setToggled(false);
-                  }}
+                  component={<Link to={'/dashboard'} />}
+                  active={isActivePath('/dashboard')}
+                  icon={<FaTachometerAlt size={23} />}
                 >
-                  Mis Vehículos
+                  Dashboard
                 </MenuItem>
+              )}
+              {(isCatalogsPermission || isVehiclesPermission.hasPermission) && (
+                <SubMenu label="Vehículos" icon={<MdGarage size={23} />}>
+                  {isVehiclesPermission.hasPermission && (
+                    <MenuItem
+                      icon={<FaCar size={23} />}
+                      active={isActivePath('/vehicles')}
+                      component={<Link to={'/vehicles'} />}
+                      onClick={() => {
+                        setToggled(false);
+                      }}
+                    >
+                      Mis Vehículos
+                    </MenuItem>
+                  )}
+                  {isCatalogsPermission && (
+                    <MenuItem
+                      icon={<BiCategory size={23} />}
+                      active={isActivePath('/catalogs')}
+                      component={<Link to={'/catalogs'} />}
+                      onClick={() => {
+                        setToggled(false);
+                      }}
+                    >
+                      Catálogos
+                    </MenuItem>
+                  )}
+                </SubMenu>
+              )}
+              {(isUsersPermission.hasPermission ||
+                isRolesPermission.hasPermission) && (
+                <SubMenu
+                  label="Usuarios"
+                  icon={<MdAdminPanelSettings size={23} />}
+                >
+                  {isUsersPermission.hasPermission && (
+                    <MenuItem
+                      component={<Link to={'/users'} />}
+                      active={isActivePath('/users')}
+                      icon={<FaUserCircle size={23} />}
+                    >
+                      Usuarios
+                    </MenuItem>
+                  )}
+                  {isRolesPermission.hasPermission && (
+                    <MenuItem
+                      component={<Link to={'/roles'} />}
+                      active={isActivePath('/roles')}
+                      icon={<FaUserShield size={23} />}
+                    >
+                      Roles
+                    </MenuItem>
+                  )}
+                </SubMenu>
+              )}
+              {isAccountPermission && (
                 <MenuItem
-                  icon={<BiCategory />}
-                  active={isActivePath('/catalogs')}
-                  component={<Link to={'/catalogs'} />}
-                  onClick={() => {
-                    setToggled(false);
-                  }}
+                  component={<Link to={'/account-settings'} />}
+                  active={isActivePath('/account-settings')}
+                  icon={<FaUserCog size={23} />}
                 >
-                  Catálogos
+                  Editar Perfil
                 </MenuItem>
-              </SubMenu>
-              <MenuItem
-                component={<Link to={'/users'} />}
-                active={isActivePath('/users')}
-                icon={<FaUserCircle />}
-              >
-                Usuarios
-              </MenuItem>
-              <MenuItem
-                component={<Link to={'/account-settings'} />}
-                active={isActivePath('/account-settings')}
-                icon={<FaUserCog />}
-              >
-                Editar Perfil
-              </MenuItem>
+              )}
             </Menu>
           </div>
           <div className="p-4">

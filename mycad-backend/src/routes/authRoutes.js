@@ -10,6 +10,7 @@ import {
 } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { upload, saveProfileImage } from "../utils/saveProfileImage.js";
+import { verifyRole } from "../middleware/authorization.js";
 
 const router = express.Router();
 

@@ -6,7 +6,7 @@ import ModalViewer from '../../components/Modals/ModalViewer';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import { useNavigate } from 'react-router-dom';
 import { LuFileSpreadsheet } from 'react-icons/lu';
-import { FaEdit, FaEye } from 'react-icons/fa';
+import { FaCar, FaEdit, FaEye } from 'react-icons/fa';
 import { Checkbox, Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchVehicles } from '../../services/api';
@@ -32,6 +32,8 @@ const TableFooter = React.lazy(
   () => import('../../components/Table/TableFooter'),
 );
 import LinkButton from '../../components/ActionButtons/LinkButton';
+import withPermission from '../../utils/withPermissions';
+import useCheckPermissions from '../../hooks/useCheckPermissions';
 
 const formatVehicle = (vehicleData) => {
   const {
@@ -42,7 +44,7 @@ const formatVehicle = (vehicleData) => {
     economicNumber,
     cost,
   } = vehicleData;
-  const vehicle = `\n${model.name},${model.type.name},${model.brand.name},${model.year},${economicNumber},${serialNumber},${plateNumber},${acquisitionDate},${cost}`;
+  const vehicle = `\n${model.name},${model.type.name},${model.brand.name},${model.year},${model.type.economicGroup},${economicNumber},${serialNumber},${plateNumber},${acquisitionDate},${cost}`;
   return vehicle;
 };
 
@@ -261,10 +263,13 @@ const Vehicles = () => {
     Notifies('success', 'Vehículos actualizados');
   };
 
+  const isCreatePermission = useCheckPermissions('create_vehicles');
+
   return (
     <>
       <section className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
         <TableHeader
+          icon={FaCar}
           title="Vehículos"
           actions={[
             {
@@ -276,13 +281,17 @@ const Vehicles = () => {
             },
             {
               label: 'Cargar',
-              action: () => setIsOpenModalUpload(true),
+              action: isCreatePermission.hasPermission
+                ? () => setIsOpenModalUpload(true)
+                : null,
               color: 'blue',
               icon: MdOutlineFileUpload,
             },
             {
               label: 'Nuevo',
-              href: '/vehicles/create',
+              href: isCreatePermission.hasPermission
+                ? '/vehicles/create'
+                : null,
               color: 'mycad',
               icon: IoMdAdd,
               filled: true,
@@ -373,7 +382,7 @@ const Vehicles = () => {
                                 <T.Cell key={column.id} className="w-20 py-2">
                                   <ImageViewer
                                     images={[vehicle?.images[0]]}
-                                    containerStyles={
+                                    containerClassNames={
                                       'first:w-12 first:h-12 first:rounded-md'
                                     }
                                   />
@@ -555,4 +564,6 @@ const Vehicles = () => {
   );
 };
 
-export default Vehicles;
+const ProtectedVehiclesView = withPermission(Vehicles, 'view_vehicles');
+
+export default ProtectedVehiclesView;

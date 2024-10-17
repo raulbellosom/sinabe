@@ -1,45 +1,110 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUsers, createUser, updateUser, deleteUser } from '../services/api';
-import { useContext } from 'react';
-import UserContext from '../context/UserContext';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  createUser,
+  updateUser,
+  deleteUser,
+  changePasswordUser,
+} from '../services/api';
+import { useLoading } from '../context/LoadingContext';
+import Notifies from '../components/Notifies/Notifies';
 
-const useUser = () => {
-  const { dispatch } = useContext(UserContext);
+const useUser = ({ dispatch }) => {
   const queryClient = useQueryClient();
+  const { dispatch: loadingDispatch } = useLoading();
 
-  const { data: users, status } = useQuery('users', getUsers, {
-    onSuccess: (data) => {
-      dispatch({ type: 'SET_USERS', payload: data });
-    },
-  });
+  const setLoading = (loading) => {
+    loadingDispatch({ type: 'SET_LOADING', payload: loading });
+  };
 
-  const createUserMutation = useMutation({
+  const useCreateUser = useMutation({
     mutationFn: createUser,
-    onSuccess: () => {
+    onMutate: () => {
+      setLoading(true);
+    },
+    onSuccess: (data) => {
+      dispatch({ type: 'CREATE_USER', payload: data });
+      Notifies('success', 'Usuario creado correctamente');
+    },
+    onError: (error) => {
+      console.log('error on createUser', error);
+      Notifies('error', error?.response?.data?.message);
+      setLoading(false);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries('users');
+      setLoading(false);
     },
   });
 
-  const updateUserMutation = useMutation({
+  const useUpdateUser = useMutation({
     mutationFn: updateUser,
-    onSuccess: () => {
+    onMutate: () => {
+      setLoading(true);
+    },
+    onSuccess: (data) => {
+      dispatch({ type: 'UPDATE_USER', payload: data });
+      Notifies('success', 'Usuario actualizado correctamente');
+    },
+    onError: (error) => {
+      console.log('error on updateUser', error);
+      setLoading(false);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries('users');
+      setLoading(false);
     },
   });
 
-  const deleteUserMutation = useMutation({
-    mutationFn: deleteUser,
-    onSuccess: () => {
+  const useChangePasswordUser = useMutation({
+    mutationFn: changePasswordUser,
+    onMutate: () => {
+      setLoading(true);
+    },
+    onSuccess: (data) => {
+      Notifies('success', 'Contraseña actualizada correctamente');
+    },
+    onError: (error) => {
+      console.log('error on changePasswordUser', error);
+      setLoading(false);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries('users');
+      setLoading(false);
+    },
+  });
+
+  const useDeleteUser = useMutation({
+    mutationFn: deleteUser,
+    onMutate: () => {
+      setLoading(true);
+    },
+    onSuccess: (data) => {
+      dispatch({ type: 'DELETE_USER', payload: data });
+      Notifies('success', 'Usuario eliminado correctamente');
+    },
+    onError: (error) => {
+      console.log('error on deleteUser', error);
+      setLoading(false);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries('users');
+      setLoading(false);
     },
   });
 
   return {
-    users,
-    status,
-    createUser: createUserMutation.mutate,
-    updateUser: updateUserMutation.mutate,
-    deleteUser: deleteUserMutation.mutate,
+    useCreateUser: (values) => {
+      return useCreateUser.mutateAsync(values);
+    },
+    useUpdateUser: (values) => {
+      return useUpdateUser.mutateAsync(values);
+    },
+    useDeleteUser: (values) => {
+      return useDeleteUser.mutateAsync(values);
+    },
+    useChangePasswordUser: (values) => {
+      return useChangePasswordUser.mutateAsync(values);
+    },
   };
 };
 

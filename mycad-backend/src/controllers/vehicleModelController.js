@@ -23,6 +23,7 @@ export const getVehicleTypes = async (req, res) => {
       return {
         id: type.id,
         name: type.name,
+        economicGroup: type.economicGroup,
         count: vehicleCount,
       };
     });
@@ -71,11 +72,11 @@ export const getVehicleTypeById = async (req, res) => {
 };
 
 export const createVehicleType = async (req, res) => {
-  const { name } = req.body;
+  const { name, economicGroup } = req.body;
 
   try {
     const vehicleType = await db.vehicleType.findFirst({
-      where: { name, enabled: true },
+      where: { name, economicGroup, enabled: true },
     });
 
     if (vehicleType) {
@@ -85,6 +86,7 @@ export const createVehicleType = async (req, res) => {
     const newVehicleType = await db.vehicleType.create({
       data: {
         name,
+        economicGroup,
         enabled: true,
       },
     });
@@ -92,6 +94,7 @@ export const createVehicleType = async (req, res) => {
     const vehicleTypeWithCount = {
       id: newVehicleType.id,
       name: newVehicleType.name,
+      economicGroup: newVehicleType.economicGroup,
       count: 0,
     };
 
@@ -104,7 +107,7 @@ export const createVehicleType = async (req, res) => {
 
 export const updateVehicleType = async (req, res) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { name, economicGroup } = req.body;
 
   try {
     const vehicleType = await db.vehicleType.findUnique({
@@ -119,12 +122,18 @@ export const updateVehicleType = async (req, res) => {
       where: { id: parseInt(id, 10) },
       data: {
         name,
+        economicGroup,
       },
       include: {
         models: {
           include: {
-            _count: {
-              select: { vehicles: true },
+            vehicles: {
+              where: {
+                enabled: true,
+              },
+              select: {
+                _count: true,
+              },
             },
           },
         },
@@ -134,6 +143,7 @@ export const updateVehicleType = async (req, res) => {
     const vehicleTypeWithCount = {
       id: updatedVehicleType.id,
       name: updatedVehicleType.name,
+      economicGroup: updatedVehicleType.economicGroup,
       count: updatedVehicleType.models.reduce(
         (acc, model) => acc + model._count.vehicles,
         0
@@ -183,6 +193,7 @@ export const deleteVehicleType = async (req, res) => {
     const vehicleTypesWithCount = data.map((type) => ({
       id: type.id,
       name: type.name,
+      economicGroup: type.economicGroup,
       count: type.models.reduce((acc, model) => acc + model._count.vehicles, 0),
     }));
 

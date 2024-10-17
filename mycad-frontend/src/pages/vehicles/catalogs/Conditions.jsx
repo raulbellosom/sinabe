@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useCatalogContext } from '../../../context/CatalogContext';
 import CatalogList from '../../../components/VehicleComponents/CatalogList';
-import ModalForm from '../../../components/Modals/ModalForm';
 import ModalRemove from '../../../components/Modals/ModalRemove';
-const TypeForm = React.lazy(
-  () => import('../../../components/VehicleComponents/TypeForm/TypeForm'),
-);
+import ModalFormikForm from '../../../components/Modals/ModalFormikForm';
+import { ConditionFormSchema } from '../../../components/VehicleComponents/ConditionForm/ConditionFormSchema';
+import ConditionFormFields from '../../../components/VehicleComponents/ConditionForm/ConditionFormFields';
+import { FaListAlt } from 'react-icons/fa';
+import useCheckPermissions from '../../../hooks/useCheckPermissions';
+import withPermission from '../../../utils/withPermissions';
 
 const Conditions = () => {
   const {
@@ -13,7 +15,6 @@ const Conditions = () => {
     createVehicleCondition,
     updateVehicleCondition,
     deleteVehicleCondition,
-    fetchVehicleConditions,
     loading,
   } = useCatalogContext();
   const [conditions, setConditions] = useState([]);
@@ -35,6 +36,7 @@ const Conditions = () => {
         count: condition.count,
       };
     });
+    formattedConditions.sort((a, b) => a.name.localeCompare(b.name));
     setConditions(formattedConditions);
   }, [vehicleConditions]);
 
@@ -92,37 +94,52 @@ const Conditions = () => {
     setRemoveConditionId(id);
     setIsDeleteModalOpen(true);
   };
+
+  const isCreatePermission = useCheckPermissions('create_vehicles_conditions');
+  const isEditPermission = useCheckPermissions('edit_vehicles_conditions');
+  const isDeletePermission = useCheckPermissions('delete_vehicles_conditions');
+
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       <div className="h-full overflow-auto">
         {conditions && conditions.length > 0 && !loading ? (
           <CatalogList
+            icon={FaListAlt}
             data={conditions}
-            title="Condicion de los Vehiculos"
-            onCreate={() => setIsOpenModal(true)}
-            position="center"
-            onEdit={(type) => onEditCondition(type)}
-            onRemove={(type) => onRemoveCondition(type.id)}
+            title="Condición de los Vehiculos"
+            onCreate={
+              isCreatePermission.hasPermission
+                ? () => setIsOpenModal(true)
+                : null
+            }
+            onEdit={
+              isEditPermission.hasPermission
+                ? (type) => onEditCondition(type)
+                : null
+            }
+            onRemove={
+              isDeletePermission.hasPermission
+                ? (type) => onRemoveCondition(type.id)
+                : null
+            }
           />
         ) : (
           <CatalogList.Skeleton />
         )}
       </div>
-      <ModalForm
-        onClose={onCloseModal}
-        isOpenModal={isOpenModal}
-        title={
-          editMode
-            ? 'Editar Condicion del Vehiculo'
-            : 'Crear Condicion del Vehiculo'
-        }
-      >
-        <TypeForm
+      {isOpenModal && (
+        <ModalFormikForm
+          onClose={onCloseModal}
+          isOpenModal={isOpenModal}
+          dismissible
+          title={editMode ? 'Editar Condición' : 'Crear Condición'}
+          schema={ConditionFormSchema}
           initialValues={initialValues}
           onSubmit={handleSubmit}
-          isUpdate={editMode}
+          formFields={<ConditionFormFields />}
+          saveLabel={editMode ? 'Actualizar' : 'Guardar'}
         />
-      </ModalForm>
+      )}
       <ModalRemove
         isOpenModal={isDeleteModalOpen}
         onCloseModal={() => setIsDeleteModalOpen(false)}
@@ -132,4 +149,9 @@ const Conditions = () => {
   );
 };
 
-export default Conditions;
+const ProtectedConditionsView = withPermission(
+  Conditions,
+  'view_vehicles_conditions',
+);
+
+export default ProtectedConditionsView;

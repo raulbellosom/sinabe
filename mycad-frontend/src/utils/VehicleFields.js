@@ -38,6 +38,13 @@ export const vehicleColumns = [
     type: 'number',
   },
   {
+    id: 'model.type.economicGroup',
+    value: 'Grupo económico',
+    classes: 'w-auto',
+    order: 'asc',
+    type: 'text',
+  },
+  {
     id: 'economicNumber',
     value: 'Número económico',
     classes: 'w-auto',

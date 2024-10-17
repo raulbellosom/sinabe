@@ -7,6 +7,9 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import vehicleRoutes from "./routes/vehicleRoutes.js";
 import pingRoutes from "./routes/pingRoutes.js";
+import permissionRoutes from "./routes/permissionRoutes.js";
+import roleRoutes from "./routes/roleRoutes.js";
+import rolePermissionRoutes from "./routes/rolePermissionRoutes.js";
 
 dotenv.config();
 
@@ -24,6 +27,9 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/vehicles", vehicleRoutes);
+app.use("/api/permissions", permissionRoutes);
+app.use("/api/roles", roleRoutes);
+app.use("/api/role-permissions", rolePermissionRoutes);
 app.use("/api/ping", pingRoutes);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 

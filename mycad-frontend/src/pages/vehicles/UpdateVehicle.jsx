@@ -14,6 +14,7 @@ const VehicleForm = React.lazy(
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 
 import { FaCar, FaSave } from 'react-icons/fa';
+import withPermission from '../../utils/withPermissions';
 
 const UpdateVehicle = () => {
   const formRef = useRef(null);
@@ -83,7 +84,7 @@ const UpdateVehicle = () => {
         acquisitionDate: vehicle.acquisitionDate,
         cost: vehicle.cost || '',
         mileage: vehicle.mileage,
-        status: vehicle.status == 'true' ? true : false,
+        status: vehicle.status == 'true' || vehicle.status == true,
         images: vehicle.images || [],
         files: vehicle?.files ? formatedFiles : [],
         comments: vehicle.comments || '',
@@ -246,4 +247,6 @@ const UpdateVehicle = () => {
   );
 };
 
-export default UpdateVehicle;
+const ProtectedVehiclesUpdate = withPermission(UpdateVehicle, 'edit_vehicles');
+
+export default ProtectedVehiclesUpdate;

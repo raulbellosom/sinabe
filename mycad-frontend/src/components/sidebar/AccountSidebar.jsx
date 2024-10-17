@@ -33,7 +33,7 @@ const AccountSidebar = ({ name, role, photo, collapsed }) => {
           'w-full whitespace-nowrap overflow-hidden flex justify-start gap-4 items-center',
         )}
       >
-        <div className="flex justify-center items-center h-10 w-10 overflow-hidden rounded-full bg-stone-400">
+        <div className="flex justify-center items-center h-10 w-10 min-w-10 min-h-10 overflow-hidden rounded-full bg-stone-400">
           <ImageViewer
             images={photo ? [photo] : ['https://via.placeholder.com/150']}
             imageStyles={{

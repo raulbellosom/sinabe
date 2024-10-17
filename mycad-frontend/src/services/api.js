@@ -126,7 +126,27 @@ export const getUsers = async () => {
 
 export const createUser = async (user) => {
   try {
-    const response = await api.post(`/users`, user);
+    let data = new FormData();
+
+    const image = user?.photo[0] || null;
+
+    if (image instanceof File) {
+      data.append('profileImage', image);
+    }
+
+    data.append(
+      'userData',
+      JSON.stringify({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        password: user.password,
+        repeatPassword: user.repeatPassword,
+      }),
+    );
+    const response = await api.post(`/users`, data, headerFormData);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -136,7 +156,37 @@ export const createUser = async (user) => {
 
 export const updateUser = async (user) => {
   try {
-    const response = await api.put(`/users/${user.id}`, user);
+    let data = new FormData();
+    const image = user?.photo[0] || null;
+
+    if (image instanceof File) {
+      data.append('profileImage', image);
+    }
+    data.append(
+      'userData',
+      JSON.stringify({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        status: user.status,
+        password: user.password,
+        repeatPassword: user.repeatPassword,
+      }),
+    );
+    const response = await api.put(`/users/${user.id}`, data, headerFormData);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const changePasswordUser = async (user) => {
+  try {
+    const response = await api.put(`/users/changePassword/${user.id}`, user);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -147,6 +197,35 @@ export const updateUser = async (user) => {
 export const deleteUser = async (userId) => {
   try {
     const response = await api.delete(`/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const searchUsers = async ({
+  searchTerm,
+  sortBy,
+  order,
+  page,
+  pageSize,
+  signal,
+}) => {
+  try {
+    const response = await api.get('/users/search', {
+      params: {
+        searchTerm,
+        sortBy,
+        order,
+        page,
+        pageSize,
+      },
+      signal: signal,
+    });
+    if (response.status !== 200) {
+      throw new Error(response.message || 'Hubo un error al hacer la busqueda');
+    }
     return response.data;
   } catch (error) {
     console.error(error);

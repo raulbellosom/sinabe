@@ -5,283 +5,212 @@ import { v4 as uuidv4 } from "uuid";
 const prisma = new PrismaClient();
 
 async function main() {
-  // Verificar si ya existen roles en la base de datos
   const roles = await prisma.role.findMany();
   if (roles.length === 0) {
-    const hashedPasswordAdmin = await bcrypt.hash("adminadmin", 10);
-    const hashedPasswordUser = await bcrypt.hash("useruser", 10);
-    const hashedPasswordguest = await bcrypt.hash("12341234", 10);
+    const conditions = await prisma.condition.createMany({
+      data: [
+        {
+          name: "Nuevo",
+          enabled: true,
+        },
+        {
+          name: "Semi Nuevo",
+          enabled: true,
+        },
+        {
+          name: "Usado",
+          enabled: true,
+        },
+        {
+          name: "En Reparación",
+          enabled: true,
+        },
+        {
+          name: "En Mantenimiento",
+          enabled: true,
+        },
+        {
+          name: "En Uso",
+          enabled: true,
+        },
+        {
+          name: "En Desuso",
+          enabled: true,
+        },
+        {
+          name: "En Venta",
+          enabled: true,
+        },
+        {
+          name: "Vendido",
+          enabled: true,
+        },
+        {
+          name: "En renta",
+          enabled: true,
+        },
+        {
+          name: "Rentado",
+          enabled: true,
+        },
+        {
+          name: "Prestado",
+          enabled: true,
+        },
+        {
+          name: "En Préstamo",
+          enabled: true,
+        },
+        {
+          name: "Descompuesto",
+          enabled: true,
+        },
+      ],
+    });
 
-    // Crear roles
+    const rootRole = await prisma.role.create({
+      data: {
+        name: "Root",
+      },
+    });
+
     const adminRole = await prisma.role.create({
       data: {
-        id: 1,
         name: "Admin",
       },
     });
 
     const userRole = await prisma.role.create({
       data: {
-        id: 2,
         name: "User",
       },
     });
 
     const guestRole = await prisma.role.create({
       data: {
-        id: 3,
         name: "Guest",
       },
     });
 
-    // Crear tipos de vehículos
-    const vehicleType1 = await prisma.vehicleType.create({
-      data: {
-        name: "Sedan",
-        enabled: true,
+    const permissions = [
+      { name: "view_dashboard", description: "Ver el panel de control" },
+      { name: "view_account", description: "Ver la cuenta" },
+      { name: "edit_account", description: "Editar información de la cuenta" },
+      { name: "change_password", description: "Cambiar contraseña" },
+      { name: "change_account_image", description: "Cambiar imagen de perfil" },
+      { name: "view_users", description: "Ver usuarios" },
+      { name: "create_users", description: "Crear usuarios" },
+      { name: "edit_users", description: "Editar usuarios" },
+      { name: "delete_users", description: "Eliminar usuarios" },
+      { name: "view_roles", description: "Ver roles" },
+      { name: "create_roles", description: "Crear roles" },
+      { name: "edit_roles", description: "Editar roles" },
+      { name: "delete_roles", description: "Eliminar roles" },
+      { name: "view_vehicles", description: "Ver vehículos" },
+      { name: "create_vehicles", description: "Crear vehículos" },
+      { name: "edit_vehicles", description: "Editar vehículos" },
+      { name: "delete_vehicles", description: "Eliminar vehículos" },
+      {
+        name: "view_vehicles_conditions",
+        description: "Ver condiciones de vehículos",
       },
-    });
-
-    const vehicleType2 = await prisma.vehicleType.create({
-      data: {
-        name: "SUV",
-        enabled: true,
+      {
+        name: "create_vehicles_conditions",
+        description: "Crear condiciones de vehículos",
       },
-    });
-
-    // Crear marcas de vehículos
-    const vehicleBrand1 = await prisma.vehicleBrand.create({
-      data: {
-        name: "Toyota",
-        enabled: true,
+      {
+        name: "edit_vehicles_conditions",
+        description: "Editar condiciones de vehículos",
       },
-    });
-
-    const vehicleBrand2 = await prisma.vehicleBrand.create({
-      data: {
-        name: "Honda",
-        enabled: true,
+      {
+        name: "delete_vehicles_conditions",
+        description: "Eliminar condiciones de vehículos",
       },
-    });
-
-    const vehicleBrand3 = await prisma.vehicleBrand.create({
-      data: {
-        name: "Chevrolet",
-        enabled: true,
+      { name: "view_vehicles_brands", description: "Ver marcas de vehículos" },
+      {
+        name: "create_vehicles_brands",
+        description: "Crear marcas de vehículos",
       },
-    });
-
-    // Crear modelos de vehículos
-    const model1 = await prisma.model.create({
-      data: {
-        name: "Camry",
-        year: 2021,
-        typeId: vehicleType1.id,
-        brandId: vehicleBrand1.id,
-        enabled: true,
+      {
+        name: "edit_vehicles_brands",
+        description: "Editar marcas de vehículos",
       },
-    });
-
-    const model2 = await prisma.model.create({
-      data: {
-        name: "Civic",
-        year: 2021,
-        typeId: vehicleType2.id,
-        brandId: vehicleBrand2.id,
-        enabled: true,
+      {
+        name: "delete_vehicles_brands",
+        description: "Eliminar marcas de vehículos",
       },
-    });
-
-    const model3 = await prisma.model.create({
-      data: {
-        name: "7m3",
-        year: 2021,
-        typeId: vehicleType2.id,
-        brandId: vehicleBrand3.id,
-        enabled: true,
+      { name: "view_vehicles_types", description: "Ver tipos de vehículos" },
+      {
+        name: "create_vehicles_types",
+        description: "Crear tipos de vehículos",
       },
-    });
-
-    const condition0 = await prisma.condition.create({
-      data: {
-        name: "Nuevo",
-        enabled: true,
+      { name: "edit_vehicles_types", description: "Editar tipos de vehículos" },
+      {
+        name: "delete_vehicles_types",
+        description: "Eliminar tipos de vehículos",
       },
-    });
-
-    const condition1 = await prisma.condition.create({
-      data: {
-        name: "Usado",
-        enabled: true,
+      { name: "view_vehicles_models", description: "Ver modelos de vehículos" },
+      {
+        name: "create_vehicles_models",
+        description: "Crear modelos de vehículos",
       },
-    });
-
-    const condition2 = await prisma.condition.create({
-      data: {
-        name: "En Reparación",
-        enabled: true,
+      {
+        name: "edit_vehicles_models",
+        description: "Editar modelos de vehículos",
       },
-    });
-
-    const condition3 = await prisma.condition.create({
-      data: {
-        name: "En Mantenimiento",
-        enabled: true,
+      {
+        name: "delete_vehicles_models",
+        description: "Eliminar modelos de vehículos",
       },
-    });
+    ];
 
-    const condition4 = await prisma.condition.create({
-      data: {
-        name: "En Uso",
-        enabled: true,
-      },
-    });
+    const createdPermissions = await Promise.all(
+      permissions.map((perm) =>
+        prisma.permission.create({
+          data: perm,
+        })
+      )
+    );
 
-    const condition5 = await prisma.condition.create({
-      data: {
-        name: "En Desuso",
-        enabled: true,
-      },
-    });
+    await Promise.all(
+      createdPermissions.map((perm) =>
+        prisma.rolePermission.create({
+          data: {
+            roleId: rootRole.id,
+            permissionId: perm.id,
+          },
+        })
+      )
+    );
 
-    const condition6 = await prisma.condition.create({
-      data: {
-        name: "En Venta",
-        enabled: true,
-      },
-    });
+    await Promise.all(
+      createdPermissions.map((perm) =>
+        prisma.rolePermission.create({
+          data: {
+            roleId: adminRole.id,
+            permissionId: perm.id,
+          },
+        })
+      )
+    );
 
-    const condition7 = await prisma.condition.create({
-      data: {
-        name: "Vendido",
-        enabled: true,
-      },
-    });
+    const hashedPasswordAdmin = await bcrypt.hash("adminadmin", 10);
+    const hashedPasswordUser = await bcrypt.hash("useruser", 10);
 
-    const condition8 = await prisma.condition.create({
-      data: {
-        name: "En renta",
-        enabled: true,
-      },
-    });
-
-    const condition9 = await prisma.condition.create({
-      data: {
-        name: "Rentado",
-        enabled: true,
-      },
-    });
-
-    const condition10 = await prisma.condition.create({
-      data: {
-        name: "Prestado",
-        enabled: true,
-      },
-    });
-
-    // Crear usuarios
     const uuidUser1 = uuidv4();
     const user1 = await prisma.user.create({
       data: {
         id: uuidUser1,
-        firstName: "Admin",
-        lastName: "User",
-        email: "admin@example.com",
+        firstName: "User",
+        lastName: "Root",
+        email: "root@mycad.mx",
         password: hashedPasswordAdmin,
-        roleId: adminRole.id,
+        roleId: rootRole.id,
         enabled: true,
       },
     });
 
-    const uuidUser2 = uuidv4();
-    const user2 = await prisma.user.create({
-      data: {
-        id: uuidUser2,
-        firstName: "Regular",
-        lastName: "User",
-        email: "user@example.com",
-        password: hashedPasswordUser,
-        roleId: userRole.id,
-        enabled: true,
-      },
-    });
-
-    const uuidUser3 = uuidv4();
-    const user3 = await prisma.user.create({
-      data: {
-        id: uuidUser3,
-        firstName: "Raul",
-        lastName: "Belloso",
-        email: "raul.belloso.m@gmail.com",
-        password: hashedPasswordguest,
-        roleId: adminRole.id,
-        enabled: true,
-      },
-    });
-
-    const uuidUser4 = uuidv4();
-    const user4 = await prisma.user.create({
-      data: {
-        id: uuidUser4,
-        firstName: "Raul",
-        lastName: "Belloso",
-        email: "test@test.com",
-        password: hashedPasswordguest,
-        roleId: guestRole.id,
-        enabled: true,
-      },
-    });
-
-    // Crear vehículos con modelId
-    const vehicle1 = await prisma.vehicle.create({
-      data: {
-        id: uuidv4(),
-        modelId: model1.id,
-        acquisitionDate: new Date(),
-        cost: 25000.0,
-        mileage: 5000,
-        status: true,
-        createdById: user1.id,
-        enabled: true,
-      },
-      include: {
-        model: true,
-      },
-    });
-
-    const vehicle2 = await prisma.vehicle.create({
-      data: {
-        id: uuidv4(),
-        modelId: model2.id,
-        acquisitionDate: new Date(),
-        cost: 20000.0,
-        mileage: 3000,
-        status: true,
-        createdById: user2.id,
-        enabled: true,
-      },
-      include: {
-        model: true,
-      },
-    });
-
-    const vehicle3 = await prisma.vehicle.create({
-      data: {
-        id: uuidv4(),
-        modelId: model3.id,
-        acquisitionDate: new Date(),
-        cost: 30000.0,
-        mileage: 2000,
-        status: true,
-        createdById: user3.id,
-        enabled: true,
-      },
-      include: {
-        model: true,
-      },
-    });
-
-    console.log({ user1, user2, vehicle1, vehicle2 });
+    console.log({ user1 });
   } else {
     console.log("Los datos ya existen en la base de datos.");
   }

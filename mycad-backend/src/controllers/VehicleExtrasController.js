@@ -28,29 +28,15 @@ const downloadImage = async (url, dest) => {
 
 const processImage = async (imagePath, fileName) => {
   const thumbnailDir = `${BASE_PATH}images/thumbnails/`;
-  const mediumDir = `${BASE_PATH}images/medium/`;
-  const largeDir = `${BASE_PATH}images/large/`;
   const thumbnailPath = `${thumbnailDir}${fileName}-thumbnail.jpg`;
-  const mediumPath = `${mediumDir}${fileName}-medium.jpg`;
-  const largePath = `${largeDir}${fileName}-large.jpg`;
   if (!fs.existsSync(thumbnailDir)) {
     fs.mkdirSync(thumbnailDir, { recursive: true });
   }
-  if (!fs.existsSync(mediumDir)) {
-    fs.mkdirSync(mediumDir, { recursive: true });
-  }
-  if (!fs.existsSync(largeDir)) {
-    fs.mkdirSync(largeDir, { recursive: true });
-  }
   await sharp(imagePath).resize(150, 150).toFile(thumbnailPath);
-  await sharp(imagePath).resize(500, 500).toFile(mediumPath);
-  await sharp(imagePath).resize(1000, 1000).toFile(largePath);
   let urlRelativePath = BASE_PATH.replace("src/", "");
   return {
     url: `${urlRelativePath}images/${fileName}.jpg`,
     thumbnail: thumbnailPath.split("src/")[1],
-    medium: mediumPath.split("src/")[1],
-    large: largePath.split("src/")[1],
   };
 };
 
@@ -210,7 +196,9 @@ export const createMultipleVehicles = async (req, res) => {
           });
           if (!model) {
             errors.push(
-              `Fila ${index + 1}: El modelo '${vehicle.model}' no existe`
+              `Fila ${index + 1}: El modelo '${vehicle.model}' (${
+                vehicle.year
+              }) - ${vehicle.brand} ${vehicle.type} no existe`
             );
             continue;
           }
@@ -289,8 +277,6 @@ export const createMultipleVehicles = async (req, res) => {
                   url: image.url,
                   type: "image/jpeg",
                   thumbnail: image.thumbnail,
-                  medium: image.medium,
-                  large: image.large,
                   enabled: true,
                 })),
               });

@@ -140,7 +140,7 @@ const TableSearchByHeader = ({
               {
                 label: 'Columnas',
                 action: () => setIsModalOpen(true),
-                color: 'orange',
+                color: 'mycad',
                 icon: RiMenuSearchLine,
               },
             ]}
