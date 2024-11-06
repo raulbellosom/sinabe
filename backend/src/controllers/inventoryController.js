@@ -1,10 +1,8 @@
 import { db } from "../lib/db.js";
 
-export const parseStatus = (status) => status == "true" || status == true;
-
-export const getVehicles = async (req, res) => {
+export const getInventories = async (req, res) => {
   try {
-    const vehicles = await db.vehicle.findMany({
+    const inventories = await db.inventory.findMany({
       where: { enabled: true },
       include: {
         model: {
@@ -18,7 +16,14 @@ export const getVehicles = async (req, res) => {
             condition: true,
           },
         },
-        files: true,
+        customField: {
+          include: {
+            field: true,
+          },
+        },
+        files: {
+          where: { enabled: true },
+        },
         images: {
           where: { enabled: true },
           select: {
@@ -30,18 +35,18 @@ export const getVehicles = async (req, res) => {
         },
       },
     });
-    res.json(vehicles);
+    res.json(inventories);
   } catch (error) {
-    console.log(error.message);
+    console.log("Error fetching inventories:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const getVehicleById = async (req, res) => {
+export const getInventoryById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const vehicle = await db.vehicle.findUnique({
+    const inventory = await db.inventory.findUnique({
       where: { id },
       include: {
         model: {
@@ -53,6 +58,11 @@ export const getVehicleById = async (req, res) => {
         conditions: {
           include: {
             condition: true,
+          },
+        },
+        customField: {
+          include: {
+            field: true,
           },
         },
         files: {
@@ -77,64 +87,39 @@ export const getVehicleById = async (req, res) => {
       },
     });
 
-    if (vehicle) {
-      vehicle.acquisitionDate
-        ? (vehicle.acquisitionDate = vehicle.acquisitionDate
-            .toISOString()
-            .split("T")[0])
-        : null;
-      res.json(vehicle);
-    } else {
-      console.log("Vehicle not found");
-      res.status(404).json({ message: "Vehicle not found" });
-    }
+    res.json(inventory);
   } catch (error) {
-    console.log(error.message);
+    console.log("Error fetching inventory:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const createVehicle = async (req, res) => {
+export const createInventory = async (req, res) => {
   try {
-    const { vehicle } = req.body;
+    const { inventory } = req.body;
     const user = req.user;
-    const vehicleData = JSON.parse(vehicle);
+    const inventoryData = JSON.parse(inventory);
     const {
       modelId,
-      acquisitionDate,
-      cost,
-      costCurrency,
-      bookValue,
-      bookValueCurrency,
-      currentMarketValue,
-      marketValueCurrency,
-      mileage,
-      status,
+      receptionDate,
       comments,
       conditions,
-      plateNumber,
-      economicNumber,
+      activeNumber,
       serialNumber,
-    } = vehicleData;
+      details,
+      customFields,
+    } = inventoryData;
 
-    const createdVehicle = await db.$transaction(async (prisma) => {
-      const vehicle = await prisma.vehicle.create({
+    const createdInventory = await db.$transaction(async (prisma) => {
+      const inventory = await prisma.inventory.create({
         data: {
           modelId: parseInt(modelId, 10),
-          plateNumber,
-          economicNumber,
+          activeNumber,
           serialNumber,
-          acquisitionDate: new Date(acquisitionDate),
-          cost,
-          costCurrency,
-          bookValue,
-          bookValueCurrency,
-          currentMarketValue,
-          marketValueCurrency,
-          mileage,
-          status: parseStatus(status),
-          createdById: user.id,
+          receptionDate: new Date(receptionDate),
           comments,
+          createdById: user.id,
+          details,
           enabled: true,
         },
         include: {
@@ -149,6 +134,11 @@ export const createVehicle = async (req, res) => {
               condition: true,
             },
           },
+          customField: {
+            include: {
+              field: true,
+            },
+          },
           images: true,
           files: true,
         },
@@ -156,12 +146,26 @@ export const createVehicle = async (req, res) => {
 
       if (conditions && conditions.length > 0) {
         const conditionData = conditions.map((conditionId) => ({
-          vehicleId: vehicle.id,
+          inventoryId: inventory.id,
           conditionId: parseInt(conditionId, 10),
         }));
 
-        await prisma.vehicleCondition.createMany({
+        await prisma.inventoryCondition.createMany({
           data: conditionData,
+        });
+      }
+
+      if (customFields && customFields.length > 0) {
+        const customFieldData = customFields.map(
+          ({ customFieldId, value }) => ({
+            inventoryId: inventory.id,
+            customFieldId: parseInt(customFieldId, 10),
+            value,
+          })
+        );
+
+        await prisma.inventoryCustomField.createMany({
+          data: customFieldData,
         });
       }
 
@@ -170,7 +174,7 @@ export const createVehicle = async (req, res) => {
           url: file.url,
           type: file.type,
           thumbnail: file.thumbnail,
-          vehicleId: vehicle.id,
+          inventoryId: inventory.id,
           enabled: true,
         }));
 
@@ -183,7 +187,7 @@ export const createVehicle = async (req, res) => {
         const fileData = req.files.map((file) => ({
           url: file.url,
           type: file.type,
-          vehicleId: vehicle.id,
+          inventoryId: inventory.id,
           metadata: file.metadata,
           enabled: true,
         }));
@@ -193,39 +197,32 @@ export const createVehicle = async (req, res) => {
         });
       }
 
-      return vehicle;
+      return inventory;
     });
 
-    res.status(201).json(createdVehicle);
+    res.status(201).json(createdInventory);
   } catch (error) {
-    console.error("Error creating vehicle:", error.message);
-    res.status(500).json({ message: "Failed to create vehicle" });
+    console.error("Error creating inventory:", error.message);
+    res.status(500).json({ message: "Failed to create inventory" });
   } finally {
     await db.$disconnect();
   }
 };
 
-export const updateVehicle = async (req, res) => {
+export const updateInventory = async (req, res) => {
   const { id } = req.params;
   const {
     modelId,
-    acquisitionDate,
-    cost,
-    costCurrency,
-    bookValue,
-    bookValueCurrency,
-    currentMarketValue,
-    marketValueCurrency,
-    mileage,
-    status,
+    receptionDate,
     comments,
     conditions,
-    plateNumber,
-    economicNumber,
+    activeNumber,
     serialNumber,
+    details,
+    customFields,
     images,
     files,
-  } = JSON.parse(req.body.vehicle || "{}");
+  } = JSON.parse(req.body.inventory || "{}");
 
   try {
     const model = await db.model.findUnique({
@@ -238,38 +235,48 @@ export const updateVehicle = async (req, res) => {
     }
 
     await db.$transaction(async (prisma) => {
-      await prisma.vehicle.update({
+      await prisma.inventory.update({
         where: { id },
         data: {
           modelId: parseInt(modelId, 10),
-          plateNumber,
-          economicNumber,
+          activeNumber,
           serialNumber,
-          acquisitionDate: new Date(acquisitionDate),
-          cost,
-          costCurrency,
-          bookValue,
-          bookValueCurrency,
-          currentMarketValue,
-          marketValueCurrency,
-          mileage,
-          status: parseStatus(status),
+          receptionDate: new Date(receptionDate),
           comments,
+          details,
         },
       });
 
       if (conditions && conditions.length > 0) {
-        await prisma.vehicleCondition.deleteMany({
-          where: { vehicleId: id },
+        await prisma.inventoryCondition.deleteMany({
+          where: { inventoryId: id },
         });
 
         const conditionData = conditions.map((conditionId) => ({
-          vehicleId: id,
+          inventoryId: id,
           conditionId: parseInt(conditionId, 10),
         }));
 
-        await prisma.vehicleCondition.createMany({
+        await prisma.inventoryCondition.createMany({
           data: conditionData,
+        });
+      }
+
+      if (customFields && customFields.length > 0) {
+        await prisma.inventoryCustomField.deleteMany({
+          where: { inventoryId: id },
+        });
+
+        const customFieldData = customFields.map(
+          ({ customFieldId, value }) => ({
+            inventoryId: id,
+            customFieldId: parseInt(customFieldId, 10),
+            value,
+          })
+        );
+
+        await prisma.inventoryCustomField.createMany({
+          data: customFieldData,
         });
       }
 
@@ -282,7 +289,7 @@ export const updateVehicle = async (req, res) => {
 
       await prisma.image.updateMany({
         where: {
-          vehicleId: id,
+          inventoryId: id,
           id: { notIn: Array.from(currentImages) },
         },
         data: { enabled: false },
@@ -293,7 +300,7 @@ export const updateVehicle = async (req, res) => {
           url: file.url,
           type: file.type,
           thumbnail: file.thumbnail,
-          vehicleId: id,
+          inventoryId: id,
           metadata: file.metadata,
           enabled: true,
         }));
@@ -312,7 +319,7 @@ export const updateVehicle = async (req, res) => {
 
       await prisma.file.updateMany({
         where: {
-          vehicleId: id,
+          inventoryId: id,
           id: { notIn: Array.from(currentFiles) },
         },
         data: { enabled: false },
@@ -322,7 +329,7 @@ export const updateVehicle = async (req, res) => {
         const fileData = req.files.map((file) => ({
           url: file.url,
           type: file.type,
-          vehicleId: id,
+          inventoryId: id,
           metadata: file.metadata,
           enabled: true,
         }));
@@ -333,7 +340,7 @@ export const updateVehicle = async (req, res) => {
       }
     });
 
-    const updatedVehicle = await db.vehicle.findUnique({
+    const updatedInventory = await db.inventory.findUnique({
       where: { id },
       include: {
         model: {
@@ -345,6 +352,11 @@ export const updateVehicle = async (req, res) => {
         conditions: {
           include: {
             condition: true,
+          },
+        },
+        customField: {
+          include: {
+            field: true,
           },
         },
         images: {
@@ -369,33 +381,25 @@ export const updateVehicle = async (req, res) => {
       },
     });
 
-    if (updatedVehicle) {
-      updatedVehicle.acquisitionDate
-        ? (updatedVehicle.acquisitionDate = updatedVehicle.acquisitionDate
-            .toISOString()
-            .split("T")[0])
-        : null;
-    }
-
-    res.json(updatedVehicle);
+    res.json(updatedInventory);
   } catch (error) {
-    console.error("Error updating vehicle:", error.message);
-    res.status(500).json({ message: "Failed to update vehicle" });
+    console.error("Error updating inventory:", error.message);
+    res.status(500).json({ message: "Failed to update inventory" });
   } finally {
     await db.$disconnect();
   }
 };
 
-export const deleteVehicle = async (req, res) => {
+export const deleteInventory = async (req, res) => {
   const { id } = req.params;
 
   try {
-    await db.vehicle.update({
+    await db.inventory.update({
       where: { id },
       data: { enabled: false },
     });
 
-    const vehicles = await db.vehicle.findMany({
+    const inventories = await db.inventory.findMany({
       where: { id: { not: id }, enabled: true },
       include: {
         model: {
@@ -409,17 +413,34 @@ export const deleteVehicle = async (req, res) => {
             condition: true,
           },
         },
+        customField: {
+          include: {
+            field: true,
+          },
+        },
+        files: {
+          where: { enabled: true },
+        },
+        images: {
+          where: { enabled: true },
+          select: {
+            url: true,
+            type: true,
+            thumbnail: true,
+            metadata: true,
+          },
+        },
       },
     });
 
-    res.json({ data: vehicles, message: "Vehicle deleted" });
+    res.json({ data: inventories, message: "Inventario eliminado." });
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const searchVehicles = async (req, res) => {
+export const searchInventories = async (req, res) => {
   try {
     const {
       searchTerm,
@@ -433,16 +454,11 @@ export const searchVehicles = async (req, res) => {
 
     const validSortFields = [
       "createdAt",
-      "cost",
-      "mileage",
       "status",
       "model.name",
       "model.brand.name",
       "model.type.name",
-      "model.type.economicGroup",
-      "model.year",
-      "economicNumber",
-      "plateNumber",
+      "activeNumber",
       "serialNumber",
     ];
 
@@ -450,14 +466,10 @@ export const searchVehicles = async (req, res) => {
       const columnsMap = {
         "model.name": "model.name",
         "model.type.name": "model.type.name",
-        "model.type.economicGroup": "model.type.economicGroup",
         "model.brand.name": "model.brand.name",
-        "model.year": "model.year",
-        economicNumber: "economicNumber",
+        activeNumber: "activeNumber",
         serialNumber: "serialNumber",
-        plateNumber: "plateNumber",
-        acquisitionDate: "acquisitionDate",
-        cost: "cost",
+        comments: "comments",
       };
       return columnsMap[searchHeader] || null;
     };
@@ -564,9 +576,7 @@ export const searchVehicles = async (req, res) => {
             { model: { name: { contains: searchTerm } } },
             { model: { brand: { name: { contains: searchTerm } } } },
             { model: { type: { name: { contains: searchTerm } } } },
-            { model: { type: { economicGroup: { contains: searchTerm } } } },
-            { economicNumber: { contains: searchTerm } },
-            { plateNumber: { contains: searchTerm } },
+            { activeNumber: { contains: searchTerm } },
             { serialNumber: { contains: searchTerm } },
             { comments: { contains: searchTerm } },
           ],
@@ -598,7 +608,7 @@ export const searchVehicles = async (req, res) => {
       }),
     };
 
-    const vehicles = await db.vehicle.findMany({
+    const inventories = await db.inventory.findMany({
       where: whereConditions,
       include: {
         model: {
@@ -624,25 +634,25 @@ export const searchVehicles = async (req, res) => {
       take,
     });
 
-    const totalRecords = await db.vehicle.count({
+    const totalRecords = await db.inventory.count({
       where: whereConditions,
     });
 
     const totalPages = Math.ceil(totalRecords / pageSize);
 
-    let vehiclesData = {};
-    if (vehicles) {
-      vehiclesData = vehicles.map((vehicle) => {
-        vehicle.acquisitionDate
-          ? (vehicle.acquisitionDate = vehicle.acquisitionDate
+    let inventoriesData = {};
+    if (inventories) {
+      inventoriesData = inventories.map((inventory) => {
+        inventory.receptionDate
+          ? (inventory.receptionDate = inventory.receptionDate
               .toISOString()
               .split("T")[0])
           : null;
-        return vehicle;
+        return inventory;
       });
     }
     res.json({
-      data: vehiclesData,
+      data: inventoriesData,
       pagination: {
         totalRecords,
         totalPages,
@@ -651,7 +661,7 @@ export const searchVehicles = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching vehicles:", error);
+    console.error("Error fetching inventories:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

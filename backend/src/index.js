@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-import vehicleRoutes from "./routes/vehicleRoutes.js";
+import inventoryRoutes from "./routes/inventoryRoutes.js";
 import pingRoutes from "./routes/pingRoutes.js";
 import permissionRoutes from "./routes/permissionRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
@@ -26,7 +26,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/vehicles", vehicleRoutes);
+app.use("/api/inventories", inventoryRoutes);
 app.use("/api/permissions", permissionRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/role-permissions", rolePermissionRoutes);

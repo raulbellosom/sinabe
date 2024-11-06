@@ -1,69 +1,68 @@
 import { db } from "../lib/db.js";
 
-export const getVehicleTypes = async (req, res) => {
+export const getInventoryTypes = async (res) => {
   try {
-    const vehicleTypes = await db.vehicleType.findMany({
+    const inventoryTypes = await db.inventoryType.findMany({
       where: { enabled: true },
       orderBy: { name: "asc" },
       include: {
         models: {
           include: {
             _count: {
-              select: { vehicles: true },
+              select: { inventories: true },
             },
           },
         },
       },
     });
-    const vehicleTypesWithCount = vehicleTypes.map((type) => {
-      const vehicleCount = type.models.reduce(
-        (acc, model) => acc + model._count.vehicles,
+    const inventoryTypesWithCount = inventoryTypes.map((type) => {
+      const inventoryCount = type.models.reduce(
+        (acc, model) => acc + model._count.inventories,
         0
       );
       return {
         id: type.id,
         name: type.name,
-        economicGroup: type.economicGroup,
-        count: vehicleCount,
+        count: inventoryCount,
       };
     });
 
-    res.json(vehicleTypesWithCount);
+    res.json(inventoryTypesWithCount);
   } catch (error) {
-    console.log(error.message);
+    console.log("error on getInventoryTypes", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const getVehicleTypeById = async (req, res) => {
+export const getInventoryTypeById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const vehicleType = await db.vehicleType.findUnique({
+    const inventoryType = await db.inventoryType.findUnique({
       where: { id, enabled: true },
       include: {
         models: {
           include: {
             _count: {
-              select: { vehicles: true },
+              select: { inventories: true },
             },
           },
         },
       },
     });
 
-    if (vehicleType) {
-      const vehicleTypeWithCount = {
-        id: vehicleType.id,
-        name: vehicleType.name,
-        count: vehicleType.models.reduce(
-          (acc, model) => acc + model._count.vehicles,
+    if (inventoryType) {
+      const inventoryTypeWithCount = {
+        id: inventoryType.id,
+        name: inventoryType.name,
+        count: inventoryType.models.reduce(
+          (acc, model) => acc + model._count.inventories,
           0
         ),
       };
-      res.json(vehicleTypeWithCount);
+      res.json(inventoryTypeWithCount);
     } else {
-      res.status(404).json({ message: "Vehicle type not found" });
+      res.status(404).json({ message: "Inventory type not found" });
     }
   } catch (error) {
     console.log(error.message);
@@ -71,19 +70,19 @@ export const getVehicleTypeById = async (req, res) => {
   }
 };
 
-export const createVehicleType = async (req, res) => {
+export const createInventoryType = async (req, res) => {
   const { name, economicGroup } = req.body;
 
   try {
-    const vehicleType = await db.vehicleType.findFirst({
+    const inventoryType = await db.inventoryType.findFirst({
       where: { name, economicGroup, enabled: true },
     });
 
-    if (vehicleType) {
+    if (inventoryType) {
       return res.status(400).json({ message: "Type already exists" });
     }
 
-    const newVehicleType = await db.vehicleType.create({
+    const newInventoryType = await db.inventoryType.create({
       data: {
         name,
         economicGroup,
@@ -91,34 +90,34 @@ export const createVehicleType = async (req, res) => {
       },
     });
 
-    const vehicleTypeWithCount = {
-      id: newVehicleType.id,
-      name: newVehicleType.name,
-      economicGroup: newVehicleType.economicGroup,
+    const inventoryTypeWithCount = {
+      id: newInventoryType.id,
+      name: newInventoryType.name,
+      economicGroup: newInventoryType.economicGroup,
       count: 0,
     };
 
-    res.status(201).json(vehicleTypeWithCount);
+    res.status(201).json(inventoryTypeWithCount);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const updateVehicleType = async (req, res) => {
+export const updateInventoryType = async (req, res) => {
   const { id } = req.params;
   const { name, economicGroup } = req.body;
 
   try {
-    const vehicleType = await db.vehicleType.findUnique({
+    const inventoryType = await db.inventoryType.findUnique({
       where: { id: parseInt(id, 10) },
     });
 
-    if (!vehicleType) {
+    if (!inventoryType) {
       return res.status(404).json({ message: "Type not found" });
     }
 
-    const updatedVehicleType = await db.vehicleType.update({
+    const updatedInventoryType = await db.inventoryType.update({
       where: { id: parseInt(id, 10) },
       data: {
         name,
@@ -127,7 +126,7 @@ export const updateVehicleType = async (req, res) => {
       include: {
         models: {
           include: {
-            vehicles: {
+            inventories: {
               where: {
                 enabled: true,
               },
@@ -140,135 +139,138 @@ export const updateVehicleType = async (req, res) => {
       },
     });
 
-    const vehicleTypeWithCount = {
-      id: updatedVehicleType.id,
-      name: updatedVehicleType.name,
-      economicGroup: updatedVehicleType.economicGroup,
-      count: updatedVehicleType.models.reduce(
-        (acc, model) => acc + model._count.vehicles,
+    const inventoryTypeWithCount = {
+      id: updatedInventoryType.id,
+      name: updatedInventoryType.name,
+      economicGroup: updatedInventoryType.economicGroup,
+      count: updatedInventoryType.models.reduce(
+        (acc, model) => acc + model._count.inventories,
         0
       ),
     };
 
-    res.json(vehicleTypeWithCount);
+    res.json(inventoryTypeWithCount);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const deleteVehicleType = async (req, res) => {
+export const deleteInventoryType = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const vehicleType = await db.vehicleType.findUnique({
+    const inventoryType = await db.inventoryType.findUnique({
       where: { id: parseInt(id, 10), enabled: true },
     });
 
-    if (!vehicleType) {
+    if (!inventoryType) {
       return res.status(404).json({ message: "Type not found" });
     }
 
-    await db.vehicleType.update({
+    await db.inventoryType.update({
       where: { id: parseInt(id, 10) },
       data: {
         enabled: false,
       },
     });
 
-    const data = await db.vehicleType.findMany({
+    const data = await db.inventoryType.findMany({
       where: { enabled: true },
       orderBy: { name: "asc" },
       include: {
         models: {
           include: {
             _count: {
-              select: { vehicles: true },
+              select: { inventories: true },
             },
           },
         },
       },
     });
 
-    const vehicleTypesWithCount = data.map((type) => ({
+    const inventoryTypesWithCount = data.map((type) => ({
       id: type.id,
       name: type.name,
       economicGroup: type.economicGroup,
-      count: type.models.reduce((acc, model) => acc + model._count.vehicles, 0),
+      count: type.models.reduce(
+        (acc, model) => acc + model._count.inventories,
+        0
+      ),
     }));
 
-    res.json({ data: vehicleTypesWithCount, message: "Type deleted" });
+    res.json({ data: inventoryTypesWithCount, message: "Type deleted" });
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const getVehicleBrands = async (req, res) => {
+export const getInventoryBrands = async (res) => {
   try {
-    const vehicleBrands = await db.vehicleBrand.findMany({
+    const inventoryBrands = await db.inventoryBrand.findMany({
       where: { enabled: true },
       orderBy: { name: "asc" },
       include: {
         models: {
           include: {
             _count: {
-              select: { vehicles: true },
+              select: { inventories: true },
             },
           },
         },
       },
     });
 
-    const vehicleBrandsWithCount = vehicleBrands.map((brand) => {
-      const vehicleCount = brand.models.reduce(
-        (acc, model) => acc + model._count.vehicles,
+    const inventoryBrandsWithCount = inventoryBrands.map((brand) => {
+      const inventoryCount = brand.models.reduce(
+        (acc, model) => acc + model._count.inventories,
         0
       );
       return {
         id: brand.id,
         name: brand.name,
-        count: vehicleCount,
+        count: inventoryCount,
       };
     });
 
-    res.json(vehicleBrandsWithCount);
+    res.json(inventoryBrandsWithCount);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const getVehicleBrandById = async (req, res) => {
+export const getInventoryBrandById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const vehicleBrand = await db.vehicleBrand.findUnique({
+    const inventoryBrand = await db.inventoryBrand.findUnique({
       where: { id: parseInt(id), enabled: true },
       include: {
         models: {
           include: {
             _count: {
-              select: { vehicles: true },
+              select: { inventories: true },
             },
           },
         },
       },
     });
 
-    const vehicleBrandWithCount = {
-      id: vehicleBrand.id,
-      name: vehicleBrand.name,
-      count: vehicleBrand.models.reduce(
-        (acc, model) => acc + model._count.vehicles,
+    const inventoryBrandWithCount = {
+      id: inventoryBrand.id,
+      name: inventoryBrand.name,
+      count: inventoryBrand.models.reduce(
+        (acc, model) => acc + model._count.inventories,
         0
       ),
     };
 
-    if (vehicleBrandWithCount) {
-      res.json(vehicleBrand);
+    if (inventoryBrandWithCount) {
+      res.json(inventoryBrandWithCount);
     } else {
-      res.status(404).json({ message: "Vehicle brand not found" });
+      res.status(404).json({ message: "Inventory brand not found" });
     }
   } catch (error) {
     console.log(error.message);
@@ -276,52 +278,52 @@ export const getVehicleBrandById = async (req, res) => {
   }
 };
 
-export const createVehicleBrand = async (req, res) => {
+export const createInventoryBrand = async (req, res) => {
   const { name } = req.body;
 
   try {
-    const vehicleBrand = await db.vehicleBrand.findFirst({
+    const inventoryBrand = await db.inventoryBrand.findFirst({
       where: { name, enabled: true },
     });
 
-    if (vehicleBrand) {
+    if (inventoryBrand) {
       return res.status(400).json({ message: "Brand already exists" });
     }
 
-    const newVehicleBrand = await db.vehicleBrand.create({
+    const newInventoryBrand = await db.inventoryBrand.create({
       data: {
         name,
         enabled: true,
       },
     });
 
-    const vehicleBrandWithCount = {
-      id: newVehicleBrand.id,
-      name: newVehicleBrand.name,
+    const inventoryBrandWithCount = {
+      id: newInventoryBrand.id,
+      name: newInventoryBrand.name,
       count: 0,
     };
 
-    res.status(201).json(vehicleBrandWithCount);
+    res.status(201).json(inventoryBrandWithCount);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const updateVehicleBrand = async (req, res) => {
+export const updateInventoryBrand = async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
 
   try {
-    const vehicleBrand = await db.vehicleBrand.findUnique({
+    const inventoryBrand = await db.inventoryBrand.findUnique({
       where: { id: parseInt(id, 10), enabled: true },
     });
 
-    if (!vehicleBrand) {
+    if (!inventoryBrand) {
       return res.status(404).json({ message: "Brand not found" });
     }
 
-    const updatedVehicleBrand = await db.vehicleBrand.update({
+    const updatedInventoryBrand = await db.inventoryBrand.update({
       where: { id: parseInt(id, 10) },
       data: {
         name,
@@ -330,81 +332,81 @@ export const updateVehicleBrand = async (req, res) => {
         models: {
           include: {
             _count: {
-              select: { vehicles: true },
+              select: { inventories: true },
             },
           },
         },
       },
     });
 
-    const vehicleBrandWithCount = {
-      id: updatedVehicleBrand.id,
-      name: updatedVehicleBrand.name,
-      count: updatedVehicleBrand.models.reduce(
-        (acc, model) => acc + model._count.vehicles,
+    const inventoryBrandWithCount = {
+      id: updatedInventoryBrand.id,
+      name: updatedInventoryBrand.name,
+      count: updatedInventoryBrand.models.reduce(
+        (acc, model) => acc + model._count.inventories,
         0
       ),
     };
 
-    res.json(vehicleBrandWithCount);
+    res.json(inventoryBrandWithCount);
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const deleteVehicleBrand = async (req, res) => {
+export const deleteInventoryBrand = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const vehicleBrand = await db.vehicleBrand.findUnique({
+    const inventoryBrand = await db.inventoryBrand.findUnique({
       where: { id: parseInt(id, 10), enabled: true },
     });
 
-    if (!vehicleBrand) {
+    if (!inventoryBrand) {
       return res.status(404).json({ message: "Brand not found" });
     }
 
-    await db.vehicleBrand.update({
+    await db.inventoryBrand.update({
       where: { id: parseInt(id, 10) },
       data: {
         enabled: false,
       },
     });
 
-    const vehicleBrands = await db.vehicleBrand.findMany({
+    const inventoryBrands = await db.inventoryBrand.findMany({
       where: { enabled: true },
       orderBy: { name: "asc" },
       include: {
         models: {
           include: {
             _count: {
-              select: { vehicles: true },
+              select: { inventories: true },
             },
           },
         },
       },
     });
 
-    const vehicleBrandsWithCount = vehicleBrands.map((brand) => ({
+    const inventoryBrandsWithCount = inventoryBrands.map((brand) => ({
       id: brand.id,
       name: brand.name,
       count: brand.models.reduce(
-        (acc, model) => acc + model._count.vehicles,
+        (acc, model) => acc + model._count.inventories,
         0
       ),
     }));
 
-    res.json({ data: vehicleBrandsWithCount, message: "Brand deleted" });
+    res.json({ data: inventoryBrandsWithCount, message: "Brand deleted" });
   } catch (error) {
-    console.log(error.message);
+    console.log("error on deleteInventoryBrand", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const getVehicleModels = async (req, res) => {
+export const getInventoryModels = async (res) => {
   try {
-    const vehicleModels = await db.model.findMany({
+    const inventoryModels = await db.model.findMany({
       where: { enabled: true },
       orderBy: { name: "asc" },
       include: {
@@ -412,18 +414,18 @@ export const getVehicleModels = async (req, res) => {
         type: true,
       },
     });
-    res.json(vehicleModels);
+    res.json(inventoryModels);
   } catch (error) {
-    console.log(error.message);
+    console.log("error on getInventoryModels", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const getVehicleModelById = async (req, res) => {
+export const getInventoryModelById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const vehicleModel = await db.model.findUnique({
+    const inventoryModel = await db.model.findUnique({
       where: { id: parseInt(id, 10), enabled: true },
       include: {
         brand: true,
@@ -431,19 +433,19 @@ export const getVehicleModelById = async (req, res) => {
       },
     });
 
-    if (vehicleModel) {
-      res.json(vehicleModel);
+    if (inventoryModel) {
+      res.json(inventoryModel);
     } else {
-      res.status(404).json({ message: "Vehicle model not found" });
+      res.status(404).json({ message: "Inventory model not found" });
     }
   } catch (error) {
-    console.log(error.message);
+    console.log("error on getInventoryModelById", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const createVehicleModel = async (req, res) => {
-  const { name, brandId, typeId, year } = req.body;
+export const createInventoryModel = async (req, res) => {
+  const { name, brandId, typeId } = req.body;
 
   try {
     const model = await db.model.findFirst({
@@ -451,7 +453,6 @@ export const createVehicleModel = async (req, res) => {
         name,
         brandId: parseInt(brandId, 10),
         typeId: parseInt(typeId, 10),
-        year: parseInt(year, 10),
         enabled: true,
       },
     });
@@ -460,7 +461,7 @@ export const createVehicleModel = async (req, res) => {
       return res.status(400).json({ message: "Model already exists" });
     }
 
-    const brand = await db.vehicleBrand.findUnique({
+    const brand = await db.inventoryBrand.findUnique({
       where: { id: parseInt(brandId, 10), enabled: true },
     });
 
@@ -468,7 +469,7 @@ export const createVehicleModel = async (req, res) => {
       return res.status(404).json({ message: "Brand not found" });
     }
 
-    const type = await db.vehicleType.findUnique({
+    const type = await db.inventoryType.findUnique({
       where: { id: parseInt(typeId, 10), enabled: true },
     });
 
@@ -476,12 +477,11 @@ export const createVehicleModel = async (req, res) => {
       return res.status(404).json({ message: "Type not found" });
     }
 
-    const vehicleModel = await db.model.create({
+    const inventoryModel = await db.model.create({
       data: {
         name,
         brandId: parseInt(brandId, 10),
         typeId: parseInt(typeId, 10),
-        year: parseInt(year, 10),
         enabled: true,
       },
       include: {
@@ -490,16 +490,16 @@ export const createVehicleModel = async (req, res) => {
       },
     });
 
-    res.status(201).json(vehicleModel);
+    res.status(201).json(inventoryModel);
   } catch (error) {
-    console.log(error.message);
+    console.log("error on createInventoryModel", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const updateVehicleModel = async (req, res) => {
+export const updateInventoryModel = async (req, res) => {
   const { id } = req.params;
-  const { name, brandId, typeId, year } = req.body;
+  const { name, brandId, typeId } = req.body;
 
   try {
     const model = await db.model.findUnique({
@@ -516,7 +516,6 @@ export const updateVehicleModel = async (req, res) => {
         name,
         brandId: parseInt(brandId, 10),
         typeId: parseInt(typeId, 10),
-        year: parseInt(year, 10),
       },
       include: {
         brand: true,
@@ -526,12 +525,12 @@ export const updateVehicleModel = async (req, res) => {
 
     res.json(updatedModel);
   } catch (error) {
-    console.log(error.message);
+    console.log("error on updateInventoryModel", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const deleteVehicleModel = async (req, res) => {
+export const deleteInventoryModel = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -561,7 +560,7 @@ export const deleteVehicleModel = async (req, res) => {
 
     res.json({ data: models, message: "Model deleted" });
   } catch (error) {
-    console.log(error.message);
+    console.log("error on deleteInventoryModel", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -576,7 +575,7 @@ export const searchModels = async (req, res) => {
   } = req.query;
 
   try {
-    const validSortFields = ["name", "year", "brand.name", "type.name"];
+    const validSortFields = ["name", "brand.name", "type.name"];
 
     const orderField = validSortFields.includes(sortBy) ? sortBy : "name";
     const orderDirection = order === "desc" ? "desc" : "asc";
@@ -663,7 +662,7 @@ export const getConditions = async (req, res) => {
       where: { enabled: true },
       orderBy: { name: "asc" },
       include: {
-        vehicles: {
+        inventories: {
           select: { id: true },
         },
       },
@@ -672,7 +671,7 @@ export const getConditions = async (req, res) => {
     const conditionsWithCount = conditions.map((condition) => ({
       id: condition.id,
       name: condition.name,
-      count: condition.vehicles.length,
+      count: condition.inventories.length,
     }));
 
     res.json(conditionsWithCount);
@@ -689,7 +688,7 @@ export const getConditionById = async (req, res) => {
     const condition = await db.condition.findUnique({
       where: { id: parseInt(id, 10), enabled: true },
       include: {
-        vehicles: {
+        inventories: {
           select: { id: true },
         },
       },
@@ -699,7 +698,7 @@ export const getConditionById = async (req, res) => {
       const conditionWithCount = {
         id: condition.id,
         name: condition.name,
-        count: condition.vehicles.length,
+        count: condition.inventories.length,
       };
 
       res.json(conditionWithCount);
@@ -707,7 +706,7 @@ export const getConditionById = async (req, res) => {
       res.status(404).json({ message: "Condition not found" });
     }
   } catch (error) {
-    console.log(error.message);
+    console.log("error on getConditionById", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -719,7 +718,7 @@ export const createCondition = async (req, res) => {
     const condition = await db.condition.findFirst({
       where: { name, enabled: true },
       include: {
-        vehicles: {
+        inventories: {
           select: { id: true },
         },
       },
@@ -729,12 +728,12 @@ export const createCondition = async (req, res) => {
       const conditionWithCount = {
         id: condition.id,
         name: condition.name,
-        count: condition.vehicles.length,
+        count: condition.inventories.length,
       };
 
       return res.status(400).json({
         data: conditionWithCount,
-        message: "Condition already exists",
+        message: "La condición ya existe",
       });
     }
 
@@ -744,7 +743,7 @@ export const createCondition = async (req, res) => {
         enabled: true,
       },
       include: {
-        vehicles: {
+        inventories: {
           select: { id: true },
         },
       },
@@ -753,12 +752,12 @@ export const createCondition = async (req, res) => {
     const conditionWithCount = {
       id: newCondition.id,
       name: newCondition.name,
-      count: newCondition.vehicles.length,
+      count: newCondition.inventories.length,
     };
 
     res.status(201).json(conditionWithCount);
   } catch (error) {
-    console.log(error.message);
+    console.log("error on createCondition", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -773,7 +772,9 @@ export const updateCondition = async (req, res) => {
     });
 
     if (!condition) {
-      return res.status(404).json({ message: "Condition not found" });
+      return res
+        .status(404)
+        .json({ message: "La condición no fue encontrada." });
     }
 
     const updatedCondition = await db.condition.update({
@@ -782,7 +783,7 @@ export const updateCondition = async (req, res) => {
         name,
       },
       include: {
-        vehicles: {
+        inventories: {
           select: { id: true },
         },
       },
@@ -791,12 +792,12 @@ export const updateCondition = async (req, res) => {
     const conditionWithCount = {
       id: updatedCondition.id,
       name: updatedCondition.name,
-      count: updatedCondition.vehicles.length,
+      count: updatedCondition.inventories.length,
     };
 
     res.json(conditionWithCount);
   } catch (error) {
-    console.log(error.message);
+    console.log("error on updateCondition", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -810,7 +811,7 @@ export const deleteCondition = async (req, res) => {
     });
 
     if (!condition) {
-      return res.status(404).json({ message: "Condition not found" });
+      return res.status(404).json({ message: "Condición no encontrada." });
     }
 
     await db.condition.update({
@@ -824,7 +825,7 @@ export const deleteCondition = async (req, res) => {
       where: { enabled: true },
       orderBy: { name: "asc" },
       include: {
-        vehicles: {
+        inventories: {
           select: { id: true },
         },
       },
@@ -833,7 +834,7 @@ export const deleteCondition = async (req, res) => {
     const conditionsWithCount = data.map((condition) => ({
       id: condition.id,
       name: condition.name,
-      count: condition.vehicles.length,
+      count: condition.inventories.length,
     }));
 
     res.json({ data: conditionsWithCount, message: "Condition deleted" });

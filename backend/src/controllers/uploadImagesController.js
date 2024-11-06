@@ -4,7 +4,7 @@ import sharp from "sharp";
 import fs from "fs";
 import { v4 } from "uuid";
 
-const BASE_PATH = "src/uploads/vehicles/";
+const BASE_PATH = "src/uploads/inventories/";
 
 const storage = diskStorage({
   destination: (req, file, cb) => {

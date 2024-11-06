@@ -1,5 +1,5 @@
 .vscode
-mycad-backend/node_modules
-mycad-backend/.env
-mycad-backend/src/uploads
-mycad-backend/uploads
+backend/node_modules
+backend/.env
+backend/src/uploads
+backend/uploads

@@ -203,7 +203,7 @@ async function main() {
         id: uuidUser1,
         firstName: "User",
         lastName: "Root",
-        email: "root@mycad.mx",
+        email: "root@sinabe.com",
         password: hashedPasswordAdmin,
         roleId: rootRole.id,
         enabled: true,

@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import { parse, format } from "date-fns";
 import { es } from "date-fns/locale";
 
-const BASE_PATH = "src/uploads/vehicles/";
+const BASE_PATH = "src/uploads/inventories/";
 
 const downloadImage = async (url, dest) => {
   const response = await axios({
@@ -95,42 +95,36 @@ const validateNotEmpty = (value, fieldName, errors, index) => {
   }
 };
 
-const validateFields = (vehicle, userId, index, errors) => {
-  validateNotEmpty(vehicle.model, "Nombre del Modelo", errors, index);
-  validateNotEmpty(vehicle.year, "Año del Modelo", errors, index);
-  validateNotEmpty(vehicle.brand, "Marca del Vehículo", errors, index);
-  validateNotEmpty(vehicle.type, "Tipo de Vehículo", errors, index);
-  validateNotEmpty(vehicle.mileage, "Kilometraje", errors, index);
+const validateFields = (inventory, userId, index, errors) => {
+  validateNotEmpty(inventory.model, "Nombre del Modelo", errors, index);
+  validateNotEmpty(inventory.year, "Año del Modelo", errors, index);
+  validateNotEmpty(inventory.brand, "Marca del Inventario", errors, index);
+  validateNotEmpty(inventory.type, "Tipo de Inventario", errors, index);
+  validateNotEmpty(inventory.serialNumber, "Número de Serie", errors, index);
   validateNotEmpty(
-    vehicle.acquisitionDate,
-    "Fecha de Adquisición",
+    inventory.receptionDate,
+    "Fecha de Recepción",
     errors,
     index
   );
-  validateNotEmpty(vehicle.cost, "Costo de Adquisición", errors, index);
-  validateNotEmpty(vehicle.status, "Estado", errors, index);
+  validateNotEmpty(inventory.status, "Estado", errors, index);
 
-  if (vehicle.cost && isNaN(parseFloat(vehicle.cost))) {
-    errors.push(
-      `Fila ${index + 1}: El campo 'Costo del Vehículo' debe ser un número`
-    );
-  }
-
-  if (vehicle.mileage && isNaN(parseInt(vehicle.mileage, 10))) {
-    errors.push(
-      `Fila ${index + 1}: El campo 'Kilometraje' debe ser un número entero`
-    );
-  }
-
-  if (vehicle.status && typeof vehicle.status !== "boolean") {
-    errors.push(`Fila ${index + 1}: El campo 'Estado' debe ser un booleano`);
-  }
-
-  if (vehicle.acquisitionDate && isNaN(Date.parse(vehicle.acquisitionDate))) {
+  if (
+    inventory.status &&
+    !["ALTA", "BAJA", "PROPUESTA"].includes(inventory.status)
+  ) {
     errors.push(
       `Fila ${
         index + 1
-      }: El campo 'Fecha de Adquisición' debe ser una fecha válida`
+      }: El campo 'Estado' debe ser uno de 'ALTA', 'BAJA' o 'PROPUESTA'`
+    );
+  }
+
+  if (inventory.receptionDate && isNaN(Date.parse(inventory.receptionDate))) {
+    errors.push(
+      `Fila ${
+        index + 1
+      }: El campo 'Fecha de Recepción' debe ser una fecha válida`
     );
   }
 
@@ -143,7 +137,7 @@ const validateFields = (vehicle, userId, index, errors) => {
   }
 };
 
-export const createMultipleVehicles = async (req, res) => {
+export const createMultipleInventories = async (req, res) => {
   const csvFile = req.file;
   const user = req.user;
 
@@ -151,54 +145,50 @@ export const createMultipleVehicles = async (req, res) => {
     return res.status(400).json({ message: "No se subió ningún archivo." });
   }
 
-  const vehicles = [];
+  const inventories = [];
   const errors = [];
-  const successfulVehicles = [];
+  const successfulInventories = [];
 
   try {
     fs.createReadStream(csvFile.path)
       .pipe(csvParser())
       .on("data", (row) => {
         const parsedImages = parseImages(row["Imágenes"] || "[]");
-        vehicles.push({
+        inventories.push({
           model: row["Nombre del Modelo"],
           year: parseInt(row["Año del Modelo"], 10),
-          brand: row["Marca del Vehículo"],
-          type: row["Tipo de Vehículo"],
-          economicNumber: row["Número Económico"],
+          brand: row["Marca del Inventario"],
+          type: row["Tipo de Inventario"],
           serialNumber: row["Número de Serie"],
-          plateNumber: row["Número de Placa"],
-          mileage: parseInt(row["Kilometraje"], 10),
-          acquisitionDate: convertDateFormat(row["Fecha de Adquisición"]),
-          cost: parseFloat(row["Costo de Adquisición"]),
-          status: row["Estado"] === "true",
+          receptionDate: convertDateFormat(row["Fecha de Recepción"]),
+          status: row["Estado"],
           comments: row["Comentarios"],
           images: parsedImages.join(","),
         });
       })
       .on("end", async () => {
         const userId = user?.id;
-        for (const [index, vehicle] of vehicles.entries()) {
-          validateFields(vehicle, userId, index, errors);
+        for (const [index, inventory] of inventories.entries()) {
+          validateFields(inventory, userId, index, errors);
 
           const model = await db.model.findFirst({
             where: {
-              name: vehicle.model,
-              year: vehicle.year || undefined,
+              name: inventory.model,
+              year: inventory.year || undefined,
               brand: {
-                name: vehicle.brand,
+                name: inventory.brand,
               },
               type: {
-                name: vehicle.type,
+                name: inventory.type,
               },
               enabled: true,
             },
           });
           if (!model) {
             errors.push(
-              `Fila ${index + 1}: El modelo '${vehicle.model}' (${
-                vehicle.year
-              }) - ${vehicle.brand} ${vehicle.type} no existe`
+              `Fila ${index + 1}: El modelo '${inventory.model}' (${
+                inventory.year
+              }) - ${inventory.brand} ${inventory.type} no existe`
             );
             continue;
           }
@@ -216,8 +206,8 @@ export const createMultipleVehicles = async (req, res) => {
           }
 
           let imagePaths = [];
-          if (vehicle.images) {
-            const imageUrls = vehicle.images.split(",");
+          if (inventory.images) {
+            const imageUrls = inventory.images.split(",");
             for (const imageUrl of imageUrls) {
               try {
                 const imageId = uuidv4();
@@ -240,24 +230,18 @@ export const createMultipleVehicles = async (req, res) => {
           }
 
           try {
-            delete vehicle.model;
-            delete vehicle.year;
-            delete vehicle.brand;
-            delete vehicle.type;
+            delete inventory.model;
+            delete inventory.year;
+            delete inventory.brand;
+            delete inventory.type;
 
-            // const hasErrors = errors.some((error) =>
-            //   error.includes(`Fila ${index + 1}`)
-            // );
-
-            // if (!hasErrors) {
-
-            const createdVehicle = await db.vehicle.create({
+            const createdInventory = await db.inventory.create({
               data: {
-                ...vehicle,
+                ...inventory,
                 createdById: user.id,
                 modelId: model.id,
                 enabled: true,
-                acquisitionDate: new Date(vehicle.acquisitionDate),
+                receptionDate: new Date(inventory.receptionDate),
                 images: undefined,
               },
               include: {
@@ -273,7 +257,7 @@ export const createMultipleVehicles = async (req, res) => {
             if (imagePaths.length > 0) {
               await db.image.createMany({
                 data: imagePaths.map((image) => ({
-                  vehicleId: createdVehicle.id,
+                  inventoryId: createdInventory.id,
                   url: image.url,
                   type: "image/jpeg",
                   thumbnail: image.thumbnail,
@@ -282,15 +266,17 @@ export const createMultipleVehicles = async (req, res) => {
               });
             }
 
-            successfulVehicles.push(createdVehicle);
+            successfulInventories.push(createdInventory);
           } catch (error) {
             errors.push(
-              `Fila ${index + 1}: Error al crear el vehículo: ${error.message}`
+              `Fila ${index + 1}: Error al crear el inventario: ${
+                error.message
+              }`
             );
           }
         }
 
-        const getAllVehicles = await db.vehicle.findMany({
+        const getAllInventories = await db.inventory.findMany({
           include: {
             model: {
               include: {
@@ -314,16 +300,16 @@ export const createMultipleVehicles = async (req, res) => {
         const responsePayload = {
           message:
             errors.length > 0
-              ? "Algunos vehículos no pudieron ser creados"
-              : "Vehículos creados exitosamente.",
-          createdVehicles: successfulVehicles,
-          data: getAllVehicles,
+              ? "Algunos inventarios no pudieron ser creados"
+              : "Inventarios creados exitosamente.",
+          createdInventories: successfulInventories,
+          data: getAllInventories,
           errors: errors.length > 0 ? errors : null,
         };
 
-        if (errors.length > 0 && successfulVehicles.length === 0) {
+        if (errors.length > 0 && successfulInventories.length === 0) {
           return res.status(400).json(responsePayload);
-        } else if (errors.length > 0 && successfulVehicles.length > 0) {
+        } else if (errors.length > 0 && successfulInventories.length > 0) {
           return res.status(200).json(responsePayload);
         } else {
           return res.status(200).json(responsePayload);

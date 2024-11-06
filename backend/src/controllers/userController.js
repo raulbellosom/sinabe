@@ -1,6 +1,15 @@
 import { db } from "../lib/db.js";
 import bcrypt from "bcryptjs";
-import { parseStatus } from "./vehicleController.js";
+
+const parseStatus = (status) => {
+  if (status === "true" || status === true) {
+    return true;
+  } else if (status === "false" || status === false) {
+    return false;
+  } else {
+    return status;
+  }
+};
 
 export const getUsers = async (req, res) => {
   try {
