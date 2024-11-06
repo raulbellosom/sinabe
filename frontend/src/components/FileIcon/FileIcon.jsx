@@ -42,7 +42,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
     } else if (file.type.includes('image')) {
       return <FaFileImage className="text-cyan-500" size={iconSize} />;
     } else if (file.type.includes('powerpoint')) {
-      return <FaFilePowerpoint className="text-orange-500" size={iconSize} />;
+      return <FaFilePowerpoint className="text-purple-500" size={iconSize} />;
     } else if (file.type.includes('word')) {
       return <FaFileWord className="text-blue-500" size={iconSize} />;
     } else if (file.type.includes('video')) {

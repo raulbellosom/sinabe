@@ -1,31 +1,19 @@
 import React from 'react';
 import classNames from 'classnames';
-import MyCAD_ICON from '../../assets/logo/mycad_icon.webp';
+import Icon from '../../assets/logo/sinabe_icon.png';
 import ImageViewer from '../ImageViewer/ImageViewer';
 
 const AccountSidebar = ({ name, role, photo, collapsed }) => {
-  const logoClasses = classNames(
-    'w-auto',
-    'min-w-10',
-    'h-10',
-    'flex',
-    'items-center',
-    'justify-center',
-    'rounded-full',
-    'text-white',
-    'text-2xl',
-    'font-bold',
-  );
   return (
     <div className="p-4 h-fit space-y-5">
       <div
         className={`w-full overflow-hidden whitespace-nowrap text-nowrap flex justify-start gap-4 items-center`}
       >
-        <img src={MyCAD_ICON} alt="MyCAD ICON" className={logoClasses} />
+        <img src={Icon} alt="ICON" className="h-auto w-10" />
         <span
-          className={`text-2xl text-orange-500 font-extrabold mb-2 truncate`}
+          className={`text-2xl text-purple-600 font-extrabold mb-2 truncate`}
         >
-          MyCAD
+          SINABE
         </span>
       </div>
       <div
@@ -46,7 +34,7 @@ const AccountSidebar = ({ name, role, photo, collapsed }) => {
         <div className={'truncate whitespace-nowrap text-nowrap'}>
           <h2
             className={classNames(
-              'text-sm font-bold text-orange-500 w-full truncate',
+              'text-sm font-bold text-purple-600 w-full truncate',
             )}
           >
             {name}

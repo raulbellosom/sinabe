@@ -106,61 +106,73 @@ async function main() {
       { name: "create_roles", description: "Crear roles" },
       { name: "edit_roles", description: "Editar roles" },
       { name: "delete_roles", description: "Eliminar roles" },
-      { name: "view_vehicles", description: "Ver vehículos" },
-      { name: "create_vehicles", description: "Crear vehículos" },
-      { name: "edit_vehicles", description: "Editar vehículos" },
-      { name: "delete_vehicles", description: "Eliminar vehículos" },
+      { name: "view_inventories", description: "Ver inventarios" },
+      { name: "create_inventories", description: "Crear inventarios" },
+      { name: "edit_inventories", description: "Editar inventarios" },
+      { name: "delete_inventories", description: "Eliminar inventarios" },
       {
-        name: "view_vehicles_conditions",
-        description: "Ver condiciones de vehículos",
+        name: "view_inventories_conditions",
+        description: "Ver condiciones de inventarios",
       },
       {
-        name: "create_vehicles_conditions",
-        description: "Crear condiciones de vehículos",
+        name: "create_inventories_conditions",
+        description: "Crear condiciones de inventarios",
       },
       {
-        name: "edit_vehicles_conditions",
-        description: "Editar condiciones de vehículos",
+        name: "edit_inventories_conditions",
+        description: "Editar condiciones de inventarios",
       },
       {
-        name: "delete_vehicles_conditions",
-        description: "Eliminar condiciones de vehículos",
-      },
-      { name: "view_vehicles_brands", description: "Ver marcas de vehículos" },
-      {
-        name: "create_vehicles_brands",
-        description: "Crear marcas de vehículos",
+        name: "delete_inventories_conditions",
+        description: "Eliminar condiciones de inventarios",
       },
       {
-        name: "edit_vehicles_brands",
-        description: "Editar marcas de vehículos",
+        name: "view_inventories_brands",
+        description: "Ver marcas de inventarios",
       },
       {
-        name: "delete_vehicles_brands",
-        description: "Eliminar marcas de vehículos",
-      },
-      { name: "view_vehicles_types", description: "Ver tipos de vehículos" },
-      {
-        name: "create_vehicles_types",
-        description: "Crear tipos de vehículos",
-      },
-      { name: "edit_vehicles_types", description: "Editar tipos de vehículos" },
-      {
-        name: "delete_vehicles_types",
-        description: "Eliminar tipos de vehículos",
-      },
-      { name: "view_vehicles_models", description: "Ver modelos de vehículos" },
-      {
-        name: "create_vehicles_models",
-        description: "Crear modelos de vehículos",
+        name: "create_inventories_brands",
+        description: "Crear marcas de inventarios",
       },
       {
-        name: "edit_vehicles_models",
-        description: "Editar modelos de vehículos",
+        name: "edit_inventories_brands",
+        description: "Editar marcas de inventarios",
       },
       {
-        name: "delete_vehicles_models",
-        description: "Eliminar modelos de vehículos",
+        name: "delete_inventories_brands",
+        description: "Eliminar marcas de inventarios",
+      },
+      {
+        name: "view_inventories_types",
+        description: "Ver tipos de inventarios",
+      },
+      {
+        name: "create_inventories_types",
+        description: "Crear tipos de inventarios",
+      },
+      {
+        name: "edit_inventories_types",
+        description: "Editar tipos de inventarios",
+      },
+      {
+        name: "delete_inventories_types",
+        description: "Eliminar tipos de inventarios",
+      },
+      {
+        name: "view_inventories_models",
+        description: "Ver modelos de inventarios",
+      },
+      {
+        name: "create_inventories_models",
+        description: "Crear modelos de inventarios",
+      },
+      {
+        name: "edit_inventories_models",
+        description: "Editar modelos de inventarios",
+      },
+      {
+        name: "delete_inventories_models",
+        description: "Eliminar modelos de inventarios",
       },
     ];
 

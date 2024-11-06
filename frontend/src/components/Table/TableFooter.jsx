@@ -14,7 +14,7 @@ const TableFooter = ({
   const paginationNumber = [];
 
   const activePagClass =
-    'flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-orange-600 bg-orange-50 border border-orange-300 hover:bg-orange-100 hover:text-orange-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white';
+    'flex items-center justify-center text-sm z-10 py-2 px-3 leading-tight text-purple-600 bg-purple-50 border border-purple-300 hover:bg-purple-100 hover:text-purple-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white';
   const pagClass =
     'flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white';
   const disablePagClass =

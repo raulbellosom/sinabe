@@ -10,7 +10,7 @@ export const getButtonClassNames = (
     'w-full md:w-fit h-9 xl:h-10 text-sm xl:text-base transition ease-in-out duration-200 p-2 xl:p-4 flex items-center justify-center rounded-md border text-stone-800';
 
   let notFilledClasses = {
-    'hover:bg-orange-500 hover:text-white': color === 'mycad' && !disabled,
+    'hover:bg-purple-500 hover:text-white': color === 'mycad' && !disabled,
     'hover:bg-mycad-danger hover:text-white': color === 'danger' && !disabled,
     'hover:bg-mycad-warning hover:text-white': color === 'warning' && !disabled,
     'hover:bg-mycad-success hover:text-white': color === 'success' && !disabled,
@@ -26,7 +26,7 @@ export const getButtonClassNames = (
     'hover:bg-amber-500 hover:text-white': color === 'amber' && !disabled,
     'hover:bg-gray-500 hover:text-white': color === 'gray' && !disabled,
     'hover:bg-stone-200 hover:text-stone-800': color === 'stone' && !disabled,
-    'hover:bg-orange-400 hover:text-white': color === 'orange' && !disabled,
+    'hover:bg-purple-400 hover:text-white': color === 'purple' && !disabled,
     'hover:bg-pink-500 hover:text-white': color === 'pink' && !disabled,
     'hover:bg-teal-500 hover:text-white': color === 'teal' && !disabled,
     'hover:bg-lime-500 hover:text-white': color === 'lime' && !disabled,
@@ -39,7 +39,7 @@ export const getButtonClassNames = (
     'hover:bg-black hover:text-white': color === 'black' && !disabled,
   };
   let filledClasses = {
-    'bg-orange-500 text-white border-mycad hover:bg-orange-600':
+    'bg-purple-500 text-white border-purple-500 hover:bg-purple-600':
       color === 'mycad',
     'bg-mycad-danger text-white border-mycad-danger hover:bg-mycad-rose':
       color === 'danger',
@@ -70,8 +70,8 @@ export const getButtonClassNames = (
       color === 'gray',
     'bg-stone-200 text-stone-800 border-stone-200 hover:bg-stone-300':
       color === 'stone',
-    'bg-orange-400 text-white border-orange-400 hover:bg-orange-700':
-      color === 'orange',
+    'bg-purple-400 text-white border-purple-400 hover:bg-purple-700':
+      color === 'purple',
     'bg-pink-500 text-white border-pink-500 hover:bg-pink-700':
       color === 'pink',
     'bg-teal-500 text-white border-teal-500 hover:bg-teal-700':

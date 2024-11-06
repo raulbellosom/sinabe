@@ -177,7 +177,7 @@ const UpdateVehicle = () => {
     <>
       <div className="h-full bg-white p-4 rounded-md">
         <div className="flex flex-col-reverse md:flex-row items-center gap-4 w-full pb-1">
-          <div className="w-full h-full rounded-md flex items-center text-orange-500">
+          <div className="w-full h-full rounded-md flex items-center text-purple-500">
             <FaCar size={24} className="mr-4" />
             <h1 className="text-2xl font-bold">Actualizar Vehículo</h1>
           </div>

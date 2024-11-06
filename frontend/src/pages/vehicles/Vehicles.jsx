@@ -350,7 +350,7 @@ const Vehicles = () => {
                               return (
                                 <T.Cell className="py-2" key={column.id}>
                                   <Checkbox
-                                    className="cursor-pointer text-orange-500 focus:ring-orange-500"
+                                    className="cursor-pointer text-purple-500 focus:ring-purple-500"
                                     onChange={() =>
                                       vehiclesToDownload(vehicle?.id, vehicle)
                                     }

@@ -12,7 +12,7 @@ const Table = ({ columns, children, sortBy, sortedBy, selectAll }) => {
               <T.HeadCell
                 key={col?.id}
                 scope="col"
-                className={`${col?.order || col?.id === 'checkbox' ? '' : 'pointer-events-none'} p-4 bg-mycad-gray-dark text-white ${col?.id !== 'checkbox' ? 'cursor-pointer hover:bg-orange-500 hover:text-white transition-colors ease-in-out duration-100' : ''} ${col?.id === sortedBy && 'bg-orange-500'} ${col?.classes}`}
+                className={`${col?.order || col?.id === 'checkbox' ? '' : 'pointer-events-none'} p-4 bg-mycad-gray-dark text-white ${col?.id !== 'checkbox' ? 'cursor-pointer hover:bg-purple-500 hover:text-white transition-colors ease-in-out duration-100' : ''} ${col?.id === sortedBy && 'bg-purple-500'} ${col?.classes}`}
                 onClick={col?.id !== 'checkbox' ? () => sortBy(col.id) : null}
               >
                 <span
@@ -31,7 +31,7 @@ const Table = ({ columns, children, sortBy, sortedBy, selectAll }) => {
                   )}
                   {col?.id === 'checkbox' && (
                     <Checkbox
-                      className="cursor-pointer text-orange-500 focus:ring-orange-500"
+                      className="cursor-pointer text-purple-500 focus:ring-purple-500"
                       onChange={selectAll}
                     />
                   )}

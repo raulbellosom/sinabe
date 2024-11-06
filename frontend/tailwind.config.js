@@ -14,7 +14,7 @@ module.exports = {
         'mycad-warning': '#FFD166',
         'mycad-success': '#06D6A0',
         'mycad-info': '#118AB2',
-        'mycad-primary': '#FF8E3C',
+        'mycad-primary': '#7e3af2',
         'mycad-secondary': '#D9376E',
         'mycad-dark': '#0D0D0D',
         'mycad-light': '#FFFFFE',

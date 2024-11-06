@@ -11,7 +11,7 @@ const VehicleProperty = ({ label, value, icon: Icon }) => {
     <div className="flex flex-col h-full">
       <h2 className="text-sm 2xl:text-base font-semibold h-7">{label}</h2>
       <p className="text-sm 2xl:text-base flex items-center gap-2 justify-start min-h-6 border-b border-neutral-100 pb-1">
-        {Icon && <Icon size={20} className="inline text-orange-500" />}
+        {Icon && <Icon size={20} className="inline text-purple-500" />}
         <span dangerouslySetInnerHTML={{ __html: formattedValue }} />
       </p>
     </div>

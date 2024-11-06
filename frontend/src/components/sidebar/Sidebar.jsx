@@ -35,7 +35,7 @@ const themes = {
       menuContent: '#0D0D0D',
       icon: '#ffffff',
       hover: {
-        backgroundColor: '#f43f5e',
+        backgroundColor: '#7e3af2',
         color: '#fff',
       },
       disabled: {
@@ -43,7 +43,7 @@ const themes = {
       },
       active: {
         color: '#FFF',
-        backgroundColor: '#f43f5e',
+        backgroundColor: '#7e3af2',
       },
     },
   },
@@ -223,17 +223,17 @@ const Sidebar = ({ children }) => {
                 </MenuItem>
               )}
               {(isCatalogsPermission || isVehiclesPermission.hasPermission) && (
-                <SubMenu label="Vehículos" icon={<MdGarage size={23} />}>
+                <SubMenu label="Inventarios" icon={<MdGarage size={23} />}>
                   {isVehiclesPermission.hasPermission && (
                     <MenuItem
                       icon={<FaCar size={23} />}
-                      active={isActivePath('/vehicles')}
-                      component={<Link to={'/vehicles'} />}
+                      active={isActivePath('/inventories')}
+                      component={<Link to={'/inventories'} />}
                       onClick={() => {
                         setToggled(false);
                       }}
                     >
-                      Mis Vehículos
+                      Mis Inventarios
                     </MenuItem>
                   )}
                   {isCatalogsPermission && (
@@ -290,7 +290,7 @@ const Sidebar = ({ children }) => {
           <div className="p-4">
             <Button
               type="button"
-              gradientDuoTone="pinkToOrange"
+              color={'light'}
               className="w-full border-none truncate flex justify-start items-center"
               onClick={logout}
             >

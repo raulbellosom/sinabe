@@ -170,7 +170,7 @@ const Account = () => {
   return (
     <div className="flex flex-col gap-6">
       <section className="bg-white shadow-md p-4 rounded-lg">
-        <h1 className="text-2xl font-bold text-orange-500 mb-2">Mi cuenta</h1>
+        <h1 className="text-2xl font-bold text-purple-500 mb-2">Mi cuenta</h1>
         <form className="flex flex-col items-center justify-center gap-4">
           <div className="flex justify-start w-full">
             <h2 className="text-lg font-semibold">Imagen del perfil</h2>
@@ -185,7 +185,7 @@ const Account = () => {
               />
             )}
           </div>
-          <div className="rounded-full h- ring-4 ring-orange-500 p-1.5">
+          <div className="rounded-full h- ring-4 ring-purple-500 p-1.5">
             <ImageViewer
               containerClassNames={'rounded-full overflow-hidden'}
               images={image ? [image] : []}

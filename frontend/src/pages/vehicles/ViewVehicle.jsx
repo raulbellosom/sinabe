@@ -172,7 +172,7 @@ const ViewVehicle = () => {
   return (
     <div className="h-full bg-white p-4 rounded-md">
       <div className="w-full flex flex-col-reverse lg:flex-row items-center justify-between gap-4 pb-1">
-        <div className="w-full rounded-md flex items-center justify-center lg:justify-start text-orange-500">
+        <div className="w-full rounded-md flex items-center justify-center lg:justify-start text-purple-500">
           <FaCar size={24} className="mr-4" />
           <h1 className="text-2xl font-bold">Detalles del Vehículo</h1>
         </div>
