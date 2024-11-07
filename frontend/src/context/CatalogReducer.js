@@ -1,150 +1,157 @@
 const CatalogReducer = (state, action) => {
   switch (action.type) {
-    case 'FETCH_VEHICLE_TYPES':
+    case 'FETCH_INVENTORY_TYPES':
       return {
         ...state,
-        vehicleTypes: action.payload,
+        inventoryTypes: action.payload,
         loading: false,
       };
-    case 'FETCH_VEHICLE_TYPE':
+    case 'FETCH_INVENTORY_TYPE':
       return {
         ...state,
-        vehicleType: action.payload,
+        inventoryType: action.payload,
         loading: false,
       };
-    case 'CREATE_VEHICLE_TYPE':
+    case 'CREATE_INVENTORY_TYPE':
       return {
         ...state,
-        vehicleType: action.payload,
-        vehicleTypes: [...state.vehicleTypes, action.payload],
+        inventoryType: action.payload,
+        inventoryTypes: [...state.inventoryTypes, action.payload],
         loading: false,
       };
-    case 'UPDATE_VEHICLE_TYPE':
+    case 'UPDATE_INVENTORY_TYPE':
       return {
         ...state,
-        vehicleType: action.payload,
-        vehicleTypes: state.vehicleTypes.map((vehicleType) =>
-          vehicleType.id === action.payload.id ? action.payload : vehicleType,
+        inventoryType: action.payload,
+        inventoryTypes: state.inventoryTypes.map((inventoryType) =>
+          inventoryType.id === action.payload.id
+            ? action.payload
+            : inventoryType,
         ),
         loading: false,
       };
-    case 'DELETE_VEHICLE_TYPE':
+    case 'DELETE_INVENTORY_TYPE':
       return {
         ...state,
-        vehicleTypes: action.payload,
+        inventoryTypes: action.payload,
         loading: false,
       };
-    case 'FETCH_VEHICLE_BRANDS':
+    case 'FETCH_INVENTORY_BRANDS':
       return {
         ...state,
-        vehicleBrands: action.payload,
+        inventoryBrands: action.payload,
         loading: false,
       };
-    case 'FETCH_VEHICLE_BRAND':
+    case 'FETCH_INVENTORY_BRAND':
       return {
         ...state,
-        vehicleBrand: action.payload,
+        inventoryBrand: action.payload,
         loading: false,
       };
-    case 'CREATE_VEHICLE_BRAND':
+    case 'CREATE_INVENTORY_BRAND':
       return {
         ...state,
-        vehicleBrand: action.payload,
-        vehicleBrands: [...state.vehicleBrands, action.payload],
+        inventoryBrand: action.payload,
+        inventoryBrands: [...state.inventoryBrands, action.payload],
         loading: false,
       };
-    case 'UPDATE_VEHICLE_BRAND':
+    case 'UPDATE_INVENTORY_BRAND':
       return {
         ...state,
-        vehicleBrand: action.payload,
-        vehicleBrands: state.vehicleBrands.map((vehicleBrand) =>
-          vehicleBrand.id === action.payload.id ? action.payload : vehicleBrand,
+        inventoryBrand: action.payload,
+        inventoryBrands: state.inventoryBrands.map((inventoryBrand) =>
+          inventoryBrand.id === action.payload.id
+            ? action.payload
+            : inventoryBrand,
         ),
         loading: false,
       };
-    case 'DELETE_VEHICLE_BRAND':
+    case 'DELETE_INVENTORY_BRAND':
       return {
         ...state,
-        vehicleBrands: action.payload,
+        inventoryBrands: action.payload,
         loading: false,
       };
-    case 'FETCH_VEHICLE_MODELS':
+    case 'FETCH_INVENTORY_MODELS':
       return {
         ...state,
-        vehicleModels: action.payload,
+        inventoryModels: action.payload,
         loading: false,
       };
-    case 'FETCH_VEHICLE_MODEL':
+    case 'FETCH_INVENTORY_MODEL':
       return {
         ...state,
-        vehicleModel: action.payload,
+        inventoryModel: action.payload,
         loading: false,
       };
-    case 'CREATE_VEHICLE_MODEL':
+    case 'CREATE_INVENTORY_MODEL':
       return {
         ...state,
-        vehicleModel: action.payload,
-        vehicleModels: [...state.vehicleModels, action.payload],
+        inventoryModel: action.payload,
+        inventoryModels: [...state.inventoryModels, action.payload],
         loading: false,
       };
-    case 'UPDATE_VEHICLE_MODEL':
+    case 'UPDATE_INVENTORY_MODEL':
       return {
         ...state,
-        vehicleModel: action.payload,
-        vehicleModels: state?.vehicleModels?.map((vehicleModel) =>
-          vehicleModel.id === action.payload.id ? action.payload : vehicleModel,
+        inventoryModel: action.payload,
+        inventoryModels: state?.inventoryModels?.map((inventoryModel) =>
+          inventoryModel.id === action.payload.id
+            ? action.payload
+            : inventoryModel,
         ),
         loading: false,
       };
-    case 'DELETE_VEHICLE_MODEL':
+    case 'DELETE_INVENTORY_MODEL':
       return {
         ...state,
-        vehicleModels: action.payload,
+        inventoryModels: action.payload,
         loading: false,
       };
     case 'CREATE_MULTIPLE_MODELS':
       return {
         ...state,
-        vehicleModels: [
-          ...state.vehicleModels,
+        inventoryModels: [
+          ...state.inventoryModels,
           ...action.payload?.createdModels,
         ],
         loading: false,
       };
-    case 'FETCH_VEHICLE_CONDITIONS':
+    case 'FETCH_INVENTORY_CONDITIONS':
       return {
         ...state,
-        vehicleConditions: action.payload,
+        inventoryConditions: action.payload,
         loading: false,
       };
-    case 'FETCH_VEHICLE_CONDITION':
+    case 'FETCH_INVENTORY_CONDITION':
       return {
         ...state,
-        vehicleCondition: action.payload,
+        inventoryCondition: action.payload,
         loading: false,
       };
-    case 'CREATE_VEHICLE_CONDITION':
+    case 'CREATE_INVENTORY_CONDITION':
       return {
         ...state,
-        vehicleCondition: action.payload,
-        vehicleConditions: [...state.vehicleConditions, action.payload],
+        inventoryCondition: action.payload,
+        inventoryConditions: [...state.inventoryConditions, action.payload],
         loading: false,
       };
-    case 'UPDATE_VEHICLE_CONDITION':
+    case 'UPDATE_INVENTORY_CONDITION':
       return {
         ...state,
-        vehicleCondition: action.payload,
-        vehicleConditions: state.vehicleConditions.map((vehicleCondition) =>
-          vehicleCondition.id === action.payload.id
-            ? action.payload
-            : vehicleCondition,
+        inventoryCondition: action.payload,
+        inventoryConditions: state.inventoryConditions.map(
+          (inventoryCondition) =>
+            inventoryCondition.id === action.payload.id
+              ? action.payload
+              : inventoryCondition,
         ),
         loading: false,
       };
-    case 'DELETE_VEHICLE_CONDITION':
+    case 'DELETE_INVENTORY_CONDITION':
       return {
         ...state,
-        vehicleConditions: action.payload,
+        inventoryConditions: action.payload,
         loading: false,
       };
     default:

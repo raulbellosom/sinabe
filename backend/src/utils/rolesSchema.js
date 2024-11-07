@@ -22,7 +22,7 @@ const rolesSchema = {
       actions.DELETE,
       actions.ALL,
     ],
-    vehicles: [
+    inventories: [
       actions.CREATE,
       actions.READ,
       actions.UPDATE,
@@ -59,7 +59,7 @@ const rolesSchema = {
       actions.DELETE,
       actions.ALL,
     ],
-    vehicles: [
+    inventories: [
       actions.CREATE,
       actions.READ,
       actions.UPDATE,
@@ -84,14 +84,14 @@ const rolesSchema = {
   User: {
     users: [actions.READ, actions.UPDATE],
     roles: [actions.READ],
-    vehicles: [actions.CREATE, actions.READ, actions.UPDATE, actions.DELETE],
+    inventories: [actions.CREATE, actions.READ, actions.UPDATE, actions.DELETE],
     brands: [actions.CREATE, actions.READ, actions.UPDATE, actions.DELETE],
     models: [actions.CREATE, actions.READ, actions.UPDATE, actions.DELETE],
   },
   Guest: {
     users: [actions.READ],
     roles: [actions.READ],
-    vehicles: [actions.READ],
+    inventories: [actions.READ],
     brands: [actions.READ],
     models: [actions.READ],
   },

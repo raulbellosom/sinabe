@@ -1,7 +1,7 @@
 import React from 'react';
 import AuthProvider from './AuthProvider';
 import UserProvider from './UserProvider';
-import VehicleProvider from './VehicleProvider';
+import InventoryProvider from './InventoryProvider';
 import LoadingProvider from './LoadingProvider';
 import CatalogProvider from './CatalogProvider';
 import RoleProvider from './RoleProvider';
@@ -18,9 +18,9 @@ const SecurityProvider = ({ children }) => (
 
 const DataProvider = ({ children }) => (
   <UserProvider>
-    <VehicleProvider>
+    <InventoryProvider>
       <CatalogProvider>{children}</CatalogProvider>
-    </VehicleProvider>
+    </InventoryProvider>
   </UserProvider>
 );
 

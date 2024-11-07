@@ -19,6 +19,6 @@ const Dashboard = () => {
   );
 };
 
-const ProtectedVehiclesView = withPermission(Dashboard, 'view_dashboard');
+const ProtectedInventoriesView = withPermission(Dashboard, 'view_dashboard');
 
-export default ProtectedVehiclesView;
+export default ProtectedInventoriesView;

@@ -18,7 +18,7 @@ export const getInventories = async (req, res) => {
         },
         customField: {
           include: {
-            field: true,
+            customField: true,
           },
         },
         files: {
@@ -62,7 +62,7 @@ export const getInventoryById = async (req, res) => {
         },
         customField: {
           include: {
-            field: true,
+            customField: true,
           },
         },
         files: {
@@ -87,7 +87,17 @@ export const getInventoryById = async (req, res) => {
       },
     });
 
-    res.json(inventory);
+    if (inventory) {
+      inventory.receptionDate
+        ? (inventory.receptionDate = inventory.receptionDate
+            .toISOString()
+            .split("T")[0])
+        : null;
+      res.json(inventory);
+    } else {
+      console.log("Inventory not found");
+      res.status(404).json({ message: "Inventory not found" });
+    }
   } catch (error) {
     console.log("Error fetching inventory:", error.message);
     res.status(500).json({ message: error.message });
@@ -108,6 +118,7 @@ export const createInventory = async (req, res) => {
       serialNumber,
       details,
       customFields,
+      status,
     } = inventoryData;
 
     const createdInventory = await db.$transaction(async (prisma) => {
@@ -118,6 +129,7 @@ export const createInventory = async (req, res) => {
           serialNumber,
           receptionDate: new Date(receptionDate),
           comments,
+          status,
           createdById: user.id,
           details,
           enabled: true,
@@ -136,7 +148,7 @@ export const createInventory = async (req, res) => {
           },
           customField: {
             include: {
-              field: true,
+              customField: true,
             },
           },
           images: true,
@@ -200,7 +212,17 @@ export const createInventory = async (req, res) => {
       return inventory;
     });
 
-    res.status(201).json(createdInventory);
+    if (createdInventory) {
+      createdInventory.receptionDate
+        ? (createdInventory.receptionDate = createdInventory.receptionDate
+            .toISOString()
+            .split("T")[0])
+        : null;
+      res.status(201).json(createdInventory);
+    } else {
+      console.log("Inventory not found");
+      res.status(404).json({ message: "Inventory not found" });
+    }
   } catch (error) {
     console.error("Error creating inventory:", error.message);
     res.status(500).json({ message: "Failed to create inventory" });
@@ -356,7 +378,7 @@ export const updateInventory = async (req, res) => {
         },
         customField: {
           include: {
-            field: true,
+            customField: true,
           },
         },
         images: {
@@ -381,7 +403,17 @@ export const updateInventory = async (req, res) => {
       },
     });
 
-    res.json(updatedInventory);
+    if (updatedInventory) {
+      updatedInventory.receptionDate
+        ? (updatedInventory.receptionDate = updatedInventory.receptionDate
+            .toISOString()
+            .split("T")[0])
+        : null;
+      res.status(201).json(updatedInventory);
+    } else {
+      console.log("Inventory not found");
+      res.status(404).json({ message: "Inventory not found" });
+    }
   } catch (error) {
     console.error("Error updating inventory:", error.message);
     res.status(500).json({ message: "Failed to update inventory" });
@@ -415,7 +447,7 @@ export const deleteInventory = async (req, res) => {
         },
         customField: {
           include: {
-            field: true,
+            customField: true,
           },
         },
         files: {

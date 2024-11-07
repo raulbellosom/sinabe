@@ -1,48 +1,48 @@
 export const PermissionsByGroup = {
-  vehicles: {
-    name: 'Vehículos',
+  inventories: {
+    name: 'Inventarios',
     permissions: [
-      'view_vehicles',
-      'create_vehicles',
+      'view_inventories',
+      'create_inventories',
       ,
-      'edit_vehicles',
-      'delete_vehicles',
+      'edit_inventories',
+      'delete_inventories',
     ],
   },
-  vehicleConditions: {
-    name: 'Condiciones de vehículos',
+  inventoryConditions: {
+    name: 'Condiciones de los inventarios',
     permissions: [
-      'view_vehicles_conditions',
-      'create_vehicles_conditions',
-      'edit_vehicles_conditions',
-      'delete_vehicles_conditions',
+      'view_inventories_conditions',
+      'create_inventories_conditions',
+      'edit_inventories_conditions',
+      'delete_inventories_conditions',
     ],
   },
-  vehicleBrands: {
-    name: 'Marcas de vehículos',
+  inventoryBrands: {
+    name: 'Marcas de los Inventarios',
     permissions: [
-      'view_vehicles_brands',
-      'create_vehicles_brands',
-      'edit_vehicles_brands',
-      'delete_vehicles_brands',
+      'view_inventories_brands',
+      'create_inventories_brands',
+      'edit_inventories_brands',
+      'delete_inventories_brands',
     ],
   },
-  vehicleModels: {
-    name: 'Modelos de vehículos',
+  inventoryModels: {
+    name: 'Modelos de Inventarios',
     permissions: [
-      'view_vehicles_models',
-      'create_vehicles_models',
-      'edit_vehicles_models',
-      'delete_vehicles_models',
+      'view_inventories_models',
+      'create_inventories_models',
+      'edit_inventories_models',
+      'delete_inventories_models',
     ],
   },
-  vehicleTypes: {
-    name: 'Tipos de vehículos',
+  inventoryTypes: {
+    name: 'Tipos de Inventarios',
     permissions: [
-      'view_vehicles_types',
-      'create_vehicles_types',
-      'edit_vehicles_types',
-      'delete_vehicles_types',
+      'view_inventories_types',
+      'create_inventories_types',
+      'edit_inventories_types',
+      'delete_inventories_types',
     ],
   },
   users: {

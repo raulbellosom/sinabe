@@ -233,9 +233,9 @@ export const searchUsers = async ({
   }
 };
 
-export const getVehicles = async () => {
+export const getInventories = async () => {
   try {
-    const response = await api.get(`/vehicles`);
+    const response = await api.get(`/inventories`);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -243,9 +243,9 @@ export const getVehicles = async () => {
   }
 };
 
-export const getVehicle = async ({ id: vehicleId, signal }) => {
+export const getInventory = async ({ id: inventoryId, signal }) => {
   try {
-    const response = await api.get(`/vehicles/${vehicleId}`, { signal });
+    const response = await api.get(`/inventories/${inventoryId}`, { signal });
     return response.data;
   } catch (error) {
     console.error(error);
@@ -253,24 +253,24 @@ export const getVehicle = async ({ id: vehicleId, signal }) => {
   }
 };
 
-export const createVehicle = async (vehicle) => {
+export const createInventory = async (inventory) => {
   try {
     let data = new FormData();
 
-    if (vehicle.images && vehicle.images.length > 0) {
-      vehicle.images.forEach((image) => {
+    if (inventory.images && inventory.images.length > 0) {
+      inventory.images.forEach((image) => {
         data.append('images', image);
       });
     }
 
-    if (vehicle.files && vehicle.files.length > 0) {
-      vehicle.files.forEach((file) => {
+    if (inventory.files && inventory.files.length > 0) {
+      inventory.files.forEach((file) => {
         data.append('files', file);
       });
     }
 
-    data.append('vehicle', JSON.stringify(vehicle));
-    const response = await api.post(`/vehicles`, data, headerFormData);
+    data.append('inventory', JSON.stringify(inventory));
+    const response = await api.post(`/inventories`, data, headerFormData);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -278,14 +278,18 @@ export const createVehicle = async (vehicle) => {
   }
 };
 
-export const updateVehicle = async (vehicle) => {
+export const updateInventory = async (inventory) => {
   try {
-    const id = vehicle.id;
+    const id = inventory.id;
     let data = new FormData();
-    let currentImages = vehicle.images.filter((image) => image instanceof File);
-    vehicle.images = vehicle.images.filter((image) => !(image instanceof File));
-    let currentFiles = vehicle.files.filter((file) => file instanceof File);
-    vehicle.files = vehicle.files.filter((file) => !(file instanceof File));
+    let currentImages = inventory.images.filter(
+      (image) => image instanceof File,
+    );
+    inventory.images = inventory.images.filter(
+      (image) => !(image instanceof File),
+    );
+    let currentFiles = inventory.files.filter((file) => file instanceof File);
+    inventory.files = inventory.files.filter((file) => !(file instanceof File));
 
     if (currentImages && currentImages.length > 0) {
       currentImages.forEach((image) => {
@@ -299,8 +303,8 @@ export const updateVehicle = async (vehicle) => {
       });
     }
 
-    data.append('vehicle', JSON.stringify(vehicle));
-    const response = await api.put(`/vehicles/${id}`, data, headerFormData);
+    data.append('inventory', JSON.stringify(inventory));
+    const response = await api.put(`/inventories/${id}`, data, headerFormData);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -308,9 +312,9 @@ export const updateVehicle = async (vehicle) => {
   }
 };
 
-export const deleteVehicle = async (vehicleId) => {
+export const deleteInventory = async (inventoryId) => {
   try {
-    const response = await api.delete(`/vehicles/${vehicleId}`);
+    const response = await api.delete(`/inventories/${inventoryId}`);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -318,7 +322,7 @@ export const deleteVehicle = async (vehicleId) => {
   }
 };
 
-export const searchVehicles = async ({
+export const searchInventories = async ({
   searchTerm,
   sortBy,
   order,
@@ -330,7 +334,7 @@ export const searchVehicles = async ({
 }) => {
   try {
     const parsedDeepSearch = JSON.stringify(deepSearch);
-    const response = await api.get('/vehicles/search', {
+    const response = await api.get('/inventories/search', {
       params: {
         searchTerm,
         sortBy,
@@ -352,7 +356,7 @@ export const searchVehicles = async ({
   }
 };
 
-export const createMultipleVehicles = async (csvFile, userId) => {
+export const createMultipleInventories = async (csvFile, userId) => {
   try {
     let data = new FormData();
 
@@ -360,7 +364,7 @@ export const createMultipleVehicles = async (csvFile, userId) => {
     data.append('userId', JSON.stringify(userId));
 
     const response = await api.post(
-      `/vehicles/createMultipleVehicles`,
+      `/inventories/createMultipleInventories`,
       data,
       headerFormData,
     );
@@ -371,9 +375,9 @@ export const createMultipleVehicles = async (csvFile, userId) => {
   }
 };
 
-export const getVehicleModels = async () => {
+export const getInventoryModels = async () => {
   try {
-    const response = await api.get(`/vehicles/vehicleModels`);
+    const response = await api.get(`/inventories/inventoryModels`);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -381,12 +385,11 @@ export const getVehicleModels = async () => {
   }
 };
 
-export const getVehicleModel = async (vehicleModelId) => {
+export const getInventoryModel = async (inventoryModelId) => {
   try {
     const response = await api.post(
-      `/vehicles/vehicleModels/${vehicleModelId}`,
+      `/inventories/inventoryModels/${inventoryModelId}`,
     );
-
     return response.data;
   } catch (error) {
     console.error(error);
@@ -394,9 +397,12 @@ export const getVehicleModel = async (vehicleModelId) => {
   }
 };
 
-export const createVehicleModel = async (vehicleModel) => {
+export const createInventoryModel = async (inventoryModel) => {
   try {
-    const response = await api.post(`/vehicles/vehicleModels`, vehicleModel);
+    const response = await api.post(
+      `/inventories/inventoryModels`,
+      inventoryModel,
+    );
     return response.data;
   } catch (error) {
     console.error(error);
@@ -404,11 +410,11 @@ export const createVehicleModel = async (vehicleModel) => {
   }
 };
 
-export const updateVehicleModel = async (vehicleModel) => {
+export const updateInventoryModel = async (inventoryModel) => {
   try {
     const response = await api.put(
-      `/vehicles/vehicleModels/${vehicleModel.id}`,
-      vehicleModel,
+      `/inventories/inventoryModels/${inventoryModel.id}`,
+      inventoryModel,
     );
     return response.data;
   } catch (error) {
@@ -417,10 +423,10 @@ export const updateVehicleModel = async (vehicleModel) => {
   }
 };
 
-export const deleteVehicleModel = async (vehicleModelId) => {
+export const deleteInventoryModel = async (inventoryModelId) => {
   try {
     const response = await api.delete(
-      `/vehicles/vehicleModels/${vehicleModelId}`,
+      `/inventories/inventoryModels/${inventoryModelId}`,
     );
     return response.data;
   } catch (error) {
@@ -436,7 +442,7 @@ export const createMultipleModels = async (csvFile) => {
     data.append('csvFile', csvFile);
 
     const response = await api.post(
-      `/vehicles/vehicleModels/createMultipleModels`,
+      `/inventories/inventoryModels/createMultipleModels`,
       data,
       headerFormData,
     );
@@ -456,7 +462,7 @@ export const searchModels = async ({
   signal,
 }) => {
   try {
-    const response = await api.get('/vehicles/vehicleModels/search', {
+    const response = await api.get('/inventories/inventoryModels/search', {
       params: {
         searchTerm,
         sortBy,
@@ -476,75 +482,19 @@ export const searchModels = async ({
   }
 };
 
-export const getVehicleTypes = async () => {
+export const getInventoryTypes = async () => {
   try {
-    const response = await api.get(`/vehicles/vehicleTypes`);
+    const response = await api.get(`/inventories/inventoryTypes`);
     return response.data;
   } catch (error) {
     console.error(error);
     throw error;
   }
 };
-
-export const getVehicleType = async (vehicleTypeId) => {
-  try {
-    const response = await api.post(`/vehicles/vehicleTypes/${vehicleTypeId}`);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-export const createVehicleType = async (vehicleType) => {
-  try {
-    const response = await api.post(`/vehicles/vehicleTypes`, vehicleType);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-export const updateVehicleType = async (vehicleType) => {
-  try {
-    const response = await api.put(
-      `/vehicles/vehicleTypes/${vehicleType.id}`,
-      vehicleType,
-    );
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-export const deleteVehicleType = async (vehicleTypeId) => {
-  try {
-    const response = await api.delete(
-      `/vehicles/vehicleTypes/${vehicleTypeId}`,
-    );
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-export const getVehicleBrands = async () => {
-  try {
-    const response = await api.get(`/vehicles/vehicleBrands`);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-export const getVehicleBrand = async (vehicleBrandId) => {
+export const getInventoryType = async (inventoryTypeId) => {
   try {
     const response = await api.post(
-      `/vehicles/vehicleBrands/${vehicleBrandId}`,
+      `/inventories/inventoryTypes/${inventoryTypeId}`,
     );
     return response.data;
   } catch (error) {
@@ -553,55 +503,11 @@ export const getVehicleBrand = async (vehicleBrandId) => {
   }
 };
 
-export const createVehicleBrand = async (vehicleBrand) => {
-  try {
-    const response = await api.post(`/vehicles/vehicleBrands`, vehicleBrand);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-export const updateVehicleBrand = async (vehicleBrand) => {
-  try {
-    const response = await api.put(
-      `/vehicles/vehicleBrands/${vehicleBrand.id}`,
-      vehicleBrand,
-    );
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-export const deleteVehicleBrand = async (vehicleBrandId) => {
-  try {
-    const response = await api.delete(
-      `/vehicles/vehicleBrands/${vehicleBrandId}`,
-    );
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-export const getVehicleConditions = async () => {
-  try {
-    const response = await api.get(`/vehicles/vehicleConditions`);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-export const getVehicleCondition = async (vehicleConditionId) => {
+export const createInventoryType = async (inventoryType) => {
   try {
     const response = await api.post(
-      `/vehicles/vehicleConditions/${vehicleConditionId}`,
+      `/inventories/inventoryTypes`,
+      inventoryType,
     );
     return response.data;
   } catch (error) {
@@ -610,24 +516,11 @@ export const getVehicleCondition = async (vehicleConditionId) => {
   }
 };
 
-export const createVehicleCondition = async (vehicleCondition) => {
-  try {
-    const response = await api.post(
-      `/vehicles/vehicleConditions`,
-      vehicleCondition,
-    );
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-export const updateVehicleCondition = async (vehicleCondition) => {
+export const updateInventoryType = async (inventoryType) => {
   try {
     const response = await api.put(
-      `/vehicles/vehicleConditions/${vehicleCondition.id}`,
-      vehicleCondition,
+      `/inventories/inventoryTypes/${inventoryType.id}`,
+      inventoryType,
     );
     return response.data;
   } catch (error) {
@@ -636,10 +529,129 @@ export const updateVehicleCondition = async (vehicleCondition) => {
   }
 };
 
-export const deleteVehicleCondition = async (vehicleConditionId) => {
+export const deleteInventoryType = async (inventoryTypeId) => {
   try {
     const response = await api.delete(
-      `/vehicles/vehicleConditions/${vehicleConditionId}`,
+      `/inventories/inventoryTypes/${inventoryTypeId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+export const getInventoryBrands = async () => {
+  try {
+    const response = await api.get(`/inventories/inventoryBrands`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getInventoryBrand = async (inventoryBrandId) => {
+  try {
+    const response = await api.post(
+      `/inventories/inventoryBrands/${inventoryBrandId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const createInventoryBrand = async (inventoryBrand) => {
+  try {
+    const response = await api.post(
+      `/inventories/inventoryBrands`,
+      inventoryBrand,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const updateInventoryBrand = async (inventoryBrand) => {
+  try {
+    const response = await api.put(
+      `/inventories/inventoryBrands/${inventoryBrand.id}`,
+      inventoryBrand,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const deleteInventoryBrand = async (inventoryBrandId) => {
+  try {
+    const response = await api.delete(
+      `/inventories/inventoryBrands/${inventoryBrandId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getInventoryConditions = async () => {
+  try {
+    const response = await api.get(`/inventories/inventoryConditions`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getInventoryCondition = async (inventoryConditionId) => {
+  try {
+    const response = await api.post(
+      `/inventories/inventoryConditions/${inventoryConditionId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const createInventoryCondition = async (inventoryCondition) => {
+  try {
+    const response = await api.post(
+      `/inventories/inventoryConditions`,
+      inventoryCondition,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const updateInventoryCondition = async (inventoryCondition) => {
+  try {
+    const response = await api.put(
+      `/inventories/inventoryConditions/${inventoryCondition.id}`,
+      inventoryCondition,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const deleteInventoryCondition = async (inventoryConditionId) => {
+  try {
+    const response = await api.delete(
+      `/inventories/inventoryConditions/${inventoryConditionId}`,
     );
     return response.data;
   } catch (error) {

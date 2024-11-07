@@ -9,75 +9,71 @@ datasource db {
 }
 
 model Permission {
-  id          Int    @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
   name        String
   description String?
   roles       RolePermission[]
 }
 
 model RolePermission {
-  id           Int         @id @default(autoincrement())
+  id           Int        @id @default(autoincrement())
   roleId       Int
   permissionId Int
-  role         Role        @relation(fields: [roleId], references: [id])
-  permission   Permission  @relation(fields: [permissionId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  role         Role       @relation(fields: [roleId], references: [id])
 
   @@unique([roleId, permissionId])
+  @@index([permissionId], map: "RolePermission_permissionId_fkey")
 }
 
 model Role {
-  id         Int             @id @default(autoincrement())
-  name       String
-  users      User[]
+  id          Int              @id @default(autoincrement())
+  name        String
   permissions RolePermission[]
+  users       User[]
 }
 
 model User {
-  id        String      @id @default(uuid())
-  firstName String
-  lastName  String
-  email     String      @unique
-  phone     String?
-  password  String
-  status    Boolean?
-  roleId    Int
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  enabled   Boolean     @default(true)
-  photo     UserImage[] @relation("UserImages")
-  role      Role        @relation(fields: [roleId], references: [id])
-  inventories  Inventory[]
+  id          String      @id @default(uuid())
+  firstName   String
+  lastName    String
+  email       String      @unique
+  phone       String?
+  password    String
+  status      Boolean?
+  roleId      Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  enabled     Boolean     @default(true)
+  inventories Inventory[]
+  role        Role        @relation(fields: [roleId], references: [id])
+  photo       UserImage[] @relation("UserImages")
+
+  @@index([roleId], map: "User_roleId_fkey")
 }
 
 model Inventory {
-  id                      String             @id @default(uuid())
-  status                  Status
-  createdById             String
-  activeNumber            String?
-  serialNumber            String?
-  comments                String?            @db.Text
-  modelId                 Int
-  enabled                 Boolean             @default(true)
-  receptionDate           DateTime?
-  createdAt               DateTime           @default(now())
-  updatedAt               DateTime           @updatedAt
-  details                 Json
-  createdBy               User               @relation(fields: [createdById], references: [id])
-   
-  files                   File[]
-  images                  Image[]            @relation("InventoryImages")
-  model                   Model              @relation(fields: [modelId], references: [id])
-  conditions              InventoryCondition[]
-  customField             InventoryCustomField[]
+  id            String                 @id @default(uuid())
+  status        Status
+  createdById   String
+  activeNumber  String?
+  serialNumber  String?
+  comments      String?                @db.Text
+  modelId       Int
+  enabled       Boolean                @default(true)
+  receptionDate DateTime?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  details       Json?
+  files         File[]
+  images        Image[]                @relation("InventoryImages")
+  createdBy     User                   @relation(fields: [createdById], references: [id])
+  model         Model                  @relation(fields: [modelId], references: [id])
+  conditions    InventoryCondition[]
+  customField   InventoryCustomField[]
 
   @@index([createdById], map: "Inventory_createdById_fkey")
   @@index([modelId], map: "Inventory_modelId_fkey")
-}
-
-enum Status {
-  ALTA
-  BAJA
-  PROPUESTA
 }
 
 model InventoryType {
@@ -95,81 +91,81 @@ model InventoryBrand {
 }
 
 model Model {
-  id       Int          @id @default(autoincrement())
-  name     String
-  typeId   Int
-  brandId  Int
-  enabled  Boolean      @default(true)
-  brand    InventoryBrand @relation(fields: [brandId], references: [id])
-  type     InventoryType  @relation(fields: [typeId], references: [id])
+  id          Int            @id @default(autoincrement())
+  name        String
+  typeId      Int
+  brandId     Int
+  enabled     Boolean        @default(true)
   inventories Inventory[]
+  brand       InventoryBrand @relation(fields: [brandId], references: [id])
+  type        InventoryType  @relation(fields: [typeId], references: [id])
 
   @@index([brandId], map: "Model_brandId_fkey")
   @@index([typeId], map: "Model_typeId_fkey")
 }
 
 model CustomField {
-  id                Int       @id @default(autoincrement())
-  name              String    // Nombre del campo, como "Orden de compra" o "Ubicación actual"
-  type              String    // Tipo de dato del campo, como "String", "Int", "Date"
-  inventories          InventoryCustomField[] 
-  createdAt         DateTime  @default(now())
+  id          Int                    @id @default(autoincrement())
+  name        String
+  type        String
+  createdAt   DateTime               @default(now())
+  inventories InventoryCustomField[]
 }
 
 model InventoryCustomField {
-  id                Int          @id @default(autoincrement())
-  inventoryId       String
-  customFieldId     Int
-  value             String
-  inventory         Inventory      @relation(fields: [inventoryId], references: [id])
-  customField       CustomField  @relation(fields: [customFieldId], references: [id])
+  id            Int         @id @default(autoincrement())
+  inventoryId   String
+  customFieldId Int
+  value         String
+  customField   CustomField @relation(fields: [customFieldId], references: [id])
+  inventory     Inventory   @relation(fields: [inventoryId], references: [id])
 
   @@unique([inventoryId, customFieldId])
   @@index([customFieldId], map: "InventoryCustomField_customFieldId_fkey")
 }
 
 model File {
-  id         String   @id @default(uuid())
-  inventoryId  String
-  metadata   Json?
-  uploadedAt DateTime @default(now())
-  createdAt  DateTime @default(now())
-  enabled    Boolean  @default(true)
-  type       String
-  url        String
-  inventory  Inventory  @relation(fields: [inventoryId], references: [id])
+  id          String    @id @default(uuid())
+  inventoryId String
+  metadata    Json?
+  uploadedAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  enabled     Boolean   @default(true)
+  type        String
+  url         String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
 
   @@index([inventoryId], map: "File_inventoryId_fkey")
 }
 
 model Condition {
-  id              Int                @id @default(autoincrement())
-  name            String
-  enabled         Boolean            @default(true)
-  inventories     InventoryCondition[]
+  id          Int                  @id @default(autoincrement())
+  name        String
+  enabled     Boolean              @default(true)
+  inventories InventoryCondition[]
 }
 
 model InventoryCondition {
-  id              Int       @id @default(autoincrement())
-  inventoryId     String
-  conditionId     Int
-  condition       Condition @relation(fields: [conditionId], references: [id])
-  inventory       Inventory   @relation(fields: [inventoryId], references: [id])
+  id          Int       @id @default(autoincrement())
+  inventoryId String
+  conditionId Int
+  condition   Condition @relation(fields: [conditionId], references: [id])
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
 
   @@unique([inventoryId, conditionId])
   @@index([conditionId], map: "InventoryCondition_conditionId_fkey")
 }
 
 model Image {
-  id              String   @id @default(uuid())
-  url             String
-  thumbnail       String?
-  type            String
-  metadata        Json?
-  createdAt       DateTime @default(now())
-  enabled         Boolean  @default(true)
-  inventoryId     String?
-  inventory       Inventory? @relation("InventoryImages", fields: [inventoryId], references: [id])
+  id          String     @id @default(uuid())
+  url         String
+  thumbnail   String?
+  type        String
+  metadata    Json?
+  createdAt   DateTime   @default(now())
+  enabled     Boolean    @default(true)
+  inventoryId String?
+  inventory   Inventory? @relation("InventoryImages", fields: [inventoryId], references: [id])
 
   @@index([inventoryId])
 }
@@ -180,10 +176,16 @@ model UserImage {
   thumbnail String?
   type      String
   metadata  Json?
-  enabled   Boolean   @default(true)
+  enabled   Boolean  @default(true)
   createdAt DateTime @default(now())
   userId    String?
   user      User?    @relation("UserImages", fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+enum Status {
+  ALTA
+  BAJA
+  PROPUESTA
 }

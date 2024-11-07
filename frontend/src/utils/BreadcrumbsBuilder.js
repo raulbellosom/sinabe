@@ -13,23 +13,23 @@ const BreadcrumbsBuilder = (path) => {
       icon: HiHome,
     },
     {
-      label: 'Vehiculos',
-      href: '/vehicles',
+      label: 'Inventarios',
+      href: '/inventories',
       icon: FaCar,
     },
     {
-      label: 'Crear Vehiculo',
-      href: '/vehicles/create',
+      label: 'Crear Inventarios',
+      href: '/inventories/create',
       icon: PiStackPlusFill,
     },
     {
-      label: 'Editar Vehiculo',
-      href: '/vehicles/edit',
+      label: 'Editar Inventarios',
+      href: '/inventories/edit',
       icon: LuPenSquare,
     },
     {
-      label: 'Detalles del Vehiculo',
-      href: '/vehicles/view',
+      label: 'Detalles del Inventarios',
+      href: '/inventories/view',
       icon: MdChecklist,
     },
 
@@ -39,13 +39,13 @@ const BreadcrumbsBuilder = (path) => {
       icon: BiCategory,
     },
     {
-      label: 'Crear Modelo de Vehiculo',
-      href: '/catalogs/vehicle-models/create',
+      label: 'Crear Modelo de Inventarios',
+      href: '/catalogs/inventory-models/create',
       icon: null,
     },
     {
-      label: 'Editar Modelo de Vehiculo',
-      href: '/catalogs/vehicle-models/edit',
+      label: 'Editar Modelo de Inventarios',
+      href: '/catalogs/inventory-models/edit',
       icon: null,
     },
     {

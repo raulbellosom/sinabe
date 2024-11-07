@@ -9,11 +9,12 @@ import {
 } from 'react-pro-sidebar';
 import {
   FaTachometerAlt,
-  FaCar,
   FaUserCircle,
   FaSignOutAlt,
   FaUserCog,
   FaUserShield,
+  FaBoxes,
+  FaClipboardList,
 } from 'react-icons/fa';
 import { useAuthContext } from '../../context/AuthContext';
 import AccountSidebar from './AccountSidebar';
@@ -22,8 +23,9 @@ import { Button } from 'flowbite-react';
 import Navbar from '../navbar/Navbar';
 import MainLayout from '../../Layout/MainLayout';
 import { BiCategory } from 'react-icons/bi';
-import { MdAdminPanelSettings, MdGarage } from 'react-icons/md';
+import { MdAdminPanelSettings } from 'react-icons/md';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
+import { FaListCheck } from 'react-icons/fa6';
 
 const themes = {
   light: {
@@ -158,12 +160,12 @@ const Sidebar = ({ children }) => {
   const isUsersPermission = useCheckPermissions('view_users');
   const isAccountPermission = useCheckPermissions('view_account');
   const isRolesPermission = useCheckPermissions('view_roles');
-  const isVehiclesPermission = useCheckPermissions('view_vehicles');
-  const isModelsPermission = useCheckPermissions('view_vehicles_models');
-  const isBrandsPermission = useCheckPermissions('view_vehicles_brands');
-  const isTypesPermission = useCheckPermissions('view_vehicles_types');
+  const isInventoriesPermission = useCheckPermissions('view_inventories');
+  const isModelsPermission = useCheckPermissions('view_inventories_models');
+  const isBrandsPermission = useCheckPermissions('view_inventories_brands');
+  const isTypesPermission = useCheckPermissions('view_inventories_types');
   const isConditionsPermission = useCheckPermissions(
-    'view_vehicles_conditions',
+    'view_inventories_conditions',
   );
 
   const isCatalogsPermission =
@@ -222,11 +224,12 @@ const Sidebar = ({ children }) => {
                   Dashboard
                 </MenuItem>
               )}
-              {(isCatalogsPermission || isVehiclesPermission.hasPermission) && (
-                <SubMenu label="Inventarios" icon={<MdGarage size={23} />}>
-                  {isVehiclesPermission.hasPermission && (
+              {(isCatalogsPermission ||
+                isInventoriesPermission.hasPermission) && (
+                <SubMenu label="Inventarios" icon={<FaListCheck size={23} />}>
+                  {isInventoriesPermission.hasPermission && (
                     <MenuItem
-                      icon={<FaCar size={23} />}
+                      icon={<FaClipboardList size={23} />}
                       active={isActivePath('/inventories')}
                       component={<Link to={'/inventories'} />}
                       onClick={() => {
@@ -238,7 +241,7 @@ const Sidebar = ({ children }) => {
                   )}
                   {isCatalogsPermission && (
                     <MenuItem
-                      icon={<BiCategory size={23} />}
+                      icon={<FaBoxes size={23} />}
                       active={isActivePath('/catalogs')}
                       component={<Link to={'/catalogs'} />}
                       onClick={() => {

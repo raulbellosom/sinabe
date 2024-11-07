@@ -1,6 +1,6 @@
 import { db } from "../lib/db.js";
 
-export const getInventoryTypes = async (res) => {
+export const getInventoryTypes = async (req, res) => {
   try {
     const inventoryTypes = await db.inventoryType.findMany({
       where: { enabled: true },
@@ -71,11 +71,11 @@ export const getInventoryTypeById = async (req, res) => {
 };
 
 export const createInventoryType = async (req, res) => {
-  const { name, economicGroup } = req.body;
+  const { name } = req.body;
 
   try {
     const inventoryType = await db.inventoryType.findFirst({
-      where: { name, economicGroup, enabled: true },
+      where: { name, enabled: true },
     });
 
     if (inventoryType) {
@@ -85,7 +85,6 @@ export const createInventoryType = async (req, res) => {
     const newInventoryType = await db.inventoryType.create({
       data: {
         name,
-        economicGroup,
         enabled: true,
       },
     });
@@ -93,7 +92,6 @@ export const createInventoryType = async (req, res) => {
     const inventoryTypeWithCount = {
       id: newInventoryType.id,
       name: newInventoryType.name,
-      economicGroup: newInventoryType.economicGroup,
       count: 0,
     };
 
@@ -106,7 +104,7 @@ export const createInventoryType = async (req, res) => {
 
 export const updateInventoryType = async (req, res) => {
   const { id } = req.params;
-  const { name, economicGroup } = req.body;
+  const { name } = req.body;
 
   try {
     const inventoryType = await db.inventoryType.findUnique({
@@ -121,7 +119,6 @@ export const updateInventoryType = async (req, res) => {
       where: { id: parseInt(id, 10) },
       data: {
         name,
-        economicGroup,
       },
       include: {
         models: {
@@ -142,7 +139,6 @@ export const updateInventoryType = async (req, res) => {
     const inventoryTypeWithCount = {
       id: updatedInventoryType.id,
       name: updatedInventoryType.name,
-      economicGroup: updatedInventoryType.economicGroup,
       count: updatedInventoryType.models.reduce(
         (acc, model) => acc + model._count.inventories,
         0
@@ -192,7 +188,6 @@ export const deleteInventoryType = async (req, res) => {
     const inventoryTypesWithCount = data.map((type) => ({
       id: type.id,
       name: type.name,
-      economicGroup: type.economicGroup,
       count: type.models.reduce(
         (acc, model) => acc + model._count.inventories,
         0
@@ -206,7 +201,7 @@ export const deleteInventoryType = async (req, res) => {
   }
 };
 
-export const getInventoryBrands = async (res) => {
+export const getInventoryBrands = async (req, res) => {
   try {
     const inventoryBrands = await db.inventoryBrand.findMany({
       where: { enabled: true },
@@ -404,7 +399,7 @@ export const deleteInventoryBrand = async (req, res) => {
   }
 };
 
-export const getInventoryModels = async (res) => {
+export const getInventoryModels = async (req, res) => {
   try {
     const inventoryModels = await db.model.findMany({
       where: { enabled: true },
