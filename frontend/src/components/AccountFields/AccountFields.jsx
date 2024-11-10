@@ -20,7 +20,7 @@ const AccountFields = ({
         <input
           id={id}
           name={name}
-          value={value}
+          value={value || ''}
           onChange={onChange}
           disabled={!allowEdit}
           type={inputType}

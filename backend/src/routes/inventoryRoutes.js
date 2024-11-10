@@ -31,6 +31,14 @@ import {
   getConditionById,
   getConditions,
 } from "../controllers/inventoryModelController.js";
+import {
+  getCustomFields,
+  createCustomField,
+  updateCustomField,
+  deleteCustomField,
+  addCustomFieldValue,
+  getCustomFieldValues,
+} from "../controllers/customFieldController.js";
 import { createMultipleInventories } from "../controllers/inventoryExtrasController.js";
 import { createMultipleModels } from "../controllers/inventoryModelExtrasController.js";
 import {
@@ -76,6 +84,11 @@ router
   .route("/inventoryModels/createMultipleModels")
   .post(protect, upload.single("csvFile"), createMultipleModels);
 router
+  .route("/customFields")
+  .get(protect, getCustomFields)
+  .post(protect, createCustomField);
+router.route("/customFields/values").post(protect, addCustomFieldValue);
+router
   .route("/:id")
   .get(protect, getInventoryById)
   .put(
@@ -106,5 +119,13 @@ router
   .get(protect, getConditionById)
   .put(protect, updateCondition)
   .delete(protect, deleteCondition);
+
+router
+  .route("/customFields/:id")
+  .put(protect, updateCustomField)
+  .delete(protect, deleteCustomField);
+router
+  .route("/customFields/:customFieldId/values")
+  .get(protect, getCustomFieldValues);
 
 export default router;

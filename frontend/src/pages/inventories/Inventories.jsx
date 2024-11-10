@@ -337,7 +337,7 @@ const Inventories = () => {
                             }
                           }}
                           key={inventory.id}
-                          className="border-b dark:border-gray-600 text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                          className="border-b whitespace-nowrap dark:border-gray-600 text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
                         >
                           {inventoryColumns?.map((column) => {
                             let content;
@@ -398,12 +398,12 @@ const Inventories = () => {
                               return (
                                 <T.Cell className="py-2" key={column.id}>
                                   <span
-                                    className={`px-4 py-1 rounded-full text-xs font-medium ${
-                                      inventory.status == 'ALTA'
-                                        ? 'bg-green-100 text-green-800'
-                                          ? inventory.status == 'BAJA'
-                                          : 'bg-red-100 text-red-800'
-                                        : 'bg-yellow-100 text-yellow-800'
+                                    className={`px-4 py-1 text-white rounded-full text-xs font-medium ${
+                                      inventory.status === 'ALTA'
+                                        ? 'bg-mycad-primary'
+                                        : inventory.status === 'BAJA'
+                                          ? 'bg-mycad-danger'
+                                          : 'bg-mycad-warning'
                                     }`}
                                   >
                                     {inventory.status === 'PROPUESTA'

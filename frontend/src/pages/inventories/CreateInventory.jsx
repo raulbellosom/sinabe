@@ -11,10 +11,13 @@ import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import { FaCar, FaSave } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import withPermission from '../../utils/withPermissions';
+import { MdCancel } from 'react-icons/md';
+import { useCustomFieldContext } from '../../context/CustomFieldContext';
 
 const CreateInventory = () => {
   const formRef = useRef(null);
   const { createInventory } = useInventoryContext();
+  const { customFields } = useCustomFieldContext();
   const {
     inventoryModels,
     inventoryBrands,
@@ -41,6 +44,7 @@ const CreateInventory = () => {
     comments: '',
     conditions: [],
     files: [],
+    customFields: [],
   });
 
   const handleModalOpen = async () => {
@@ -120,14 +124,18 @@ const CreateInventory = () => {
           <ActionButtons
             extraActions={[
               {
+                label: 'Cancelar',
+                action: onCancel,
+                color: 'red',
+                icon: MdCancel,
+              },
+              {
                 label: 'Guardar',
                 action: handleSubmitRef,
                 icon: FaSave,
                 color: 'green',
               },
             ]}
-            onCancel={onCancel}
-            labelCancel={'Descartar'}
           />
         </div>
       </div>
@@ -141,20 +149,23 @@ const CreateInventory = () => {
         onSubmit={handleSubmit}
         inventoryModels={formattedModels}
         inventoryConditions={inventoryConditions}
+        customFields={customFields}
         onOtherModelSelected={() => handleModalOpen()}
       />
-      <ModalForm
-        onClose={onCloseModal}
-        title={'Crear Modelo'}
-        isOpenModal={isModalOpen}
-      >
-        <ModelForm
-          onSubmit={handleNewModelSubmit}
-          initialValues={newModelValue}
-          inventoryBrands={inventoryBrands}
-          inventoryTypes={inventoryTypes}
-        />
-      </ModalForm>
+      {isModalOpen && (
+        <ModalForm
+          onClose={onCloseModal}
+          title={'Crear Modelo'}
+          isOpenModal={isModalOpen}
+        >
+          <ModelForm
+            onSubmit={handleNewModelSubmit}
+            initialValues={newModelValue}
+            inventoryBrands={inventoryBrands}
+            inventoryTypes={inventoryTypes}
+          />
+        </ModalForm>
+      )}
     </div>
   );
 };

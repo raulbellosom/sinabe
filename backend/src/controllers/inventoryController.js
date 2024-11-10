@@ -49,6 +49,14 @@ export const getInventoryById = async (req, res) => {
     const inventory = await db.inventory.findUnique({
       where: { id },
       include: {
+        createdBy: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
         model: {
           include: {
             brand: true,
@@ -244,6 +252,7 @@ export const updateInventory = async (req, res) => {
     customFields,
     images,
     files,
+    status,
   } = JSON.parse(req.body.inventory || "{}");
 
   try {
@@ -266,6 +275,7 @@ export const updateInventory = async (req, res) => {
           receptionDate: new Date(receptionDate),
           comments,
           details,
+          status,
         },
       });
 

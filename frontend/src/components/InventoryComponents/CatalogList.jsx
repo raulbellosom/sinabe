@@ -6,6 +6,7 @@ import { BsThreeDotsVertical } from 'react-icons/bs';
 import TableHeader from '../Table/TableHeader';
 import TableActions from '../Table/TableActions';
 import { IoMdAdd } from 'react-icons/io';
+import TableResultsNotFound from '../Table/TableResultsNotFound';
 
 const CatalogList = ({
   data = [],
@@ -42,8 +43,7 @@ const CatalogList = ({
       </div>
       <div className="mt-36 md:mt-28 h-full overflow-hidden">
         <div className="h-full min-h-32 overflow-y-auto overflow-x-hidden place-content-start grid grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] gap-2">
-          {filteredData &&
-            filteredData.length > 0 &&
+          {filteredData && filteredData.length > 0 ? (
             filteredData.map((item) => (
               <div
                 key={item.id}
@@ -86,7 +86,12 @@ const CatalogList = ({
                   </div>
                 )}
               </div>
-            ))}
+            ))
+          ) : (
+            <div className="md:col-span-12 w-full h-full min-h-96 flex justify-center items-center bg-white">
+              <TableResultsNotFound />
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -660,6 +660,81 @@ export const deleteInventoryCondition = async (inventoryConditionId) => {
   }
 };
 
+export const getCustomFields = async () => {
+  try {
+    const response = await api.get(`/inventories/customFields`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const createCustomField = async (customField) => {
+  try {
+    const response = await api.post(`/inventories/customFields`, customField);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const updateCustomField = async (customField) => {
+  try {
+    const response = await api.put(
+      `/inventories/customFields/${customField.id}`,
+      customField,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const deleteCustomField = async (customFieldId) => {
+  try {
+    const response = await api.delete(
+      `/inventories/customFields/${customFieldId}`,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getCustomFieldValues = async (customFieldId, query) => {
+  try {
+    const response = await api.get(
+      `/inventories/customFields/${customFieldId}/values`,
+      {
+        params: {
+          query,
+        },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const addCustomFieldValue = async (customFieldValue) => {
+  try {
+    const response = await api.post(
+      `/inventories/customFields/values`,
+      customFieldValue,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const downloadFile = async (file) => {
   try {
     const response = await api.get(file.url, {

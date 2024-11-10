@@ -174,6 +174,22 @@ async function main() {
         name: "delete_inventories_models",
         description: "Eliminar modelos de inventarios",
       },
+      {
+        name: "view_inventories_custom_fields",
+        description: "Ver campos personalizados de inventarios",
+      },
+      {
+        name: "create_inventories_custom_fields",
+        description: "Crear campos personalizados de inventarios",
+      },
+      {
+        name: "edit_inventories_custom_fields",
+        description: "Editar campos personalizados de inventarios",
+      },
+      {
+        name: "delete_inventories_custom_fields",
+        description: "Eliminar campos personalizados de inventarios",
+      },
     ];
 
     const createdPermissions = await Promise.all(

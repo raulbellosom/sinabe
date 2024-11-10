@@ -85,7 +85,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
     <>
       <div
         className={classNames(
-          'h-full w-full flex items-center gap-4 justify-between py-1 px-2 rounded-md transition-all cursor-pointer hover:bg-stone-100 ease-in-out duration-100 truncate',
+          'h-full w-full flex items-center gap-4 justify-between p-2 rounded-md transition-all cursor-pointer hover:bg-stone-100 ease-in-out duration-100 truncate',
           className,
         )}
       >
@@ -130,7 +130,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
           isOpenModal={isModalOpen}
           onCloseModal={handleCloseModal}
           dismissible={true}
-          size="4xl"
+          size="7xl"
         >
           {window.innerWidth < 768 ? (
             <PDFReader

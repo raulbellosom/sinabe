@@ -5,7 +5,12 @@ import { useQuery } from '@tanstack/react-query';
 import InventoryProperty from '../../components/InventoryComponents/InventoryView/InventoryProperty';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import { FaCar, FaTachometerAlt } from 'react-icons/fa';
+import {
+  FaCalendarCheck,
+  FaCar,
+  FaTachometerAlt,
+  FaUser,
+} from 'react-icons/fa';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import {
   MdOutlineDirectionsCar,
@@ -15,7 +20,12 @@ import {
 } from 'react-icons/md';
 import { TbNumber123 } from 'react-icons/tb';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
-import { BiCategory } from 'react-icons/bi';
+import {
+  BiCategory,
+  BiSolidCalendarCheck,
+  BiSolidCalendarEdit,
+  BiSolidCalendarPlus,
+} from 'react-icons/bi';
 import { Badge } from 'flowbite-react';
 import classNames from 'classnames';
 import { useInventoryContext } from '../../context/InventoryContext';
@@ -46,6 +56,14 @@ const ViewInventory = () => {
 
   useEffect(() => {
     const data = {
+      status: {
+        name:
+          inventory?.status === 'PROPUESTA'
+            ? 'PROPUESTA DE BAJA'
+            : inventory?.status,
+        icon: MdInfo,
+        label: 'Estado',
+      },
       model: {
         name: inventory?.model?.name,
         icon: MdOutlineDirectionsCar,
@@ -75,18 +93,28 @@ const ViewInventory = () => {
         name: inventory?.receptionDate
           ? parseToLocalDate(inventory?.receptionDate)
           : '',
-        icon: MdCalendarToday,
+        icon: BiSolidCalendarCheck,
         label: 'Fecha de Recepción',
       },
-      status: {
-        name:
-          inventory?.status === 'PROPUESTA'
-            ? 'PROPUESTA DE BAJA'
-            : inventory?.status,
-        icon: MdInfo,
-        label: 'Estado',
+      lastModification: {
+        name: inventory?.updatedAt
+          ? parseToLocalDate(inventory?.updatedAt)
+          : '',
+        icon: BiSolidCalendarEdit,
+        label: 'Última Modificación',
       },
-
+      creationDate: {
+        name: inventory?.createdAt
+          ? parseToLocalDate(inventory?.createdAt)
+          : '',
+        icon: BiSolidCalendarPlus,
+        label: 'Fecha de Creación',
+      },
+      creationUser: {
+        name: `${inventory?.createdBy?.firstName} ${inventory?.createdBy?.lastName}`,
+        icon: FaUser,
+        label: 'Usuario de Creación',
+      },
       comments: {
         name: inventory?.comments,
         icon: MdOutlineTextsms,
@@ -151,7 +179,7 @@ const ViewInventory = () => {
       </div>
       <div className="h-fit grid grid-cols-12 gap-4">
         <div className="h-full col-span-12 lg:col-span-6">
-          <div className="grid gap-2 grid-cols-12 md:gap-4 w-full h-full">
+          <div className="grid grid-cols-12 gap-2 w-full h-full">
             {isFetching && !inventoryData ? (
               <>
                 {Array.from({ length: 8 }).map((_, index) => (

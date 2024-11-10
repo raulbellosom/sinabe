@@ -18,4 +18,13 @@ export const InventoryFormSchema = Yup.object().shape({
   conditions: Yup.array()
     .of(Yup.number())
     .required('Al menos una condición es requerida'),
+  // add customFields validation wich is a list of objects
+  customFields: Yup.array().of(
+    Yup.object().shape({
+      id: Yup.number().required('El campo personalizado es requerido'),
+      value: Yup.string().required(
+        'El valor del campo personalizado es requerido',
+      ),
+    }),
+  ),
 });

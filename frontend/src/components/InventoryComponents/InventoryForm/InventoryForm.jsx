@@ -13,6 +13,7 @@ const InventoryForm = forwardRef(
       inventoryModels,
       onOtherModelSelected,
       inventoryConditions,
+      customFields,
       isUpdate = false,
     },
     ref,
@@ -39,21 +40,8 @@ const InventoryForm = forwardRef(
             inventoryModels={inventoryModels}
             inventoryConditions={inventoryConditions}
             onOtherSelected={onOtherModelSelected}
+            customFields={customFields}
           />
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={formik.isSubmitting}
-              className="py-2 rounded"
-              color={formik.isSubmitting ? 'gray' : 'purple'}
-              isProcessing={formik.isSubmitting}
-            >
-              <>
-                <FaSave size={20} className="mr-2" />
-                {isUpdate ? 'Actualizar ' : ' Crear '} Inventario
-              </>
-            </Button>
-          </div>
         </Form>
       </FormikProvider>
     );

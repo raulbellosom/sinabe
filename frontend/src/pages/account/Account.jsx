@@ -185,7 +185,7 @@ const Account = () => {
               />
             )}
           </div>
-          <div className="rounded-full h- ring-4 ring-purple-500 p-1.5">
+          <div className="rounded-full min-h-36 min-w-36 ring-4 ring-purple-500 p-1.5">
             <ImageViewer
               containerClassNames={'rounded-full overflow-hidden'}
               images={image ? [image] : []}
