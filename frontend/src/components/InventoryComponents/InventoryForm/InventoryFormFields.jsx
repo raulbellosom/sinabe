@@ -34,6 +34,8 @@ const InventoryFormFields = ({
   const handleSelectCustomField = (field) => {
     handleCustomFieldSelection(field);
   };
+
+  console.log(customFields)
   return (
     <div className="grid grid-cols-12 gap-4 lg:gap-0">
       <div className="col-span-12 lg:col-span-8 lg:w-[97%]">
@@ -142,16 +144,17 @@ const InventoryFormFields = ({
           </p>
           {/* aqui podria ser donde agregare un buscador para los customfields y cuando el usuario seleccione un customField se le debera desplegar un input en automatico que pertenecera al array de customFields*/}
           <Field
-            name="customFieldSearch"
-            component={AutoCompleteInput}
-            label="Selecciona un campo personalizado"
-            options={customFields.map((field) => ({
-              label: field.name,
-              value: field.id,
-            }))}
-            onSelect={handleCustomFieldSelection}
-            className="col-span-12"
-          />
+  name="customFieldSearch"
+  component={AutoCompleteInput}
+  label="Selecciona un campo personalizado"
+  items={customFields.map((field) => ({
+    id: field.id,
+    title: field.name, // Cambiamos 'name' a 'title'
+    subtitle: field.type, // Puedes usar 'type' como 'subtitle' si necesitas
+  }))}
+  onSelect={handleCustomFieldSelection}
+  className="col-span-12"
+/>
           {selectedCustomFields.length > 0 && (
             <div className="col-span-12">
               <FieldArray name="customFields">

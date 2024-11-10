@@ -1,7 +1,23 @@
-import { useCombobox } from 'downshift';
-import PropTypes from 'prop-types';
+import React, { useState } from "react";
+import { useCombobox } from "downshift";
 
-function AutoCompleteInput({ items = [], onSelectItem }) {
+function AutoCompleteInput({ items = [], onSelect }) {
+  // Estado local para manejar los elementos filtrados
+  const [filteredItems, setFilteredItems] = useState(items);
+
+  // Función para filtrar los elementos según la entrada del usuario
+  function getItemsFilter(inputValue) {
+    const lowerCasedInputValue = inputValue.toLowerCase();
+    return function (item) {
+      return (
+        !inputValue ||
+        item.title.toLowerCase().includes(lowerCasedInputValue) ||
+        item.subtitle?.toLowerCase().includes(lowerCasedInputValue)
+      );
+    };
+  }
+
+  // Hook de Downshift para manejar el comportamiento del combobox
   const {
     isOpen,
     getToggleButtonProps,
@@ -12,32 +28,35 @@ function AutoCompleteInput({ items = [], onSelectItem }) {
     getItemProps,
     selectedItem,
   } = useCombobox({
-    items,
-    itemToString(item) {
-      return item ? item.title : '';
+    items: filteredItems,
+    onInputValueChange({ inputValue }) {
+      setFilteredItems(items.filter(getItemsFilter(inputValue)));
     },
     onSelectedItemChange({ selectedItem }) {
-      if (onSelectItem) {
-        onSelectItem(selectedItem); // Pasamos el item seleccionado al callback
+      if (selectedItem) {
+        onSelect(selectedItem);
       }
+    },
+    itemToString(item) {
+      return item ? item.title : "";
     },
   });
 
   return (
-    <div className="relative">
+    <div className="w-full max-w-md mx-auto mt-10">
       <div className="w-72 flex flex-col gap-1">
         <label className="w-fit" {...getLabelProps()}>
-          Choose your favorite book:
+          Choose your favorite field:
         </label>
         <div className="flex shadow-sm bg-white gap-0.5">
           <input
-            placeholder="Best book ever"
-            className="w-full p-1.5"
+            placeholder="Select a custom field"
+            className="w-full p-1.5 border rounded-l-md focus:outline-none"
             {...getInputProps()}
           />
           <button
             aria-label="toggle menu"
-            className="px-2"
+            className="px-2 border rounded-r-md"
             type="button"
             {...getToggleButtonProps()}
           >
@@ -47,33 +66,28 @@ function AutoCompleteInput({ items = [], onSelectItem }) {
       </div>
       <ul
         className={`absolute w-72 bg-white mt-1 shadow-md max-h-80 overflow-scroll p-0 z-10 ${
-          !(isOpen && items.length) && 'hidden'
+          !(isOpen && filteredItems.length) && "hidden"
         }`}
         {...getMenuProps()}
       >
         {isOpen &&
-          items.map((item, index) => (
+          filteredItems.map((item, index) => (
             <li
-              className={`py-2 px-3 shadow-sm flex flex-col ${highlightedIndex === index && 'bg-blue-300'} ${selectedItem === item && 'font-bold'}`}
               key={item.id}
               {...getItemProps({ item, index })}
+              className={`py-2 px-3 cursor-pointer flex flex-col ${
+                highlightedIndex === index ? "bg-blue-300" : ""
+              } ${selectedItem === item ? "font-bold" : ""}`}
             >
               <span>{item.title}</span>
-              <span className="text-sm text-gray-700">{item.author}</span>
+              {item.subtitle && (
+                <span className="text-sm text-gray-700">{item.subtitle}</span>
+              )}
             </li>
           ))}
       </ul>
     </div>
   );
 }
-
-AutoCompleteInput.propTypes = {
-  items: PropTypes.array.isRequired, // Aseguramos que 'items' sea un array
-  onSelectItem: PropTypes.func, // Callback opcional para el item seleccionado
-};
-
-AutoCompleteInput.defaultProps = {
-  items: [], // Default es un array vacío
-};
 
 export default AutoCompleteInput;
