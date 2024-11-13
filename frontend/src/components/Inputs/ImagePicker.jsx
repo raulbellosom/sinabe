@@ -34,7 +34,7 @@ const ImagePicker = ({
   return (
     <div
       className={classNames(
-        'w-full h-72 lg:h-full lg:max-h-[70vh] xl:max-h-[75vh] overflow-hidden',
+        'w-full h-fit min-h-[30dvh] overflow-hidden',
         className,
       )}
     >
@@ -63,7 +63,7 @@ const ImagePicker = ({
             'min-h-16 p-1 border-dashed cursor-pointer border-2 border-muted-foreground text-center flex flex-col items-center justify-center hover:bg-neutral-50',
             field?.value.length > 0
               ? 'w-24 h-24 xl:h-28 xl:w-28 2xl:h-32 2xl:w-32'
-              : 'h-full w-full',
+              : 'h-full w-full min-h-[30dvh]',
           )}
         >
           <svg

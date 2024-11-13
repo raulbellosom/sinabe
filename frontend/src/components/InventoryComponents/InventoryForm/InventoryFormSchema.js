@@ -11,17 +11,15 @@ export const InventoryFormSchema = Yup.object().shape({
       new Date(),
       'La fecha de adquisición no puede ser mayor a la fecha actual',
     )
-    .typeError('La fecha de adquisición debe ser una fecha')
-    .required('La fecha de adquisición es requerida'),
+    .typeError('La fecha de adquisición debe ser una fecha'),
   status: Yup.string().required('El estado del inventario es requerido'),
   comments: Yup.string().nullable(),
   conditions: Yup.array()
     .of(Yup.number())
     .required('Al menos una condición es requerida'),
-  // add customFields validation wich is a list of objects
   customFields: Yup.array().of(
     Yup.object().shape({
-      id: Yup.number().required('El campo personalizado es requerido'),
+      id: Yup.string().required('El campo personalizado es requerido'),
       value: Yup.string().required(
         'El valor del campo personalizado es requerido',
       ),

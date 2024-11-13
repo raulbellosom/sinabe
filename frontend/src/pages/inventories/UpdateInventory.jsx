@@ -14,14 +14,16 @@ const InventoryForm = React.lazy(
 );
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 
-import { FaCar, FaSave } from 'react-icons/fa';
+import { FaClipboardList, FaSave } from 'react-icons/fa';
 import withPermission from '../../utils/withPermissions';
+import { useCustomFieldContext } from '../../context/CustomFieldContext';
 
 const UpdateInventory = () => {
   const formRef = useRef(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const { updateInventory, deleteInventory } = useInventoryContext();
+  const { customFields, getFieldValues } = useCustomFieldContext();
   const {
     createInventoryModel,
     inventoryConditions,
@@ -40,6 +42,7 @@ const UpdateInventory = () => {
     comments: '',
     conditions: [],
     files: [],
+    customFields: [],
   });
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,6 +60,8 @@ const UpdateInventory = () => {
   } = useQuery({
     queryKey: ['inventory', id],
     queryFn: ({ signal }) => getInventory({ id, signal }),
+    staleTime: 1000 * 60 * 5, // 5 minutos (ajusta según lo necesario)
+    cacheTime: 1000 * 60 * 10, // 10 minutos (ajusta según lo necesario)
   });
 
   useEffect(() => {
@@ -72,7 +77,7 @@ const UpdateInventory = () => {
         modelId: inventory.model.id,
         serialNumber: inventory.serialNumber || '',
         activeNumber: inventory.activeNumber || '',
-        receptionDate: inventory.receptionDate,
+        receptionDate: inventory.receptionDate || '',
         status: inventory.status,
         images: inventory.images || [],
         files: inventory?.files ? formatedFiles : [],
@@ -80,6 +85,18 @@ const UpdateInventory = () => {
         conditions: inventory.conditions.map(
           (condition) => condition.conditionId,
         ),
+        customFields: inventory?.customField
+          ? inventory.customField
+              .filter(
+                (field) => field.customFieldId && !isNaN(field.customFieldId),
+              )
+              .map((field) => ({
+                id: field.id,
+                name: field.customField.name,
+                value: field.value,
+                customFieldId: field.customFieldId,
+              }))
+          : [],
       };
 
       setInitialValues(values);
@@ -123,6 +140,7 @@ const UpdateInventory = () => {
 
   const handleSubmit = (values, { setSubmitting, resetForm }) => {
     try {
+      console.log(values);
       updateInventory(values);
       resetForm();
     } catch (error) {
@@ -166,7 +184,7 @@ const UpdateInventory = () => {
       <div className="h-full bg-white p-4 rounded-md">
         <div className="flex flex-col-reverse md:flex-row items-center gap-4 w-full pb-1">
           <div className="w-full h-full rounded-md flex items-center text-purple-500">
-            <FaCar size={24} className="mr-4" />
+            <FaClipboardList size={24} className="mr-4" />
             <h1 className="text-2xl font-bold">Actualizar Inventario</h1>
           </div>
           <div className="flex justify-center gap-2">
@@ -212,6 +230,9 @@ const UpdateInventory = () => {
             inventoryConditions={inventoryConditions}
             isUpdate={true}
             onOtherModelSelected={() => handleModalOpen()}
+            customFields={customFields}
+            getCustomFieldSuggestions={getFieldValues}
+            currentCustomFields={initialValues?.customFields}
           />
         )}
       </div>

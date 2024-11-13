@@ -2,8 +2,6 @@ import React, { forwardRef, useImperativeHandle } from 'react';
 import { FormikProvider, useFormik, Form } from 'formik';
 import { InventoryFormSchema } from './InventoryFormSchema';
 import InventoryFormFields from './InventoryFormFields';
-import { Button } from 'flowbite-react';
-import { FaSave } from 'react-icons/fa';
 
 const InventoryForm = forwardRef(
   (
@@ -15,6 +13,8 @@ const InventoryForm = forwardRef(
       inventoryConditions,
       customFields,
       isUpdate = false,
+      getCustomFieldSuggestions,
+      currentCustomFields,
     },
     ref,
   ) => {
@@ -24,6 +24,7 @@ const InventoryForm = forwardRef(
       validationSchema: InventoryFormSchema,
       onSubmit: (values, actions) => {
         onSubmit(values, actions);
+        actions.setValues(initialValues);
       },
     });
 
@@ -41,6 +42,8 @@ const InventoryForm = forwardRef(
             inventoryConditions={inventoryConditions}
             onOtherSelected={onOtherModelSelected}
             customFields={customFields}
+            getCustomFieldSuggestions={getCustomFieldSuggestions}
+            currentCustomFields={currentCustomFields}
           />
         </Form>
       </FormikProvider>

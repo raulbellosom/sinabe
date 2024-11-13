@@ -17,18 +17,6 @@ const CustomFieldFields = ({}) => {
         className="col-span-1"
       />
       <Field
-        name="type"
-        id="type"
-        component={SelectInput}
-        label="Tipo"
-        options={[
-          { label: 'Texto', value: 'text' },
-          { label: 'Número', value: 'number' },
-          { label: 'Fecha', value: 'date' },
-        ]}
-        className="col-span-1"
-      />
-      <Field
         className="hidden"
         name="id"
         label="id"

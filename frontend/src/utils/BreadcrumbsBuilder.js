@@ -1,4 +1,9 @@
-import { FaCar, FaUserCircle, FaUserCog, FaUserShield } from 'react-icons/fa';
+import {
+  FaClipboardList,
+  FaUserCircle,
+  FaUserCog,
+  FaUserShield,
+} from 'react-icons/fa';
 import { HiHome } from 'react-icons/hi';
 import { MdChecklist } from 'react-icons/md';
 import { PiStackPlusFill } from 'react-icons/pi';
@@ -15,7 +20,7 @@ const BreadcrumbsBuilder = (path) => {
     {
       label: 'Inventarios',
       href: '/inventories',
-      icon: FaCar,
+      icon: FaClipboardList,
     },
     {
       label: 'Crear Inventarios',

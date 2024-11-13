@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import CatalogList from '../../../components/InventoryComponents/CatalogList';
 import ModalRemove from '../../../components/Modals/ModalRemove';
 import ModalFormikForm from '../../../components/Modals/ModalFormikForm';
-import { FaListAlt } from 'react-icons/fa';
 import useCheckPermissions from '../../../hooks/useCheckPermissions';
 import withPermission from '../../../utils/withPermissions';
 import { useCustomFieldContext } from '../../../context/CustomFieldContext';
@@ -12,7 +11,6 @@ import { RiInputField } from 'react-icons/ri';
 
 const InitValues = {
   name: '',
-  type: '',
   id: '',
 };
 

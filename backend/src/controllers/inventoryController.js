@@ -129,13 +129,33 @@ export const createInventory = async (req, res) => {
       status,
     } = inventoryData;
 
+    // check if model exists
+    const model = await db.model.findUnique({
+      where: { id: parseInt(modelId, 10) },
+    });
+
+    if (!model) {
+      res.status(404).json({ message: "Modelo invalido" });
+      return;
+    }
+
+    // check if the serial number is unique
+    const existingInventory = await db.inventory.findFirst({
+      where: { serialNumber, enabled: true },
+    });
+
+    if (existingInventory) {
+      res.status(400).json({ message: "El número de serie ya existe" });
+      return;
+    }
+
     const createdInventory = await db.$transaction(async (prisma) => {
       const inventory = await prisma.inventory.create({
         data: {
           modelId: parseInt(modelId, 10),
           activeNumber,
           serialNumber,
-          receptionDate: new Date(receptionDate),
+          receptionDate: receptionDate ? new Date(receptionDate) : null,
           comments,
           status,
           createdById: user.id,
@@ -176,17 +196,23 @@ export const createInventory = async (req, res) => {
       }
 
       if (customFields && customFields.length > 0) {
-        const customFieldData = customFields.map(
-          ({ customFieldId, value }) => ({
-            inventoryId: inventory.id,
-            customFieldId: parseInt(customFieldId, 10),
-            value,
-          })
-        );
+        for (const { customFieldId, value } of customFields) {
+          let customFieldIdInt = parseInt(customFieldId, 10);
+          if (isNaN(customFieldIdInt)) {
+            const newCustomField = await prisma.customField.create({
+              data: { name: customFieldId },
+            });
+            customFieldIdInt = newCustomField.id;
+          }
 
-        await prisma.inventoryCustomField.createMany({
-          data: customFieldData,
-        });
+          await prisma.inventoryCustomField.create({
+            data: {
+              inventoryId: inventory.id,
+              customFieldId: customFieldIdInt,
+              value,
+            },
+          });
+        }
       }
 
       if (req.processedFiles && req.processedFiles.length > 0) {
@@ -265,6 +291,16 @@ export const updateInventory = async (req, res) => {
       return;
     }
 
+    // check if the serial number is unique
+    const existingInventory = await db.inventory.findFirst({
+      where: { serialNumber, enabled: true },
+    });
+
+    if (existingInventory) {
+      res.status(400).json({ message: "El número de serie ya existe" });
+      return;
+    }
+
     await db.$transaction(async (prisma) => {
       await prisma.inventory.update({
         where: { id },
@@ -272,7 +308,7 @@ export const updateInventory = async (req, res) => {
           modelId: parseInt(modelId, 10),
           activeNumber,
           serialNumber,
-          receptionDate: new Date(receptionDate),
+          receptionDate: receptionDate ? new Date(receptionDate) : null,
           comments,
           details,
           status,
@@ -295,21 +331,23 @@ export const updateInventory = async (req, res) => {
       }
 
       if (customFields && customFields.length > 0) {
-        await prisma.inventoryCustomField.deleteMany({
-          where: { inventoryId: id },
-        });
+        for (const { customFieldId, value } of customFields) {
+          let customFieldIdInt = parseInt(customFieldId, 10);
+          if (isNaN(customFieldIdInt)) {
+            const newCustomField = await prisma.customField.create({
+              data: { name: customFieldId },
+            });
+            customFieldIdInt = newCustomField.id;
+          }
 
-        const customFieldData = customFields.map(
-          ({ customFieldId, value }) => ({
-            inventoryId: id,
-            customFieldId: parseInt(customFieldId, 10),
-            value,
-          })
-        );
-
-        await prisma.inventoryCustomField.createMany({
-          data: customFieldData,
-        });
+          await prisma.inventoryCustomField.create({
+            data: {
+              inventoryId: id,
+              customFieldId: customFieldIdInt,
+              value,
+            },
+          });
+        }
       }
 
       const currentImages = new Set();

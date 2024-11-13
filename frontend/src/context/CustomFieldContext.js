@@ -5,7 +5,7 @@ const CustomFieldContext = createContext({
   customFieldValues: [],
   isLoadingCustomFields: () => {},
   customFieldsError: () => {},
-  getFieldValues: () => {},
+  getFieldValues: async () => {},
   createField: async () => {},
   updateField: async () => {},
   deleteField: async () => {},

@@ -14,7 +14,7 @@ export const getCustomFields = async (req, res) => {
 };
 
 export const createCustomField = async (req, res) => {
-  const { name, type } = req.body;
+  const { name } = req.body;
 
   try {
     // Verificar si el campo ya existe
@@ -28,7 +28,7 @@ export const createCustomField = async (req, res) => {
 
     // Crear el nuevo campo personalizado
     const newCustomField = await db.customField.create({
-      data: { name, type, enabled: true },
+      data: { name, enabled: true },
     });
 
     res.status(201).json(newCustomField);
@@ -39,13 +39,13 @@ export const createCustomField = async (req, res) => {
 };
 
 export const getCustomFieldValues = async (req, res) => {
-  const { customFieldId, query } = req.params;
-
+  const { customFieldId } = req.params;
+  const { query } = req.query;
   try {
     const values = await db.inventoryCustomField.findMany({
       where: {
         customFieldId: parseInt(customFieldId, 10),
-        value: { startsWith: query },
+        value: { contains: query },
       },
       select: { value: true },
       distinct: ["value"],

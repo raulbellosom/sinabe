@@ -23,7 +23,7 @@ import { Button } from 'flowbite-react';
 import Navbar from '../navbar/Navbar';
 import MainLayout from '../../Layout/MainLayout';
 import { BiCategory } from 'react-icons/bi';
-import { MdAdminPanelSettings } from 'react-icons/md';
+import { MdAddBox, MdAdminPanelSettings } from 'react-icons/md';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
 import { FaListCheck } from 'react-icons/fa6';
 
@@ -152,8 +152,26 @@ const Sidebar = ({ children }) => {
   };
 
   const isActivePath = (path) => {
-    const currentPath = path === '/' ? '/dashboard' : path;
-    return location.pathname?.includes(currentPath);
+    const currentPath = location.pathname;
+
+    if (currentPath === '/' && path === '/dashboard') {
+      return true;
+    }
+
+    if (currentPath === path) {
+      return true;
+    }
+
+    if (
+      path !== '/' &&
+      currentPath.startsWith(path) &&
+      currentPath.length > path.length &&
+      currentPath[path.length] === '/'
+    ) {
+      return false;
+    }
+
+    return false;
   };
 
   const isDashBoardPermission = useCheckPermissions('view_dashboard');
@@ -161,6 +179,7 @@ const Sidebar = ({ children }) => {
   const isAccountPermission = useCheckPermissions('view_account');
   const isRolesPermission = useCheckPermissions('view_roles');
   const isInventoriesPermission = useCheckPermissions('view_inventories');
+  const isCreateInventoryPermission = useCheckPermissions('create_inventories');
   const isModelsPermission = useCheckPermissions('view_inventories_models');
   const isBrandsPermission = useCheckPermissions('view_inventories_brands');
   const isTypesPermission = useCheckPermissions('view_inventories_types');
@@ -227,6 +246,18 @@ const Sidebar = ({ children }) => {
               {(isCatalogsPermission ||
                 isInventoriesPermission.hasPermission) && (
                 <SubMenu label="Inventarios" icon={<FaListCheck size={23} />}>
+                  {isCreateInventoryPermission.hasPermission && (
+                    <MenuItem
+                      icon={<MdAddBox size={23} />}
+                      active={isActivePath('/inventories/create')}
+                      component={<Link to={'/inventories/create'} />}
+                      onClick={() => {
+                        setToggled(false);
+                      }}
+                    >
+                      Nuevo Inventario
+                    </MenuItem>
+                  )}
                   {isInventoriesPermission.hasPermission && (
                     <MenuItem
                       icon={<FaClipboardList size={23} />}

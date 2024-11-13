@@ -4,14 +4,12 @@ import Skeleton from 'react-loading-skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { IoMdAdd } from 'react-icons/io';
 import { MdOutlineFileUpload } from 'react-icons/md';
-import { Table as T } from 'flowbite-react';
 
 import { useCatalogContext } from '../../../context/CatalogContext';
 import ModalForm from '../../../components/Modals/ModalForm';
 import ModalRemove from '../../../components/Modals/ModalRemove';
 import { searchModels } from '../../../services/api';
 import { modelColumns } from '../../../utils/CatalogsFields';
-import ActionButtons from '../../../components/ActionButtons/ActionButtons';
 import CreateMultipleModels from './CreateMultipleModels';
 import Notifies from '../../../components/Notifies/Notifies';
 import ModelFormFields from '../../../components/InventoryComponents/ModelForm/ModelFormFields';
@@ -20,18 +18,14 @@ import { ModelFormSchema } from '../../../components/InventoryComponents/ModelFo
 import { HiCubeTransparent } from 'react-icons/hi';
 import withPermission from '../../../utils/withPermissions';
 import useCheckPermissions from '../../../hooks/useCheckPermissions';
-import CatalogList from '../../../components/InventoryComponents/CatalogList';
 import CatalogCardList from '../../../components/InventoryComponents/CatalogCardList';
-const Card = lazy(() => import('../../../components/Card/Card'));
 const TableHeader = lazy(() => import('../../../components/Table/TableHeader'));
-const TableFooter = lazy(() => import('../../../components/Table/TableFooter'));
 const TableActions = lazy(
   () => import('../../../components/Table/TableActions'),
 );
 const TableResultsNotFound = lazy(
   () => import('../../../components/Table/TableResultsNotFound'),
 );
-const Table = lazy(() => import('../../../components/Table/Table'));
 
 const Models = () => {
   const {
@@ -292,6 +286,7 @@ const Models = () => {
           onClose={onCloseModal}
           isOpenModal={isOpenModal}
           dismissible
+          size={'2xl'}
           title={editMode ? 'Editar Modelo' : 'Crear Modelo'}
           schema={ModelFormSchema}
           initialValues={initialValues}

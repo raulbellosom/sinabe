@@ -5,17 +5,11 @@ import { useQuery } from '@tanstack/react-query';
 import InventoryProperty from '../../components/InventoryComponents/InventoryView/InventoryProperty';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import {
-  FaCalendarCheck,
-  FaCar,
-  FaTachometerAlt,
-  FaUser,
-} from 'react-icons/fa';
+import { FaClipboardList, FaUser } from 'react-icons/fa';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import {
   MdOutlineDirectionsCar,
   MdInfo,
-  MdCalendarToday,
   MdOutlineTextsms,
 } from 'react-icons/md';
 import { TbNumber123 } from 'react-icons/tb';
@@ -34,6 +28,7 @@ import formatFileData from '../../utils/fileDataFormatter';
 import { parseToLocalDate } from '../../utils/formatValues';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import withPermission from '../../utils/withPermissions';
+import { RiInputField } from 'react-icons/ri';
 const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
 
 const ViewInventory = () => {
@@ -44,6 +39,7 @@ const ViewInventory = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [images, setImages] = useState([]);
   const [files, setFiles] = useState([]);
+  const [customFields, setCustomFields] = useState([]);
   const {
     data: inventory,
     refetch,
@@ -113,7 +109,7 @@ const ViewInventory = () => {
       creationUser: {
         name: `${inventory?.createdBy?.firstName} ${inventory?.createdBy?.lastName}`,
         icon: FaUser,
-        label: 'Usuario de Creación',
+        label: 'Creado por',
       },
       comments: {
         name: inventory?.comments,
@@ -121,6 +117,11 @@ const ViewInventory = () => {
         label: 'Comentarios',
       },
     };
+    let formatedCustomFields = inventory?.customField?.map((field) => ({
+      value: field.value,
+      label: field.customField.name,
+    }));
+    setCustomFields(formatedCustomFields || []);
     setFiles(formatFileData(inventory?.files || []));
     setImages(formatFileData(inventory?.images || []));
     setInventoryData(data);
@@ -152,12 +153,11 @@ const ViewInventory = () => {
       img instanceof File ? URL.createObjectURL(img) : `${API_URL}/${img.url}`;
     navigator.clipboard.writeText(imgURL);
   };
-
   return (
     <div className="h-full bg-white p-4 rounded-md">
       <div className="w-full flex flex-col-reverse lg:flex-row items-center justify-between gap-4 pb-1">
         <div className="w-full rounded-md flex items-center justify-center lg:justify-start text-purple-500">
-          <FaCar size={24} className="mr-4" />
+          <FaClipboardList size={24} className="mr-4" />
           <h1 className="text-2xl font-bold">Detalles del Inventario</h1>
         </div>
         <div className="w-full flex items-center justify-center lg:justify-end gap-2">
@@ -178,7 +178,7 @@ const ViewInventory = () => {
           ))}
       </div>
       <div className="h-fit grid grid-cols-12 gap-4">
-        <div className="h-full col-span-12 lg:col-span-6">
+        <div className="h-full col-span-12 lg:col-span-6 flex flex-col">
           <div className="grid grid-cols-12 gap-2 w-full h-full">
             {isFetching && !inventoryData ? (
               <>
@@ -199,6 +199,32 @@ const ViewInventory = () => {
                 );
               })
             )}
+          </div>
+          <p
+            style={{
+              width: '100%',
+              textAlign: 'center',
+              borderBottom: '1px solid #e2e8f0',
+              lineHeight: '0.1em',
+              margin: '10px 0 20px',
+            }}
+            className="col-span-12 text-base font-semibold pt-4"
+          >
+            <span style={{ background: '#fff', padding: '0 10px' }}>
+              Información Adicional
+            </span>
+          </p>
+          <div className="grid grid-cols-12 gap-2 w-full h-full">
+            {customFields.map((field, index) => (
+              <div key={index} className="col-span-6">
+                <InventoryProperty
+                  key={index}
+                  label={field.label}
+                  value={field.value}
+                  icon={RiInputField}
+                />
+              </div>
+            ))}
           </div>
         </div>
         <div className="col-span-12 lg:col-span-6">

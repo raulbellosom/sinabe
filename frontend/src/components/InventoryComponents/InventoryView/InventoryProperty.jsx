@@ -2,6 +2,7 @@ import React from 'react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import classNames from 'classnames';
+import Notifies from '../../Notifies/Notifies';
 
 const InventoryProperty = ({ label, value, icon: Icon }) => {
   const formattedValue =
@@ -9,10 +10,18 @@ const InventoryProperty = ({ label, value, icon: Icon }) => {
       ? value.replace(/\n/g, '<br />')
       : String(value);
 
+  const handleDoubleClick = () => {
+    Notifies('success', `Campo ${label} copiado al portapapeles`);
+    navigator.clipboard.writeText(value);
+  };
+
   if (label === 'Estado') {
     value = value === 'PROPUESTA' ? 'PROPUESTA DE BAJA' : value;
     return (
-      <div className="flex flex-col h-full text-nowrap">
+      <div
+        onDoubleClick={() => handleDoubleClick()}
+        className="flex flex-col h-full text-nowrap"
+      >
         <h2 className="text-sm 2xl:text-base font-semibold h-7">{label}</h2>
         <p
           className={classNames(
@@ -36,7 +45,10 @@ const InventoryProperty = ({ label, value, icon: Icon }) => {
   }
 
   return (
-    <div className="flex flex-col h-full text-nowrap">
+    <div
+      onDoubleClick={() => handleDoubleClick()}
+      className="flex flex-col h-full text-nowrap"
+    >
       <h2 className="text-sm 2xl:text-base font-semibold h-7">{label}</h2>
       <p className="text-xs md:text-sm 2xl:text-base p-1.5 flex items-center gap-2 justify-start min-h-6 border-b border-neutral-100 pb-1">
         {Icon && (

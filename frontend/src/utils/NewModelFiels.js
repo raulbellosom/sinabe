@@ -1,6 +1,5 @@
 import { BiCategory } from 'react-icons/bi';
-import { FaCar } from 'react-icons/fa';
-import { MdGarage } from 'react-icons/md';
+import { FaClipboardList } from 'react-icons/fa';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 
 const NewModelFields = async ({ inventoryTypes, inventoryBrands }) => {
@@ -9,7 +8,7 @@ const NewModelFields = async ({ inventoryTypes, inventoryBrands }) => {
       name: 'name',
       label: 'Ingrese el nombre del modelo',
       inputType: 'text',
-      icon: FaCar,
+      icon: FaClipboardList,
     },
     {
       name: 'typeId',

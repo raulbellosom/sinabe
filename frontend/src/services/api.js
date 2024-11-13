@@ -705,7 +705,7 @@ export const deleteCustomField = async (customFieldId) => {
   }
 };
 
-export const getCustomFieldValues = async (customFieldId, query) => {
+export const getCustomFieldValues = async ({ customFieldId, query }) => {
   try {
     const response = await api.get(
       `/inventories/customFields/${customFieldId}/values`,

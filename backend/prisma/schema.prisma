@@ -107,7 +107,6 @@ model Model {
 model CustomField {
   id          Int                    @id @default(autoincrement())
   name        String
-  type        String
   enabled     Boolean                @default(true)
   createdAt   DateTime               @default(now())
   inventories InventoryCustomField[]

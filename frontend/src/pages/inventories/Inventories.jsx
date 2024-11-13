@@ -6,12 +6,12 @@ import ModalViewer from '../../components/Modals/ModalViewer';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import { useNavigate } from 'react-router-dom';
 import { LuFileSpreadsheet } from 'react-icons/lu';
-import { FaCar, FaEdit, FaEye } from 'react-icons/fa';
+import { FaClipboardList, FaEdit, FaEye } from 'react-icons/fa';
 import { Checkbox, Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchInventories } from '../../services/api';
 import Card from '../../components/Card/Card';
-import { parseToCurrency, parseToLocalDate } from '../../utils/formatValues';
+import { parseToLocalDate } from '../../utils/formatValues';
 import { MdOutlineFileUpload } from 'react-icons/md';
 import CreateMultipleInventory from './CreateMultipleInventory';
 import { downloadCSV } from '../../utils/DownloadCSV';
@@ -262,9 +262,9 @@ const Inventories = () => {
 
   return (
     <>
-      <section className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
+      <section className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-4 antialiased">
         <TableHeader
-          icon={FaCar}
+          icon={FaClipboardList}
           title="Inventario"
           actions={[
             {

@@ -2,25 +2,25 @@ import React from 'react';
 import { ErrorMessage } from 'formik';
 import { Label } from 'flowbite-react';
 import classNames from 'classnames';
-import Select from 'react-select';
+import Select from 'react-select/creatable';
 
-const MultiSelectInput = ({
+const SearchSelectInput = ({
   field,
-  isOtherOption,
-  onOtherSelected,
-  className,
-  closeMenuOnSelect = false,
   form: { touched, errors, setFieldValue },
+  closeMenuOnSelect = false,
+  onSelect,
+  className,
   ...props
 }) => {
   const handleChange = (selectedOptions) => {
     const values = selectedOptions
       ? selectedOptions.map((option) => option.value)
       : [];
-    setFieldValue(field.name, values);
 
-    if (values.includes('0') && onOtherSelected && isOtherOption) {
-      onOtherSelected();
+    if (onSelect) {
+      selectedOptions.forEach((option) => {
+        onSelect(option);
+      });
     }
   };
 
@@ -36,17 +36,15 @@ const MultiSelectInput = ({
         {...field}
         {...props}
         isMulti
-        className="mt-1 border border-gray-500 rounded-lg"
+        className="mt-1 border border-neutral-500 rounded-lg"
         closeMenuOnSelect={closeMenuOnSelect}
+        placeholder="Selecciona una opción"
         classNamePrefix="react-select"
         onChange={handleChange}
         value={props.options.filter((option) =>
           field.value?.includes(option.value),
         )}
-        options={[
-          ...props.options,
-          ...(isOtherOption ? [{ label: 'Otro', value: '0' }] : []),
-        ]}
+        options={props.options}
       />
       <ErrorMessage
         name={field.name}
@@ -57,4 +55,4 @@ const MultiSelectInput = ({
   );
 };
 
-export default MultiSelectInput;
+export default SearchSelectInput;

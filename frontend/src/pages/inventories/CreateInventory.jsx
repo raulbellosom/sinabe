@@ -8,16 +8,29 @@ const InventoryForm = React.lazy(
     import('../../components/InventoryComponents/InventoryForm/InventoryForm'),
 );
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import { FaCar, FaSave } from 'react-icons/fa';
+import { FaClipboardList, FaSave } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import withPermission from '../../utils/withPermissions';
 import { MdCancel } from 'react-icons/md';
 import { useCustomFieldContext } from '../../context/CustomFieldContext';
 
+const initValues = {
+  modelId: '',
+  serialNumber: '',
+  activeNumber: '',
+  receptionDate: '',
+  status: '',
+  images: [],
+  comments: '',
+  conditions: [],
+  files: [],
+  customFields: [],
+};
+
 const CreateInventory = () => {
   const formRef = useRef(null);
   const { createInventory } = useInventoryContext();
-  const { customFields } = useCustomFieldContext();
+  const { customFields, getFieldValues } = useCustomFieldContext();
   const {
     inventoryModels,
     inventoryBrands,
@@ -34,18 +47,7 @@ const CreateInventory = () => {
     typeId: '',
   });
   const [formattedModels, setFormattedModels] = useState([]);
-  const [initialValues, setInitialValues] = useState({
-    modelId: '',
-    serialNumber: '',
-    activeNumber: '',
-    receptionDate: '',
-    status: '',
-    images: [],
-    comments: '',
-    conditions: [],
-    files: [],
-    customFields: [],
-  });
+  const [initialValues, setInitialValues] = useState({ ...initValues });
 
   const handleModalOpen = async () => {
     setIsModalOpen(true);
@@ -86,8 +88,8 @@ const CreateInventory = () => {
     try {
       const inventory = await createInventory(values);
       setSubmitting(false);
-      resetForm();
-      navigate(`/inventories/view/${inventory.id}`);
+      resetForm({ values: initValues });
+      navigate(`/inventories/${inventory.id}`);
     } catch (error) {
       console.error(error);
       setSubmitting(false);
@@ -117,10 +119,10 @@ const CreateInventory = () => {
     <div className="h-full bg-white p-4 rounded-md">
       <div className="flex flex-col-reverse md:flex-row items-center gap-4 w-full pb-1">
         <div className="w-full h-full rounded-md flex items-center text-purple-500">
-          <FaCar size={24} className="mr-4" />
+          <FaClipboardList size={24} className="mr-4" />
           <h1 className="text-2xl font-bold">Crear Inventario</h1>
         </div>
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-center gap-2 w-full md:w-fit">
           <ActionButtons
             extraActions={[
               {
@@ -149,8 +151,10 @@ const CreateInventory = () => {
         onSubmit={handleSubmit}
         inventoryModels={formattedModels}
         inventoryConditions={inventoryConditions}
-        customFields={customFields}
         onOtherModelSelected={() => handleModalOpen()}
+        customFields={customFields}
+        getCustomFieldSuggestions={getFieldValues}
+        currentCustomFields={initialValues.customFields}
       />
       {isModalOpen && (
         <ModalForm

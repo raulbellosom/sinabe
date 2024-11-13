@@ -1,27 +1,26 @@
 import React from 'react';
 import { Field } from 'formik';
 import TextInput from '../../Inputs/TextInput';
-import SelectInput from '../../Inputs/SelectInput';
 import { BiCategory } from 'react-icons/bi';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
-import { MdOutlineDirectionsCar } from 'react-icons/md';
-import { FaCalendar } from 'react-icons/fa';
+import { HiCubeTransparent } from 'react-icons/hi';
+import SimpleSearchSelectInput from '../../Inputs/SimpleSearchSelectInput';
 
 const ModelFormFields = ({ inventoryBrands, inventoryTypes }) => {
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div className="grid grid-cols-1 gap-4 pb-28">
       <Field
         name="name"
         id="name"
         component={TextInput}
         label="Nombre"
         type="text"
-        icon={MdOutlineDirectionsCar}
+        icon={HiCubeTransparent}
       />
       <Field
         name="brandId"
         id="brandId"
-        component={SelectInput}
+        component={SimpleSearchSelectInput}
         label="Marca del inventario"
         options={inventoryBrands.map((brand) => ({
           label: brand.name,
@@ -32,7 +31,7 @@ const ModelFormFields = ({ inventoryBrands, inventoryTypes }) => {
       <Field
         name="typeId"
         id="typeId"
-        component={SelectInput}
+        component={SimpleSearchSelectInput}
         label="Tipo de inventario"
         options={inventoryTypes.map((type) => ({
           label: type.name,

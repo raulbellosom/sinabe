@@ -1,6 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
-import Icon from '../../assets/logo/sinabe_icon.png';
+import Icon from '../../assets/logo/sinabe_icon_white.png';
 import ImageViewer from '../ImageViewer/ImageViewer';
 
 const AccountSidebar = ({ name, role, photo, collapsed }) => {
@@ -10,9 +10,7 @@ const AccountSidebar = ({ name, role, photo, collapsed }) => {
         className={`w-full overflow-hidden whitespace-nowrap text-nowrap flex justify-start gap-4 items-center`}
       >
         <img src={Icon} alt="ICON" className="h-auto w-10" />
-        <span
-          className={`text-2xl text-purple-600 font-extrabold mb-2 truncate`}
-        >
+        <span className={`text-2xl text-white font-extrabold mb-2 truncate`}>
           SINABE
         </span>
       </div>
