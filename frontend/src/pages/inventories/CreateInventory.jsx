@@ -30,7 +30,7 @@ const initValues = {
 const CreateInventory = () => {
   const formRef = useRef(null);
   const { createInventory } = useInventoryContext();
-  const { customFields, getFieldValues } = useCustomFieldContext();
+  const { customFields, createField } = useCustomFieldContext();
   const {
     inventoryModels,
     inventoryBrands,
@@ -89,7 +89,7 @@ const CreateInventory = () => {
       const inventory = await createInventory(values);
       setSubmitting(false);
       resetForm({ values: initValues });
-      navigate(`/inventories/${inventory.id}`);
+      // navigate(`/inventories/view/${inventory.id}`);
     } catch (error) {
       console.error(error);
       setSubmitting(false);
@@ -153,7 +153,7 @@ const CreateInventory = () => {
         inventoryConditions={inventoryConditions}
         onOtherModelSelected={() => handleModalOpen()}
         customFields={customFields}
-        getCustomFieldSuggestions={getFieldValues}
+        createCustomField={createField}
         currentCustomFields={initialValues.customFields}
       />
       {isModalOpen && (

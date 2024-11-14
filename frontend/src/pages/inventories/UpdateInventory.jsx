@@ -23,7 +23,7 @@ const UpdateInventory = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { updateInventory, deleteInventory } = useInventoryContext();
-  const { customFields, getFieldValues } = useCustomFieldContext();
+  const { customFields, createField } = useCustomFieldContext();
   const {
     createInventoryModel,
     inventoryConditions,
@@ -231,8 +231,8 @@ const UpdateInventory = () => {
             isUpdate={true}
             onOtherModelSelected={() => handleModalOpen()}
             customFields={customFields}
-            getCustomFieldSuggestions={getFieldValues}
-            currentCustomFields={initialValues?.customFields}
+            createCustomField={createField}
+            currentCustomFields={initialValues.customFields}
           />
         )}
       </div>

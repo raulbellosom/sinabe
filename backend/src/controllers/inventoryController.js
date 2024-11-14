@@ -194,10 +194,10 @@ export const createInventory = async (req, res) => {
           data: conditionData,
         });
       }
-
       if (customFields && customFields.length > 0) {
-        for (const { customFieldId, value } of customFields) {
-          let customFieldIdInt = parseInt(customFieldId, 10);
+        for (const { id: customFieldId, value } of customFields) {
+          let customFieldIdInt = customFieldId;
+
           if (isNaN(customFieldIdInt)) {
             const newCustomField = await prisma.customField.create({
               data: { name: customFieldId },
@@ -293,7 +293,7 @@ export const updateInventory = async (req, res) => {
 
     // check if the serial number is unique
     const existingInventory = await db.inventory.findFirst({
-      where: { serialNumber, enabled: true },
+      where: { serialNumber, enabled: true, NOT: { id } },
     });
 
     if (existingInventory) {
@@ -331,22 +331,72 @@ export const updateInventory = async (req, res) => {
       }
 
       if (customFields && customFields.length > 0) {
-        for (const { customFieldId, value } of customFields) {
-          let customFieldIdInt = parseInt(customFieldId, 10);
-          if (isNaN(customFieldIdInt)) {
-            const newCustomField = await prisma.customField.create({
-              data: { name: customFieldId },
-            });
-            customFieldIdInt = newCustomField.id;
+        const existingCustomFields = await prisma.inventoryCustomField.findMany(
+          {
+            where: { inventoryId: id },
           }
+        );
 
-          await prisma.inventoryCustomField.create({
-            data: {
-              inventoryId: id,
-              customFieldId: customFieldIdInt,
-              value,
-            },
-          });
+        const existingCustomFieldsMap = new Map();
+        existingCustomFields.forEach((field) => {
+          existingCustomFieldsMap.set(field.customFieldId, field);
+        });
+
+        // Revisión de eliminación de campos que no están en customFields
+        for (const [customFieldId, field] of existingCustomFieldsMap) {
+          const exists = customFields.some(
+            (field) => field.customFieldId === customFieldId
+          );
+
+          if (!exists) {
+            await prisma.inventoryCustomField.delete({
+              where: { id: field.id },
+            });
+          }
+        }
+
+        for (const customField of customFields) {
+          let customFieldId = customField.customFieldId;
+
+          if (customFieldId) {
+            const existingCustomField =
+              await prisma.inventoryCustomField.findUnique({
+                where: {
+                  inventoryId_customFieldId: { inventoryId: id, customFieldId },
+                },
+              });
+
+            if (existingCustomField) {
+              await prisma.inventoryCustomField.update({
+                where: { id: existingCustomField.id },
+                data: { value: customField.value },
+              });
+            } else {
+              await prisma.inventoryCustomField.create({
+                data: {
+                  inventoryId: id,
+                  customFieldId,
+                  value: customField.value,
+                },
+              });
+            }
+          } else {
+            const existingCustomField = await prisma.customField.findFirst({
+              where: { id: customField.id },
+            });
+
+            if (existingCustomField) {
+              await prisma.inventoryCustomField.create({
+                data: {
+                  inventoryId: id,
+                  customFieldId: existingCustomField.id,
+                  value: customField.value,
+                },
+              });
+            } else {
+              throw new Error("Campo personalizado no encontrado");
+            }
+          }
         }
       }
 

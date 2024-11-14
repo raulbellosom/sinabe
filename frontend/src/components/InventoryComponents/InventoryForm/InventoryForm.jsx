@@ -12,8 +12,8 @@ const InventoryForm = forwardRef(
       onOtherModelSelected,
       inventoryConditions,
       customFields,
-      isUpdate = false,
-      getCustomFieldSuggestions,
+      getFieldValues,
+      createCustomField,
       currentCustomFields,
     },
     ref,
@@ -42,7 +42,8 @@ const InventoryForm = forwardRef(
             inventoryConditions={inventoryConditions}
             onOtherSelected={onOtherModelSelected}
             customFields={customFields}
-            getCustomFieldSuggestions={getCustomFieldSuggestions}
+            getFieldValues={getFieldValues}
+            createCustomField={createCustomField}
             currentCustomFields={currentCustomFields}
           />
         </Form>

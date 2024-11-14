@@ -5,56 +5,20 @@ import SelectInput from '../../Inputs/SelectInput';
 import DateInput from '../../Inputs/DateInput';
 import TextArea from '../../Inputs/TextArea';
 import FileInput from '../../Inputs/FileInput';
-import { MdInfo, MdCalendarToday, MdClose } from 'react-icons/md';
+import { MdInfo, MdCalendarToday } from 'react-icons/md';
 import MultiSelectInput from '../../Inputs/MultiSelectInput';
 import ImagePicker from '../../Inputs/ImagePicker';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
 import { TbNumber123 } from 'react-icons/tb';
-import AutoCompleteInput from '../../Inputs/AutoCompleteInput';
-import SearchSelectInput from '../../Inputs/SearchSelectInput';
-import { getCustomFieldValues } from '../../../services/api';
-import SimpleSearchSelectInput from '../../Inputs/SimpleSearchSelectInput';
+import CustomFieldManager from '../../Inputs/CustomFieldManager';
 
 const InventoryFormFields = ({
   inventoryModels,
   inventoryConditions,
-  onOtherSelected,
-  customFields = [],
-  currentCustomFields = [],
+  customFields,
+  createCustomField,
+  currentCustomFields,
 }) => {
-  const [selectedCustomFields, setSelectedCustomFields] = useState([]);
-
-  useEffect(() => {
-    let currentValues = [];
-    currentCustomFields &&
-      currentCustomFields.length > 0 &&
-      currentCustomFields.forEach((field, index) => {
-        currentValues.push({
-          label: field.name,
-          value: field.customFieldId,
-          customFieldId: field.customFieldId,
-        });
-      });
-
-    setSelectedCustomFields(currentValues);
-  }, [currentCustomFields]);
-
-  const handleCustomFieldSelection = (field) => {
-    if (selectedCustomFields.some((f) => f.value === field.value)) {
-      setSelectedCustomFields(
-        selectedCustomFields.filter((f) => f.value !== field.value),
-      );
-    } else {
-      setSelectedCustomFields([...selectedCustomFields, field]);
-    }
-  };
-
-  const removeCustomField = (fieldId) => {
-    setSelectedCustomFields(
-      selectedCustomFields.filter((f) => f.value !== fieldId),
-    );
-  };
-  console.log(selectedCustomFields);
   return (
     <div className="grid grid-cols-12 gap-4 lg:gap-4">
       <div className="col-span-12 lg:col-span-8 lg:w-[97%]">
@@ -76,7 +40,7 @@ const InventoryFormFields = ({
           <Field
             name="modelId"
             id="modelId"
-            component={SimpleSearchSelectInput}
+            component={SelectInput}
             label="* Modelo"
             options={inventoryModels.map((model) => ({
               label: model.name,
@@ -156,60 +120,13 @@ const InventoryFormFields = ({
               Información Adicional
             </span>
           </p>
-          <Field
-            name="customFieldSearch"
-            component={SearchSelectInput}
-            closeMenuOnSelect={true}
-            label="Selecciona un campo personalizado"
-            options={customFields.map((field) => ({
-              value: field.id,
-              label: field.name,
-            }))}
-            onSelect={handleCustomFieldSelection}
-            className="col-span-12"
+          {/* AQui debe ir el componente de SelectCustomFields */}
+          <CustomFieldManager
+            name="customFields"
+            customFields={customFields}
+            createCustomField={createCustomField}
+            currentCustomFields={currentCustomFields}
           />
-
-          <FieldArray name="customFields">
-            {({ remove }) => (
-              <div className="col-span-12">
-                {selectedCustomFields.map((field, index) => (
-                  <div key={index} className="flex items-center">
-                    <Field
-                      id={field.value}
-                      name={`customFields[${index}]`}
-                      component={AutoCompleteInput}
-                      label={field.label}
-                      placeholder={`Ingresa el valor para ${field.label}`}
-                      loadSuggestions={async (inputValue) => {
-                        if (!inputValue) {
-                          return [];
-                        }
-                        const suggestions = await getCustomFieldValues({
-                          customFieldId: field.value,
-                          query: inputValue,
-                        });
-                        return suggestions.map((suggestion) => ({
-                          label: suggestion, // Asigna el valor directamente al label
-                          value: suggestion, // y al value
-                        }));
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        removeCustomField(field.value);
-                        remove(index);
-                      }}
-                      className="ml-2 mt-1.5 p-2 bg-red-500 text-white rounded-md"
-                      title="Eliminar campo"
-                    >
-                      <MdClose />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </FieldArray>
         </div>
       </div>
       <div className="col-span-12 lg:col-span-4 h-full">
