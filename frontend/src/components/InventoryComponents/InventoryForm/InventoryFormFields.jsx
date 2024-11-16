@@ -11,6 +11,8 @@ import ImagePicker from '../../Inputs/ImagePicker';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
 import { TbNumber123 } from 'react-icons/tb';
 import CustomFieldManager from '../../Inputs/CustomFieldManager';
+import AutocompleteInput from '../../Inputs/AutoCompleteInput';
+import { HiCubeTransparent } from 'react-icons/hi';
 
 const InventoryFormFields = ({
   inventoryModels,
@@ -40,13 +42,15 @@ const InventoryFormFields = ({
           <Field
             name="modelId"
             id="modelId"
-            component={SelectInput}
+            icon={HiCubeTransparent}
+            component={AutocompleteInput}
             label="* Modelo"
             options={inventoryModels.map((model) => ({
               label: model.name,
               value: model.id,
             }))}
             className="col-span-12 md:col-span-8"
+            isClearable
           />
           <Field
             name="serialNumber"
@@ -169,4 +173,4 @@ const InventoryFormFields = ({
   );
 };
 
-export default InventoryFormFields;
+export default React.memo(InventoryFormFields);

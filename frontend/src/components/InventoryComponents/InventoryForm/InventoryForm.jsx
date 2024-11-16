@@ -33,7 +33,7 @@ const InventoryForm = forwardRef(
         formik.submitForm();
       },
     }));
-
+    // console.log(formik.values.modelId);
     return (
       <FormikProvider value={formik}>
         <Form ref={ref} className="space-y-4" onSubmit={formik.handleSubmit}>
@@ -52,4 +52,4 @@ const InventoryForm = forwardRef(
   },
 );
 
-export default InventoryForm;
+export default React.memo(InventoryForm);

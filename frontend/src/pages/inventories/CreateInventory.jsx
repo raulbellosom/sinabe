@@ -179,4 +179,4 @@ const ProtectedCreateInventory = withPermission(
   'create_inventories',
 );
 
-export default ProtectedCreateInventory;
+export default React.memo(ProtectedCreateInventory);

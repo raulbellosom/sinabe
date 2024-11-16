@@ -18,7 +18,7 @@ const TextInput = ({
 
   const inputType =
     props.type === 'password' && showPassword ? 'text' : props.type;
-
+  console.log(field.value);
   return (
     <div className={classNames('relative w-full', className)}>
       <Label
@@ -54,4 +54,4 @@ const TextInput = ({
   );
 };
 
-export default TextInput;
+export default React.memo(TextInput);

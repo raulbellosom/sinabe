@@ -100,7 +100,7 @@ const CustomFieldManager = ({
     <div className="w-full col-span-12 text-neutral-800 md:pb-24">
       <Label className="text-sm font-medium">Agregar Campo Personalizado</Label>
       <Select
-        className="w-full"
+        className="w-full border-neutral-500 border rounded-md"
         options={customFields.map((field) => ({
           value: field.id,
           label: field.name,
@@ -116,36 +116,36 @@ const CustomFieldManager = ({
           <div key={field.value} className="flex items-center gap-2">
             <div className="flex-1">
               <Label className="text-sm font-medium">{field.label}</Label>
-              <AsyncSelect
-                cacheOptions
-                loadOptions={(inputValue) =>
-                  loadFieldValues(inputValue, field.value)
-                }
-                value={{ label: field.fieldValue, value: field.fieldValue }} // Asignamos el valor actual
-                onChange={(selectedValue) =>
-                  handleValueChange(selectedValue, index)
-                }
-                isCreatable
-                placeholder="Selecciona o crea un valor"
-                className="w-full"
-              />
+              <div className="flex items-center gap-4">
+                <AsyncSelect
+                  cacheOptions
+                  loadOptions={(inputValue) =>
+                    loadFieldValues(inputValue, field.value)
+                  }
+                  value={{ label: field.fieldValue, value: field.fieldValue }} // Asignamos el valor actual
+                  onChange={(selectedValue) =>
+                    handleValueChange(selectedValue, index)
+                  }
+                  isCreatable
+                  placeholder="Selecciona o crea un valor"
+                  className="w-full"
+                />
+                <ActionButtons
+                  extraActions={[
+                    {
+                      action: () => handleFieldRemove(field.value),
+                      color: 'red',
+                      icon: MdDelete,
+                      type: 'button',
+                    },
+                  ]}
+                />
+              </div>
               {errors.customFields && errors.customFields[index] && (
                 <div className="text-red-500 text-xs">
                   {errors.customFields[index].value}
                 </div>
               )}
-            </div>
-            <div className="pt-5">
-              <ActionButtons
-                extraActions={[
-                  {
-                    action: () => handleFieldRemove(field.value),
-                    color: 'red',
-                    icon: MdDelete,
-                    type: 'button',
-                  },
-                ]}
-              />
             </div>
           </div>
         ))}
