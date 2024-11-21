@@ -6,6 +6,7 @@ export const UserFormSchema = Yup.object().shape({
   email: Yup.string()
     .email('El correo electrónico no es válido')
     .required('El correo electrónico es requerido'),
+  userName: Yup.string().required('El nombre de usuario es requerido'),
   password: Yup.string()
     .required('La nueva contraseña es requerida')
     .min(8, 'La contraseña debe tener al menos 8 caracteres')
@@ -30,6 +31,7 @@ export const UserFormInitialValues = {
   firstName: '',
   lastName: '',
   email: '',
+  userName: '',
   phone: '',
   password: '',
   repeatPassword: '',
@@ -45,6 +47,7 @@ export const UserFormUpdateSchema = Yup.object().shape({
   email: Yup.string()
     .email('El correo electrónico no es válido')
     .required('El correo electrónico es requerido'),
+  userName: Yup.string().required('El nombre de usuario es requerido'),
   phone: Yup.string().matches(
     /^\d{10}$/,
     'El número de teléfono debe tener 10 dígitos',

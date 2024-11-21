@@ -3,8 +3,9 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import classNames from 'classnames';
 import Notifies from '../../Notifies/Notifies';
+import { FaSearch } from 'react-icons/fa';
 
-const InventoryProperty = ({ label, value, icon: Icon }) => {
+const InventoryProperty = ({ label, value, icon: Icon, onSearch }) => {
   const formattedValue =
     value && typeof value === 'string'
       ? value.replace(/\n/g, '<br />')
@@ -20,12 +21,12 @@ const InventoryProperty = ({ label, value, icon: Icon }) => {
     return (
       <div
         onDoubleClick={() => handleDoubleClick()}
-        className="flex flex-col h-full text-nowrap"
+        className="group flex flex-col h-full text-nowrap"
       >
         <h2 className="text-sm 2xl:text-base font-semibold h-7">{label}</h2>
         <p
           className={classNames(
-            'text-xs md:text-sm 2xl:text-base p-1.5 rounded-md text-white flex items-center gap-2 justify-start min-h-6',
+            'relative text-xs md:text-sm 2xl:text-base p-1.5 rounded-md text-white flex items-center gap-2 justify-start min-h-6 w-full',
             {
               'bg-mycad-primary': value === 'ALTA',
               'bg-mycad-danger': value === 'BAJA',
@@ -39,6 +40,14 @@ const InventoryProperty = ({ label, value, icon: Icon }) => {
             </i>
           )}
           <span dangerouslySetInnerHTML={{ __html: formattedValue }} />
+          {onSearch && (
+            <i
+              onClick={onSearch}
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 hidden group-hover:inline-block text-right p-2 text-neutral-800 bg-neutral-200 rounded-md cursor-pointer"
+            >
+              <FaSearch />
+            </i>
+          )}
         </p>
       </div>
     );
@@ -47,16 +56,24 @@ const InventoryProperty = ({ label, value, icon: Icon }) => {
   return (
     <div
       onDoubleClick={() => handleDoubleClick()}
-      className="flex flex-col h-full text-nowrap"
+      className="group flex flex-col h-full text-nowrap"
     >
       <h2 className="text-sm 2xl:text-base font-semibold h-7">{label}</h2>
-      <p className="text-xs md:text-sm 2xl:text-base p-1.5 flex items-center gap-2 justify-start min-h-6 border-b border-neutral-100 pb-1">
+      <p className="relative text-xs md:text-sm 2xl:text-base p-1.5 flex items-center gap-2 justify-start min-h-6 border-b border-neutral-100 pb-1">
         {Icon && (
           <i>
             <Icon size={22} className="inline text-purple-500" />
           </i>
         )}
         <span dangerouslySetInnerHTML={{ __html: formattedValue }} />
+        {onSearch && (
+          <i
+            onClick={onSearch}
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 hidden group-hover:inline-block text-right p-2 text-neutral-800 bg-neutral-200 rounded-md cursor-pointer"
+          >
+            <FaSearch />
+          </i>
+        )}
       </p>
     </div>
   );

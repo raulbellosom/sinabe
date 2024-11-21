@@ -115,6 +115,8 @@ const CatalogReducer = (state, action) => {
           ...state.inventoryModels,
           ...action.payload?.createdModels,
         ],
+        inventoryBrands: action.payload?.brands,
+        inventoryTypes: action.payload?.types,
         loading: false,
       };
     case 'FETCH_INVENTORY_CONDITIONS':

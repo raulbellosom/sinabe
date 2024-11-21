@@ -37,8 +37,11 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await db.user.findUnique({
-      where: { email },
+    const user = await db.user.findFirst({
+      where: {
+        OR: [{ email: email }, { userName: email }],
+        enabled: true,
+      },
       include: {
         role: {
           include: {

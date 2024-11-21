@@ -129,7 +129,7 @@ const CreateMultipleInventory = () => {
                   createdInventories.map((inventory, index) => (
                     <li className="list-disc" key={index}>
                       Inventorio{' '}
-                      {`${inventory?.model?.name} ${inventory?.model?.year}
+                      {`${inventory?.model?.name}
                     - ${inventory?.model?.type?.name} ${inventory?.model?.brand?.name}`}{' '}
                       creado con éxito
                     </li>

@@ -97,16 +97,8 @@ const validateNotEmpty = (value, fieldName, errors, index) => {
 
 const validateFields = (inventory, userId, index, errors) => {
   validateNotEmpty(inventory.model, "Nombre del Modelo", errors, index);
-  validateNotEmpty(inventory.year, "Año del Modelo", errors, index);
   validateNotEmpty(inventory.brand, "Marca del Inventario", errors, index);
   validateNotEmpty(inventory.type, "Tipo de Inventario", errors, index);
-  validateNotEmpty(inventory.serialNumber, "Número de Serie", errors, index);
-  validateNotEmpty(
-    inventory.receptionDate,
-    "Fecha de Recepción",
-    errors,
-    index
-  );
   validateNotEmpty(inventory.status, "Estado", errors, index);
 
   if (
@@ -137,6 +129,58 @@ const validateFields = (inventory, userId, index, errors) => {
   }
 };
 
+const parseDetails = (detailsStr) => {
+  try {
+    // Eliminar comillas simples externas y carácter extra al final
+    detailsStr = detailsStr.trim();
+    if (detailsStr.endsWith("'")) {
+      detailsStr = detailsStr.slice(0, -1);
+    }
+
+    // Reemplazar comillas escapadas por comillas normales
+    detailsStr = detailsStr.replace(/\\"/g, '"');
+
+    // Parsear el JSON
+    return JSON.parse(detailsStr);
+  } catch (error) {
+    console.error("Error al parsear los detalles:", error.message);
+    console.error("Detalles problemáticos:", detailsStr);
+    return [];
+  }
+};
+
+const processCustomFields = async (inventoryId, details, errors, index) => {
+  for (const { key, value } of details) {
+    try {
+      // Buscar el campo personalizado o crearlo si no existe
+      let customField = await db.customField.findFirst({
+        where: { name: key, enabled: true },
+      });
+
+      if (!customField) {
+        customField = await db.customField.create({
+          data: { name: key, enabled: true },
+        });
+      }
+
+      // Crear el InventoryCustomField
+      await db.inventoryCustomField.create({
+        data: {
+          inventoryId: inventoryId,
+          customFieldId: customField.id,
+          value: value || "", // Guardar el valor o un string vacío si está ausente
+        },
+      });
+    } catch (error) {
+      errors.push(
+        `Fila ${
+          index + 1
+        }: Error al procesar el campo personalizado '${key}': ${error.message}`
+      );
+    }
+  }
+};
+
 export const createMultipleInventories = async (req, res) => {
   const csvFile = req.file;
   const user = req.user;
@@ -154,15 +198,18 @@ export const createMultipleInventories = async (req, res) => {
       .pipe(csvParser())
       .on("data", (row) => {
         const parsedImages = parseImages(row["Imágenes"] || "[]");
+        const parsedDetails = parseDetails(row["Detalles"] || "[]");
+
         inventories.push({
           model: row["Nombre del Modelo"],
-          year: parseInt(row["Año del Modelo"], 10),
           brand: row["Marca del Inventario"],
           type: row["Tipo de Inventario"],
-          serialNumber: row["Número de Serie"],
+          serialNumber: row["Número de Serie"] || null,
+          activeNumber: row["Número de Activo"] || null,
           receptionDate: convertDateFormat(row["Fecha de Recepción"]),
           status: row["Estado"],
-          comments: row["Comentarios"],
+          comments: row["Comentarios"] || null,
+          details: parsedDetails,
           images: parsedImages.join(","),
         });
       })
@@ -171,10 +218,9 @@ export const createMultipleInventories = async (req, res) => {
         for (const [index, inventory] of inventories.entries()) {
           validateFields(inventory, userId, index, errors);
 
-          const model = await db.model.findFirst({
+          let model = await db.model.findFirst({
             where: {
               name: inventory.model,
-              year: inventory.year || undefined,
               brand: {
                 name: inventory.brand,
               },
@@ -185,11 +231,24 @@ export const createMultipleInventories = async (req, res) => {
             },
           });
           if (!model) {
-            errors.push(
-              `Fila ${index + 1}: El modelo '${inventory.model}' (${
-                inventory.year
-              }) - ${inventory.brand} ${inventory.type} no existe`
-            );
+            model = await db.model.create({
+              data: {
+                name: inventory.model,
+                brand: {
+                  create: {
+                    name: inventory.brand,
+                    enabled: true,
+                  },
+                },
+                type: {
+                  create: {
+                    name: inventory.type,
+                    enabled: true,
+                  },
+                },
+                enabled: true,
+              },
+            });
             continue;
           }
 
@@ -231,7 +290,6 @@ export const createMultipleInventories = async (req, res) => {
 
           try {
             delete inventory.model;
-            delete inventory.year;
             delete inventory.brand;
             delete inventory.type;
 
@@ -264,6 +322,15 @@ export const createMultipleInventories = async (req, res) => {
                   enabled: true,
                 })),
               });
+            }
+
+            if (inventory.details && inventory.details.length > 0) {
+              await processCustomFields(
+                createdInventory.id,
+                inventory.details,
+                errors,
+                index
+              );
             }
 
             successfulInventories.push(createdInventory);

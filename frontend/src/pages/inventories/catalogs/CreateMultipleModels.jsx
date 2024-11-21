@@ -99,7 +99,7 @@ const CreateMultipleModels = () => {
               key={index}
               className="w-full md:w-4/5 mt-4 bg-green-100 text-green-500 p-2 rounded"
             >
-              {`(${model.year}) ${model.name} - ${model.brand.name} ${model.type.name}   creado exitosamente`}
+              {`${model.name} - ${model.brand.name} ${model.type.name}   creado exitosamente`}
             </div>
           ))}
         {error && (

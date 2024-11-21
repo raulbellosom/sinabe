@@ -18,7 +18,6 @@ const TextInput = ({
 
   const inputType =
     props.type === 'password' && showPassword ? 'text' : props.type;
-  console.log(field.value);
   return (
     <div className={classNames('relative w-full', className)}>
       <Label
@@ -33,7 +32,7 @@ const TextInput = ({
           {...props}
           type={inputType}
           color={touched[field.name] && errors[field.name] ? 'failure' : ''}
-          className="mt-1" // Espacio extra a la derecha para el icono
+          className="mt-1 text-neutral-800"
         />
         {props.type === 'password' && (
           <button

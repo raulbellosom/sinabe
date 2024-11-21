@@ -40,41 +40,15 @@ export const createMultipleModels = async (req, res) => {
       .pipe(csvParser())
       .on("data", (row) => {
         models.push({
-          model: row["Modelo del inventario"],
-          brand: row["Marca del inventario"],
-          type: row["Tipo de inventario"],
+          model: row["Modelo del Inventario"],
+          brand: row["Marca del Inventario"],
+          type: row["Tipo de Inventario"],
         });
       })
       .on("end", async () => {
         const userId = user?.id;
         for (const [index, model] of models.entries()) {
           validateField(model, userId, index, errors);
-
-          const existingBrand = await db.inventoryBrand.findFirst({
-            where: { name: model.brand },
-          });
-
-          if (!existingBrand) {
-            errors.push(
-              `Fila ${models.indexOf(model) + 1}: La marca ${
-                model.brand
-              } no existe en la base de datos.`
-            );
-            continue;
-          }
-
-          const existingType = await db.inventoryType.findFirst({
-            where: { name: model.type },
-          });
-
-          if (!existingType) {
-            errors.push(
-              `Fila ${models.indexOf(model) + 1}: El tipo ${
-                model.type
-              } no existe en la base de datos.`
-            );
-            continue;
-          }
 
           const existingModel = await db.model.findFirst({
             where: {
@@ -91,18 +65,31 @@ export const createMultipleModels = async (req, res) => {
 
           if (existingModel) {
             errors.push(
-              `Fila ${models.indexOf(model) + 1}: El modelo ${
-                model.model
-              } ya existe en la base de datos.`
+              `Fila ${index + 1}: El modelo ${model.model} ya existe.`
             );
-            continue;
           }
 
-          const hasErrors = errors.some((error) =>
-            error.includes(`Fila ${index + 1}`)
-          );
+          let existingBrand = await db.inventoryBrand.findFirst({
+            where: { name: model.brand },
+          });
 
-          if (existingBrand && existingType && !existingModel && !hasErrors) {
+          if (!existingBrand) {
+            existingBrand = await db.inventoryBrand.create({
+              data: { name: model.brand, enabled: true },
+            });
+          }
+
+          let existingType = await db.inventoryType.findFirst({
+            where: { name: model.type },
+          });
+
+          if (!existingType) {
+            existingType = await db.inventoryType.create({
+              data: { name: model.type, enabled: true },
+            });
+          }
+
+          if (existingBrand && existingType && !existingModel) {
             const inventoryModel = await db.model.create({
               data: {
                 name: model.model,
@@ -124,7 +111,30 @@ export const createMultipleModels = async (req, res) => {
             );
           }
         }
-        res.json({ createdModels: successfulModels, errors });
+
+        const allModels = await db.model.findMany({
+          where: { enabled: true },
+          include: {
+            brand: true,
+            type: true,
+          },
+        });
+
+        const allBrands = await db.inventoryBrand.findMany({
+          where: { enabled: true },
+        });
+
+        const allTypes = await db.inventoryType.findMany({
+          where: { enabled: true },
+        });
+
+        res.json({
+          createdModels: successfulModels,
+          errors,
+          brands: allBrands,
+          types: allTypes,
+          models: allModels,
+        });
       })
       .on("error", (error) => {
         console.log("error on end", error);

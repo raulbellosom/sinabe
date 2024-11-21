@@ -52,7 +52,7 @@ export const createUser = async (req, res) => {
     const { userData } = req.body;
     const { profileImage } = req;
 
-    const { firstName, lastName, email, password, phone, role } =
+    const { firstName, lastName, email, password, phone, role, userName } =
       JSON.parse(userData);
 
     const userExists = await db.user.findFirst({
@@ -69,6 +69,7 @@ export const createUser = async (req, res) => {
         lastName,
         email,
         phone,
+        userName,
         password: hashedPassword,
         roleId: parseInt(role),
         enabled: true,
@@ -113,7 +114,7 @@ export const updateUser = async (req, res) => {
     const { userData } = req.body;
     const { profileImage } = req;
 
-    const { id, firstName, lastName, email, phone, role, status } =
+    const { id, firstName, lastName, email, phone, role, status, userName } =
       JSON.parse(userData);
 
     const userExists = await db.user.findFirst({ where: { id } });
@@ -136,6 +137,7 @@ export const updateUser = async (req, res) => {
         lastName,
         email,
         phone,
+        userName,
         status: parseStatus(status),
         roleId: parseInt(role),
       },
@@ -249,6 +251,8 @@ export const searchUsers = async (req, res) => {
       "email",
       "phone",
       "role",
+      "status",
+      "userName",
     ];
     const textSearchConditions = searchTerm
       ? {
@@ -258,6 +262,8 @@ export const searchUsers = async (req, res) => {
             { email: { contains: searchTerm } },
             { phone: { contains: searchTerm } },
             { role: { name: { contains: searchTerm } } },
+            { status: { contains: searchTerm } },
+            { userName: { contains: searchTerm } },
           ],
         }
       : {};

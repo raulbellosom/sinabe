@@ -63,6 +63,9 @@ const Inventories = () => {
     conditionName: [],
     deepSearch: [],
   });
+  const urlParams = new URLSearchParams(window.location.search);
+  const field = urlParams.get('field');
+  const value = urlParams.get('value');
 
   const {
     data: inventories,
@@ -79,6 +82,24 @@ const Inventories = () => {
     refetch();
     setRefreshData(false);
   }, [searchFilters, refreshData]);
+
+  // if field and value are present, set the deep search
+  useEffect(() => {
+    if (field && value) {
+      setSearchFilters((prevState) => {
+        return {
+          ...prevState,
+          deepSearch: [
+            {
+              searchHeader: field,
+              searchTerm: value,
+              searchCriteria: 'equals',
+            },
+          ],
+        };
+      });
+    }
+  }, [field, value]);
 
   const goOnPrevPage = useCallback(() => {
     setSearchFilters((prevState) => {

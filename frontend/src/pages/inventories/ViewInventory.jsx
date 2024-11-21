@@ -20,7 +20,7 @@ import {
   BiSolidCalendarEdit,
   BiSolidCalendarPlus,
 } from 'react-icons/bi';
-import { Badge } from 'flowbite-react';
+import { Badge, Label, Select } from 'flowbite-react';
 import classNames from 'classnames';
 import { useInventoryContext } from '../../context/InventoryContext';
 import { IoCopyOutline } from 'react-icons/io5';
@@ -29,6 +29,9 @@ import { parseToLocalDate } from '../../utils/formatValues';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import withPermission from '../../utils/withPermissions';
 import { RiInputField } from 'react-icons/ri';
+import QRCodeGenerator from '../../components/QRGenerator/QRGenerator';
+import { BsQrCodeScan } from 'react-icons/bs';
+import ModalViewer from '../../components/Modals/ModalViewer';
 const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
 
 const ViewInventory = () => {
@@ -37,6 +40,9 @@ const ViewInventory = () => {
   const { deleteInventory } = useInventoryContext();
   const [inventoryData, setInventoryData] = useState(null);
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isModalViewerOpen, setIsModalViewerOpen] = useState(false);
+  const [qrType, setQrType] = useState('link');
+  const [qrSize, setQrSize] = useState('md');
   const [images, setImages] = useState([]);
   const [files, setFiles] = useState([]);
   const [customFields, setCustomFields] = useState([]);
@@ -60,17 +66,17 @@ const ViewInventory = () => {
         icon: MdInfo,
         label: 'Estado',
       },
-      model: {
+      'model.name': {
         name: inventory?.model?.name,
         icon: MdOutlineDirectionsCar,
         label: 'Modelo',
       },
-      brand: {
+      'model.brand.name': {
         name: inventory?.model?.brand?.name,
         icon: PiTrademarkRegisteredBold,
         label: 'Marca',
       },
-      type: {
+      'model.type.name': {
         name: inventory?.model?.type?.name,
         icon: BiCategory,
         label: 'Tipo de Inventario',
@@ -165,6 +171,14 @@ const ViewInventory = () => {
             onEdit={onEdit}
             onCreate={onCreate}
             onRemove={onRemove}
+            extraActions={[
+              {
+                label: 'QR',
+                icon: BsQrCodeScan,
+                action: () => setIsModalViewerOpen(true),
+                color: 'purple',
+              },
+            ]}
           />
         </div>
       </div>
@@ -194,7 +208,14 @@ const ViewInventory = () => {
                 const { name, icon, label } = inventoryData[key];
                 return (
                   <div key={key} className="col-span-6 last:col-span-12">
-                    <InventoryProperty label={label} value={name} icon={icon} />
+                    <InventoryProperty
+                      onSearch={() => {
+                        navigate(`/inventories?field=${key}&value=${name}`);
+                      }}
+                      label={label}
+                      value={name}
+                      icon={icon}
+                    />
                   </div>
                 );
               })
@@ -222,6 +243,11 @@ const ViewInventory = () => {
                   label={field.label}
                   value={field.value}
                   icon={RiInputField}
+                  onSearch={() => {
+                    navigate(
+                      `/inventories/search?field=${field.label}&value=${field.value}`,
+                    );
+                  }}
                 />
               </div>
             ))}
@@ -278,11 +304,63 @@ const ViewInventory = () => {
           </div>
         </div>
       </div>
-      <ModalRemove
-        isOpenModal={isOpenModal}
-        onCloseModal={() => setIsOpenModal(false)}
-        removeFunction={handleDeleteInventory}
-      />
+      {isOpenModal && (
+        <ModalRemove
+          isOpenModal={isOpenModal}
+          onCloseModal={() => setIsOpenModal(false)}
+          removeFunction={handleDeleteInventory}
+        />
+      )}
+      {isModalViewerOpen && (
+        <ModalViewer
+          isOpenModal={isModalViewerOpen}
+          onCloseModal={() => setIsModalViewerOpen(false)}
+          title="Generar QR"
+          size="3xl"
+          dismissible={true}
+        >
+          <div className="flex flex-col items-center gap-4 p-4">
+            <div className="w-full">
+              <Label htmlFor="qrType">Tipo de QR</Label>
+              <Select
+                className="mt-1"
+                id="qrType"
+                name="qrType"
+                value={qrType}
+                onChange={(e) => setQrType(e.target.value)}
+              >
+                <option value="url">URL</option>
+                <option value="sn">Número de Serie</option>
+                <option value="info">Información</option>
+              </Select>
+            </div>
+            <div className="w-full">
+              <Label htmlFor="qrSize">Tamaño del QR</Label>
+              <Select
+                className="mt-1"
+                id="qrSize"
+                name="qrSize"
+                value={qrSize}
+                onChange={(e) => setQrSize(e.target.value)}
+              >
+                <option value="xs">Extra pequeño</option>
+                <option value="sm">Pequeño</option>
+                <option value="md">Medina</option>
+                <option value="lg">grande</option>
+              </Select>
+            </div>
+            {inventory && (
+              <div className="p-4 pb-0 flex justify-center items-center w-full">
+                <QRCodeGenerator
+                  inventoryInfo={inventory}
+                  type={qrType}
+                  qrSize={qrSize}
+                />
+              </div>
+            )}
+          </div>
+        </ModalViewer>
+      )}
     </div>
   );
 };

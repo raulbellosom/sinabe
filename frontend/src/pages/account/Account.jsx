@@ -62,6 +62,28 @@ const Account = () => {
   useEffect(() => {
     setUserFields([
       {
+        id: 'email',
+        label: 'Correo electrónico',
+        name: 'email',
+        value: user.email,
+        onChange: handleFieldChange,
+        allowEdit:
+          user.role.name === 'Admin' || user.role.name === 'Root'
+            ? true
+            : false,
+      },
+      {
+        id: 'userName',
+        label: 'Nombre de usuario',
+        name: 'userName',
+        value: user.userName,
+        onChange: handleFieldChange,
+        allowEdit:
+          user.role.name === 'Admin' || user.role.name === 'Root'
+            ? true
+            : false,
+      },
+      {
         id: 'firstName',
         label: 'Nombre',
         name: 'firstName',
@@ -76,14 +98,6 @@ const Account = () => {
         value: user.lastName,
         onChange: handleFieldChange,
         allowEdit: true,
-      },
-      {
-        id: 'email',
-        label: 'Correo electrónico',
-        name: 'email',
-        value: user.email,
-        onChange: handleFieldChange,
-        allowEdit: user.role.name === 'Admin' ? true : false,
       },
       {
         id: 'phone',

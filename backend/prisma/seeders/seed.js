@@ -231,6 +231,7 @@ async function main() {
         id: uuidUser1,
         firstName: "User",
         lastName: "Root",
+        userName: "root",
         email: "root@sinabe.com",
         password: hashedPasswordAdmin,
         roleId: rootRole.id,
