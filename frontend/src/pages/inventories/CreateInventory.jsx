@@ -89,7 +89,7 @@ const CreateInventory = () => {
       const inventory = await createInventory(values);
       setSubmitting(false);
       resetForm({ values: initValues });
-      // navigate(`/inventories/view/${inventory.id}`);
+      navigate(`/inventories/view/${inventory.id}`);
     } catch (error) {
       console.error(error);
       setSubmitting(false);

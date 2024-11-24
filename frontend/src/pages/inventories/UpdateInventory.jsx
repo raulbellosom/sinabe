@@ -140,7 +140,6 @@ const UpdateInventory = () => {
 
   const handleSubmit = (values, { setSubmitting, resetForm }) => {
     try {
-      console.log(values);
       updateInventory(values);
       resetForm();
     } catch (error) {
