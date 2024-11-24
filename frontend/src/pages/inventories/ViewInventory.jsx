@@ -244,9 +244,7 @@ const ViewInventory = () => {
                   value={field.value}
                   icon={RiInputField}
                   onSearch={() => {
-                    navigate(
-                      `/inventories/search?field=${field.label}&value=${field.value}`,
-                    );
+                    navigate(`/inventories?field=${key}&value=${name}`);
                   }}
                 />
               </div>
