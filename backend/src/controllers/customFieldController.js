@@ -108,7 +108,11 @@ export const updateCustomField = async (req, res) => {
 
     // Verificar si ya existe otro CustomField con el mismo nombre
     const nameExists = await db.customField.findFirst({
-      where: { name, enabled: true },
+      where: {
+        name,
+        enabled: true,
+        NOT: { id: parseInt(id, 10) },
+      },
     });
 
     if (nameExists) {
