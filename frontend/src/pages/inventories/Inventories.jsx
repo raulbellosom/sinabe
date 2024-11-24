@@ -63,9 +63,6 @@ const Inventories = () => {
     conditionName: [],
     deepSearch: [],
   });
-  const urlParams = new URLSearchParams(window.location.search);
-  const field = urlParams.get('field');
-  const value = urlParams.get('value');
 
   const {
     data: inventories,
@@ -84,7 +81,7 @@ const Inventories = () => {
   }, [searchFilters, refreshData]);
 
   // if field and value are present, set the deep search
-  useEffect(() => {
+  /*useEffect(() => {
     if (field && value) {
       setSearchFilters((prevState) => {
         return {
@@ -99,7 +96,29 @@ const Inventories = () => {
         };
       });
     }
-  }, [field, value]);
+  }, [field, value]);*/
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fieldParam = urlParams.get('field');
+    const valueParam = urlParams.get('value');
+
+    if (fieldParam && fieldParam.startsWith('customField:')) {
+      const customFieldName = fieldParam.split(':')[1]; // "orden de compra"
+      const filter = {
+        searchHeader: 'customField',
+        searchTerm: valueParam, // "PVR-OC-007182"
+        searchCriteria: 'equals', // Ajusta según sea necesario
+        customFieldName,
+      };
+      setSearchFilters((prevState) => {
+        return {
+          ...prevState,
+          deepSearch: [filter],
+        };
+      });
+    }
+  }, []);
 
   const goOnPrevPage = useCallback(() => {
     setSearchFilters((prevState) => {
@@ -148,12 +167,19 @@ const Inventories = () => {
   );
 
   const handleDeepSearch = (value) => {
-    setSearchFilters((prevState) => {
-      return {
-        ...prevState,
-        deepSearch: value,
-      };
-    });
+    setSearchFilters((prevState) => ({
+      ...prevState,
+      deepSearch: value.map((filter) => {
+        // Si es un customField, añade un campo adicional para su procesamiento
+        if (filter.searchHeader === 'customField' && filter.customFieldName) {
+          return {
+            ...filter,
+            customFieldName: filter.customFieldName,
+          };
+        }
+        return filter;
+      }),
+    }));
   };
 
   const changePageSize = (e) => {
@@ -319,7 +345,15 @@ const Inventories = () => {
           onCheckFilter={onCheckFilter}
           selectedFilters={searchFilters?.conditionName}
           filters={inventoryConditions}
-          headers={columns}
+          headers={[
+            ...columns,
+            {
+              id: 'customField',
+              value: 'Campos personalizados',
+              classes: 'w-auto',
+              type: 'text',
+            },
+          ]}
           deepSearch={searchFilters?.deepSearch}
           setDeepSearch={handleDeepSearch}
           inventoryConditions={inventoryConditions}

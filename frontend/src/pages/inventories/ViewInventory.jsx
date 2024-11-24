@@ -159,6 +159,9 @@ const ViewInventory = () => {
       img instanceof File ? URL.createObjectURL(img) : `${API_URL}/${img.url}`;
     navigator.clipboard.writeText(imgURL);
   };
+
+  console.log(customFields)
+
   return (
     <div className="h-full bg-white p-4 rounded-md">
       <div className="w-full flex flex-col-reverse lg:flex-row items-center justify-between gap-4 pb-1">
@@ -244,7 +247,7 @@ const ViewInventory = () => {
                   value={field.value}
                   icon={RiInputField}
                   onSearch={() => {
-                    navigate(`/inventories?field=${key}&value=${name}`);
+                    navigate(`/inventories?field=customField:${field.label}&value=${field.value}`);
                   }}
                 />
               </div>

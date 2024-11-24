@@ -6,6 +6,7 @@ import { Button, Label, Select, TextInput, Tooltip } from 'flowbite-react';
 import { IoIosArrowForward, IoMdAdd } from 'react-icons/io';
 import { MdClose } from 'react-icons/md';
 import { FaTrashAlt } from 'react-icons/fa';
+import { useCustomFieldContext } from '../../context/CustomFieldContext';
 
 const criteria = [
   {
@@ -36,24 +37,30 @@ const TableSearchByHeader = ({
   currentFilters,
   setCurrentFilters,
 }) => {
+  const { customFields } = useCustomFieldContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchCriteria, setSearchCriteria] = useState('');
   const [searchHeader, setSearchHeader] = useState('');
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
+  const [customFieldName, setCustomFieldName] = useState('');
 
   const handleSearch = () => {
-    if (!searchHeader || !searchTerm || !searchCriteria) {
-      setErrors({
-        searchHeader: !searchHeader,
-        searchTerm: !searchTerm,
-        searchCriteria: !searchCriteria,
-      });
+    const newErrors = {
+      searchHeader: !searchHeader,
+      searchTerm: !searchTerm,
+      searchCriteria: !searchCriteria,
+      customFieldName: searchHeader === 'customField' && !customFieldName,
+    };
+
+    if (Object.values(newErrors).some((error) => error)) {
+      setErrors(newErrors);
       setTouched({
         searchHeader: true,
         searchTerm: true,
         searchCriteria: true,
+        customFieldName: searchHeader === 'customField',
       });
       return;
     }
@@ -62,11 +69,14 @@ const TableSearchByHeader = ({
       searchHeader,
       searchTerm,
       searchCriteria,
+      ...(searchHeader === 'customField' && { customFieldName }),
     };
+
     setCurrentFilters([...currentFilters, filter]);
     setSearchTerm('');
     setSearchHeader('');
     setSearchCriteria('');
+    setCustomFieldName('');
     setIsModalOpen(false);
     setErrors({});
     setTouched({});
@@ -150,7 +160,7 @@ const TableSearchByHeader = ({
           <>
             {currentFilters.map((filter, index) => (
               <div
-                className="text-nowrap text-xs text-blue-600 bg-blue-100 hover:bg-red-100 hover:text-red-600 cursor-pointer p-2 rounded-lg flex gap-2 items-center"
+                className="text-nowrap capitalize text-xs text-blue-600 bg-blue-100 hover:bg-red-100 hover:text-red-600 cursor-pointer p-2 rounded-lg flex gap-2 items-center"
                 key={index}
                 onClick={() =>
                   setCurrentFilters(
@@ -159,10 +169,10 @@ const TableSearchByHeader = ({
                 }
               >
                 <strong>
-                  {
-                    headers.find((item) => item?.id === filter.searchHeader)
-                      ?.value
-                  }
+                  {filter.customFieldName
+                    ? `Custom Field: ${filter.customFieldName}`
+                    : headers.find((item) => item?.id === filter.searchHeader)
+                        ?.value}
                 </strong>{' '}
                 {
                   criteria.find((item) => item?.value === filter.searchCriteria)
@@ -229,6 +239,36 @@ const TableSearchByHeader = ({
                 )}
               </Select>
             </div>
+            {searchHeader === 'customField' && (
+              <div className="col-span-3 md:col-span-1 flex gap-2 flex-col justify-start">
+                <Label
+                  color={getErrorColor('customFieldName')}
+                  htmlFor="customFieldName"
+                >
+                  Nombre del Campo Personalizado
+                </Label>
+                <Select
+                  id="customFieldName"
+                  placeholder="Ej: orden de compra"
+                  value={customFieldName}
+                  onChange={(e) => setCustomFieldName(e.target.value)}
+                  color={getErrorColor('customFieldName')}
+                  onBlur={() => handleBlur('customFieldName', customFieldName)}
+                  required
+                >
+                  <option disabled value="" />
+                  {customFields.map((item) => (
+                    <option
+                      key={item.id}
+                      value={item.name}
+                      className="px-4 py-1.5 hover:bg-stone-100 cursor-pointer text-blue-500"
+                    >
+                      {item.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            )}
             <div className="col-span-3 md:col-span-1 flex gap-2 flex-col justify-start">
               <Label
                 color={getErrorColor('searchCriteria')}
@@ -262,7 +302,7 @@ const TableSearchByHeader = ({
             </div>
             <div className="col-span-3 md:col-span-1 flex gap-2 flex-col justify-start">
               <Label color={getErrorColor('searchTerm')} htmlFor="searchTerm">
-                Termino de busqueda
+                Valor de busqueda
               </Label>
               <TextInput
                 id="searchTerm"

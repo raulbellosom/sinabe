@@ -592,7 +592,7 @@ export const searchInventories = async (req, res) => {
       "serialNumber",
     ];
 
-    const mapSearchHeaderToColumn = (searchHeader) => {
+    const mapSearchHeaderToColumn = (searchHeader, customFieldName) => {
       const columnsMap = {
         "model.name": "model.name",
         "model.type.name": "model.type.name",
@@ -600,77 +600,76 @@ export const searchInventories = async (req, res) => {
         activeNumber: "activeNumber",
         serialNumber: "serialNumber",
         comments: "comments",
+        customField: `customField.${customFieldName}`, // Mapeo dinámico
       };
       return columnsMap[searchHeader] || null;
     };
+    
 
     const buildDeepSearchConditions = (deepSearchArray) => {
       const conditions = [];
-
+    
       deepSearchArray.forEach(
-        ({ searchHeader, searchTerm, searchCriteria }) => {
-          const column = mapSearchHeaderToColumn(searchHeader);
-
+        ({ searchHeader, searchTerm, searchCriteria, customFieldName }) => {
+          const column = mapSearchHeaderToColumn(searchHeader, customFieldName);
+    
           if (!column || typeof column !== "string") return;
-
-          const path = column.split(".");
-          let condition = {};
-
-          switch (searchCriteria) {
-            case "equals":
-              condition = { [path[path.length - 1]]: { equals: searchTerm } };
-              break;
-            case "startsWith":
-              condition = {
-                [path[path.length - 1]]: { startsWith: searchTerm },
-              };
-              break;
-            case "endsWith":
-              condition = {
-                [path[path.length - 1]]: { endsWith: searchTerm },
-              };
-              break;
-            case "contains":
-              condition = { [path[path.length - 1]]: { contains: searchTerm } };
-              break;
-            case "different":
-              condition = { [path[path.length - 1]]: { not: searchTerm } };
-              break;
-            case "greater":
-              condition = {
-                [path[path.length - 1]]: { gt: Number(searchTerm) },
-              };
-              break;
-            case "less":
-              condition = {
-                [path[path.length - 1]]: { lt: Number(searchTerm) },
-              };
-              break;
-            case "before":
-              condition = {
-                [path[path.length - 1]]: { lt: new Date(searchTerm) },
-              };
-              break;
-            case "after":
-              condition = {
-                [path[path.length - 1]]: { gt: new Date(searchTerm) },
-              };
-              break;
-            default:
-              break;
+    
+          if (searchHeader === 'customField' && customFieldName) {
+            // Crear condiciones específicas para customFields
+            const condition = {
+              customField: {
+                some: {
+                  customField: {
+                    name: customFieldName, // Nombre del campo personalizado
+                  },
+                  value: { [searchCriteria]: searchTerm }, // Valor buscado
+                },
+              },
+            };
+            conditions.push(condition);
+          } else {
+            const path = column.split(".");
+            let condition = {};
+    
+            switch (searchCriteria) {
+              case "equals":
+                condition = { [path[path.length - 1]]: { equals: searchTerm } };
+                break;
+              case "startsWith":
+                condition = {
+                  [path[path.length - 1]]: { startsWith: searchTerm },
+                };
+                break;
+              case "endsWith":
+                condition = {
+                  [path[path.length - 1]]: { endsWith: searchTerm },
+                };
+                break;
+              case "contains":
+                condition = { [path[path.length - 1]]: { contains: searchTerm } };
+                break;
+              case "different":
+                condition = { [path[path.length - 1]]: { not: searchTerm } };
+                break;
+              default:
+                break;
+            }
+    
+            let nestedCondition = condition;
+            for (let i = path.length - 2; i >= 0; i--) {
+              nestedCondition = { [path[i]]: nestedCondition };
+            }
+    
+            conditions.push(nestedCondition);
           }
-
-          let nestedCondition = condition;
-          for (let i = path.length - 2; i >= 0; i--) {
-            nestedCondition = { [path[i]]: nestedCondition };
-          }
-
-          conditions.push(nestedCondition);
         }
       );
-
+    
       return conditions.length > 0 ? { AND: conditions } : {};
     };
+    
+    
 
     const orderField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
     const orderDirection = order === "desc" ? "desc" : "asc";
