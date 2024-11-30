@@ -53,7 +53,7 @@ const Models = () => {
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const [searchFilters, setSearchFilters] = useState({
     searchTerm: '',
-    pageSize: 5,
+    pageSize: 100,
     page: currentPageNumber,
     sortBy: 'name',
     order: 'asc',

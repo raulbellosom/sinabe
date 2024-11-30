@@ -625,8 +625,6 @@ export const searchModels = async (req, res) => {
         brand: true,
         type: true,
       },
-      skip,
-      take,
     });
 
     const totalRecords = await db.model.count({
