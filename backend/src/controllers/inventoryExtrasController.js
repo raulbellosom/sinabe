@@ -97,8 +97,8 @@ const validateNotEmpty = (value, fieldName, errors, index) => {
 
 const validateFields = (inventory, userId, index, errors) => {
   validateNotEmpty(inventory.model, "Nombre del Modelo", errors, index);
-  validateNotEmpty(inventory.brand, "Marca del Inventario", errors, index);
-  validateNotEmpty(inventory.type, "Tipo de Inventario", errors, index);
+  //validateNotEmpty(inventory.brand, "Marca del Inventario", errors, index);
+  //validateNotEmpty(inventory.type, "Tipo de Inventario", errors, index);
   validateNotEmpty(inventory.status, "Estado", errors, index);
 
   if (
@@ -291,8 +291,8 @@ export const createMultipleInventories = async (req, res) => {
 
           try {
             delete inventory.model;
-            delete inventory.brand;
-            delete inventory.type;
+            //delete inventory.brand;
+            //delete inventory.type;
 
             const createdInventory = await db.inventory.create({
               data: {
