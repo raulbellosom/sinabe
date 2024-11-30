@@ -202,8 +202,8 @@ export const createMultipleInventories = async (req, res) => {
 
         inventories.push({
           model: row["Nombre del Modelo"],
-          brand: row["Marca del Inventario"],
-          type: row["Tipo de Inventario"],
+          //brand: row["Marca del Inventario"],
+          //type: row["Tipo de Inventario"],
           serialNumber: row["Número de Serie"] || null,
           activeNumber: row["Número de Activo"] || null,
           receptionDate: convertDateFormat(row["Fecha de Recepción"]),
@@ -218,9 +218,10 @@ export const createMultipleInventories = async (req, res) => {
         for (const [index, inventory] of inventories.entries()) {
           validateFields(inventory, userId, index, errors);
 
-          let model = await db.model.findFirst({
+          let model = parseInt(inventory.model, 10);
+          /*await db.model.findFirst({
             where: {
-              name: inventory.model,
+              id: inventory.model,
               brand: {
                 name: inventory.brand,
               },
@@ -250,7 +251,7 @@ export const createMultipleInventories = async (req, res) => {
               },
             });
             continue;
-          }
+          }*/
 
           const userExists = await db.user.findFirst({
             where: { id: user.id },
