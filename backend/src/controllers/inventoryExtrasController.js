@@ -298,7 +298,7 @@ export const createMultipleInventories = async (req, res) => {
               data: {
                 ...inventory,
                 createdById: user.id,
-                modelId: model.id,
+                modelId: model,
                 enabled: true,
                 receptionDate: new Date(inventory.receptionDate),
                 images: undefined,
