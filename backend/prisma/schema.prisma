@@ -56,13 +56,15 @@ model User {
 model Inventory {
   id            String                 @id @default(uuid())
   status        Status
-  createdById   String
+  createdById   String // Referencia al usuario creador
   activeNumber  String?
   serialNumber  String?
   comments      String?                @db.Text
   modelId       Int
   enabled       Boolean                @default(true)
   receptionDate DateTime?
+  altaDate      DateTime?
+  bajaDate      DateTime?
   createdAt     DateTime               @default(now())
   updatedAt     DateTime               @updatedAt
   details       Json?
