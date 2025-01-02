@@ -43,7 +43,8 @@ const formatInventory = (inventoryData) => {
 
 const Inventories = () => {
   const { deleteInventory } = useInventoryContext();
-  const { inventoryConditions } = useCatalogContext();
+  const { inventoryConditions, inventoryBrands, inventoryTypes } =
+    useCatalogContext();
   const [columns, setColumns] = useState([...inventoryColumns]);
   const [selectAllCheckbox, setSelectAllCheckbox] = useState(false);
   const [itemsToDownload, setItemsToDownload] = useState({});
@@ -58,10 +59,16 @@ const Inventories = () => {
     searchTerm: '',
     pageSize: 5,
     page: currentPageNumber,
-    sortBy: 'createdAt',
+    sortBy: 'updatedAt',
     order: 'asc',
     conditionName: [],
     deepSearch: [],
+    type: '',
+    brand: '',
+  });
+  const [typeAndBrand, setTypeAndBrand] = useState({
+    type: '',
+    brand: '',
   });
 
   const {
@@ -80,23 +87,21 @@ const Inventories = () => {
     setRefreshData(false);
   }, [searchFilters, refreshData]);
 
-  // if field and value are present, set the deep search
-  /*useEffect(() => {
-    if (field && value) {
-      setSearchFilters((prevState) => {
+  // extract the type and brand from the URL or from the search filters and set them in the state
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const type = urlParams.get('type');
+    const brand = urlParams.get('brand');
+    if (type && brand) {
+      setTypeAndBrand((prevState) => {
         return {
           ...prevState,
-          deepSearch: [
-            {
-              searchHeader: field,
-              searchTerm: value,
-              searchCriteria: 'equals',
-            },
-          ],
+          type,
+          brand,
         };
       });
     }
-  }, [field, value]);*/
+  }, []);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -180,6 +185,21 @@ const Inventories = () => {
         return filter;
       }),
     }));
+  };
+  console.log(typeAndBrand);
+  const handleBrandOrTypeSelectChange = ({ key, value }) => {
+    // setTypeAndBrand((prevState) => {
+    //   return {
+    //     ...prevState,
+    //     [key]: value,
+    //   };
+    // });
+    setSearchFilters((prevState) => {
+      return {
+        ...prevState,
+        [key]: value,
+      };
+    });
   };
 
   const changePageSize = (e) => {
@@ -358,6 +378,14 @@ const Inventories = () => {
           setDeepSearch={handleDeepSearch}
           inventoryConditions={inventoryConditions}
           onRefreshData={handleGetChanges}
+          brandAndTypeSelected={typeAndBrand}
+          brands={inventoryBrands?.map((brand) => {
+            return { label: brand.name, value: brand.name };
+          })}
+          types={inventoryTypes?.map((type) => {
+            return { label: type.name, value: type.name };
+          })}
+          handleBrandOrTypeSelectChange={handleBrandOrTypeSelectChange}
         />
         {inventories && !isPending ? (
           inventories?.data?.length > 0 ? (
@@ -415,7 +443,11 @@ const Inventories = () => {
                                   />
                                 </T.Cell>
                               );
-                            } else if (column.id === 'receptionDate') {
+                            } else if (
+                              column.id === 'receptionDate' ||
+                              column.id === 'createdAt' ||
+                              column.id === 'updatedAt'
+                            ) {
                               content = parseToLocalDate(
                                 getNestedValue(inventory, column.id),
                               );

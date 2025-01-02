@@ -1,11 +1,12 @@
 import React from 'react';
 import TableSearchByHeader from './TableSearchByHeader';
-import { TextInput, Dropdown } from 'flowbite-react';
+import { TextInput, Dropdown, Label } from 'flowbite-react';
 import { TbFilter } from 'react-icons/tb';
 import { LuSearch } from 'react-icons/lu';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import { IoMdRefresh } from 'react-icons/io';
+import Select from 'react-select';
 
 const TableActions = ({
   handleSearchTerm,
@@ -16,6 +17,10 @@ const TableActions = ({
   setDeepSearch,
   filters,
   onRefreshData,
+  brands = [],
+  types = [],
+  handleBrandOrTypeSelectChange,
+  brandAndTypeSelected,
 }) => {
   const CustomDropdownItem = ({ name }) => {
     return (
@@ -112,15 +117,50 @@ const TableActions = ({
           />
         </div>
       </div>
-      {deepSearch && (
-        <div className="w-full col-span-12 whitespace-nowrap flex flex-wrap">
-          <TableSearchByHeader
-            currentFilters={deepSearch}
-            setCurrentFilters={setDeepSearch}
-            headers={headers}
-          />
-        </div>
-      )}
+      <div className="w-full flex flex-wrap gap-4 md:gap-2 justify-start">
+        {types && (
+          <div className="w-full md:w-fit">
+            <Label htmlFor="type" value="Tipo" />
+            <Select
+              id="type"
+              name="type"
+              placeholder="Tipo de inventario"
+              options={types}
+              value={brandAndTypeSelected?.type}
+              onChange={(e) =>
+                handleBrandOrTypeSelectChange({ key: 'type', value: e.value })
+              }
+            />
+          </div>
+        )}
+        {brands && (
+          <div className="w-full md:w-fit">
+            <Label htmlFor="brand" value="Marca" />
+            <Select
+              id="brand"
+              name="brand"
+              placeholder="Marca del inventario"
+              options={brands}
+              value={brandAndTypeSelected?.brand}
+              onChange={(e) =>
+                handleBrandOrTypeSelectChange({ key: 'brand', value: e.value })
+              }
+            />
+          </div>
+        )}
+        {deepSearch && (
+          <div className="w-fit col-span-12 whitespace-nowrap">
+            <Label value="Busqueda avanzada" />
+            <div className="flex flex-wrap items-center gap-2">
+              <TableSearchByHeader
+                currentFilters={deepSearch}
+                setCurrentFilters={setDeepSearch}
+                headers={headers}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

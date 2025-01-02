@@ -333,6 +333,8 @@ export const searchInventories = async ({
   conditionName,
   deepSearch,
   signal,
+  type,
+  brand,
 }) => {
   try {
     const parsedDeepSearch = JSON.stringify(deepSearch);
@@ -345,6 +347,8 @@ export const searchInventories = async ({
         pageSize,
         conditionName,
         deepSearch: parsedDeepSearch,
+        type,
+        brand,
       },
       signal: signal,
     });

@@ -45,17 +45,29 @@ export const inventoryColumns = [
     type: 'text',
   },
   {
+    id: 'status',
+    value: 'Estatus',
+    classes: 'w-fit',
+    order: 'asc',
+  },
+  {
+    id: 'createdAt',
+    value: 'Fecha de creación',
+    classes: 'w-auto',
+    order: 'asc',
+  },
+  {
+    id: 'updatedAt',
+    value: 'Fecha de actualización',
+    classes: 'w-auto',
+    order: 'asc',
+  },
+  {
     id: 'receptionDate',
     value: 'Fecha de recepción',
     classes: 'w-auto',
     order: 'asc',
     type: 'date',
-  },
-  {
-    id: 'status',
-    value: 'Estatus',
-    classes: 'w-fit',
-    order: 'asc',
   },
   {
     id: 'actions',

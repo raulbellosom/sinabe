@@ -1,390 +1,126 @@
-import { db } from "../lib/db.js";
-
-import axios from "axios";
-import fs from "fs";
-import path from "path";
-import sharp from "sharp";
 import csvParser from "csv-parser";
-import { v4 as uuidv4 } from "uuid";
-import { parse, format } from "date-fns";
-import { es } from "date-fns/locale";
-
-const BASE_PATH = "src/uploads/inventories/";
-
-const downloadImage = async (url, dest) => {
-  const response = await axios({
-    url,
-    responseType: "stream",
-  });
-
-  return new Promise((resolve, reject) => {
-    const fileStream = fs.createWriteStream(dest);
-    response.data.pipe(fileStream);
-
-    fileStream.on("finish", () => resolve(dest));
-    fileStream.on("error", reject);
-  });
-};
-
-const processImage = async (imagePath, fileName) => {
-  const thumbnailDir = `${BASE_PATH}images/thumbnails/`;
-  const thumbnailPath = `${thumbnailDir}${fileName}-thumbnail.jpg`;
-  if (!fs.existsSync(thumbnailDir)) {
-    fs.mkdirSync(thumbnailDir, { recursive: true });
-  }
-  await sharp(imagePath).resize(150, 150).toFile(thumbnailPath);
-  let urlRelativePath = BASE_PATH.replace("src/", "");
-  return {
-    url: `${urlRelativePath}images/${fileName}.jpg`,
-    thumbnail: thumbnailPath.split("src/")[1],
-  };
-};
-
-const convertDateFormat = (dateStr) => {
-  try {
-    if (!dateStr || dateStr.trim() === "") {
-      return null;
-    }
-
-    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-    if (!dateRegex.test(dateStr.trim())) {
-      console.error(`Formato de fecha inválido: ${dateStr}`);
-      return null;
-    }
-
-    const parsedDate = parse(dateStr, "dd/MM/yyyy", new Date(), { locale: es });
-
-    if (isNaN(parsedDate)) {
-      console.error(`Fecha inválida tras el parseo: ${dateStr}`);
-      return null;
-    }
-
-    return format(parsedDate, "MM/dd/yyyy");
-  } catch (error) {
-    console.error("Error al convertir la fecha:", error);
-    return null;
-  }
-};
-
-const parseImages = (rawImages) => {
-  try {
-    if (rawImages.startsWith("'") && rawImages.endsWith("'")) {
-      rawImages = rawImages.slice(1, -1);
-    }
-
-    rawImages = rawImages.replace(/'/g, '"');
-
-    const parsedImages = JSON.parse(rawImages);
-
-    return Array.isArray(parsedImages) ? parsedImages : [];
-  } catch (error) {
-    console.error("Error parsing images:", error);
-    console.error("Problematic JSON string:", rawImages);
-    return [];
-  }
-};
-
-const validateNotEmpty = (value, fieldName, errors, index) => {
-  if (
-    value === null ||
-    value === undefined ||
-    (typeof value === "string" && value.trim() === "") ||
-    (typeof value === "number" && isNaN(value))
-  ) {
-    errors.push(`Fila ${index + 1}: El campo '${fieldName}' es obligatorio`);
-  }
-};
-
-const validateFields = (inventory, userId, index, errors) => {
-  validateNotEmpty(inventory.model, "Nombre del Modelo", errors, index);
-  //validateNotEmpty(inventory.brand, "Marca del Inventario", errors, index);
-  //validateNotEmpty(inventory.type, "Tipo de Inventario", errors, index);
-  validateNotEmpty(inventory.status, "Estado", errors, index);
-
-  if (
-    inventory.status &&
-    !["ALTA", "BAJA", "PROPUESTA"].includes(inventory.status)
-  ) {
-    errors.push(
-      `Fila ${
-        index + 1
-      }: El campo 'Estado' debe ser uno de 'ALTA', 'BAJA' o 'PROPUESTA'`
-    );
-  }
-
-  if (inventory.receptionDate && isNaN(Date.parse(inventory.receptionDate))) {
-    errors.push(
-      `Fila ${
-        index + 1
-      }: El campo 'Fecha de Recepción' debe ser una fecha válida`
-    );
-  }
-
-  if (!userId) {
-    errors.push(
-      `Fila ${
-        index + 1
-      }: El usuario no es válido, por favor inicie sesión nuevamente`
-    );
-  }
-};
-
-const parseDetails = (detailsStr) => {
-  try {
-    // Eliminar comillas simples externas y carácter extra al final
-    detailsStr = detailsStr.trim();
-    if (detailsStr.endsWith("'")) {
-      detailsStr = detailsStr.slice(0, -1);
-    }
-
-    // Reemplazar comillas escapadas por comillas normales
-    detailsStr = detailsStr.replace(/\\"/g, '"');
-
-    // Parsear el JSON
-    return JSON.parse(detailsStr);
-  } catch (error) {
-    console.error("Error al parsear los detalles:", error.message);
-    console.error("Detalles problemáticos:", detailsStr);
-    return [];
-  }
-};
-
-const processCustomFields = async (inventoryId, details, errors, index) => {
-  for (const { key, value } of details) {
-    try {
-      // Buscar el campo personalizado o crearlo si no existe
-      let customField = await db.customField.findFirst({
-        where: { name: key, enabled: true },
-      });
-
-      if (!customField) {
-        customField = await db.customField.create({
-          data: { name: key, enabled: true },
-        });
-      }
-
-      // Crear el InventoryCustomField
-      await db.inventoryCustomField.create({
-        data: {
-          inventoryId: inventoryId,
-          customFieldId: customField.id,
-          value: value || "", // Guardar el valor o un string vacío si está ausente
-        },
-      });
-    } catch (error) {
-      errors.push(
-        `Fila ${
-          index + 1
-        }: Error al procesar el campo personalizado '${key}': ${error.message}`
-      );
-    }
-  }
-};
+import fs from "fs";
+import sharp from "sharp";
 
 export const createMultipleInventories = async (req, res) => {
-  const csvFile = req.file;
-  const user = req.user;
-
-  if (!csvFile) {
-    return res.status(400).json({ message: "No se subió ningún archivo." });
-  }
-
-  const inventories = [];
-  const errors = [];
-  const successfulInventories = [];
-
   try {
+    const csvFile = req.file;
+    const userName = req.user.userName; // Nombre del usuario actual
+    const currentDate = new Date();
+
+    // Leer el archivo CSV
+    if (!csvFile) {
+      return res.status(400).json({ message: "No se subió ningún archivo." });
+    }
+
+    const inventories = [];
+    const errors = [];
+
     fs.createReadStream(csvFile.path)
       .pipe(csvParser())
-      .on("data", (row) => {
-        const parsedImages = parseImages(row["Imágenes"] || "[]");
-        const parsedDetails = parseDetails(row["Detalles"] || "[]");
+      .on("data", async (row) => {
+        try {
+          // Verificar si el createdBy existe en la base de datos
+          let createdById = await getUserIdByUserName(row.createdBy);
+          if (!createdById) createdById = await getUserIdByUserName("root"); // Asignar root si no existe
 
-        inventories.push({
-          model: row["Nombre del Modelo"],
-          //brand: row["Marca del Inventario"],
-          //type: row["Tipo de Inventario"],
-          serialNumber: row["Número de Serie"] || null,
-          activeNumber: row["Número de Activo"] || null,
-          receptionDate: convertDateFormat(row["Fecha de Recepción"]),
-          status: row["Estado"],
-          comments: row["Comentarios"] || null,
-          details: parsedDetails,
-          images: parsedImages.join(","),
-        });
+          // Procesar las fechas
+          const altaDate = row.altaDate ? new Date(row.altaDate) : currentDate;
+          const bajaDate = row.bajaDate ? new Date(row.bajaDate) : currentDate;
+          const recepcionDate = row.recepcionDate
+            ? new Date(row.recepcionDate)
+            : currentDate;
+          const createdAt = row.createdAt
+            ? new Date(row.createdAt)
+            : currentDate;
+          const updatedAt = row.updatedAt
+            ? new Date(row.updatedAt)
+            : currentDate;
+
+          // Procesar imágenes
+          const images = row.images_clean ? JSON.parse(row.images_clean) : [];
+          const imageFiles = await processImages(images);
+
+          // Crear el inventario en la base de datos
+          const inventory = {
+            id: row.id,
+            modelId: parseInt(row.inventoryModelId),
+            serialNumber: row.serialNumber || null,
+            activeNumber: row.activo || null,
+            comments: row.comments || null,
+            status: row.status_label, // Este campo es para el status
+            createdById: createdById,
+            altaDate: altaDate,
+            bajaDate: bajaDate,
+            recepcionDate: recepcionDate,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            details: row.details_clean ? JSON.parse(row.details_clean) : null,
+            images: imageFiles, // Imágenes procesadas
+            files: [], // Se pueden agregar archivos si son proporcionados
+          };
+
+          inventories.push(inventory);
+        } catch (err) {
+          errors.push(`Error al procesar la fila: ${err.message}`);
+        }
       })
       .on("end", async () => {
-        const userId = user?.id;
-        for (const [index, inventory] of inventories.entries()) {
-          validateFields(inventory, userId, index, errors);
-
-          let model = parseInt(inventory.model, 10);
-          /*await db.model.findFirst({
-            where: {
-              id: inventory.model,
-              brand: {
-                name: inventory.brand,
-              },
-              type: {
-                name: inventory.type,
-              },
-              enabled: true,
-            },
-          });
-          if (!model) {
-            model = await db.model.create({
-              data: {
-                name: inventory.model,
-                brand: {
-                  create: {
-                    name: inventory.brand,
-                    enabled: true,
-                  },
-                },
-                type: {
-                  create: {
-                    name: inventory.type,
-                    enabled: true,
-                  },
-                },
-                enabled: true,
-              },
-            });
-            continue;
-          }*/
-
-          const userExists = await db.user.findFirst({
-            where: { id: user.id },
-          });
-          if (!userExists) {
-            errors.push(
-              `Fila ${
-                index + 1
-              }: El usuario no es válido, por favor inicie sesión nuevamente`
-            );
-            continue;
-          }
-
-          let imagePaths = [];
-          if (inventory.images) {
-            const imageUrls = inventory.images.split(",");
-            for (const imageUrl of imageUrls) {
-              try {
-                const imageId = uuidv4();
-                const imagePath = path.join(
-                  `${BASE_PATH}images/`,
-                  `${imageId}.jpg`
-                );
-                await downloadImage(imageUrl.trim(), imagePath);
-
-                const processedImages = await processImage(imagePath, imageId);
-                imagePaths.push(processedImages);
-              } catch (error) {
-                errors.push(
-                  `Fila ${
-                    index + 1
-                  }: Error al descargar la imagen desde la URL '${imageUrl}'`
-                );
-              }
-            }
-          }
-
-          try {
-            delete inventory.model;
-            //delete inventory.brand;
-            //delete inventory.type;
-
-            const createdInventory = await db.inventory.create({
-              data: {
-                ...inventory,
-                createdById: user.id,
-                modelId: model,
-                enabled: true,
-                receptionDate: new Date(inventory.receptionDate),
-                images: undefined,
-              },
-              include: {
-                model: {
-                  include: {
-                    brand: true,
-                    type: true,
-                  },
-                },
-              },
-            });
-
-            if (imagePaths.length > 0) {
-              await db.image.createMany({
-                data: imagePaths.map((image) => ({
-                  inventoryId: createdInventory.id,
-                  url: image.url,
-                  type: "image/jpeg",
-                  thumbnail: image.thumbnail,
-                  enabled: true,
-                })),
-              });
-            }
-
-            if (inventory.details && inventory.details.length > 0) {
-              await processCustomFields(
-                createdInventory.id,
-                inventory.details,
-                errors,
-                index
-              );
-            }
-
-            successfulInventories.push(createdInventory);
-          } catch (error) {
-            errors.push(
-              `Fila ${index + 1}: Error al crear el inventario: ${
-                error.message
-              }`
-            );
-          }
-        }
-
-        const getAllInventories = await db.inventory.findMany({
-          include: {
-            model: {
-              include: {
-                brand: true,
-                type: true,
-              },
-            },
-            conditions: {
-              include: {
-                condition: true,
-              },
-            },
-            images: true,
-            files: true,
-          },
-          orderBy: {
-            createdAt: "asc",
-          },
-        });
-
-        const responsePayload = {
-          message:
-            errors.length > 0
-              ? "Algunos inventarios no pudieron ser creados"
-              : "Inventarios creados exitosamente.",
-          createdInventories: successfulInventories,
-          data: getAllInventories,
-          errors: errors.length > 0 ? errors : null,
-        };
-
-        if (errors.length > 0 && successfulInventories.length === 0) {
-          return res.status(400).json(responsePayload);
-        } else if (errors.length > 0 && successfulInventories.length > 0) {
-          return res.status(200).json(responsePayload);
-        } else {
-          return res.status(200).json(responsePayload);
+        // Guardar los inventarios procesados en la base de datos
+        try {
+          await saveInventories(inventories);
+          const successMessage = `Se crearon ${inventories.length} registros correctamente.`;
+          return res.json({ successMessage, errors });
+        } catch (err) {
+          console.error(err);
+          return res.status(500).json({ message: err.message });
         }
       });
-  } catch (error) {
-    console.error("Error al procesar el archivo CSV:", error);
-    res.status(500).json({ message: "Error al procesar el archivo CSV." });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+// Función para buscar el usuario por su userName
+const getUserIdByUserName = async (userName) => {
+  // Aquí deberías implementar la lógica para buscar el ID del usuario
+  // Si el usuario no existe, devolverá null
+  const user = await User.findOne({ where: { userName } });
+  return user ? user.id : null;
+};
+
+// Función para procesar las imágenes
+const processImages = async (imageUrls) => {
+  const imageFiles = [];
+  for (let url of imageUrls) {
+    // Descargar la imagen de la URL y procesarla
+    const buffer = await downloadImage(url); // Implementa la lógica para descargar la imagen
+    const imageFile = await sharp(buffer)
+      .resize(200) // Ejemplo: Redimensionar la imagen
+      .toBuffer();
+
+    // Guardar la imagen en la base de datos
+    const image = await Image.create({
+      data: imageFile,
+      url: url,
+    });
+
+    imageFiles.push(image);
+  }
+  return imageFiles;
+};
+
+// Función para descargar imágenes (esto puede requerir ajustes según tu caso)
+const downloadImage = async (url) => {
+  const response = await fetch(url);
+  const buffer = await response.buffer();
+  return buffer;
+};
+
+// Función para guardar los inventarios en la base de datos
+const saveInventories = async (inventories) => {
+  for (let inventory of inventories) {
+    await Inventory.create(inventory);
   }
 };
