@@ -7,7 +7,6 @@ import {
 import { HiHome } from 'react-icons/hi';
 import { MdChecklist } from 'react-icons/md';
 import { PiStackPlusFill } from 'react-icons/pi';
-import { LuPenSquare } from 'react-icons/lu';
 import { BiCategory } from 'react-icons/bi';
 
 const BreadcrumbsBuilder = (path) => {
@@ -30,7 +29,6 @@ const BreadcrumbsBuilder = (path) => {
     {
       label: 'Editar Inventarios',
       href: '/inventories/edit',
-      icon: LuPenSquare,
     },
     {
       label: 'Detalles del Inventarios',

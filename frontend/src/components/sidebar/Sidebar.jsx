@@ -231,6 +231,7 @@ const Sidebar = ({ children }) => {
               name={user.firstName + ' ' + user.lastName}
               photo={user.photo}
               collapsed={collapsed}
+              broken={broken}
             />
             <div className="border-t border-gray-300 py-1" />
             <Menu menuItemStyles={menuItemStyles}>
@@ -352,6 +353,7 @@ const Sidebar = ({ children }) => {
           toggled={toggled}
           setToggled={() => setToggled(!toggled)}
           broken={broken}
+          user={user}
         />
         <div className="flex-1 overflow-auto pt-16 h-full">
           <MainLayout>{children}</MainLayout>
