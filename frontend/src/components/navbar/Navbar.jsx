@@ -31,7 +31,7 @@ const Navbar = ({
         <div className="hidden w-full md:flex justify-between items-center px-4">
           <div>
             {/* get date */}
-            <p className="text-sm font-semibold text-orange-500 truncate">
+            <p className="text-sm font-semibold text-purple-500 truncate">
               {new Date().toLocaleDateString('es-MX', {
                 day: '2-digit',
                 month: 'long',
@@ -57,7 +57,7 @@ const Navbar = ({
             <div className={'truncate whitespace-nowrap text-nowrap'}>
               <h2
                 className={classNames(
-                  'text-sm font-bold text-orange-500 w-full truncate',
+                  'text-sm font-bold text-purple-500 w-full truncate',
                 )}
               >
                 {name}

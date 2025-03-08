@@ -160,7 +160,7 @@ const ViewInventory = () => {
     navigator.clipboard.writeText(imgURL);
   };
 
-  console.log(customFields)
+  console.log(customFields);
 
   return (
     <div className="h-full bg-white p-4 rounded-md">
@@ -205,9 +205,8 @@ const ViewInventory = () => {
                   </div>
                 ))}
               </>
-            ) : (
-              Object?.keys(inventoryData) &&
-              Object?.keys(inventoryData)?.map((key) => {
+            ) : inventoryData && Object.keys(inventoryData).length > 0 ? (
+              Object.keys(inventoryData).map((key) => {
                 const { name, icon, label } = inventoryData[key];
                 return (
                   <div key={key} className="col-span-6 last:col-span-12">
@@ -222,7 +221,7 @@ const ViewInventory = () => {
                   </div>
                 );
               })
-            )}
+            ) : null}
           </div>
           <p
             style={{
@@ -247,7 +246,9 @@ const ViewInventory = () => {
                   value={field.value}
                   icon={RiInputField}
                   onSearch={() => {
-                    navigate(`/inventories?field=customField:${field.label}&value=${field.value}`);
+                    navigate(
+                      `/inventories?field=customField:${field.label}&value=${field.value}`,
+                    );
                   }}
                 />
               </div>
