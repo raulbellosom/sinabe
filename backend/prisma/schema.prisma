@@ -67,7 +67,7 @@ model Inventory {
   bajaDate      DateTime?
   createdAt     DateTime               @default(now())
   updatedAt     DateTime               @updatedAt
-  details       Json?
+  details       Json? //este campo no se utiliza
   files         File[]
   images        Image[]                @relation("InventoryImages")
   createdBy     User                   @relation(fields: [createdById], references: [id])

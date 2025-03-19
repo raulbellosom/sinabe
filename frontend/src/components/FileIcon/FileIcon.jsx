@@ -30,22 +30,22 @@ const FileIcon = ({ file, className, size, onRemove }) => {
   const iconSize = size || 22;
 
   const getIcon = (file) => {
-    if (file.type.includes('pdf')) {
+    if (file.type?.includes('pdf')) {
       return <FaFilePdf className="text-red-500" size={iconSize} />;
     } else if (
-      file.type.includes('excel') ||
-      file.type.includes('spreadsheetml')
+      file.type?.includes('excel') ||
+      file.type?.includes('spreadsheetml')
     ) {
       return <FaFileExcel className="text-green-500" size={iconSize} />;
-    } else if (file.type.includes('csv')) {
+    } else if (file.type?.includes('csv')) {
       return <FaFileCsv className="text-lime-500" size={iconSize} />;
-    } else if (file.type.includes('image')) {
+    } else if (file.type?.includes('image')) {
       return <FaFileImage className="text-cyan-500" size={iconSize} />;
-    } else if (file.type.includes('powerpoint')) {
+    } else if (file.type?.includes('powerpoint')) {
       return <FaFilePowerpoint className="text-purple-500" size={iconSize} />;
-    } else if (file.type.includes('word')) {
+    } else if (file.type?.includes('word')) {
       return <FaFileWord className="text-blue-500" size={iconSize} />;
-    } else if (file.type.includes('video')) {
+    } else if (file.type?.includes('video')) {
       return <FaFileVideo className="text-indigo-500" size={iconSize} />;
     } else {
       return <FaFile className="text-stone-400" size={iconSize} />;
@@ -53,7 +53,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
   };
 
   const handleOpenPdf = () => {
-    if (file && file.type.includes('pdf')) {
+    if (file && file.type?.includes('pdf')) {
       setSelectedFile(file);
       setIsModalOpen(true);
     }
@@ -96,7 +96,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
           </span>
         </div>
         <div className="flex items-center justify-evenly gap-2">
-          {file.type.includes('pdf') && (
+          {file.type?.includes('pdf') && (
             <span onClick={handleOpenPdf}>
               <MdRemoveRedEye
                 className="text-blue-500 cursor-pointer"

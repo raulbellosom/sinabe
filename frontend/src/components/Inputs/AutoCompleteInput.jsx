@@ -4,7 +4,13 @@ import { MdClose, MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import classNames from 'classnames';
 import { Label } from 'flowbite-react';
 
-const Dropdown = ({ options, onSelect, selectedOption, itemsClassName }) => {
+const Dropdown = ({
+  options,
+  onSelect,
+  selectedOption,
+  itemsClassName,
+  highlightedIndex,
+}) => {
   return (
     <div className="mt-2 pt-1 min-w-full max-h-[44vh] overflow-y-auto border border-gray-300 bg-white rounded-md shadow-lg absolute z-30">
       {options.map((option, i) => (
@@ -17,7 +23,12 @@ const Dropdown = ({ options, onSelect, selectedOption, itemsClassName }) => {
           className={classNames(
             'py-2 px-4 text-sm cursor-pointer flex justify-between items-center border-b border-neutral-200 transition ease-in-out duration-100',
             {
+              // Si es la opción seleccionada, se destaca
               'bg-blue-500 text-white': selectedOption?.value === option.value,
+              // Si es la opción resaltada (navegación con flechas) y no está seleccionada
+              'bg-gray-200':
+                i === highlightedIndex &&
+                selectedOption?.value !== option.value,
               'hover:bg-purple-800 hover:text-white':
                 selectedOption?.value !== option.value,
             },
@@ -31,7 +42,6 @@ const Dropdown = ({ options, onSelect, selectedOption, itemsClassName }) => {
   );
 };
 
-// Componente principal con Formik
 const AutocompleteInput = ({
   field,
   form: { touched, errors, setFieldValue, setFieldTouched },
@@ -48,6 +58,8 @@ const AutocompleteInput = ({
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  // Estado para controlar el índice resaltado para navegación por teclado
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -66,6 +78,8 @@ const AutocompleteInput = ({
         if (!selectedOption && inputValue) {
           setFieldValue(field.name, inputValue);
         }
+        // Resetea el índice resaltado cuando se cierra el dropdown
+        setHighlightedIndex(-1);
       }
     };
 
@@ -75,14 +89,6 @@ const AutocompleteInput = ({
     };
   }, []);
 
-  useEffect(() => {
-    if (options.length && field.value) {
-      const option = options.find((opt) => opt.value === field.value);
-      setSelectedOption(option || null);
-      setInputValue(option ? option.label : '');
-    }
-  }, [field.value, options]);
-
   // Normalizar cadenas (remueve acentos)
   const normalizeString = (str) =>
     str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -91,13 +97,15 @@ const AutocompleteInput = ({
   const filtered = useMemo(() => {
     return options?.filter((option) =>
       normalizeString(option.label)
-        ?.toLowerCase()
-        ?.includes(inputValue?.toLowerCase()),
+        .toLowerCase()
+        .includes(inputValue.toLowerCase()),
     );
   }, [inputValue, options]);
 
   useEffect(() => {
     setFilteredOptions(filtered);
+    // Cada vez que cambian las opciones filtradas, resetea el índice resaltado
+    setHighlightedIndex(-1);
   }, [filtered]);
 
   // Manejadores de eventos
@@ -113,8 +121,9 @@ const AutocompleteInput = ({
     setInputValue(option.label);
     setSelectedOption(option);
     setFieldValue(field.name, option.value);
-    // setFieldTouched(field.name, true);
     setShowDropdown(false);
+    // Resetea el índice resaltado tras la selección
+    setHighlightedIndex(-1);
   };
 
   const handleClearInput = () => {
@@ -122,10 +131,50 @@ const AutocompleteInput = ({
     setSelectedOption(null);
     setFieldValue(field.name, '');
     setFieldTouched(field.name, true);
+    setHighlightedIndex(-1);
   };
 
   const handleToggleDropdown = () => {
     setShowDropdown((prev) => !prev);
+    // Opcional: resetea el índice resaltado cuando se alterna el dropdown
+    setHighlightedIndex(-1);
+  };
+
+  // Manejador de eventos para navegación por teclado
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!showDropdown) {
+        setShowDropdown(true);
+        setHighlightedIndex(0);
+      } else {
+        setHighlightedIndex((prev) => {
+          const nextIndex = prev + 1 >= filteredOptions.length ? 0 : prev + 1;
+          return nextIndex;
+        });
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!showDropdown) {
+        setShowDropdown(true);
+        setHighlightedIndex(filteredOptions.length - 1);
+      } else {
+        setHighlightedIndex((prev) => {
+          const nextIndex =
+            prev - 1 < 0 ? filteredOptions.length - 1 : prev - 1;
+          return nextIndex;
+        });
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (
+        showDropdown &&
+        highlightedIndex >= 0 &&
+        highlightedIndex < filteredOptions.length
+      ) {
+        handleSelectOption(filteredOptions[highlightedIndex]);
+      }
+    }
   };
 
   return (
@@ -160,7 +209,7 @@ const AutocompleteInput = ({
           className={classNames(
             'w-full py-2 px-3 border rounded-md focus:outline-none focus:ring',
             {
-              'border-neutral-500 focus:border-blue-500 ': !(
+              'border-neutral-500 focus:border-blue-500': !(
                 touched[field.name] && errors[field.name]
               ),
               'border-red-500 focus:border-red-500 focus:ring-red-500':
@@ -171,6 +220,7 @@ const AutocompleteInput = ({
           placeholder={placeholder}
           value={inputValue}
           onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
           autoComplete="off"
           ref={inputRef}
         />
@@ -178,7 +228,7 @@ const AutocompleteInput = ({
           <MdClose
             size={18}
             onClick={handleClearInput}
-            className=" hover:text-red-500 absolute right-12 top-1/2 transform -translate-y-1/2 cursor-pointer"
+            className="hover:text-red-500 absolute right-12 top-1/2 transform -translate-y-1/2 cursor-pointer"
           />
         )}
         <MdOutlineKeyboardArrowDown
@@ -196,6 +246,7 @@ const AutocompleteInput = ({
           selectedOption={selectedOption}
           onSelect={handleSelectOption}
           itemsClassName={itemsClassName}
+          highlightedIndex={highlightedIndex}
         />
       )}
       <ErrorMessage
