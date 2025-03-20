@@ -7,11 +7,7 @@ import ModalRemove from '../../components/Modals/ModalRemove';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import { FaClipboardList, FaUser } from 'react-icons/fa';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
-import {
-  MdOutlineDirectionsCar,
-  MdInfo,
-  MdOutlineTextsms,
-} from 'react-icons/md';
+import { MdInfo, MdOutlineTextsms, MdInventory } from 'react-icons/md';
 import { TbNumber123 } from 'react-icons/tb';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
 import {
@@ -68,7 +64,7 @@ const ViewInventory = () => {
       },
       'model.name': {
         name: inventory?.model?.name,
-        icon: MdOutlineDirectionsCar,
+        icon: MdInventory,
         label: 'Modelo',
       },
       'model.brand.name': {
@@ -160,8 +156,6 @@ const ViewInventory = () => {
     navigator.clipboard.writeText(imgURL);
   };
 
-  console.log(customFields);
-
   return (
     <div className="h-full bg-white p-4 rounded-md">
       <div className="w-full flex flex-col-reverse lg:flex-row items-center justify-between gap-4 pb-1">
@@ -194,9 +188,9 @@ const ViewInventory = () => {
             </Badge>
           ))}
       </div>
-      <div className="h-fit grid grid-cols-12 gap-4">
-        <div className="h-full col-span-12 lg:col-span-6 flex flex-col">
-          <div className="grid grid-cols-12 gap-2 w-full h-full">
+      <div className="h-fit flex flex-col gap-4">
+        <div className="h-full flex flex-col">
+          <div className="grid grid-cols-12 gap-4 w-full h-full">
             {isFetching && !inventoryData ? (
               <>
                 {Array.from({ length: 8 }).map((_, index) => (
@@ -209,7 +203,10 @@ const ViewInventory = () => {
               Object.keys(inventoryData).map((key) => {
                 const { name, icon, label } = inventoryData[key];
                 return (
-                  <div key={key} className="col-span-6 last:col-span-12">
+                  <div
+                    key={key}
+                    className="col-span-6 md:col-span-4 lg:col-span-3 last:col-span-12"
+                  >
                     <InventoryProperty
                       onSearch={() => {
                         navigate(`/inventories?field=${key}&value=${name}`);
@@ -234,14 +231,16 @@ const ViewInventory = () => {
             className="col-span-12 text-base font-semibold pt-4"
           >
             <span style={{ background: '#fff', padding: '0 10px' }}>
-              Información Adicional
+              Campos Personalizados
             </span>
           </p>
           <div className="grid grid-cols-12 gap-2 w-full h-full">
             {customFields.map((field, index) => (
-              <div key={index} className="col-span-6">
+              <div
+                key={index}
+                className="col-span-12 md:col-span-4 lg:col-span-3"
+              >
                 <InventoryProperty
-                  key={index}
                   label={field.label}
                   value={field.value}
                   icon={RiInputField}
@@ -255,53 +254,71 @@ const ViewInventory = () => {
             ))}
           </div>
         </div>
-        <div className="col-span-12 lg:col-span-6">
-          <div className="flex flex-col gap-4">
-            <div>
-              <h2 className="text-sm 2xl:text-base font-semibold h-7">
+        <div className="grid grid-cols-12 gap-4 lg:gap-8">
+          <div className="flex flex-col gap-4 col-span-12 lg:col-span-6">
+            <p
+              style={{
+                width: '100%',
+                textAlign: 'center',
+                borderBottom: '1px solid #e2e8f0',
+                lineHeight: '0.1em',
+                margin: '10px 0 20px',
+              }}
+              className="col-span-12 text-base font-semibold pt-4"
+            >
+              <span style={{ background: '#fff', padding: '0 10px' }}>
                 Archivos
-              </h2>
-              <div className="flex flex-col gap-2">
-                {files && files?.length > 0 ? (
-                  files.map((file, index) => (
-                    <FileIcon key={index} file={file} />
-                  ))
-                ) : (
-                  <p className="text-sm 2xl:text-base text-gray-500">
-                    No hay archivos adjuntos
-                  </p>
-                )}
-              </div>
+              </span>
+            </p>
+            <div className="flex flex-col gap-2">
+              {files && files?.length > 0 ? (
+                files.map((file, index) => <FileIcon key={index} file={file} />)
+              ) : (
+                <p className="text-sm 2xl:text-base text-gray-500">
+                  No hay archivos adjuntos
+                </p>
+              )}
             </div>
-            <div>
-              <h2 className="text-sm 2xl:text-base font-semibold h-7">
+          </div>
+          <div className="flex flex-col gap-4 col-span-12 lg:col-span-6">
+            <p
+              style={{
+                width: '100%',
+                textAlign: 'center',
+                borderBottom: '1px solid #e2e8f0',
+                lineHeight: '0.1em',
+                margin: '10px 0 20px',
+              }}
+              className="col-span-12 text-base font-semibold pt-4"
+            >
+              <span style={{ background: '#fff', padding: '0 10px' }}>
                 Imágenes
-              </h2>
-              <div
-                className={classNames(
-                  'h-fit max-h-fit grid gap-2 overflow-y-auto',
-                  images.length > 0
-                    ? 'grid-cols-[repeat(auto-fill,_minmax(6rem,_1fr))] xl:grid-cols-[repeat(auto-fill,_minmax(8rem,_1fr))]'
-                    : '',
-                )}
-              >
-                {images.length > 0 ? (
-                  <ImageViewer
-                    images={images}
-                    renderMenuOptions={[
-                      {
-                        label: 'Copiar URL',
-                        icon: IoCopyOutline,
-                        onClick: (img) => handleShareImage(img),
-                      },
-                    ]}
-                  />
-                ) : (
-                  <p className="text-sm 2xl:text-base text-neutral-500">
-                    El inventario no tiene imágenes
-                  </p>
-                )}
-              </div>
+              </span>
+            </p>
+            <div
+              className={classNames(
+                'h-fit max-h-fit grid gap-2 overflow-y-auto',
+                images.length > 0
+                  ? 'grid-cols-[repeat(auto-fill,_minmax(6rem,_1fr))] xl:grid-cols-[repeat(auto-fill,_minmax(8rem,_1fr))]'
+                  : '',
+              )}
+            >
+              {images.length > 0 ? (
+                <ImageViewer
+                  images={images}
+                  renderMenuOptions={[
+                    {
+                      label: 'Copiar URL',
+                      icon: IoCopyOutline,
+                      onClick: (img) => handleShareImage(img),
+                    },
+                  ]}
+                />
+              ) : (
+                <p className="text-sm 2xl:text-base text-neutral-500">
+                  El inventario no tiene imágenes
+                </p>
+              )}
             </div>
           </div>
         </div>

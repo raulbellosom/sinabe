@@ -80,6 +80,15 @@ const FileIcon = ({ file, className, size, onRemove }) => {
         setIsDownloading(false);
       });
   };
+  const getFileUrl = (file) => {
+    if (file instanceof File) {
+      return URL.createObjectURL(file);
+    } else if (file.url.startsWith('http') || file.url.startsWith('https')) {
+      return file.url;
+    } else {
+      return `${API_URL}/${file.url}`;
+    }
+  };
 
   return (
     <>
@@ -133,16 +142,10 @@ const FileIcon = ({ file, className, size, onRemove }) => {
           size="7xl"
         >
           {window.innerWidth < 768 ? (
-            <PDFReader
-              file={file instanceof File ? file : `${API_URL}/${file.url}`}
-            />
+            <PDFReader file={getFileUrl(file)} />
           ) : (
             <embed
-              src={
-                file instanceof File
-                  ? URL.createObjectURL(file)
-                  : `${API_URL}/${file.url}`
-              }
+              src={getFileUrl(file)}
               type="application/pdf"
               width="100%"
               height="100%"
