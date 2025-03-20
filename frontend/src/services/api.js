@@ -314,6 +314,21 @@ export const updateInventory = async (inventory) => {
   }
 };
 
+export const migrateInventory = async (inventory) => {
+  try {
+    const response = await api.post('/inventories/migrate', { inventory });
+
+    if (response.status !== 200) {
+      throw new Error('Error al enviar el inventario');
+    }
+    const resData = response.data;
+    return resData;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const deleteInventory = async (inventoryId) => {
   try {
     const response = await api.delete(`/inventories/${inventoryId}`);

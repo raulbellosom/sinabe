@@ -39,6 +39,7 @@ import {
   addCustomFieldValue,
   getCustomFieldValues,
 } from "../controllers/customFieldController.js";
+import { migrateInventory } from "../controllers/migrateController.js";
 import { createMultipleInventories } from "../controllers/inventoryExtrasController.js";
 import { createMultipleModels } from "../controllers/inventoryModelExtrasController.js";
 import {
@@ -59,6 +60,7 @@ router
     processFiles,
     createInventory
   );
+router.route("/migrate").post(protect, migrateInventory);
 router
   .route("/inventoryTypes")
   .get(protect, getInventoryTypes)

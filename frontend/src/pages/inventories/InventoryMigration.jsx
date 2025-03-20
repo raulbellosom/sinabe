@@ -25,6 +25,7 @@ import FileIcon from '../../components/FileIcon/FileIcon';
 import classNames from 'classnames';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
+import { API_URL, migrateInventory } from '../../services/api';
 
 function stripHtml(html) {
   if (!html) return '';
@@ -389,24 +390,32 @@ const InventoryMigration = () => {
   const handleSendInventory = async () => {
     if (!transformedInventory) return;
     setIsSending(true);
-    try {
-      const response = await fetch('/api/inventory/migrate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Agrega aquí otros headers si son necesarios
-        },
-        body: JSON.stringify({ inventory: transformedInventory }),
+
+    // script html comments
+    const parsedInventory = {
+      ...transformedInventory,
+      comments: stripHtml(transformedInventory.comments),
+    };
+
+    migrateInventory(parsedInventory)
+      .then((response) => {
+        console.log(response);
+        if (response.ok) {
+          Notifies('success', 'Inventario importado correctamente.');
+        } else {
+          Notifies('error', 'Error al importar el inventario.');
+          Notifies('error', response?.data?.message || 'Error desconocido');
+        }
+      })
+      .catch((error) => {
+        console.error('Error en la migración:', error);
+        Notifies('error', 'Error en la migración del inventario.');
+        Notifies(
+          'error',
+          error?.response?.data?.message || 'Error desconocido',
+        );
       });
-      if (!response.ok) {
-        throw new Error('Error al enviar el inventario');
-      }
-      const resData = await response.json();
-      Notifies('success', 'Inventario enviado correctamente.');
-    } catch (error) {
-      console.error(error);
-      Notifies('error', 'Error al enviar el inventario.');
-    }
+
     setIsSending(false);
   };
 
