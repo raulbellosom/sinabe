@@ -224,7 +224,6 @@ export const migrateInventory = async (req, res) => {
       }
       for (const fileObj of transformed.files) {
         const fileId = uuidv4();
-        console.log(fileObj);
         const ext = path.extname(fileObj.name) || ".dat";
         const fileFileName = `${fileId}${ext}`;
         const fileDestPath = path.join(FILES_DIR, fileFileName);
