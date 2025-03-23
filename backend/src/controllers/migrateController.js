@@ -131,7 +131,7 @@ export const migrateInventory = async (req, res) => {
     const modelName = inventory.inventoryModel?.name;
     const modelBrand = inventory.inventoryModel?.inventoryBrand?.name;
     const modelType = inventory.inventoryModel?.inventoryType?.name;
-    if (!modelName || !modelBrand || !modelType || !inventory.serialNumber) {
+    if (!modelName || !modelBrand || !modelType) {
       return res.status(400).json({
         message:
           "Faltan campos obligatorios: modelName, modelBrand, modelType o serialNumber.",
@@ -139,6 +139,7 @@ export const migrateInventory = async (req, res) => {
     }
 
     // Verificar que el serialNumber no exista (usando findFirst)
+    if (inventory?.serialNumber) {
     const existing = await db.inventory.findFirst({
       where: { serialNumber: inventory.serialNumber, enabled: true },
     });
@@ -147,6 +148,7 @@ export const migrateInventory = async (req, res) => {
         .status(400)
         .json({ message: "Ya existe un inventario con ese serialNumber." });
     }
+  }
 
     // Buscar o crear InventoryBrand
     let brand = await db.inventoryBrand.findFirst({
