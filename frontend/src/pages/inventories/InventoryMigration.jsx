@@ -400,7 +400,7 @@ const InventoryMigration = () => {
     migrateInventory(parsedInventory)
       .then((response) => {
         console.log(response);
-        if (response.ok) {
+        if (response.status === 200) {
           Notifies('success', 'Inventario importado correctamente.');
         } else {
           Notifies('error', 'Error al importar el inventario.');

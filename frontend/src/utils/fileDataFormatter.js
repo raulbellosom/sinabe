@@ -10,7 +10,13 @@ const formatFileData = (items) => {
 
   return items.map((item, index) => ({
     ...item,
-    name: item.metadata?.originalname || `Archivo ${index + 1}`,
+    name: item.metadata?.originalname ?
+    item.metadata.originalname :
+    item.metadata?.filename ?
+    item.metadata.filename :
+    item.metadata?.name ?
+    item.metadata.name :
+    `Archivo ${index + 1}`,
   }));
 };
 

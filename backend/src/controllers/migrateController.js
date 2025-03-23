@@ -15,8 +15,9 @@ const FILES_DIR = path.join("src", "uploads", "inventories", "files");
 
 // Helper para convertir ruta local a URL pública (quita "src")
 const getPublicUrl = (localPath) => {
-  return localPath.replace(/^src/, "");
+  return localPath.replace(/^src\//, "");  // Aseguramos que se eliminen tanto 'src' como la barra '/'
 };
+
 
 // Helper para descargar un archivo (imagen o file)
 const downloadFile = async (fileUrl, destPath) => {
@@ -139,7 +140,7 @@ export const migrateInventory = async (req, res) => {
 
     // Verificar que el serialNumber no exista (usando findFirst)
     const existing = await db.inventory.findFirst({
-      where: { serialNumber: inventory.serialNumber },
+      where: { serialNumber: inventory.serialNumber, enabled: true },
     });
     if (existing) {
       return res
@@ -223,6 +224,7 @@ export const migrateInventory = async (req, res) => {
       }
       for (const fileObj of transformed.files) {
         const fileId = uuidv4();
+        console.log(fileObj);
         const ext = path.extname(fileObj.name) || ".dat";
         const fileFileName = `${fileId}${ext}`;
         const fileDestPath = path.join(FILES_DIR, fileFileName);
@@ -232,6 +234,7 @@ export const migrateInventory = async (req, res) => {
             url: getPublicUrl(fileDestPath),
             metadata: fileObj.metadata,
             type: fileObj.type,
+            name: fileObj.name,
           });
         } catch (error) {
           console.error(
@@ -302,7 +305,7 @@ export const migrateInventory = async (req, res) => {
         data: {
           inventoryId: createdInventory.id,
           url: f.url,
-          metadata: f.metadata,
+          metadata: { ...f.metadata, name: f?.metadata?.name || f.name },
           type: f.type,
         },
       });

@@ -321,8 +321,7 @@ export const migrateInventory = async (inventory) => {
     if (response.status !== 200) {
       throw new Error('Error al enviar el inventario');
     }
-    const resData = response.data;
-    return resData;
+    return response;
   } catch (error) {
     console.error(error);
     throw error;
