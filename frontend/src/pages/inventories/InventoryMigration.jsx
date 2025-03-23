@@ -330,6 +330,7 @@ const MigratedInventoryPreview = ({ inventory }) => {
 };
 
 const InventoryMigration = () => {
+  // Estados para pestañas "Importar por URL" y "Pegar JSON"
   const [url, setUrl] = useState('');
   const [token, setToken] = useState('');
   const [jsonText, setJsonText] = useState('');
@@ -337,7 +338,13 @@ const InventoryMigration = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
-  // Manejo de la importación por URL (usando x-access-token)
+  // Estados para la pestaña CSV
+  const [csvFile, setCsvFile] = useState(null);
+  const [csvToken, setCsvToken] = useState('');
+  const [csvProgress, setCsvProgress] = useState({ current: 0, total: 0 });
+  const [isMigratingCsv, setIsMigratingCsv] = useState(false);
+
+  // Manejo de la importación por URL
   const handleUrlSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -382,16 +389,11 @@ const InventoryMigration = () => {
     setIsLoading(false);
   };
 
-  // Si se obtuvo un resultado, se transforma el inventario
-  const transformedInventory =
-    result && result.inventory ? transformInventory(result.inventory) : null;
-
-  // Función para enviar el inventario al backend
+  // Función que se encarga de migrar el inventario actual (pestaña URL)
   const handleSendInventory = async () => {
-    if (!transformedInventory) return;
+    if (!result || !result.inventory) return;
     setIsSending(true);
-
-    // script html comments
+    const transformedInventory = transformInventory(result.inventory);
     const parsedInventory = {
       ...transformedInventory,
       comments: stripHtml(transformedInventory.comments),
@@ -414,10 +416,93 @@ const InventoryMigration = () => {
           'error',
           error?.response?.data?.message || 'Error desconocido',
         );
-      });
-
-    setIsSending(false);
+      })
+      .finally(() => setIsSending(false));
   };
+
+  // Función para manejar la selección del archivo CSV
+  const handleCsvFileChange = (e) => {
+    if (e.target.files.length > 0) {
+      setCsvFile(e.target.files[0]);
+    }
+  };
+
+  // Función para procesar el CSV y migrar cada inventario de forma secuencial
+  // Primero se consulta a apisinabe.sytes.net para obtener la info completa del inventario
+  // y luego se transforma y envía como se hace en la pestaña URL.
+  const handleCsvSubmit = async (e) => {
+    e.preventDefault();
+    if (!csvFile) {
+      Notifies('error', 'Por favor selecciona un archivo CSV.');
+      return;
+    }
+    if (!csvToken.trim()) {
+      Notifies('error', 'Por favor ingresa el token de acceso.');
+      return;
+    }
+    setIsMigratingCsv(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target.result;
+      // Separamos las líneas, eliminando vacíos y espacios
+      const lines = text
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+      // Si la primera línea es "id", se elimina el encabezado
+      const header = lines[0].toLowerCase();
+      const ids = header === 'id' ? lines.slice(1) : lines;
+      setCsvProgress({ current: 0, total: ids.length });
+
+      for (let i = 0; i < ids.length; i++) {
+        const uuid = ids[i];
+        try {
+          // Se consulta a apisinabe.sytes.net usando el id y el token (usando el header 'x-access-token')
+          const response = await fetch(
+            `https://apisinabe.sytes.net/api/inventories/${uuid}`,
+            {
+              headers: {
+                'x-access-token': csvToken,
+              },
+            },
+          );
+          if (!response.ok) {
+            throw new Error(`No se pudo obtener el inventario ${uuid}`);
+          }
+          const data = await response.json();
+          if (!data.inventory) {
+            throw new Error(`Inventario ${uuid} no tiene información.`);
+          }
+          // Se transforma la información obtenida
+          const transformed = transformInventory(data.inventory);
+          const parsedInventory = {
+            ...transformed,
+            comments: stripHtml(transformed.comments),
+          };
+          // Se envía el inventario migrado al backend
+          const migrateRes = await migrateInventory(parsedInventory);
+          if (migrateRes.status === 200) {
+            Notifies('success', `Inventario ${uuid} importado correctamente.`);
+          } else {
+            Notifies(
+              'error',
+              `Error al importar inventario ${uuid}: ${migrateRes?.data?.message || 'Error desconocido'}`,
+            );
+          }
+        } catch (error) {
+          console.error(`Error en migrar inventario ${uuid}:`, error);
+          Notifies('error', `Error en la migración del inventario ${uuid}.`);
+        }
+        setCsvProgress({ current: i + 1, total: ids.length });
+      }
+      Notifies('success', 'Proceso de migración CSV finalizado.');
+      setIsMigratingCsv(false);
+    };
+    reader.readAsText(csvFile);
+  };
+
+  const transformedInventory =
+    result && result.inventory ? transformInventory(result.inventory) : null;
 
   return (
     <section className="bg-white shadow-md rounded-md dark:bg-gray-900 p-6">
@@ -500,6 +585,59 @@ const InventoryMigration = () => {
                 {isLoading ? 'Procesando...' : 'Procesar JSON'}
               </button>
             </form>
+          </div>
+        </Tabs.Item>
+
+        <Tabs.Item title="Subir CSV" icon={BiSolidCalendarEdit}>
+          <div className="p-4">
+            <form onSubmit={handleCsvSubmit} className="flex flex-col gap-4">
+              <div>
+                <label
+                  htmlFor="csvFile"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                >
+                  Archivo CSV
+                </label>
+                <input
+                  type="file"
+                  id="csvFile"
+                  accept=".csv"
+                  onChange={handleCsvFileChange}
+                  required
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="csvToken"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                >
+                  Token de Acceso
+                </label>
+                <input
+                  type="text"
+                  id="csvToken"
+                  placeholder="Ingresa el token"
+                  value={csvToken}
+                  onChange={(e) => setCsvToken(e.target.value)}
+                  required
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isMigratingCsv}
+                className="text-white bg-purple-600 hover:bg-purple-700 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5"
+              >
+                {isMigratingCsv ? 'Migrando...' : 'Migrar Inventarios CSV'}
+              </button>
+            </form>
+            {isMigratingCsv && (
+              <p className="mt-2 text-sm text-gray-700">
+                Migrando {csvProgress.current} de {csvProgress.total}{' '}
+                inventarios...
+              </p>
+            )}
           </div>
         </Tabs.Item>
       </Tabs>
