@@ -13,6 +13,11 @@ const IMAGES_DIR = path.join("src", "uploads", "inventories", "images");
 const THUMBNAILS_DIR = path.join(IMAGES_DIR, "thumbnails");
 const FILES_DIR = path.join("src", "uploads", "inventories", "files");
 
+// Helper para convertir ruta local a URL pública (quita "src")
+const getPublicUrl = (localPath) => {
+  return localPath.replace(/^src/, "");
+};
+
 // Helper para descargar un archivo (imagen o file)
 const downloadFile = async (fileUrl, destPath) => {
   const response = await axios({
@@ -36,7 +41,7 @@ const processImage = async (imagePath, fileName) => {
   const thumbnailPath = path.join(THUMBNAILS_DIR, `${fileName}-thumbnail.jpg`);
   await sharp(imagePath).resize(150, 150).toFile(thumbnailPath);
   return {
-    url: imagePath, // aquí podrías ajustar para guardar rutas relativas si lo prefieres
+    url: imagePath, // ruta local
     thumbnail: thumbnailPath,
   };
 };
@@ -61,23 +66,30 @@ const transformInventory = (oldInventory) => {
         }))
       : [],
     files: Array.isArray(oldInventory.files)
-      ? oldInventory.files.map((file) => ({
-          url:
-            file.url && file.url.startsWith("http")
-              ? file.url
-              : baseUrl + (file.url || ""),
-          name: file.name || file.file?.name || "",
-          type: file.type || file.file?.type || "",
-          metadata: {
-            name: file.file?.name || "",
-            path: file.file?.path || "",
-            size: file.file?.size || 0,
-            type: file.file?.type || "",
-            lastModified: file.file?.lastModified || 0,
-            lastModifiedDate: file.file?.lastModifiedDate || "",
-            webkitRelativePath: file.file?.webkitRelativePath || "",
-          },
-        }))
+      ? oldInventory.files
+          // Filtra para descartar elementos sin información
+          .filter((file) => {
+            const fileUrl = (file.url || "").trim();
+            const fileName = (file.file?.name || "").trim();
+            return fileUrl !== "" || fileName !== "";
+          })
+          .map((file) => ({
+            url:
+              file.url && file.url.startsWith("http")
+                ? file.url
+                : baseUrl + (file.url || ""),
+            name: file.name || file.file?.name || "",
+            type: file.type || file.file?.type || "",
+            metadata: {
+              name: file.file?.name || "",
+              path: file.file?.path || "",
+              size: file.file?.size || 0,
+              type: file.file?.type || "",
+              lastModified: file.file?.lastModified || 0,
+              lastModifiedDate: file.file?.lastModifiedDate || "",
+              webkitRelativePath: file.file?.webkitRelativePath || "",
+            },
+          }))
       : [],
     altaDate: oldInventory.altaDate,
     bajaDate: oldInventory.bajaDate,
@@ -113,7 +125,7 @@ export const migrateInventory = async (req, res) => {
         .status(400)
         .json({ message: "No se proporcionaron datos de inventario." });
     }
-    console.log(inventory);
+
     // Extraer valores de inventoryModel
     const modelName = inventory.inventoryModel?.name;
     const modelBrand = inventory.inventoryModel?.inventoryBrand?.name;
@@ -191,8 +203,9 @@ export const migrateInventory = async (req, res) => {
           await downloadFile(img.url, imageDestPath);
           const processed = await processImage(imageDestPath, imageId);
           imageRecords.push({
-            url: processed.url,
-            thumbnail: processed.thumbnail,
+            // Convertir la ruta local en URL pública
+            url: getPublicUrl(processed.url),
+            thumbnail: getPublicUrl(processed.thumbnail),
             type: "image/jpeg",
             enabled: true,
           });
@@ -216,7 +229,7 @@ export const migrateInventory = async (req, res) => {
         try {
           await downloadFile(fileObj.url, fileDestPath);
           fileRecords.push({
-            url: fileDestPath,
+            url: getPublicUrl(fileDestPath),
             metadata: fileObj.metadata,
             type: fileObj.type,
           });
@@ -229,9 +242,10 @@ export const migrateInventory = async (req, res) => {
       }
     }
 
-    // Para crear el inventario, se requiere el id del usuario creador.
-    // Asumimos que req.user.id está disponible (si no, ajusta según tu autenticación).
+    // Se asume que req.user.id está disponible (o asigna un valor por defecto para pruebas)
     const createdById = req.user?.id || "some-default-user-id";
+
+    // Función helper para mapear el valor numérico de status al enum correspondiente
     const getStatusEnum = (statusValue) => {
       switch (statusValue) {
         case 1:
