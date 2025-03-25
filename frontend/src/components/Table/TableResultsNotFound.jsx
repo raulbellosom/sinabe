@@ -9,10 +9,10 @@ const TableResultsNotFound = () => {
         alt="No se encontraron resultados"
         className="w-1/2 md:w-1/4"
       />
-      <h1 className="text-lg md:text-3xl font-bold text-center mt-4">
+      <h1 className="text-base md:text-lg lg:text-3xl font-bold text-center mt-4">
         No se encontraron resultados
       </h1>
-      <p className=" text-center text-base md:text-lg text-neutral-500 mt-1">
+      <p className="text-center text-base md:text-lg text-neutral-500 mt-1">
         No se encontraron resultados para la búsqueda realizada
       </p>
     </div>

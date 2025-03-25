@@ -590,6 +590,8 @@ export const searchInventories = async (req, res) => {
       "model.type.name",
       "activeNumber",
       "serialNumber",
+      "updatedAt",
+      "receptionDate",
     ];
 
     const mapSearchHeaderToColumn = (searchHeader, customFieldName) => {
@@ -604,18 +606,17 @@ export const searchInventories = async (req, res) => {
       };
       return columnsMap[searchHeader] || null;
     };
-    
 
     const buildDeepSearchConditions = (deepSearchArray) => {
       const conditions = [];
-    
+
       deepSearchArray.forEach(
         ({ searchHeader, searchTerm, searchCriteria, customFieldName }) => {
           const column = mapSearchHeaderToColumn(searchHeader, customFieldName);
-    
+
           if (!column || typeof column !== "string") return;
-    
-          if (searchHeader === 'customField' && customFieldName) {
+
+          if (searchHeader === "customField" && customFieldName) {
             // Crear condiciones específicas para customFields
             const condition = {
               customField: {
@@ -631,7 +632,7 @@ export const searchInventories = async (req, res) => {
           } else {
             const path = column.split(".");
             let condition = {};
-    
+
             switch (searchCriteria) {
               case "equals":
                 condition = { [path[path.length - 1]]: { equals: searchTerm } };
@@ -647,7 +648,9 @@ export const searchInventories = async (req, res) => {
                 };
                 break;
               case "contains":
-                condition = { [path[path.length - 1]]: { contains: searchTerm } };
+                condition = {
+                  [path[path.length - 1]]: { contains: searchTerm },
+                };
                 break;
               case "different":
                 condition = { [path[path.length - 1]]: { not: searchTerm } };
@@ -655,21 +658,19 @@ export const searchInventories = async (req, res) => {
               default:
                 break;
             }
-    
+
             let nestedCondition = condition;
             for (let i = path.length - 2; i >= 0; i--) {
               nestedCondition = { [path[i]]: nestedCondition };
             }
-    
+
             conditions.push(nestedCondition);
           }
         }
       );
-    
+
       return conditions.length > 0 ? { AND: conditions } : {};
     };
-    
-    
 
     const orderField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
     const orderDirection = order === "desc" ? "desc" : "asc";

@@ -46,7 +46,21 @@ export const inventoryColumns = [
   },
   {
     id: 'receptionDate',
-    value: 'Fecha de recepción',
+    value: 'F. Recepción',
+    classes: 'w-auto',
+    order: 'asc',
+    type: 'date',
+  },
+  {
+    id: 'createdAt',
+    value: 'F. Creación',
+    classes: 'w-auto',
+    order: 'asc',
+    type: 'date',
+  },
+  {
+    id: 'updatedAt',
+    value: 'F. Actualización',
     classes: 'w-auto',
     order: 'asc',
     type: 'date',

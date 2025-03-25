@@ -6,13 +6,13 @@ import ModalViewer from '../../components/Modals/ModalViewer';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import { useNavigate } from 'react-router-dom';
 import { LuFileSpreadsheet } from 'react-icons/lu';
-import { FaClipboardList, FaEdit, FaEye } from 'react-icons/fa';
+import { FaClipboardList, FaEdit, FaEye, FaTable } from 'react-icons/fa';
 import { Checkbox, Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchInventories } from '../../services/api';
 import Card from '../../components/Card/Card';
 import { parseToLocalDate } from '../../utils/formatValues';
-import { MdOutlineFileUpload } from 'react-icons/md';
+import { MdOutlineFileUpload, MdPhotoAlbum } from 'react-icons/md';
 import CreateMultipleInventory from './CreateMultipleInventory';
 import { downloadCSV } from '../../utils/DownloadCSV';
 import Notifies from '../../components/Notifies/Notifies';
@@ -34,6 +34,8 @@ const TableFooter = React.lazy(
 import LinkButton from '../../components/ActionButtons/LinkButton';
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
+import InventoriesImagesView from './views/InventoriesImagesView';
+import { downloadImagesAsZip } from '../../utils/downloadImagesAsZip';
 
 const formatInventory = (inventoryData) => {
   const { model, receptionDate, activeNumber, serialNumber } = inventoryData;
@@ -56,13 +58,14 @@ const Inventories = () => {
   const [refreshData, setRefreshData] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
     searchTerm: '',
-    pageSize: 5,
+    pageSize: 10,
     page: currentPageNumber,
     sortBy: 'createdAt',
     order: 'asc',
     conditionName: [],
     deepSearch: [],
   });
+  const [viewMode, setViewMode] = useState('table');
 
   const {
     data: inventories,
@@ -305,6 +308,18 @@ const Inventories = () => {
     Notifies('success', 'Inventarios actualizados');
   };
 
+  const handleDownloadZipImages = (selectedImages) => {
+    // Aquí recibes un array con { inventoryId, imageKey }
+    // Llama a tu servicio/endpoint para descargar en ZIP
+    // Ejemplo ficticio:
+    if (!selectedImages || selectedImages.length === 0) {
+      Notifies('error', 'No hay imágenes para descargar.');
+      return;
+    }
+    downloadImagesAsZip(selectedImages);
+    Notifies('success', 'Iniciando descarga ZIP (demo)');
+  };
+
   const isCreatePermission = useCheckPermissions('create_inventories');
 
   return (
@@ -315,19 +330,26 @@ const Inventories = () => {
           title="Inventario"
           actions={[
             {
-              label: 'Descargar',
+              label: 'Exportar',
               action: downloadInventoriesCSV,
               color: 'green',
               icon: LuFileSpreadsheet,
               disabled: Object.keys(itemsToDownload).length === 0,
             },
             {
-              label: 'Cargar',
+              label: 'Importar',
               action: isCreatePermission.hasPermission
                 ? () => setIsOpenModalUpload(true)
                 : null,
               color: 'blue',
               icon: MdOutlineFileUpload,
+            },
+            {
+              label: viewMode === 'table' ? 'Imágenes' : 'Tabla',
+              action: () =>
+                setViewMode(viewMode === 'table' ? 'images' : 'table'),
+              color: 'black',
+              icon: viewMode === 'table' ? MdPhotoAlbum : FaTable,
             },
             {
               label: 'Nuevo',
@@ -359,231 +381,264 @@ const Inventories = () => {
           inventoryConditions={inventoryConditions}
           onRefreshData={handleGetChanges}
         />
-        {inventories && !isPending ? (
-          inventories?.data?.length > 0 ? (
-            <>
-              <div className="hidden md:block">
-                <Table
-                  columns={columns}
-                  sortBy={sortBy}
-                  sortedBy={searchFilters.sortBy}
-                  selectAll={selectAll}
-                >
-                  {inventories &&
-                    !isPending &&
-                    inventories?.data?.map((inventory) => {
-                      if (selectAllCheckbox) {
-                        inventory = {
-                          ...inventory,
-                          checked: true,
-                        };
-                      }
-                      return (
-                        <T.Row
-                          onDoubleClick={() =>
-                            navigate(`/inventories/view/${inventory.id}`)
+        {/* esta es la vista tabla */}
+        {viewMode === 'table' ? (
+          <>
+            {inventories && !isPending ? (
+              inventories?.data?.length > 0 ? (
+                <>
+                  <div className="hidden md:block">
+                    <Table
+                      columns={columns}
+                      sortBy={sortBy}
+                      sortedBy={searchFilters.sortBy}
+                      selectAll={selectAll}
+                    >
+                      {inventories &&
+                        !isPending &&
+                        inventories?.data?.map((inventory) => {
+                          if (selectAllCheckbox) {
+                            inventory = {
+                              ...inventory,
+                              checked: true,
+                            };
                           }
-                          onClick={(event) => {
-                            if (event.ctrlKey) {
-                              window.open(
-                                `/inventories/view/${inventory.id}`,
-                                '_blank',
-                              );
-                            }
-                          }}
-                          key={inventory.id}
-                          className="border-b whitespace-nowrap dark:border-gray-600 text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                        >
-                          {inventoryColumns?.map((column) => {
-                            let content;
-                            if (column.id === 'checkbox') {
-                              return (
-                                <T.Cell className="py-2" key={column.id}>
-                                  <Checkbox
-                                    className="cursor-pointer text-purple-500 focus:ring-purple-500"
-                                    onChange={() =>
-                                      inventoriesToDownload(
-                                        inventory?.id,
-                                        inventory,
-                                      )
-                                    }
-                                    checked={
-                                      itemsToDownload[inventory?.id]
-                                        ? true
-                                        : false
-                                    }
-                                  />
-                                </T.Cell>
-                              );
-                            } else if (column.id === 'receptionDate') {
-                              content = parseToLocalDate(
-                                getNestedValue(inventory, column.id),
-                              );
-                            } else {
-                              content = getNestedValue(inventory, column.id);
-                            }
+                          return (
+                            <T.Row
+                              onDoubleClick={() =>
+                                navigate(`/inventories/view/${inventory.id}`)
+                              }
+                              onClick={(event) => {
+                                if (event.ctrlKey) {
+                                  window.open(
+                                    `/inventories/view/${inventory.id}`,
+                                    '_blank',
+                                  );
+                                }
+                              }}
+                              key={inventory.id}
+                              className="border-b whitespace-nowrap dark:border-gray-600 text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+                            >
+                              {inventoryColumns?.map((column) => {
+                                let content;
+                                if (column.id === 'checkbox') {
+                                  return (
+                                    <T.Cell className="py-2" key={column.id}>
+                                      <Checkbox
+                                        className="cursor-pointer text-purple-500 focus:ring-purple-500"
+                                        onChange={() =>
+                                          inventoriesToDownload(
+                                            inventory?.id,
+                                            inventory,
+                                          )
+                                        }
+                                        checked={
+                                          itemsToDownload[inventory?.id]
+                                            ? true
+                                            : false
+                                        }
+                                      />
+                                    </T.Cell>
+                                  );
+                                } else if (column.id === 'receptionDate') {
+                                  content = parseToLocalDate(
+                                    getNestedValue(inventory, column.id),
+                                  );
+                                } else {
+                                  content = getNestedValue(
+                                    inventory,
+                                    column.id,
+                                  );
+                                }
 
-                            if (
-                              column.id === 'images' &&
-                              inventory?.images?.length > 0
-                            ) {
-                              return (
-                                <T.Cell key={column.id} className="w-20 py-2">
-                                  <ImageViewer
-                                    images={[inventory?.images[0]]}
-                                    containerClassNames={
-                                      'first:w-12 first:h-12 first:rounded-md'
-                                    }
-                                  />
-                                </T.Cell>
-                              );
-                            }
+                                if (
+                                  column.id === 'images' &&
+                                  inventory?.images?.length > 0
+                                ) {
+                                  return (
+                                    <T.Cell
+                                      key={column.id}
+                                      className="w-20 py-2"
+                                    >
+                                      <ImageViewer
+                                        images={[inventory?.images[0]]}
+                                        containerClassNames={
+                                          'first:w-12 first:h-12 first:rounded-md'
+                                        }
+                                      />
+                                    </T.Cell>
+                                  );
+                                }
 
-                            if (column.id === 'model.name') {
-                              return (
-                                <T.Cell
-                                  key={column.id}
-                                  className="font-semibold whitespace-nowrap dark:text-white py-2"
-                                >
-                                  {getNestedValue(inventory, column.id)}
-                                </T.Cell>
-                              );
-                            }
-                            if (column.id === 'status') {
-                              return (
-                                <T.Cell className="py-2" key={column.id}>
-                                  <span
-                                    className={`px-4 py-1 text-white rounded-full text-xs font-medium ${
-                                      inventory.status === 'ALTA'
-                                        ? 'bg-mycad-primary'
-                                        : inventory.status === 'BAJA'
-                                          ? 'bg-mycad-danger'
-                                          : 'bg-mycad-warning'
-                                    }`}
+                                if (column.id === 'model.name') {
+                                  return (
+                                    <T.Cell
+                                      key={column.id}
+                                      className="font-semibold whitespace-nowrap dark:text-white py-2"
+                                    >
+                                      {getNestedValue(inventory, column.id)}
+                                    </T.Cell>
+                                  );
+                                }
+                                if (column.id === 'status') {
+                                  return (
+                                    <T.Cell className="py-2" key={column.id}>
+                                      <span
+                                        className={`px-4 py-1 text-white rounded-full text-xs font-medium ${
+                                          inventory.status === 'ALTA'
+                                            ? 'bg-mycad-primary'
+                                            : inventory.status === 'BAJA'
+                                              ? 'bg-mycad-danger'
+                                              : 'bg-mycad-warning'
+                                        }`}
+                                      >
+                                        {inventory.status === 'PROPUESTA'
+                                          ? 'PROPUESTA DE BAJA'
+                                          : inventory.status}
+                                      </span>
+                                    </T.Cell>
+                                  );
+                                }
+                                if (column.id === 'actions') {
+                                  return (
+                                    <T.Cell className="py-2" key={column.id}>
+                                      <div className="flex justify-center items-center gap-2">
+                                        <LinkButton
+                                          route={`/inventories/edit/${inventory.id}`}
+                                          label="Editar"
+                                          icon={FaEdit}
+                                          color="yellow"
+                                        />
+                                        <LinkButton
+                                          route={`/inventories/view/${inventory.id}`}
+                                          label="Ver"
+                                          icon={FaEye}
+                                          color="cyan"
+                                        />
+                                        <ActionButtons
+                                          onRemove={() => {
+                                            setIsOpenModal(true);
+                                            setInventoryId(inventory.id);
+                                          }}
+                                        />
+                                      </div>
+                                    </T.Cell>
+                                  );
+                                }
+                                return (
+                                  <T.Cell
+                                    className="text-nowrap py-2"
+                                    key={column.id}
                                   >
-                                    {inventory.status === 'PROPUESTA'
-                                      ? 'PROPUESTA DE BAJA'
-                                      : inventory.status}
-                                  </span>
-                                </T.Cell>
-                              );
-                            }
-                            if (column.id === 'actions') {
-                              return (
-                                <T.Cell className="py-2" key={column.id}>
-                                  <div className="flex justify-center items-center gap-2">
-                                    <LinkButton
-                                      route={`/inventories/edit/${inventory.id}`}
-                                      label="Editar"
-                                      icon={FaEdit}
-                                      color="yellow"
-                                    />
-                                    <LinkButton
-                                      route={`/inventories/view/${inventory.id}`}
-                                      label="Ver"
-                                      icon={FaEye}
-                                      color="cyan"
-                                    />
-                                    <ActionButtons
-                                      onRemove={() => {
-                                        setIsOpenModal(true);
-                                        setInventoryId(inventory.id);
-                                      }}
-                                    />
-                                  </div>
-                                </T.Cell>
-                              );
-                            }
-                            return (
-                              <T.Cell
-                                className="text-nowrap py-2"
-                                key={column.id}
-                              >
-                                {content}
-                              </T.Cell>
-                            );
-                          })}
-                        </T.Row>
-                      );
+                                    {content}
+                                  </T.Cell>
+                                );
+                              })}
+                            </T.Row>
+                          );
+                        })}
+                    </Table>
+                  </div>
+                  <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 md:hidden">
+                    {inventories?.data?.map((inventory) => {
+                      const data = {
+                        image: {
+                          key: 'Imagen',
+                          value: inventory?.images[0] ?? [],
+                        },
+                        title: {
+                          key: 'Inventario',
+                          value: inventory?.model?.name,
+                        },
+                        subtitle: {
+                          key: 'Marca y Tipo',
+                          value: `${inventory?.model?.brand?.name} ${inventory?.model?.type?.name}`,
+                        },
+                        tags: {
+                          key: 'Condiciones',
+                          value: inventory?.conditions?.map(
+                            (condition) => condition?.condition?.name,
+                          ),
+                        },
+                        serialNumber: {
+                          key: 'Número de serie',
+                          value: inventory?.serialNumber,
+                        },
+                        activeNumber: {
+                          key: 'Número de activo',
+                          value: inventory?.activeNumber,
+                        },
+                        receptionDate: {
+                          key: 'F. de recepción',
+                          value: inventory?.receptionDate
+                            ? parseToLocalDate(inventory?.receptionDate)
+                            : '',
+                        },
+                        status: {
+                          key: 'Estatus',
+                          value:
+                            inventory?.status === 'PROPUESTA'
+                              ? 'PROPUESTA DE BAJA'
+                              : inventory.status,
+                        },
+                        actions: {
+                          key: 'Acciones',
+                          value: (
+                            <ActionButtons
+                              extraActions={[
+                                {
+                                  label: 'Ver',
+                                  icon: FaEye,
+                                  color: 'cyan',
+                                  action: () =>
+                                    navigate(
+                                      `/inventories/view/${inventory.id}`,
+                                    ),
+                                },
+                                {
+                                  label: 'Editar',
+                                  icon: FaEdit,
+                                  color: 'yellow',
+                                  action: () =>
+                                    navigate(
+                                      `/inventories/edit/${inventory.id}`,
+                                    ),
+                                },
+                              ]}
+                              onRemove={() => {
+                                setIsOpenModal(true);
+                                setInventoryId(inventory.id);
+                              }}
+                            />
+                          ),
+                        },
+                      };
+                      return <Card key={inventory.id} data={data} showImage />;
                     })}
-                </Table>
-              </div>
-              <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 md:hidden">
-                {inventories?.data?.map((inventory) => {
-                  const data = {
-                    image: { key: 'Imagen', value: inventory?.images[0] ?? [] },
-                    title: {
-                      key: 'Inventario',
-                      value: inventory?.model?.name,
-                    },
-                    subtitle: {
-                      key: 'Marca y Tipo',
-                      value: `${inventory?.model?.brand?.name} ${inventory?.model?.type?.name}`,
-                    },
-                    tags: {
-                      key: 'Condiciones',
-                      value: inventory?.conditions?.map(
-                        (condition) => condition?.condition?.name,
-                      ),
-                    },
-                    serialNumber: {
-                      key: 'Número de serie',
-                      value: inventory?.serialNumber,
-                    },
-                    activeNumber: {
-                      key: 'Número de activo',
-                      value: inventory?.activeNumber,
-                    },
-                    receptionDate: {
-                      key: 'F. de recepción',
-                      value: inventory?.receptionDate
-                        ? parseToLocalDate(inventory?.receptionDate)
-                        : '',
-                    },
-                    status: {
-                      key: 'Estatus',
-                      value:
-                        inventory?.status === 'PROPUESTA'
-                          ? 'PROPUESTA DE BAJA'
-                          : inventory.status,
-                    },
-                    actions: {
-                      key: 'Acciones',
-                      value: (
-                        <ActionButtons
-                          extraActions={[
-                            {
-                              label: 'Ver',
-                              icon: FaEye,
-                              color: 'cyan',
-                              action: () =>
-                                navigate(`/inventories/view/${inventory.id}`),
-                            },
-                            {
-                              label: 'Editar',
-                              icon: FaEdit,
-                              color: 'yellow',
-                              action: () =>
-                                navigate(`/inventories/edit/${inventory.id}`),
-                            },
-                          ]}
-                          onRemove={() => {
-                            setIsOpenModal(true);
-                            setInventoryId(inventory.id);
-                          }}
-                        />
-                      ),
-                    },
-                  };
-                  return <Card key={inventory.id} data={data} showImage />;
-                })}
-              </div>
-            </>
-          ) : (
-            <TableResultsNotFound />
-          )
+                  </div>
+                </>
+              ) : (
+                <TableResultsNotFound />
+              )
+            ) : (
+              <Skeleton className="w-full h-10" count={10} />
+            )}
+          </>
         ) : (
-          <Skeleton className="w-full h-10" count={10} />
+          <>
+            {inventories && !isPending ? (
+              inventories?.data?.length > 0 ? (
+                <InventoriesImagesView
+                  inventories={inventories?.data || []}
+                  onDownloadZip={handleDownloadZipImages}
+                />
+              ) : (
+                <TableResultsNotFound />
+              )
+            ) : (
+              <Skeleton className="w-full h-10" count={10} />
+            )}
+          </>
         )}
         {inventories?.pagination && (
           <TableFooter

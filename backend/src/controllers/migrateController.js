@@ -15,9 +15,8 @@ const FILES_DIR = path.join("src", "uploads", "inventories", "files");
 
 // Helper para convertir ruta local a URL pública (quita "src")
 const getPublicUrl = (localPath) => {
-  return localPath.replace(/^src\//, "");  // Aseguramos que se eliminen tanto 'src' como la barra '/'
+  return localPath.replace(/^src[\/\\]/, "");
 };
-
 
 // Helper para descargar un archivo (imagen o file)
 const downloadFile = async (fileUrl, destPath) => {
@@ -140,15 +139,15 @@ export const migrateInventory = async (req, res) => {
 
     // Verificar que el serialNumber no exista (usando findFirst)
     if (inventory?.serialNumber) {
-    const existing = await db.inventory.findFirst({
-      where: { serialNumber: inventory.serialNumber, enabled: true },
-    });
-    if (existing) {
-      return res
-        .status(400)
-        .json({ message: "Ya existe un inventario con ese serialNumber." });
+      const existing = await db.inventory.findFirst({
+        where: { serialNumber: inventory.serialNumber, enabled: true },
+      });
+      if (existing) {
+        return res
+          .status(400)
+          .json({ message: "Ya existe un inventario con ese serialNumber." });
+      }
     }
-  }
 
     // Buscar o crear InventoryBrand
     let brand = await db.inventoryBrand.findFirst({
