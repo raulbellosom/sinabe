@@ -96,7 +96,7 @@ const InventoriesImagesView = ({ inventories = [], onDownloadZip }) => {
   return (
     <div className="p-4 bg-white rounded shadow-md dark:bg-gray-900">
       {/* Título principal */}
-      <h2 className="text-2xl font-semibold mb-4">Inventory Image Viewer</h2>
+      <h2 className="text-2xl font-semibold mb-4">Inventario por Imágenes</h2>
 
       {/* Botones para cambiar el modo de visualización */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-2 mb-4">
