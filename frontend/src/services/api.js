@@ -346,6 +346,7 @@ export const searchInventories = async ({
   pageSize,
   conditionName,
   deepSearch,
+  status,
   signal,
 }) => {
   try {
@@ -359,6 +360,7 @@ export const searchInventories = async ({
         pageSize,
         conditionName,
         deepSearch: parsedDeepSearch,
+        status,
       },
       signal: signal,
     });

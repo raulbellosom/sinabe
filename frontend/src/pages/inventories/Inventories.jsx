@@ -4,7 +4,7 @@ import { useInventoryContext } from '../../context/InventoryContext';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import ModalViewer from '../../components/Modals/ModalViewer';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LuFileSpreadsheet } from 'react-icons/lu';
 import { FaClipboardList, FaEdit, FaEye, FaTable } from 'react-icons/fa';
 import { Checkbox, Table as T } from 'flowbite-react';
@@ -56,17 +56,69 @@ const Inventories = () => {
   const [inventoryId, setInventoryId] = useState(null);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const [refreshData, setRefreshData] = useState(false);
-  const [searchFilters, setSearchFilters] = useState({
-    searchTerm: '',
-    pageSize: 10,
-    page: currentPageNumber,
-    sortBy: 'createdAt',
-    order: 'asc',
-    conditionName: [],
-    deepSearch: [],
-  });
   const [viewMode, setViewMode] = useState('table');
+  const [searchParams, setSearchParams] = useSearchParams();
 
+  // Agregamos el filtro de estado; por defecto, si no hay selección, mostramos todos
+  const initialFilters = {
+    searchTerm: searchParams.get('searchTerm') || '',
+    pageSize: Number(searchParams.get('pageSize')) || 10,
+    page: Number(searchParams.get('page')) || 1,
+    sortBy: searchParams.get('sortBy') || 'updatedAt',
+    order: searchParams.get('order') || 'desc',
+    conditionName: searchParams.getAll('conditionName') || [],
+    deepSearch: searchParams.get('deepSearch')
+      ? JSON.parse(searchParams.get('deepSearch'))
+      : [],
+    status: searchParams.getAll('status') || [], // Nuevo filtro de estado
+  };
+
+  const [searchFilters, setSearchFilters] = useState(initialFilters);
+  // Estado local para el input (para responder de inmediato a lo que escribe el usuario)
+  const [searchInput, setSearchInput] = useState(initialFilters.searchTerm);
+
+  // Lista fija de estados disponibles
+  const statusOptions = ['ALTA', 'PROPUESTA', 'BAJA'];
+
+  // Actualizamos los parámetros de la URL cada vez que searchFilters cambia
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set('searchTerm', searchFilters.searchTerm);
+    params.set('pageSize', searchFilters.pageSize);
+    params.set('page', searchFilters.page);
+    params.set('sortBy', searchFilters.sortBy);
+    params.set('order', searchFilters.order);
+    searchFilters.conditionName.forEach((value) =>
+      params.append('conditionName', value),
+    );
+    params.set('deepSearch', JSON.stringify(searchFilters.deepSearch));
+    // Solo se añade "status" si hay alguno seleccionado
+    if (searchFilters.status && searchFilters.status.length > 0) {
+      searchFilters.status.forEach((value) => params.append('status', value));
+    }
+    setSearchParams(params);
+  }, [searchFilters, setSearchParams]);
+
+  // Si se recibe "field" y "value" en la URL para customField, se actualiza deepSearch
+  useEffect(() => {
+    const fieldParam = searchParams.get('field');
+    const valueParam = searchParams.get('value');
+    if (fieldParam && fieldParam.startsWith('customField:')) {
+      const customFieldName = fieldParam.split(':')[1];
+      const filter = {
+        searchHeader: 'customField',
+        searchTerm: valueParam,
+        searchCriteria: 'equals',
+        customFieldName,
+      };
+      setSearchFilters((prevState) => ({
+        ...prevState,
+        deepSearch: [filter],
+      }));
+    }
+  }, [searchParams]);
+
+  // La consulta se actualiza según los filtros actuales
   const {
     data: inventories,
     refetch,
@@ -83,91 +135,45 @@ const Inventories = () => {
     setRefreshData(false);
   }, [searchFilters, refreshData]);
 
-  // if field and value are present, set the deep search
-  /*useEffect(() => {
-    if (field && value) {
-      setSearchFilters((prevState) => {
-        return {
-          ...prevState,
-          deepSearch: [
-            {
-              searchHeader: field,
-              searchTerm: value,
-              searchCriteria: 'equals',
-            },
-          ],
-        };
-      });
-    }
-  }, [field, value]);*/
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const fieldParam = urlParams.get('field');
-    const valueParam = urlParams.get('value');
-
-    if (fieldParam && fieldParam.startsWith('customField:')) {
-      const customFieldName = fieldParam.split(':')[1]; // "orden de compra"
-      const filter = {
-        searchHeader: 'customField',
-        searchTerm: valueParam, // "PVR-OC-007182"
-        searchCriteria: 'equals', // Ajusta según sea necesario
-        customFieldName,
-      };
-      setSearchFilters((prevState) => {
-        return {
-          ...prevState,
-          deepSearch: [filter],
-        };
-      });
-    }
-  }, []);
-
   const goOnPrevPage = useCallback(() => {
-    setSearchFilters((prevState) => {
-      return {
-        ...prevState,
-        page: prevState?.page - 1,
-      };
-    });
+    setSearchFilters((prevState) => ({
+      ...prevState,
+      page: prevState.page - 1,
+    }));
   }, []);
 
   const goOnNextPage = useCallback(() => {
-    setSearchFilters((prevState) => {
-      return {
-        ...prevState,
-        page: prevState?.page + 1,
-      };
-    });
+    setSearchFilters((prevState) => ({
+      ...prevState,
+      page: prevState.page + 1,
+    }));
   }, []);
 
   const handleSelectChange = useCallback((page) => {
-    setSearchFilters((prevState) => {
-      return {
-        ...prevState,
-        page,
-      };
-    });
+    setSearchFilters((prevState) => ({
+      ...prevState,
+      page,
+    }));
   }, []);
 
-  const handleSearch = useCallback(
-    (e) => {
-      e.preventDefault();
-      if (lastChange.current) {
-        clearTimeout(lastChange.current);
-      }
-      lastChange.current = setTimeout(() => {
-        lastChange.current = null;
-        setSearchFilters((prevState) => {
-          return {
-            ...prevState,
-            searchTerm: e.target.value,
-          };
-        });
-      }, 600);
-    },
-    [searchFilters?.searchTerm],
-  );
+  const handleSearch = useCallback((e) => {
+    const value = e.target.value;
+    // Actualizamos el estado local para que el input se muestre actualizado
+    setSearchInput(value);
+
+    // Limpiamos el timeout anterior
+    if (lastChange.current) {
+      clearTimeout(lastChange.current);
+    }
+    // Establecemos el timeout para actualizar los filtros de búsqueda
+    lastChange.current = setTimeout(() => {
+      setSearchFilters((prevState) => ({
+        ...prevState,
+        searchTerm: value,
+      }));
+      lastChange.current = null;
+    }, 600);
+  }, []);
 
   const handleDeepSearch = (value) => {
     setSearchFilters((prevState) => ({
@@ -186,12 +192,10 @@ const Inventories = () => {
   };
 
   const changePageSize = (e) => {
-    setSearchFilters((prevState) => {
-      return {
-        ...prevState,
-        pageSize: e.target.value,
-      };
-    });
+    setSearchFilters((prevState) => ({
+      ...prevState,
+      pageSize: e.target.value,
+    }));
   };
 
   const sortBy = (column) => {
@@ -206,13 +210,11 @@ const Inventories = () => {
       };
       updatedHeaders = [...columns];
       updatedHeaders[selectedHeaderIndex] = updatedHeader;
-      setSearchFilters((prevState) => {
-        return {
-          ...prevState,
-          sortBy: column,
-          order: updatedHeader?.order,
-        };
-      });
+      setSearchFilters((prevState) => ({
+        ...prevState,
+        sortBy: column,
+        order: updatedHeader.order,
+      }));
     }
     setColumns(updatedHeaders);
   };
@@ -230,21 +232,15 @@ const Inventories = () => {
   const onCheckFilter = (value) => {
     if (value !== '') {
       if (value === 'Seleccionar todos') {
-        setSearchFilters((prevState) => {
-          return {
-            ...prevState,
-            conditionName: inventoryConditions.map(
-              (condition) => condition.name,
-            ),
-          };
-        });
+        setSearchFilters((prevState) => ({
+          ...prevState,
+          conditionName: inventoryConditions.map((condition) => condition.name),
+        }));
       } else if (value === 'Quitar todos') {
-        setSearchFilters((prevState) => {
-          return {
-            ...prevState,
-            conditionName: [],
-          };
-        });
+        setSearchFilters((prevState) => ({
+          ...prevState,
+          conditionName: [],
+        }));
       } else {
         let currentValues = [...searchFilters?.conditionName];
         if (currentValues?.includes(value)) {
@@ -254,14 +250,34 @@ const Inventories = () => {
         } else {
           currentValues.push(value);
         }
-        setSearchFilters((prevState) => {
-          return {
-            ...prevState,
-            conditionName: currentValues,
-          };
-        });
+        setSearchFilters((prevState) => ({
+          ...prevState,
+          conditionName: currentValues,
+        }));
       }
     }
+  };
+
+  // Nueva función para filtrar por estado
+  const handleStatusFilter = (value) => {
+    setSearchFilters((prevState) => {
+      let current = prevState.status || [];
+      if (value === 'all') {
+        // Si ya están todos seleccionados, quitar todos; de lo contrario, seleccionar todos
+        if (current.length === statusOptions.length) {
+          return { ...prevState, status: [] };
+        } else {
+          return { ...prevState, status: statusOptions };
+        }
+      } else {
+        if (current.includes(value)) {
+          current = current.filter((v) => v !== value);
+        } else {
+          current = [...current, value];
+        }
+        return { ...prevState, status: current };
+      }
+    });
   };
 
   const handleDeleteInventory = () => {
@@ -290,7 +306,7 @@ const Inventories = () => {
 
   const downloadInventoriesCSV = () => {
     const items = Object.keys(itemsToDownload);
-    if (items && items?.length > 0) {
+    if (items.length > 0) {
       let formattedString =
         'Nombre,Tipo,Marca,Número de serie,Número de activo,Fecha de recepción';
       for (let i = 0; i < items.length; i++) {
@@ -308,16 +324,13 @@ const Inventories = () => {
     Notifies('success', 'Inventarios actualizados');
   };
 
-  const handleDownloadZipImages = (selectedImages) => {
-    // Aquí recibes un array con { inventoryId, imageKey }
-    // Llama a tu servicio/endpoint para descargar en ZIP
-    // Ejemplo ficticio:
+  const handleDownloadZipImages = (selectedImages, isLowQuality = false) => {
     if (!selectedImages || selectedImages.length === 0) {
       Notifies('error', 'No hay imágenes para descargar.');
       return;
     }
-    downloadImagesAsZip(selectedImages);
-    Notifies('success', 'Iniciando descarga ZIP (demo)');
+    downloadImagesAsZip(selectedImages, isLowQuality);
+    Notifies('success', 'Iniciando descarga ZIP...');
   };
 
   const isCreatePermission = useCheckPermissions('create_inventories');
@@ -380,8 +393,12 @@ const Inventories = () => {
           setDeepSearch={handleDeepSearch}
           inventoryConditions={inventoryConditions}
           onRefreshData={handleGetChanges}
+          searchTerm={searchInput}
+          selectedStatuses={searchFilters.status} // nuevo
+          statusOptions={statusOptions} // nuevo
+          onCheckStatus={handleStatusFilter} // nuevo
         />
-        {/* esta es la vista tabla */}
+        {/* Vista tabla e imágenes */}
         {viewMode === 'table' ? (
           <>
             {inventories && !isPending ? (
@@ -428,7 +445,7 @@ const Inventories = () => {
                                         className="cursor-pointer text-purple-500 focus:ring-purple-500"
                                         onChange={() =>
                                           inventoriesToDownload(
-                                            inventory?.id,
+                                            inventory.id,
                                             inventory,
                                           )
                                         }
@@ -440,7 +457,13 @@ const Inventories = () => {
                                       />
                                     </T.Cell>
                                   );
-                                } else if (column.id === 'receptionDate') {
+                                } else if (
+                                  [
+                                    'receptionDate',
+                                    'createdAt',
+                                    'updatedAt',
+                                  ].includes(column.id)
+                                ) {
                                   content = parseToLocalDate(
                                     getNestedValue(inventory, column.id),
                                   );
@@ -573,6 +596,14 @@ const Inventories = () => {
                           value: inventory?.receptionDate
                             ? parseToLocalDate(inventory?.receptionDate)
                             : '',
+                        },
+                        createdAt: {
+                          key: 'F. de creación',
+                          value: parseToLocalDate(inventory?.createdAt),
+                        },
+                        updatedAt: {
+                          key: 'F. de actualización',
+                          value: parseToLocalDate(inventory?.updatedAt),
                         },
                         status: {
                           key: 'Estatus',

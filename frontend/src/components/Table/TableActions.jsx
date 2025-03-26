@@ -6,6 +6,7 @@ import { LuSearch } from 'react-icons/lu';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import { IoMdRefresh } from 'react-icons/io';
+import { GrStatusInfo } from 'react-icons/gr';
 
 const TableActions = ({
   handleSearchTerm,
@@ -16,6 +17,11 @@ const TableActions = ({
   setDeepSearch,
   filters,
   onRefreshData,
+  searchTerm,
+  // Nuevas props para filtrar por estado
+  selectedStatuses,
+  statusOptions,
+  onCheckStatus,
 }) => {
   const CustomDropdownItem = ({ name }) => {
     return (
@@ -36,17 +42,22 @@ const TableActions = ({
       </li>
     );
   };
+
   return (
     <div className="w-full flex flex-wrap gap-4 md:gap-2 justify-stretch">
       <div className="w-full flex flex-col md:flex-row gap-4 md:gap-2 justify-between">
         <div className="w-full md:w-[40vw]">
-          <form className="flex items-center">
+          <form
+            className="flex items-center"
+            onSubmit={(e) => e.preventDefault()}
+          >
             <div className="relative w-full">
               <TextInput
                 icon={LuSearch}
                 type="search"
                 placeholder="Buscar"
                 className="bg-transparent"
+                value={searchTerm}
                 onChange={handleSearchTerm}
                 style={{
                   backgroundColor: 'transparent',
@@ -96,6 +107,55 @@ const TableActions = ({
                       name={condition?.name}
                     />
                   ))}
+              </>
+            </Dropdown>
+          )}
+          {/* Nuevo dropdown para filtrar por estado */}
+          {statusOptions && (
+            <Dropdown
+              renderTrigger={() => (
+                <button className={getButtonClassNames('amber', false)}>
+                  <span className="mr-2">
+                    <GrStatusInfo size={18} />
+                  </span>
+                  Estado
+                </button>
+              )}
+              placement="left-start"
+              className="w-fit"
+              outline
+            >
+              <>
+                <div className="flex items-center px-4 py-2">
+                  <h2 className="text-sm font-semibold">Estado</h2>
+                </div>
+                <Dropdown.Divider />
+                <li
+                  className="flex items-center cursor-pointer hover:bg-neutral-100 px-4 py-1.5"
+                  onClick={() => onCheckStatus('all')}
+                >
+                  <span className="text-sm font-medium">
+                    {selectedStatuses.length === statusOptions.length
+                      ? 'Quitar todos'
+                      : 'Seleccionar todos'}
+                  </span>
+                </li>
+                <Dropdown.Divider />
+                {statusOptions.map((status) => (
+                  <li
+                    key={status}
+                    className="flex items-center cursor-pointer hover:bg-neutral-100 px-4 py-1.5"
+                    onClick={() => onCheckStatus(status)}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedStatuses.includes(status)}
+                      readOnly
+                      className="w-4 h-4 mr-2"
+                    />
+                    <span className="text-sm font-medium">{status}</span>
+                  </li>
+                ))}
               </>
             </Dropdown>
           )}

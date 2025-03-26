@@ -83,14 +83,13 @@ const InventoriesImagesView = ({ inventories = [], onDownloadZip }) => {
   /**
    * Maneja la descarga de las imágenes seleccionadas
    */
-  const handleDownloadZip = () => {
+  const handleDownloadZip = (isLowQuality = false) => {
     const imagesToDownload = getAllSelectedImages();
     if (imagesToDownload.length === 0) {
       alert('Selecciona al menos una imagen para descargar las imágenes.');
       return;
     }
-    // Llamamos a la función del padre (onDownloadZip) para hacer la lógica de descarga
-    onDownloadZip(imagesToDownload);
+    onDownloadZip(imagesToDownload, isLowQuality);
   };
 
   return (
@@ -124,9 +123,15 @@ const InventoriesImagesView = ({ inventories = [], onDownloadZip }) => {
           <ActionButtons
             extraActions={[
               {
+                label: 'Comprimir',
+                icon: RiFolderZipLine,
+                action: () => handleDownloadZip(true),
+                color: 'teal',
+              },
+              {
                 label: 'Descargar',
                 icon: RiFolderZipLine,
-                action: handleDownloadZip,
+                action: () => handleDownloadZip(false),
                 color: 'green',
               },
               {

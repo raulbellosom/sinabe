@@ -574,12 +574,13 @@ export const searchInventories = async (req, res) => {
   try {
     const {
       searchTerm,
-      sortBy = "createdAt",
-      order = "asc",
+      sortBy = "updatedAt",
+      order = "desc",
       page = 1,
       pageSize = 10,
       conditionName,
       deepSearch = [],
+      status,
     } = req.query;
 
     const validSortFields = [
@@ -602,7 +603,7 @@ export const searchInventories = async (req, res) => {
         activeNumber: "activeNumber",
         serialNumber: "serialNumber",
         comments: "comments",
-        customField: `customField.${customFieldName}`, // Mapeo dinámico
+        customField: `customField.${customFieldName}`,
       };
       return columnsMap[searchHeader] || null;
     };
@@ -672,6 +673,34 @@ export const searchInventories = async (req, res) => {
       return conditions.length > 0 ? { AND: conditions } : {};
     };
 
+    // Ampliamos la búsqueda por texto para incluir archivos y customFields
+    const textSearchConditions = searchTerm
+      ? {
+          OR: [
+            { model: { name: { contains: searchTerm } } },
+            { model: { brand: { name: { contains: searchTerm } } } },
+            { model: { type: { name: { contains: searchTerm } } } },
+            { activeNumber: { contains: searchTerm } },
+            { serialNumber: { contains: searchTerm } },
+            { comments: { contains: searchTerm } },
+            {
+              customField: {
+                some: {
+                  OR: [
+                    { value: { contains: searchTerm } },
+                    { customField: { name: { contains: searchTerm } } },
+                  ],
+                },
+              },
+            },
+          ],
+        }
+      : {};
+
+    const deepSearchConditions = buildDeepSearchConditions(
+      JSON?.parse(deepSearch)
+    );
+
     const orderField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
     const orderDirection = order === "desc" ? "desc" : "asc";
 
@@ -700,25 +729,15 @@ export const searchInventories = async (req, res) => {
       return obj;
     };
 
-    const textSearchConditions = searchTerm
-      ? {
-          OR: [
-            { model: { name: { contains: searchTerm } } },
-            { model: { brand: { name: { contains: searchTerm } } } },
-            { model: { type: { name: { contains: searchTerm } } } },
-            { activeNumber: { contains: searchTerm } },
-            { serialNumber: { contains: searchTerm } },
-            { comments: { contains: searchTerm } },
-          ],
-        }
-      : {};
-
-    const deepSearchConditions = buildDeepSearchConditions(
-      JSON?.parse(deepSearch)
-    );
-
     const skip = (page - 1) * pageSize;
     const take = parseInt(pageSize);
+
+    const statusFilter = Array.isArray(status)
+      ? status
+      : status
+      ? [status]
+      : [];
+
     const whereConditions = {
       ...textSearchConditions,
       ...deepSearchConditions,
@@ -736,6 +755,7 @@ export const searchInventories = async (req, res) => {
           },
         },
       }),
+      ...(statusFilter.length > 0 ? { status: { in: statusFilter } } : {}),
     };
 
     const inventories = await db.inventory.findMany({
@@ -757,6 +777,11 @@ export const searchInventories = async (req, res) => {
         },
         files: {
           where: { enabled: true },
+        },
+        customField: {
+          include: {
+            customField: true,
+          },
         },
       },
       orderBy: formSortBy(orderField, orderDirection),
