@@ -120,7 +120,7 @@ const CreateInventory = () => {
       <div className="flex flex-col-reverse md:flex-row items-center gap-4 w-full pb-1">
         <div className="w-full h-full rounded-md flex items-center text-purple-500">
           <FaClipboardList size={24} className="mr-4" />
-          <h1 className="text-2xl font-bold">Crear Inventario</h1>
+          <h1 className="md:text-2xl font-bold">Crear Inventario</h1>
         </div>
         <div className="flex justify-center gap-2 w-full md:w-fit">
           <ActionButtons
@@ -141,7 +141,7 @@ const CreateInventory = () => {
           />
         </div>
       </div>
-      <p className="mb-4 text-gray-800">
+      <p className="text-xs md:text-base mb-4 text-gray-800">
         Llena el formulario para crear un nuevo inventario. Los campos marcados
         con * son obligatorios.
       </p>

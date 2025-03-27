@@ -6,6 +6,7 @@ import { FaCheckSquare, FaListUl } from 'react-icons/fa';
 import { MdGridOn } from 'react-icons/md';
 import ActionButtons from '../../../components/ActionButtons/ActionButtons';
 import { RiFolderZipLine } from 'react-icons/ri';
+import { BsBadgeHdFill } from 'react-icons/bs';
 
 /**
  * @param {Array} inventories - Lista de inventarios (cada inventario con su "id", "model", "images", etc.)
@@ -129,8 +130,8 @@ const InventoriesImagesView = ({ inventories = [], onDownloadZip }) => {
                 color: 'teal',
               },
               {
-                label: 'Descargar',
-                icon: RiFolderZipLine,
+                label: 'HD',
+                icon: BsBadgeHdFill,
                 action: () => handleDownloadZip(false),
                 color: 'green',
               },
@@ -182,7 +183,7 @@ const InventoriesImagesView = ({ inventories = [], onDownloadZip }) => {
                 </div>
 
                 {/* Grid de imágenes */}
-                <div className="flex flex-wrap gap-8">
+                <div className="flex flex-wrap gap-3 md:gap-8">
                   {invImages.map((image, index) => {
                     const key = getImageKey(image);
                     const isSelected =
@@ -192,7 +193,7 @@ const InventoriesImagesView = ({ inventories = [], onDownloadZip }) => {
                         {/* Usamos ImageViewer para mostrar la imagen (con lightbox y zoom) */}
                         <ImageViewer
                           images={[image]}
-                          containerClassNames="w-full h-36 md:h-44 object-cover rounded"
+                          containerClassNames="w-full h-32 md:h-44 object-cover rounded"
                           // Puedes añadir otras props si deseas
                         />
 
@@ -216,7 +217,7 @@ const InventoriesImagesView = ({ inventories = [], onDownloadZip }) => {
         </div>
       ) : (
         // Modo todas las imágenes en una sola cuadrícula
-        <div className="flex flex-wrap gap-8">
+        <div className="flex flex-wrap gap-4 md:gap-8">
           {inventories?.flatMap((inventory) => {
             const invImages = inventory.images || [];
             return invImages.map((image, index) => {
@@ -229,7 +230,7 @@ const InventoriesImagesView = ({ inventories = [], onDownloadZip }) => {
                 >
                   <ImageViewer
                     images={[image]}
-                    containerClassNames="w-full h-36 md:h-44 object-cover rounded"
+                    containerClassNames="w-full h-[88px] md:h-44 object-cover rounded"
                   />
                   <div className="absolute top-2 right-2">
                     <Checkbox

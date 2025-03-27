@@ -105,6 +105,7 @@ const ImagePicker = ({
           accept={props.accept || 'image/*'}
           className="hidden"
           hidden
+          capture="environment"
           onChange={handleFileChange}
         />
         {field.value && field.value.length > 0 && (

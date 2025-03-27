@@ -23,10 +23,10 @@ const InventoryProperty = ({ label, value, icon: Icon, onSearch }) => {
         onDoubleClick={() => handleDoubleClick()}
         className="group flex flex-col h-full text-nowrap"
       >
-        <h2 className="text-sm 2xl:text-base font-semibold h-7">{label}</h2>
+        <h2 className="text-sm 2xl:text-base font-semibold">{label}</h2>
         <p
           className={classNames(
-            'relative text-xs md:text-sm 2xl:text-base p-1.5 rounded-md text-white flex items-center gap-2 justify-start min-h-6 w-full',
+            'relative text-xs font-semibold md:text-sm 2xl:text-base p-1.5 rounded-md text-white flex items-center gap-2 justify-start min-h-6 w-full',
             {
               'bg-mycad-primary': value === 'ALTA',
               'bg-mycad-danger': value === 'BAJA',
@@ -56,9 +56,9 @@ const InventoryProperty = ({ label, value, icon: Icon, onSearch }) => {
   return (
     <div
       onDoubleClick={() => handleDoubleClick()}
-      className="group flex flex-col h-full text-nowrap"
+      className="group flex flex-col h-full"
     >
-      <h2 className="text-sm 2xl:text-base font-semibold h-7">{label}</h2>
+      <h2 className="text-sm 2xl:text-base font-semibold">{label}</h2>
       <p className="relative text-xs md:text-sm 2xl:text-base p-1.5 flex items-center gap-2 justify-start min-h-6 border-b border-neutral-100 pb-1">
         {Icon && (
           <i>

@@ -6,8 +6,15 @@ import ModalViewer from '../../components/Modals/ModalViewer';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LuFileSpreadsheet } from 'react-icons/lu';
-import { FaClipboardList, FaEdit, FaEye, FaTable } from 'react-icons/fa';
-import { Checkbox, Table as T } from 'flowbite-react';
+import {
+  FaClipboardList,
+  FaEdit,
+  FaEye,
+  FaRegFile,
+  FaTable,
+  FaTrash,
+} from 'react-icons/fa';
+import { Checkbox, Dropdown, Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchInventories } from '../../services/api';
 import Card from '../../components/Card/Card';
@@ -36,6 +43,7 @@ import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
 import InventoriesImagesView from './views/InventoriesImagesView';
 import { downloadImagesAsZip } from '../../utils/downloadImagesAsZip';
+import { BsThreeDotsVertical } from 'react-icons/bs';
 
 const formatInventory = (inventoryData) => {
   const { model, receptionDate, activeNumber, serialNumber } = inventoryData;
@@ -54,7 +62,6 @@ const Inventories = () => {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isOpenModalUpload, setIsOpenModalUpload] = useState(false);
   const [inventoryId, setInventoryId] = useState(null);
-  const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const [refreshData, setRefreshData] = useState(false);
   const [viewMode, setViewMode] = useState('table');
   const [searchParams, setSearchParams] = useSearchParams();
@@ -110,6 +117,17 @@ const Inventories = () => {
         searchTerm: valueParam,
         searchCriteria: 'equals',
         customFieldName,
+      };
+      setSearchFilters((prevState) => ({
+        ...prevState,
+        deepSearch: [filter],
+      }));
+    }
+    if (fieldParam && !fieldParam.startsWith('customField:')) {
+      const filter = {
+        searchHeader: fieldParam,
+        searchTerm: valueParam,
+        searchCriteria: 'equals',
       };
       setSearchFilters((prevState) => ({
         ...prevState,
@@ -335,9 +353,27 @@ const Inventories = () => {
 
   const isCreatePermission = useCheckPermissions('create_inventories');
 
+  const collapsedActions = (inventory) => [
+    {
+      label: 'Editar',
+      icon: FaEdit,
+      color: 'yellow',
+      action: () => navigate(`/inventories/edit/${inventory.id}`),
+    },
+    {
+      label: 'Eliminar',
+      icon: FaTrash,
+      color: 'red',
+      action: () => {
+        setIsOpenModal(true);
+        setInventoryId(inventory.id);
+      },
+    },
+  ];
+
   return (
     <>
-      <section className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-4 antialiased">
+      <section className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
         <TableHeader
           icon={FaClipboardList}
           title="Inventario"
@@ -522,28 +558,65 @@ const Inventories = () => {
                                     </T.Cell>
                                   );
                                 }
+                                if (column.id === 'comments') {
+                                  return (
+                                    <T.Cell
+                                      key={column.id}
+                                      className="whitespace-wrap text-wrap py-2 min-w-72 max-w-72 truncate"
+                                    >
+                                      {content?.substring(0, 50)}
+                                    </T.Cell>
+                                  );
+                                }
+                                if (column.id === 'files') {
+                                  return (
+                                    <T.Cell key={column.id}>
+                                      <span className="w-fit p-2 px-4 flex justify-center items-center gap-2 bg-sky-50 rounded-md">
+                                        <FaRegFile className="text-neutral-500" />
+                                        {content?.length}
+                                      </span>
+                                    </T.Cell>
+                                  );
+                                }
                                 if (column.id === 'actions') {
                                   return (
                                     <T.Cell className="py-2" key={column.id}>
                                       <div className="flex justify-center items-center gap-2">
-                                        <LinkButton
-                                          route={`/inventories/edit/${inventory.id}`}
-                                          label="Editar"
-                                          icon={FaEdit}
-                                          color="yellow"
-                                        />
                                         <LinkButton
                                           route={`/inventories/view/${inventory.id}`}
                                           label="Ver"
                                           icon={FaEye}
                                           color="cyan"
                                         />
-                                        <ActionButtons
-                                          onRemove={() => {
-                                            setIsOpenModal(true);
-                                            setInventoryId(inventory.id);
-                                          }}
-                                        />
+                                        {collapsedActions(inventory) && (
+                                          <Dropdown
+                                            renderTrigger={() => (
+                                              <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
+                                                <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                                              </button>
+                                            )}
+                                            dismissOnClick={false}
+                                            inline
+                                            arrowIcon={null}
+                                            placement="right"
+                                            className="md:w-52"
+                                          >
+                                            {collapsedActions(inventory).map(
+                                              (action, index) => (
+                                                <Dropdown.Item
+                                                  key={index}
+                                                  className="min-w-36 min-h-12"
+                                                  onClick={() =>
+                                                    action?.action()
+                                                  }
+                                                  icon={action?.icon}
+                                                >
+                                                  <span>{action?.label}</span>
+                                                </Dropdown.Item>
+                                              ),
+                                            )}
+                                          </Dropdown>
+                                        )}
                                       </div>
                                     </T.Cell>
                                   );
@@ -577,11 +650,20 @@ const Inventories = () => {
                           key: 'Marca y Tipo',
                           value: `${inventory?.model?.brand?.name} ${inventory?.model?.type?.name}`,
                         },
+                        status: {
+                          key: 'Estado',
+                          value:
+                            inventory?.status === 'PROPUESTA'
+                              ? 'PROPUESTA DE BAJA'
+                              : inventory.status,
+                        },
                         tags: {
                           key: 'Condiciones',
-                          value: inventory?.conditions?.map(
-                            (condition) => condition?.condition?.name,
-                          ),
+                          value: inventory?.conditions?.map((condition, i) => (
+                            <span key={condition.id || i}>
+                              {condition?.condition?.name}
+                            </span>
+                          )),
                         },
                         serialNumber: {
                           key: 'Número de serie',
@@ -605,42 +687,51 @@ const Inventories = () => {
                           key: 'F. de actualización',
                           value: parseToLocalDate(inventory?.updatedAt),
                         },
-                        status: {
-                          key: 'Estatus',
-                          value:
-                            inventory?.status === 'PROPUESTA'
-                              ? 'PROPUESTA DE BAJA'
-                              : inventory.status,
-                        },
                         actions: {
                           key: 'Acciones',
                           value: (
-                            <ActionButtons
-                              extraActions={[
-                                {
-                                  label: 'Ver',
-                                  icon: FaEye,
-                                  color: 'cyan',
-                                  action: () =>
-                                    navigate(
-                                      `/inventories/view/${inventory.id}`,
+                            <div className="flex items-center justify-end gap-3">
+                              <ActionButtons
+                                extraActions={[
+                                  {
+                                    label: 'Ver',
+                                    icon: FaEye,
+                                    color: 'cyan',
+                                    action: () =>
+                                      navigate(
+                                        `/inventories/view/${inventory.id}`,
+                                      ),
+                                  },
+                                ]}
+                              />
+                              {collapsedActions(inventory) && (
+                                <Dropdown
+                                  renderTrigger={() => (
+                                    <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
+                                      <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                                    </button>
+                                  )}
+                                  dismissOnClick={false}
+                                  inline
+                                  arrowIcon={null}
+                                  placement="right"
+                                  className="md:w-52"
+                                >
+                                  {collapsedActions(inventory).map(
+                                    (action, index) => (
+                                      <Dropdown.Item
+                                        key={index}
+                                        className="min-w-36 min-h-12"
+                                        onClick={() => action?.action()}
+                                        icon={action?.icon}
+                                      >
+                                        <span>{action?.label}</span>
+                                      </Dropdown.Item>
                                     ),
-                                },
-                                {
-                                  label: 'Editar',
-                                  icon: FaEdit,
-                                  color: 'yellow',
-                                  action: () =>
-                                    navigate(
-                                      `/inventories/edit/${inventory.id}`,
-                                    ),
-                                },
-                              ]}
-                              onRemove={() => {
-                                setIsOpenModal(true);
-                                setInventoryId(inventory.id);
-                              }}
-                            />
+                                  )}
+                                </Dropdown>
+                              )}
+                            </div>
                           ),
                         },
                       };

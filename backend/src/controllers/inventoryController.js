@@ -570,6 +570,26 @@ export const deleteInventory = async (req, res) => {
   }
 };
 
+export const checkSerialNumber = async (req, res) => {
+  const { serialNumber, inventoryId } = req.body;
+  const query = {
+    serialNumber,
+    enabled: true,
+  };
+
+  if (inventoryId) {
+    query.id = { not: inventoryId };
+  }
+
+  const existingInventory = await db.inventory.findFirst({ where: query });
+
+  if (existingInventory) {
+    res.json({ exists: true });
+  } else {
+    res.json({ exists: false });
+  }
+};
+
 export const searchInventories = async (req, res) => {
   try {
     const {
@@ -593,6 +613,7 @@ export const searchInventories = async (req, res) => {
       "serialNumber",
       "updatedAt",
       "receptionDate",
+      "comments",
     ];
 
     const mapSearchHeaderToColumn = (searchHeader, customFieldName) => {
@@ -795,19 +816,18 @@ export const searchInventories = async (req, res) => {
 
     const totalPages = Math.ceil(totalRecords / pageSize);
 
-    let inventoriesData = {};
-    if (inventories) {
-      inventoriesData = inventories.map((inventory) => {
-        inventory.receptionDate
-          ? (inventory.receptionDate = inventory.receptionDate
-              .toISOString()
-              .split("T")[0])
-          : null;
-        return inventory;
-      });
-    }
+    // let inventoriesData = {};
+    // if (inventories) {
+    //   inventoriesData = inventories.map((inventory) => {
+    //     inventory.receptionDate
+    //       ? (inventory.receptionDate =
+    //           inventory.receptionDate.toLocaleDateString("en-GB"))
+    //       : null;
+    //     return inventory;
+    //   });
+    // }
     res.json({
-      data: inventoriesData,
+      data: inventories,
       pagination: {
         totalRecords,
         totalPages,

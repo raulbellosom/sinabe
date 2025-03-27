@@ -207,7 +207,7 @@ const AutocompleteInput = ({
           {...field}
           type="text"
           className={classNames(
-            'w-full py-2 px-3 border rounded-md focus:outline-none focus:ring',
+            'w-full text-xs md:text-sm py-2 px-3 border rounded-md focus:outline-none focus:ring',
             {
               'border-neutral-500 focus:border-blue-500': !(
                 touched[field.name] && errors[field.name]

@@ -232,6 +232,7 @@ const UpdateInventory = () => {
             customFields={customFields}
             createCustomField={createField}
             currentCustomFields={initialValues.customFields}
+            inventoryId={id}
           />
         )}
       </div>

@@ -1,8 +1,10 @@
 export const parseToLocalDate = (date) => {
   if (!date) return '';
   const newDate = new Date(date);
-  const formattedDate = newDate.toLocaleDateString('en-GB')?.split('T')[0];
-  return formattedDate;
+  const day = newDate.getUTCDate().toString().padStart(2, '0');
+  const month = (newDate.getUTCMonth() + 1).toString().padStart(2, '0');
+  const year = newDate.getUTCFullYear();
+  return `${day}/${month}/${year}`;
 };
 
 export const parseToLocalDateTime = (date) => {

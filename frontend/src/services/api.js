@@ -338,6 +338,20 @@ export const deleteInventory = async (inventoryId) => {
   }
 };
 
+// api.js
+export const checkSerialNumber = async (serialNumber, inventoryId) => {
+  try {
+    const response = await api.post('/inventories/checkSerialNumber', {
+      serialNumber,
+      inventoryId,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const searchInventories = async ({
   searchTerm,
   sortBy,
@@ -345,7 +359,7 @@ export const searchInventories = async ({
   page,
   pageSize,
   conditionName,
-  deepSearch,
+  deepSearch = [],
   status,
   signal,
 }) => {

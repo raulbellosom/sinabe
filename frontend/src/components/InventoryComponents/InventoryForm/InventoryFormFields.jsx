@@ -13,6 +13,7 @@ import { TbNumber123 } from 'react-icons/tb';
 import CustomFieldManager from '../../Inputs/CustomFieldManager';
 import AutocompleteInput from '../../Inputs/AutoCompleteInput';
 import { HiCubeTransparent } from 'react-icons/hi';
+import SerialNumberField from '../../Inputs/SerialNumberField';
 
 const InventoryFormFields = ({
   inventoryModels,
@@ -20,6 +21,7 @@ const InventoryFormFields = ({
   customFields,
   createCustomField,
   currentCustomFields,
+  inventoryId,
 }) => {
   return (
     <div className="grid grid-cols-12 gap-4 lg:gap-4">
@@ -33,7 +35,7 @@ const InventoryFormFields = ({
               lineHeight: '0.1em',
               margin: '10px 0 20px',
             }}
-            className="col-span-12 text-base font-semibold"
+            className="col-span-12 text-sm md:text-base font-semibold"
           >
             <span style={{ background: '#fff', padding: '0 10px' }}>
               Información General del Inventario
@@ -55,10 +57,11 @@ const InventoryFormFields = ({
           <Field
             name="serialNumber"
             id="serialNumber"
-            component={TextInput}
+            component={SerialNumberField}
             icon={TbNumber123}
             label="Número de Serie"
-            className="col-span-6 md:col-span-4"
+            className="col-span-12 md:col-span-4"
+            inventoryId={inventoryId}
           />
           <Field
             name="activeNumber"
@@ -66,7 +69,7 @@ const InventoryFormFields = ({
             component={TextInput}
             icon={AiOutlineFieldNumber}
             label="Número de Activo"
-            className="col-span-6 md:col-span-4"
+            className="col-span-12 md:col-span-4"
           />
           <Field
             name="receptionDate"
@@ -118,7 +121,7 @@ const InventoryFormFields = ({
               lineHeight: '0.1em',
               margin: '10px 0 20px',
             }}
-            className="col-span-12 text-base font-semibold pt-4"
+            className="col-span-12 text-sm md:text-base font-semibold pt-4"
           >
             <span style={{ background: '#fff', padding: '0 10px' }}>
               Información Adicional
@@ -142,7 +145,7 @@ const InventoryFormFields = ({
             lineHeight: '0.1em',
             margin: '10px 0 20px',
           }}
-          className="col-span-12 text-base font-semibold"
+          className="col-span-12 text-sm md:text-base font-semibold"
         >
           <span style={{ background: '#fff', padding: '0 10px' }}>
             Recursos del Inventario
@@ -155,7 +158,8 @@ const InventoryFormFields = ({
             component={ImagePicker}
             label="Imagenes"
             multiple
-            accept="image/.png,.jpg,.jpeg"
+            capture="environment"
+            accept="image/.png,.jpg,.jpeg,.webp"
           />
           <Field
             name="files"

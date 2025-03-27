@@ -15,6 +15,7 @@ const InventoryForm = forwardRef(
       getFieldValues,
       createCustomField,
       currentCustomFields,
+      inventoryId,
     },
     ref,
   ) => {
@@ -45,6 +46,7 @@ const InventoryForm = forwardRef(
             getFieldValues={getFieldValues}
             createCustomField={createCustomField}
             currentCustomFields={currentCustomFields}
+            inventoryId={inventoryId}
           />
         </Form>
       </FormikProvider>

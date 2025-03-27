@@ -45,6 +45,13 @@ export const inventoryColumns = [
     type: 'text',
   },
   {
+    id: 'comments',
+    value: 'Comentarios',
+    classes: 'w-24',
+    order: 'asc',
+    type: 'text',
+  },
+  {
     id: 'receptionDate',
     value: 'F. Recepción',
     classes: 'w-auto',
@@ -70,6 +77,12 @@ export const inventoryColumns = [
     value: 'Estatus',
     classes: 'w-fit',
     order: 'asc',
+  },
+  {
+    id: 'files',
+    value: 'Archivos',
+    classes: 'w-20',
+    type: 'text',
   },
   {
     id: 'actions',

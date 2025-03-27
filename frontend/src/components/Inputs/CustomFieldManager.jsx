@@ -130,16 +130,18 @@ const CustomFieldManager = ({
                   placeholder="Selecciona o crea un valor"
                   className="w-full"
                 />
-                <ActionButtons
-                  extraActions={[
-                    {
-                      action: () => handleFieldRemove(field.value),
-                      color: 'red',
-                      icon: MdDelete,
-                      type: 'button',
-                    },
-                  ]}
-                />
+                <div className="w-fit">
+                  <ActionButtons
+                    extraActions={[
+                      {
+                        action: () => handleFieldRemove(field.value),
+                        color: 'red',
+                        icon: MdDelete,
+                        type: 'button',
+                      },
+                    ]}
+                  />
+                </div>
               </div>
               {errors.customFields && errors.customFields[index] && (
                 <div className="text-red-500 text-xs">

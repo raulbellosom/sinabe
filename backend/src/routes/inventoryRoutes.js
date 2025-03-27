@@ -7,6 +7,7 @@ import {
   updateInventory,
   deleteInventory,
   searchInventories,
+  checkSerialNumber,
 } from "../controllers/inventoryController.js";
 import {
   getInventoryTypes,
@@ -61,6 +62,7 @@ router
     createInventory
   );
 router.route("/migrate").post(protect, migrateInventory);
+router.route("/checkSerialNumber").post(protect, checkSerialNumber);
 router
   .route("/inventoryTypes")
   .get(protect, getInventoryTypes)

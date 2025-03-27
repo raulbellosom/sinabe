@@ -157,13 +157,13 @@ const ViewInventory = () => {
   };
 
   return (
-    <div className="h-full bg-white p-4 rounded-md">
-      <div className="w-full flex flex-col-reverse lg:flex-row items-center justify-between gap-4 pb-1">
-        <div className="w-full rounded-md flex items-center justify-center lg:justify-start text-purple-500">
+    <div className="h-full bg-white p-3 rounded-md">
+      <div className="w-full flex flex-col-reverse lg:flex-row items-center justify-between gap-4 pb-2">
+        <div className="w-full rounded-md flex items-center md:justify-center lg:justify-start text-purple-500 pb-4 md:pb-0">
           <FaClipboardList size={24} className="mr-4" />
-          <h1 className="text-2xl font-bold">Detalles del Inventario</h1>
+          <h1 className="md:text-2xl font-bold">Detalles del Inventario</h1>
         </div>
-        <div className="w-full flex items-center justify-center lg:justify-end gap-2">
+        <div className="w-full grid grid-cols-2 md:flex items-center justify-center lg:justify-end gap-2">
           <ActionButtons
             onEdit={onEdit}
             onCreate={onCreate}
@@ -205,7 +205,7 @@ const ViewInventory = () => {
                 return (
                   <div
                     key={key}
-                    className="col-span-6 md:col-span-4 lg:col-span-3 last:col-span-12"
+                    className="col-span-12 md:col-span-4 lg:col-span-3 last:col-span-12"
                   >
                     <InventoryProperty
                       onSearch={() => {

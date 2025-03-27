@@ -4,6 +4,7 @@ import { HiOutlineMenuAlt1 } from 'react-icons/hi';
 import Logo from '../../assets/logo/sinabe_icon.png';
 import ImageViewer from '../ImageViewer/ImageViewer';
 import classNames from 'classnames';
+import GlobalInventorySearch from '../InventoryComponents/GlobalInventorySearch';
 
 const Navbar = ({
   collapsed,
@@ -27,17 +28,21 @@ const Navbar = ({
       >
         <HiOutlineMenuAlt1 className="text-2xl cursor-pointer" />
       </Button>
+      <div className="flex items-center gap-4 w-full px-4">
+        <GlobalInventorySearch />
+      </div>
+
       {!broken && (
         <div className="hidden w-full md:flex justify-between items-center px-4">
           <div>
             {/* get date */}
-            <p className="text-sm font-semibold text-purple-500 truncate">
+            {/* <p className="text-sm font-semibold text-purple-500 truncate">
               {new Date().toLocaleDateString('es-MX', {
                 day: '2-digit',
                 month: 'long',
                 year: 'numeric',
               })}
-            </p>
+            </p> */}
           </div>
           <div
             className={classNames(
