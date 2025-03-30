@@ -69,7 +69,7 @@ export const getInventoryById = async (req, res) => {
     const canViewSelf = permissions.includes("view_self_inventories");
 
     const inventory = await db.inventory.findUnique({
-      where: { id },
+      where: { id, enabled: true },
       include: {
         createdBy: {
           select: { id: true, firstName: true, lastName: true, email: true },

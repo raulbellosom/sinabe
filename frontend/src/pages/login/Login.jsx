@@ -28,8 +28,25 @@ const Login = () => {
       password: Yup.string().required('La contraseña es invalida'),
     }),
     onSubmit: async (values) => {
-      await login(values);
-      navigate('/dashboard');
+      const res = await login(values);
+      const permissionsMap = {
+        view_dashboard: '/dashboard',
+        view_inventories: '/inventories',
+        view_users: '/users',
+        view_roles: '/roles',
+        view_catalogs: '/catalogs',
+        view_account: '/account-settings',
+      };
+
+      const matchedPermission = Object.keys(permissionsMap).find((permission) =>
+        res?.user?.authPermissions?.some(
+          (userPermission) => userPermission === permission,
+        ),
+      );
+
+      if (matchedPermission) {
+        navigate(permissionsMap[matchedPermission]);
+      }
     },
   });
 

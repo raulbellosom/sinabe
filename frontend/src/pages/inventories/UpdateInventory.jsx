@@ -17,6 +17,8 @@ import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import { FaClipboardList, FaSave } from 'react-icons/fa';
 import withPermission from '../../utils/withPermissions';
 import { useCustomFieldContext } from '../../context/CustomFieldContext';
+import NotFound from '../notFound/NotFound';
+import { ThreeCircles } from 'react-loader-spinner';
 
 const UpdateInventory = () => {
   const formRef = useRef(null);
@@ -57,6 +59,7 @@ const UpdateInventory = () => {
     refetch,
     isFetching,
     isPending,
+    error,
   } = useQuery({
     queryKey: ['inventory', id],
     queryFn: ({ signal }) => getInventory({ id, signal }),
@@ -178,6 +181,30 @@ const UpdateInventory = () => {
       formRef.current.submitForm();
     }
   };
+
+  if (isPending) {
+    return (
+      <div className="h-full bg-white p-3 rounded-md">
+        <div className="flex flex-col items-center justify-center h-full">
+          <ThreeCircles
+            visible={true}
+            height="100"
+            width="100"
+            color="#7e3af2"
+            ariaLabel="three-circles-loading"
+            wrapperStyle={{}}
+            wrapperclassName=""
+          />
+          <p className="text-gray-500 text-lg mt-4">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <NotFound />;
+  }
+
   return (
     <>
       <div className="h-full bg-white p-4 rounded-md">

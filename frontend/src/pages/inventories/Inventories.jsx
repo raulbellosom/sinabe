@@ -629,9 +629,6 @@ const Inventories = () => {
                                                         action?.action()
                                                       }
                                                       icon={action?.icon}
-                                                      disabled={
-                                                        action?.disabled
-                                                      }
                                                     >
                                                       <span>
                                                         {action?.label}
@@ -755,7 +752,6 @@ const Inventories = () => {
                                             className="min-w-36 min-h-12"
                                             onClick={() => action?.action()}
                                             icon={action?.icon}
-                                            disabled={action?.disabled}
                                           >
                                             <span>{action?.label}</span>
                                           </Dropdown.Item>

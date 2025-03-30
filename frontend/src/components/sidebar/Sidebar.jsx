@@ -327,7 +327,7 @@ const Sidebar = ({ children }) => {
                   )}
                 </SubMenu>
               )}
-              {isAccountPermission && (
+              {isAccountPermission.hasPermission && (
                 <MenuItem
                   component={<Link to={'/account-settings'} />}
                   active={isActivePath('/account-settings')}

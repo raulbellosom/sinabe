@@ -29,6 +29,7 @@ import QRCodeGenerator from '../../components/QRGenerator/QRGenerator';
 import { BsQrCodeScan } from 'react-icons/bs';
 import ModalViewer from '../../components/Modals/ModalViewer';
 import NotFound from '../notFound/NotFound';
+import { ThreeCircles } from 'react-loader-spinner';
 const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
 
 const ViewInventory = () => {
@@ -157,6 +158,42 @@ const ViewInventory = () => {
       img instanceof File ? URL.createObjectURL(img) : `${API_URL}/${img.url}`;
     navigator.clipboard.writeText(imgURL);
   };
+
+  if (isPending) {
+    return (
+      <div className="h-full bg-white p-3 rounded-md">
+        <div className="flex flex-col items-center justify-center h-full">
+          {/* <svg
+            className="animate-spin h-10 w-10 text-purple-500"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" className="opacity-25" />
+            <path d="M12 2a10 10 0 0 1 0 20" className="opacity-75" />
+          </svg> */}
+          <ThreeCircles
+            visible={true}
+            height="100"
+            width="100"
+            color="#7e3af2"
+            ariaLabel="three-circles-loading"
+            wrapperStyle={{}}
+            wrapperclassName=""
+          />
+          <p className="text-gray-500 text-lg mt-4">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <NotFound />;
+  }
 
   return (
     <div className="h-full bg-white p-3 rounded-md">
