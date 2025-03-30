@@ -11,6 +11,8 @@ const ModelForm = ({
   inventoryBrands,
   inventoryTypes,
   isUpdate = false,
+  createBrand,
+  createType,
 }) => {
   const formik = useFormik({
     enableReinitialize: true,
@@ -26,6 +28,8 @@ const ModelForm = ({
         <ModelFormFields
           inventoryBrands={inventoryBrands}
           inventoryTypes={inventoryTypes}
+          createBrand={createBrand}
+          createType={createType}
         />
         <div className="flex justify-end items-center space-x-4 pt-4">
           <Button type="button" color="gray" onClick={() => formik.resetForm()}>

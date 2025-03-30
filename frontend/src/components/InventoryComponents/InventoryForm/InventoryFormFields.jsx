@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Field, FieldArray } from 'formik';
+import React from 'react';
+import { Field } from 'formik';
 import TextInput from '../../Inputs/TextInput';
 import SelectInput from '../../Inputs/SelectInput';
 import DateInput from '../../Inputs/DateInput';
@@ -54,6 +54,8 @@ const InventoryFormFields = ({
             }))}
             className="col-span-12 md:col-span-8"
             isClearable
+            allowOther
+            onOtherSelected={onOtherSelected}
           />
           <Field
             name="serialNumber"

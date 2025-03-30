@@ -17,14 +17,20 @@ const Card = ({ data = {}, showImage = false }) => {
       >
         <div className="bg-white">
           <div className="w-full flex gap-3">
-            {showImage && data.image && (
-              <div className="w-24 h-24">
-                <ImageViewer
-                  containerClassNames={'h-24 w-24'}
-                  images={[data?.image?.value]}
-                />
-              </div>
-            )}
+            {showImage &&
+              data.image &&
+              (data?.image?.value ? (
+                <div className="w-24 h-24">
+                  <ImageViewer
+                    containerClassNames={'h-24 w-24'}
+                    images={[data?.image?.value]}
+                  />
+                </div>
+              ) : (
+                <div className="w-24 h-24 bg-gray-200 rounded-md flex items-center justify-center">
+                  <p className="text-gray-500 text-sm">Sin imagen</p>
+                </div>
+              ))}
             <div className="flex flex-col">
               {Object.keys(data).map((key) => {
                 if (key === 'title') {

@@ -595,6 +595,7 @@ export const getInventoryBrand = async (inventoryBrandId) => {
 };
 
 export const createInventoryBrand = async (inventoryBrand) => {
+  console.log(inventoryBrand);
   try {
     const response = await api.post(
       `/inventories/inventoryBrands`,

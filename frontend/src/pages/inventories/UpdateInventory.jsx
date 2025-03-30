@@ -32,6 +32,8 @@ const UpdateInventory = () => {
     inventoryTypes,
     inventoryBrands,
     inventoryModels,
+    createInventoryBrand,
+    createInventoryType,
   } = useCatalogContext();
 
   const [initialValues, setInitialValues] = useState({
@@ -278,6 +280,9 @@ const UpdateInventory = () => {
           initialValues={newModelValue}
           inventoryBrands={inventoryBrands}
           inventoryTypes={inventoryTypes}
+          createBrand={createInventoryBrand}
+          createType={createInventoryType}
+          isUpdate={true}
         />
       </ModalForm>
     </>

@@ -23,9 +23,14 @@ const InventoryForm = forwardRef(
       enableReinitialize: true,
       initialValues: initialValues,
       validationSchema: InventoryFormSchema,
-      onSubmit: (values, actions) => {
-        onSubmit(values, actions);
-        actions.setValues(initialValues);
+      onSubmit: async (values, actions) => {
+        try {
+          console.log('entre aqui');
+          await onSubmit(values, actions);
+          // actions.resetForm();
+        } catch (error) {
+          actions.setSubmitting(false);
+        }
       },
     });
 

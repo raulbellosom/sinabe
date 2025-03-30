@@ -23,9 +23,7 @@ const Dropdown = ({
           className={classNames(
             'py-2 px-4 text-sm cursor-pointer flex justify-between items-center border-b border-neutral-200 transition ease-in-out duration-100',
             {
-              // Si es la opción seleccionada, se destaca
               'bg-blue-500 text-white': selectedOption?.value === option.value,
-              // Si es la opción resaltada (navegación con flechas) y no está seleccionada
               'bg-gray-200':
                 i === highlightedIndex &&
                 selectedOption?.value !== option.value,
@@ -53,12 +51,14 @@ const AutocompleteInput = ({
   icon: Icon,
   disabled,
   isClearable,
+  // Nuevas props para la opción "Otro"
+  allowOther, // Boolean: si es true, se muestra la opción "Otro"
+  onOtherSelected, // Función a llamar cuando se selecciona "Otro"
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
-  // Estado para controlar el índice resaltado para navegación por teclado
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef(null);
 
@@ -71,6 +71,13 @@ const AutocompleteInput = ({
   }, [field.value, options]);
 
   useEffect(() => {
+    if (!field.value) {
+      setInputValue('');
+      setSelectedOption(null);
+    }
+  }, [field.value]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (inputRef.current && !inputRef.current.contains(event.target)) {
         setShowDropdown(false);
@@ -78,7 +85,6 @@ const AutocompleteInput = ({
         if (!selectedOption && inputValue) {
           setFieldValue(field.name, inputValue);
         }
-        // Resetea el índice resaltado cuando se cierra el dropdown
         setHighlightedIndex(-1);
       }
     };
@@ -89,40 +95,53 @@ const AutocompleteInput = ({
     };
   }, []);
 
-  // Normalizar cadenas (remueve acentos)
   const normalizeString = (str) =>
     str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-  // Filtrar opciones
+  // Filtrar opciones y agregar la opción "Otro" si corresponde
   const filtered = useMemo(() => {
-    return options?.filter((option) =>
+    const filteredList = options?.filter((option) =>
       normalizeString(option.label)
         .toLowerCase()
         .includes(inputValue.toLowerCase()),
     );
-  }, [inputValue, options]);
+
+    // Si allowOther es true, se agrega la opción "Otro" al final de la lista
+    if (allowOther) {
+      filteredList.push({
+        label: 'Otro',
+        value: 'otro',
+        isOther: true, // Propiedad para identificar la opción "Otro"
+      });
+    }
+    return filteredList;
+  }, [inputValue, options, allowOther]);
 
   useEffect(() => {
     setFilteredOptions(filtered);
-    // Cada vez que cambian las opciones filtradas, resetea el índice resaltado
     setHighlightedIndex(-1);
   }, [filtered]);
 
-  // Manejadores de eventos
   const handleInputChange = (e) => {
     const value = e.target.value;
     setInputValue(value);
-    setFieldValue(field.name, ''); // Limpia el valor seleccionado
-    setSelectedOption(null); // Resetea la selección
+    setFieldValue(field.name, '');
+    setSelectedOption(null);
     setShowDropdown(true);
   };
 
   const handleSelectOption = (option) => {
+    // Si se selecciona la opción "Otro", se llama a la función onOtherSelected y se cierra el dropdown
+    if (option.isOther) {
+      if (onOtherSelected) onOtherSelected();
+      setShowDropdown(false);
+      setHighlightedIndex(-1);
+      return;
+    }
     setInputValue(option.label);
     setSelectedOption(option);
     setFieldValue(field.name, option.value);
     setShowDropdown(false);
-    // Resetea el índice resaltado tras la selección
     setHighlightedIndex(-1);
   };
 
@@ -193,9 +212,7 @@ const AutocompleteInput = ({
         {Icon && (
           <div
             className={classNames(
-              `absolute text-lg left-3 top-1/2 transform ${
-                !disabled && 'text-neutral-500'
-              } -translate-y-1/2`,
+              `absolute text-lg left-3 top-1/2 transform ${!disabled && 'text-neutral-500'} -translate-y-1/2`,
               { 'text-neutral-400': disabled && !inputValue },
               { 'text-red-500': touched[field.name] && errors[field.name] },
             )}
@@ -259,5 +276,3 @@ const AutocompleteInput = ({
 };
 
 export default React.memo(AutocompleteInput);
-
-//TO DO agregar el on other option para que se pueda agregar un nuevo elemento al catalogo

@@ -38,6 +38,7 @@ const useInventoy = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al crear el inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -52,6 +53,7 @@ const useInventoy = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al crear los inventarios');
+      Notifies('error', error?.response?.data?.message);
       return error;
     },
     onSettled: () => setLoading(false),
@@ -67,6 +69,7 @@ const useInventoy = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al actualizar el inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -81,6 +84,7 @@ const useInventoy = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al eliminar el inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });

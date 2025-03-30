@@ -35,6 +35,8 @@ const Models = () => {
     createInventoryModel,
     updateInventoryModel,
     deleteInventoryModel,
+    createInventoryBrand,
+    createInventoryType,
   } = useCatalogContext();
   const [columns, setColumns] = useState([...modelColumns]);
   const lastChange = useRef();
@@ -305,6 +307,8 @@ const Models = () => {
           onSubmit={handleSubmit}
           formFields={
             <ModelFormFields
+              createBrand={createInventoryBrand}
+              createType={createInventoryType}
               inventoryBrands={inventoryBrands}
               inventoryTypes={inventoryTypes?.map((type) => {
                 return {

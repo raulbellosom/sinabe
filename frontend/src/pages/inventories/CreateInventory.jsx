@@ -38,6 +38,8 @@ const CreateInventory = () => {
     inventoryTypes,
     inventoryConditions,
     createInventoryModel,
+    createInventoryBrand,
+    createInventoryType,
   } = useCatalogContext();
   const navigate = useNavigate();
 
@@ -74,6 +76,7 @@ const CreateInventory = () => {
           id: newModel.id,
         },
       ]);
+
       setInitialValues((prevValues) => ({
         ...prevValues,
         modelId: newModel.id,
@@ -171,6 +174,8 @@ const CreateInventory = () => {
             initialValues={newModelValue}
             inventoryBrands={inventoryBrands}
             inventoryTypes={inventoryTypes}
+            createBrand={createInventoryBrand}
+            createType={createInventoryType}
           />
         </ModalForm>
       )}

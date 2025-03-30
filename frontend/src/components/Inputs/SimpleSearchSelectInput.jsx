@@ -2,7 +2,8 @@ import React from 'react';
 import { ErrorMessage } from 'formik';
 import { Label } from 'flowbite-react';
 import classNames from 'classnames';
-import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
+import Notifies from '../Notifies/Notifies';
 
 const SimpleSearchSelectInput = ({
   field,
@@ -11,11 +12,35 @@ const SimpleSearchSelectInput = ({
   onSelect,
   className,
   isMulti = false,
+  createOption = () => {},
+  isClearable = false,
   ...props
 }) => {
   const selectedValue = isMulti
     ? props.options.filter((option) => field.value?.includes(option.value))
     : props.options.find((option) => option.value === field.value);
+
+  const handleChange = (selectedOption) => {
+    try {
+      const value = isMulti
+        ? selectedOption.map((option) => option.value)
+        : selectedOption?.value;
+
+      if (selectedOption?.__isNew__) {
+        createOption({ name: selectedOption.value }).then((response) => {
+          setFieldValue(field.name, response.id);
+        });
+        return;
+      }
+      setFieldValue(field.name, value);
+      if (onSelect) {
+        onSelect(value);
+      }
+    } catch (error) {
+      Notifies('error', error?.response?.data?.message);
+      console.error('Error al crear nuevo registro:', error);
+    }
+  };
 
   return (
     <div className={classNames('w-full', className)}>
@@ -25,23 +50,15 @@ const SimpleSearchSelectInput = ({
         color={touched[field.name] && errors[field.name] ? 'failure' : ''}
         value={props.label}
       />
-      <Select
+      <CreatableSelect
         {...props}
         isMulti={isMulti}
         className="mt-1 border border-neutral-500 rounded-lg"
         closeMenuOnSelect={closeMenuOnSelect}
-        placeholder="Selecciona una opción"
+        placeholder="Selecciona o crea una opción"
         classNamePrefix="react-select"
         value={selectedValue}
-        onChange={(selectedOption) => {
-          const value = isMulti
-            ? selectedOption.map((option) => option.value)
-            : selectedOption?.value;
-          setFieldValue(field.name, value);
-          if (onSelect) {
-            onSelect(selectedOption);
-          }
-        }}
+        onChange={handleChange}
         options={props.options}
       />
       <ErrorMessage

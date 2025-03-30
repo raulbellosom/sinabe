@@ -479,11 +479,27 @@ export const getInventoryModelById = async (req, res) => {
       include: {
         brand: true,
         type: true,
+        inventories: {
+          where: { enabled: true },
+          select: { id: true },
+        },
       },
     });
 
+    const inventoryModelWithCount = {
+      id: inventoryModel.id,
+      name: inventoryModel.name,
+      brandId: inventoryModel.brandId,
+      typeId: inventoryModel.typeId,
+      brandName: inventoryModel.brand.name,
+      typeName: inventoryModel.type.name,
+      brand: inventoryModel.brand,
+      type: inventoryModel.type,
+      count: inventoryModel.inventories.length,
+    };
+
     if (inventoryModel) {
-      res.json(inventoryModel);
+      res.json(inventoryModelWithCount);
     } else {
       res.status(404).json({ message: "Inventory model not found" });
     }
@@ -536,10 +552,26 @@ export const createInventoryModel = async (req, res) => {
       include: {
         brand: true,
         type: true,
+        inventories: {
+          where: { enabled: true },
+          select: { id: true },
+        },
       },
     });
 
-    res.status(201).json(inventoryModel);
+    const inventoryModelWithCount = {
+      id: inventoryModel.id,
+      name: inventoryModel.name,
+      brandId: inventoryModel.brandId,
+      typeId: inventoryModel.typeId,
+      brandName: inventoryModel.brand.name,
+      typeName: inventoryModel.type.name,
+      brand: inventoryModel.brand,
+      type: inventoryModel.type,
+      count: inventoryModel.inventories.length,
+    };
+
+    res.status(201).json(inventoryModelWithCount);
   } catch (error) {
     console.log("error on createInventoryModel", error);
     res.status(500).json({ message: error.message });
@@ -569,10 +601,26 @@ export const updateInventoryModel = async (req, res) => {
       include: {
         brand: true,
         type: true,
+        inventories: {
+          where: { enabled: true },
+          select: { id: true },
+        },
       },
     });
 
-    res.json(updatedModel);
+    const updatedModelWithCount = {
+      id: updatedModel.id,
+      name: updatedModel.name,
+      brandId: updatedModel.brandId,
+      typeId: updatedModel.typeId,
+      brandName: updatedModel.brand.name,
+      typeName: updatedModel.type.name,
+      brand: updatedModel.brand,
+      type: updatedModel.type,
+      count: updatedModel.inventories.length,
+    };
+
+    res.json(updatedModelWithCount);
   } catch (error) {
     console.log("error on updateInventoryModel", error);
     res.status(500).json({ message: error.message });
@@ -604,10 +652,21 @@ export const deleteInventoryModel = async (req, res) => {
       include: {
         brand: true,
         type: true,
+        inventories: {
+          where: { enabled: true },
+          select: { id: true },
+        },
       },
     });
 
-    res.json({ data: models, message: "Model deleted" });
+    const modelsWithCount = models.map((model) => ({
+      ...model,
+      inventoryCount: model.inventories.length,
+      brandName: model.brand.name,
+      typeName: model.type.name,
+    }));
+
+    res.json({ data: modelsWithCount, message: "Model deleted" });
   } catch (error) {
     console.log("error on deleteInventoryModel", error);
     res.status(500).json({ message: error.message });

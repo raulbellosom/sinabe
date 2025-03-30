@@ -27,8 +27,8 @@ const useUser = ({ dispatch }) => {
     },
     onError: (error) => {
       console.log('error on createUser', error);
-      Notifies('error', error?.response?.data?.message);
       setLoading(false);
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => {
       queryClient.invalidateQueries('users');
@@ -48,6 +48,7 @@ const useUser = ({ dispatch }) => {
     onError: (error) => {
       console.log('error on updateUser', error);
       setLoading(false);
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => {
       queryClient.invalidateQueries('users');
@@ -66,6 +67,7 @@ const useUser = ({ dispatch }) => {
     onError: (error) => {
       console.log('error on changePasswordUser', error);
       setLoading(false);
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => {
       queryClient.invalidateQueries('users');
@@ -85,6 +87,7 @@ const useUser = ({ dispatch }) => {
     onError: (error) => {
       console.log('error on deleteUser', error);
       setLoading(false);
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => {
       queryClient.invalidateQueries('users');

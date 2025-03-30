@@ -61,6 +61,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al crear el tipo de inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -75,6 +76,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al actualizar el tipo de inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -89,6 +91,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al eliminar el tipo de inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -116,11 +119,13 @@ const useInventoyCatalogs = (dispatch) => {
     onMutate: () => setLoading(true),
     onSuccess: (data) => {
       queryClient.invalidateQueries('inventoryBrands');
+      console.log('payload', data);
       dispatch({ type: 'CREATE_INVENTORY_BRAND', payload: data });
       Notifies('success', 'Marca de inventario creada exitosamente');
     },
     onError: (error) => {
       Notifies('error', 'Error al crear la marca del inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -135,6 +140,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al actualizar la marca del inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -149,6 +155,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al eliminar la marca del inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -181,6 +188,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al crear el modelo de inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -196,6 +204,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al actualizar el modelo de inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -210,6 +219,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al eliminar el modelo de inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -224,6 +234,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al crear los modelos de inventarios');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -256,6 +267,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al crear la condicion de inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -270,6 +282,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al actualizar la condicion de inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });
@@ -284,6 +297,7 @@ const useInventoyCatalogs = (dispatch) => {
     },
     onError: (error) => {
       Notifies('error', 'Error al eliminar la condicion de inventario');
+      Notifies('error', error?.response?.data?.message);
     },
     onSettled: () => setLoading(false),
   });

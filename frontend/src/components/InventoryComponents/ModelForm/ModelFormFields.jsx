@@ -6,7 +6,12 @@ import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import { HiCubeTransparent } from 'react-icons/hi';
 import SimpleSearchSelectInput from '../../Inputs/SimpleSearchSelectInput';
 
-const ModelFormFields = ({ inventoryBrands, inventoryTypes }) => {
+const ModelFormFields = ({
+  inventoryBrands,
+  inventoryTypes,
+  createBrand,
+  createType,
+}) => {
   return (
     <div className="grid grid-cols-1 gap-4 pb-28">
       <Field
@@ -27,6 +32,8 @@ const ModelFormFields = ({ inventoryBrands, inventoryTypes }) => {
           value: brand.id,
         }))}
         icon={PiTrademarkRegisteredBold}
+        isClearable
+        createOption={createBrand}
       />
       <Field
         name="typeId"
@@ -38,6 +45,8 @@ const ModelFormFields = ({ inventoryBrands, inventoryTypes }) => {
           value: type.id,
         }))}
         icon={BiCategory}
+        isClearable
+        createOption={createType}
       />
       <Field
         className="hidden"
