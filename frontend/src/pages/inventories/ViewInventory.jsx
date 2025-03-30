@@ -28,6 +28,7 @@ import { RiInputField } from 'react-icons/ri';
 import QRCodeGenerator from '../../components/QRGenerator/QRGenerator';
 import { BsQrCodeScan } from 'react-icons/bs';
 import ModalViewer from '../../components/Modals/ModalViewer';
+import NotFound from '../notFound/NotFound';
 const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
 
 const ViewInventory = () => {
@@ -47,6 +48,7 @@ const ViewInventory = () => {
     refetch,
     isFetching,
     isPending,
+    error,
   } = useQuery({
     queryKey: ['inventory', id],
     queryFn: ({ signal }) => getInventory({ id, signal }),
@@ -384,9 +386,9 @@ const ViewInventory = () => {
   );
 };
 
-const ProtectedInventoriesView = withPermission(
-  ViewInventory,
+const ProtectedInventoriesView = withPermission(ViewInventory, [
   'view_inventories',
-);
+  'view_self_inventories',
+]);
 
 export default ProtectedInventoriesView;

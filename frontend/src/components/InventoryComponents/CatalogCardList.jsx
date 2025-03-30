@@ -11,12 +11,9 @@ import classNames from 'classnames';
 
 const CatalogCardList = ({
   data = [],
-  title,
   icon: Icon,
   onEdit = () => {},
   onRemove = () => {},
-  onCreate = () => {},
-  hiddeHeader = false,
 }) => {
   const [search, setSearch] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -26,40 +23,15 @@ const CatalogCardList = ({
   );
 
   return (
-    <div
-      className={classNames(
-        'relative h-full max-h-full flex-col gap-4 antialiased',
-        { 'bg-white shadow-md rounded-md p-3': !hiddeHeader },
-      )}
-    >
-      {!hiddeHeader && (
-        <div>
-          <div className="flex flex-col gap-3">
-            <TableHeader
-              icon={Icon}
-              title={title}
-              actions={[
-                {
-                  label: 'Nuevo',
-                  action: onCreate,
-                  color: 'crossfit',
-                  icon: IoMdAdd,
-                  filled: true,
-                },
-              ]}
-            />
-            <TableActions handleSearchTerm={(e) => setSearch(e.target.value)} />
-          </div>
-        </div>
-      )}
+    <div className={classNames('relative h-full flex-col gap-4 antialiased')}>
       <div className="h-full overflow-hidden">
-        <div className="h-full min-h-32 max-h-[52dvh] md:max-h-[67dvh] pb-2 md:pt-4 overflow-y-auto overflow-x-hidden place-content-start grid grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] gap-4">
+        <div className="h-full pb-2 md:pt-4 overflow-y-auto overflow-x-hidden place-content-start grid grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] gap-4">
           {filteredData &&
             filteredData.length > 0 &&
             filteredData.map((item) => (
               <div
                 key={item.id}
-                className="w-full h-20 relative bg-white border border-neutral-200 p-4 px-6 rounded-lg hover:shadow-md"
+                className="w-full  relative bg-white border border-neutral-200 p-2 md:p-2 md:px-4 rounded-md hover:shadow-md"
               >
                 <div className="flex flex-col justify-start w-full items-start">
                   <p className="text-base md:text-lg font-medium text-gray-900 dark:text-white">
@@ -67,7 +39,6 @@ const CatalogCardList = ({
                   </p>
                   {item?.description && (
                     <p className="text-xs w-full text-wrap max-w-fit truncate text-gray-500 dark:text-gray-400">
-                      {/* cut and append a ... after 40 characters */}
                       {item?.description?.length > 40 ? (
                         <>
                           {`${item.description?.substring(0, 40)}... `}
@@ -143,7 +114,7 @@ const CatalogCardList = ({
 
 CatalogCardList.Skeleton = () => {
   return (
-    <div className="relative h-[74dvh] md:h-[77dvh] flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
+    <div className="relative h-[74dvh] md:h-[78dvh] flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
       <div className="absolute inset-x-0 top-0 p-3">
         <div>
           <div className="grid grid-cols-2 gap-4">

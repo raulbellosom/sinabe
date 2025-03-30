@@ -3,8 +3,8 @@ export const PermissionsByGroup = {
     name: 'Inventarios',
     permissions: [
       'view_inventories',
+      'view_self_inventories',
       'create_inventories',
-      ,
       'edit_inventories',
       'delete_inventories',
     ],

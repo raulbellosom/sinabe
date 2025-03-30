@@ -12,7 +12,7 @@ import { PiUserCircleCheckBold } from 'react-icons/pi';
 
 const UserFormFields = ({ roles, editMode }) => {
   return (
-    <div className="grid gap-4 grid-cols-[repeat(auto-fill,_minmax(250px,_1fr))]">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-[repeat(auto-fill,_minmax(250px,_1fr))]">
       <Field
         name="firstName"
         id="firstName"
@@ -20,6 +20,7 @@ const UserFormFields = ({ roles, editMode }) => {
         label="Nombre"
         type="text"
         icon={BiUser}
+        className="col-span-2 md:col-span-1"
       />
       <Field
         name="lastName"
@@ -28,6 +29,7 @@ const UserFormFields = ({ roles, editMode }) => {
         label="Apellido"
         type="text"
         icon={BiUser}
+        className="col-span-2 md:col-span-1"
       />
       <Field
         name="email"
@@ -36,6 +38,7 @@ const UserFormFields = ({ roles, editMode }) => {
         label="Correo Electrónico"
         type="email"
         icon={FaEnvelope}
+        className="col-span-2 md:col-span-1"
       />
       <Field
         name="userName"
@@ -44,6 +47,7 @@ const UserFormFields = ({ roles, editMode }) => {
         label="Nombre de Usuario"
         type="text"
         icon={FaUserTag}
+        className="col-span-2 md:col-span-1"
       />
       <Field
         name="phone"
@@ -52,6 +56,7 @@ const UserFormFields = ({ roles, editMode }) => {
         label="Teléfono"
         type="text"
         icon={FaPhoneAlt}
+        className="col-span-2 md:col-span-1"
       />
       <Field
         name="role"
@@ -63,6 +68,7 @@ const UserFormFields = ({ roles, editMode }) => {
           label: role.name,
         }))}
         icon={MdManageAccounts}
+        className="col-span-2 md:col-span-1"
       />
       {!editMode && (
         <Field
@@ -72,6 +78,7 @@ const UserFormFields = ({ roles, editMode }) => {
           label="Contraseña"
           type="password"
           icon={FaLock}
+          className="col-span-2 md:col-span-1"
         />
       )}
       {!editMode && (
@@ -82,6 +89,7 @@ const UserFormFields = ({ roles, editMode }) => {
           label="Repetir Contraseña"
           type="password"
           icon={FaLock}
+          className="col-span-2 md:col-span-1"
         />
       )}
       {editMode && (
@@ -95,6 +103,7 @@ const UserFormFields = ({ roles, editMode }) => {
             { value: false, label: 'Deshabilitado' },
           ]}
           icon={PiUserCircleCheckBold}
+          className="col-span-2 md:col-span-1"
         />
       )}
       <Field
@@ -104,7 +113,7 @@ const UserFormFields = ({ roles, editMode }) => {
         label="Imagen de perfil"
         type="file"
         accept="image/*"
-        className="col-span-2"
+        className="col-span-2 md:col-span-1"
       />
       <Field name="id" id="id" component={TextInput} type="hidden" />
     </div>

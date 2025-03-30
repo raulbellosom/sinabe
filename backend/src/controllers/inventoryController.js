@@ -1,40 +1,58 @@
 import { db } from "../lib/db.js";
 
-export const getInventories = async (req, res) => {
-  try {
-    const inventories = await db.inventory.findMany({
-      where: { enabled: true },
-      include: {
-        model: {
-          include: {
-            brand: true,
-            type: true,
-          },
-        },
-        conditions: {
-          include: {
-            condition: true,
-          },
-        },
-        customField: {
-          include: {
-            customField: true,
-          },
-        },
-        files: {
-          where: { enabled: true },
-        },
-        images: {
-          where: { enabled: true },
-          select: {
-            url: true,
-            type: true,
-            thumbnail: true,
-            metadata: true,
+// Función para obtener los permisos del usuario
+const getUserPermissions = async (userId) => {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    include: {
+      role: {
+        include: {
+          permissions: {
+            include: {
+              permission: true,
+            },
           },
         },
       },
+    },
+  });
+
+  if (!user) return [];
+  return user.role.permissions.map((p) => p.permission.name);
+};
+
+export const getInventories = async (req, res) => {
+  try {
+    const userId = req.user.id; // Asegúrate de que req.user.id está disponible en el middleware de autenticación
+    const permissions = await getUserPermissions(userId);
+    const canViewAll = permissions.includes("view_inventories");
+    const canViewSelf = permissions.includes("view_self_inventories");
+
+    if (!canViewAll && !canViewSelf) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permisos para ver los inventarios." });
+    }
+
+    const whereCondition = {
+      enabled: true,
+      ...(canViewAll ? {} : { createdById: userId }),
+    };
+
+    const inventories = await db.inventory.findMany({
+      where: whereCondition,
+      include: {
+        model: { include: { brand: true, type: true } },
+        conditions: { include: { condition: true } },
+        customField: { include: { customField: true } },
+        files: { where: { enabled: true } },
+        images: {
+          where: { enabled: true },
+          select: { url: true, type: true, thumbnail: true, metadata: true },
+        },
+      },
     });
+
     res.json(inventories);
   } catch (error) {
     console.log("Error fetching inventories:", error.message);
@@ -44,43 +62,24 @@ export const getInventories = async (req, res) => {
 
 export const getInventoryById = async (req, res) => {
   const { id } = req.params;
-
   try {
+    const userId = req.user.id;
+    const permissions = await getUserPermissions(userId);
+    const canViewAll = permissions.includes("view_inventories");
+    const canViewSelf = permissions.includes("view_self_inventories");
+
     const inventory = await db.inventory.findUnique({
       where: { id },
       include: {
         createdBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
+          select: { id: true, firstName: true, lastName: true, email: true },
         },
-        model: {
-          include: {
-            brand: true,
-            type: true,
-          },
-        },
-        conditions: {
-          include: {
-            condition: true,
-          },
-        },
-        customField: {
-          include: {
-            customField: true,
-          },
-        },
+        model: { include: { brand: true, type: true } },
+        conditions: { include: { condition: true } },
+        customField: { include: { customField: true } },
         files: {
           where: { enabled: true },
-          select: {
-            id: true,
-            url: true,
-            type: true,
-            metadata: true,
-          },
+          select: { id: true, url: true, type: true, metadata: true },
         },
         images: {
           where: { enabled: true },
@@ -95,17 +94,19 @@ export const getInventoryById = async (req, res) => {
       },
     });
 
-    if (inventory) {
-      inventory.receptionDate
-        ? (inventory.receptionDate = inventory.receptionDate
-            .toISOString()
-            .split("T")[0])
-        : null;
-      res.json(inventory);
-    } else {
-      console.log("Inventory not found");
-      res.status(404).json({ message: "Inventory not found" });
+    if (!inventory) {
+      return res.status(404).json({ message: "Inventory not found" });
     }
+
+    if (!canViewAll && (!canViewSelf || inventory.createdById !== userId)) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permisos para ver este inventario." });
+    }
+
+    inventory.receptionDate =
+      inventory.receptionDate?.toISOString().split("T")[0] || null;
+    res.json(inventory);
   } catch (error) {
     console.log("Error fetching inventory:", error.message);
     res.status(500).json({ message: error.message });
@@ -140,13 +141,15 @@ export const createInventory = async (req, res) => {
     }
 
     // check if the serial number is unique
-    const existingInventory = await db.inventory.findFirst({
-      where: { serialNumber, enabled: true },
-    });
+    if (serialNumber && serialNumber.trim() !== "") {
+      const existingInventory = await db.inventory.findFirst({
+        where: { serialNumber, enabled: true },
+      });
 
-    if (existingInventory) {
-      res.status(400).json({ message: "El número de serie ya existe" });
-      return;
+      if (existingInventory) {
+        res.status(400).json({ message: "El número de serie ya existe" });
+        return;
+      }
     }
 
     const createdInventory = await db.$transaction(async (prisma) => {
@@ -292,13 +295,15 @@ export const updateInventory = async (req, res) => {
     }
 
     // check if the serial number is unique
-    const existingInventory = await db.inventory.findFirst({
-      where: { serialNumber, enabled: true, NOT: { id } },
-    });
+    if (serialNumber && serialNumber.trim() !== "") {
+      const existingInventory = await db.inventory.findFirst({
+        where: { serialNumber, enabled: true, NOT: { id } },
+      });
 
-    if (existingInventory) {
-      res.status(400).json({ message: "El número de serie ya existe" });
-      return;
+      if (existingInventory) {
+        res.status(400).json({ message: "El número de serie ya existe" });
+        return;
+      }
     }
 
     await db.$transaction(async (prisma) => {
@@ -592,6 +597,21 @@ export const checkSerialNumber = async (req, res) => {
 
 export const searchInventories = async (req, res) => {
   try {
+    const userId = req.user?.id; // Asegurarse de que el usuario esté autenticado
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const permissions = await getUserPermissions(userId);
+    // const permissions = user.role.permissions.map((p) => p.permission.name);
+    const canViewAll = permissions.includes("view_inventories");
+    const canViewSelf = permissions.includes("view_self_inventories");
+    // Si el usuario no tiene ninguno de los permisos necesarios, se le niega el acceso.
+    if (!canViewAll && !canViewSelf) {
+      return res.status(403).json({
+        error: "Forbidden: No tienes permisos para acceder a los inventarios",
+      });
+    }
+
     const {
       searchTerm,
       sortBy = "updatedAt",
@@ -779,6 +799,10 @@ export const searchInventories = async (req, res) => {
       ...(statusFilter.length > 0 ? { status: { in: statusFilter } } : {}),
     };
 
+    if (!canViewAll && canViewSelf) {
+      whereConditions.createdById = userId;
+    }
+
     const inventories = await db.inventory.findMany({
       where: whereConditions,
       include: {
@@ -807,7 +831,7 @@ export const searchInventories = async (req, res) => {
       },
       orderBy: formSortBy(orderField, orderDirection),
       skip,
-      take,
+      take: take === 0 ? undefined : take, // If take is 0, fetch all inventories
     });
 
     const totalRecords = await db.inventory.count({
@@ -816,16 +840,6 @@ export const searchInventories = async (req, res) => {
 
     const totalPages = Math.ceil(totalRecords / pageSize);
 
-    // let inventoriesData = {};
-    // if (inventories) {
-    //   inventoriesData = inventories.map((inventory) => {
-    //     inventory.receptionDate
-    //       ? (inventory.receptionDate =
-    //           inventory.receptionDate.toLocaleDateString("en-GB"))
-    //       : null;
-    //     return inventory;
-    //   });
-    // }
     res.json({
       data: inventories,
       pagination: {

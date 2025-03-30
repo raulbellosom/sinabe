@@ -22,6 +22,7 @@ const InventoryFormFields = ({
   createCustomField,
   currentCustomFields,
   inventoryId,
+  onOtherSelected,
 }) => {
   return (
     <div className="grid grid-cols-12 gap-4 lg:gap-4">

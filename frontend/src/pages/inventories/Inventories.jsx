@@ -352,22 +352,30 @@ const Inventories = () => {
   };
 
   const isCreatePermission = useCheckPermissions('create_inventories');
+  const isEditPermission = useCheckPermissions('edit_inventories');
+  const isDeletePermission = useCheckPermissions('delete_inventories');
+  const isViewPermission = useCheckPermissions('view_inventories');
+  const isViewSelfPermission = useCheckPermissions('view_self_inventories');
 
   const collapsedActions = (inventory) => [
     {
       label: 'Editar',
       icon: FaEdit,
-      color: 'yellow',
-      action: () => navigate(`/inventories/edit/${inventory.id}`),
+      action: isEditPermission.hasPermission
+        ? () => navigate(`/inventories/edit/${inventory.id}`)
+        : null,
+      disabled: isEditPermission.hasPermission,
     },
     {
       label: 'Eliminar',
       icon: FaTrash,
-      color: 'red',
-      action: () => {
-        setIsOpenModal(true);
-        setInventoryId(inventory.id);
-      },
+      action: isDeletePermission.hasPermission
+        ? () => {
+            setIsOpenModal(true);
+            setInventoryId(inventory.id);
+          }
+        : null,
+      disabled: isDeletePermission.hasPermission,
     },
   ];
 
@@ -459,14 +467,18 @@ const Inventories = () => {
                           return (
                             <T.Row
                               onDoubleClick={() =>
+                                (isViewPermission.hasPermission ||
+                                  isViewSelfPermission.hasPermission) &&
                                 navigate(`/inventories/view/${inventory.id}`)
                               }
                               onClick={(event) => {
                                 if (event.ctrlKey) {
-                                  window.open(
-                                    `/inventories/view/${inventory.id}`,
-                                    '_blank',
-                                  );
+                                  (isViewPermission.hasPermission ||
+                                    isViewSelfPermission.hasPermission) &&
+                                    window.open(
+                                      `/inventories/view/${inventory.id}`,
+                                      '_blank',
+                                    );
                                 }
                               }}
                               key={inventory.id}
@@ -582,41 +594,53 @@ const Inventories = () => {
                                   return (
                                     <T.Cell className="py-2" key={column.id}>
                                       <div className="flex justify-center items-center gap-2">
-                                        <LinkButton
-                                          route={`/inventories/view/${inventory.id}`}
-                                          label="Ver"
-                                          icon={FaEye}
-                                          color="cyan"
-                                        />
-                                        {collapsedActions(inventory) && (
-                                          <Dropdown
-                                            renderTrigger={() => (
-                                              <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
-                                                <BsThreeDotsVertical className="text-lg text-neutral-600" />
-                                              </button>
-                                            )}
-                                            dismissOnClick={false}
-                                            inline
-                                            arrowIcon={null}
-                                            placement="right"
-                                            className="md:w-52"
-                                          >
-                                            {collapsedActions(inventory).map(
-                                              (action, index) => (
-                                                <Dropdown.Item
-                                                  key={index}
-                                                  className="min-w-36 min-h-12"
-                                                  onClick={() =>
-                                                    action?.action()
-                                                  }
-                                                  icon={action?.icon}
-                                                >
-                                                  <span>{action?.label}</span>
-                                                </Dropdown.Item>
-                                              ),
-                                            )}
-                                          </Dropdown>
+                                        {(isViewPermission.hasPermission ||
+                                          isViewSelfPermission.hasPermission) && (
+                                          <LinkButton
+                                            route={`/inventories/view/${inventory.id}`}
+                                            label="Ver"
+                                            icon={FaEye}
+                                            color="cyan"
+                                          />
                                         )}
+                                        {collapsedActions(inventory).some(
+                                          (item) => item.disabled === true,
+                                        ) &&
+                                          collapsedActions(inventory) && (
+                                            <Dropdown
+                                              renderTrigger={() => (
+                                                <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
+                                                  <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                                                </button>
+                                              )}
+                                              dismissOnClick={false}
+                                              inline
+                                              arrowIcon={null}
+                                              placement="right"
+                                              className="md:w-52"
+                                            >
+                                              {collapsedActions(inventory).map(
+                                                (action, index) =>
+                                                  action.disabled && (
+                                                    <Dropdown.Item
+                                                      key={index}
+                                                      className="min-w-36 min-h-12"
+                                                      onClick={() =>
+                                                        action?.action()
+                                                      }
+                                                      icon={action?.icon}
+                                                      disabled={
+                                                        action?.disabled
+                                                      }
+                                                    >
+                                                      <span>
+                                                        {action?.label}
+                                                      </span>
+                                                    </Dropdown.Item>
+                                                  ),
+                                              )}
+                                            </Dropdown>
+                                          )}
                                       </div>
                                     </T.Cell>
                                   );
@@ -691,46 +715,54 @@ const Inventories = () => {
                           key: 'Acciones',
                           value: (
                             <div className="flex items-center justify-end gap-3">
-                              <ActionButtons
-                                extraActions={[
-                                  {
-                                    label: 'Ver',
-                                    icon: FaEye,
-                                    color: 'cyan',
-                                    action: () =>
-                                      navigate(
-                                        `/inventories/view/${inventory.id}`,
-                                      ),
-                                  },
-                                ]}
-                              />
-                              {collapsedActions(inventory) && (
-                                <Dropdown
-                                  renderTrigger={() => (
-                                    <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
-                                      <BsThreeDotsVertical className="text-lg text-neutral-600" />
-                                    </button>
-                                  )}
-                                  dismissOnClick={false}
-                                  inline
-                                  arrowIcon={null}
-                                  placement="right"
-                                  className="md:w-52"
-                                >
-                                  {collapsedActions(inventory).map(
-                                    (action, index) => (
-                                      <Dropdown.Item
-                                        key={index}
-                                        className="min-w-36 min-h-12"
-                                        onClick={() => action?.action()}
-                                        icon={action?.icon}
-                                      >
-                                        <span>{action?.label}</span>
-                                      </Dropdown.Item>
-                                    ),
-                                  )}
-                                </Dropdown>
+                              {(isViewPermission.hasPermission ||
+                                isViewSelfPermission.hasPermission) && (
+                                <ActionButtons
+                                  extraActions={[
+                                    {
+                                      label: 'Ver',
+                                      icon: FaEye,
+                                      color: 'cyan',
+                                      action: () =>
+                                        navigate(
+                                          `/inventories/view/${inventory.id}`,
+                                        ),
+                                    },
+                                  ]}
+                                />
                               )}
+                              {collapsedActions(inventory).some(
+                                (item) => item.disabled === true,
+                              ) &&
+                                collapsedActions(inventory) && (
+                                  <Dropdown
+                                    renderTrigger={() => (
+                                      <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
+                                        <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                                      </button>
+                                    )}
+                                    dismissOnClick={false}
+                                    inline
+                                    arrowIcon={null}
+                                    placement="right"
+                                    className="md:w-52"
+                                  >
+                                    {collapsedActions(inventory).map(
+                                      (action, index) =>
+                                        action.disabled && (
+                                          <Dropdown.Item
+                                            key={index}
+                                            className="min-w-36 min-h-12"
+                                            onClick={() => action?.action()}
+                                            icon={action?.icon}
+                                            disabled={action?.disabled}
+                                          >
+                                            <span>{action?.label}</span>
+                                          </Dropdown.Item>
+                                        ),
+                                    )}
+                                  </Dropdown>
+                                )}
                             </div>
                           ),
                         },
@@ -789,9 +821,9 @@ const Inventories = () => {
   );
 };
 
-const ProtectedInventoriesView = withPermission(
-  Inventories,
+const ProtectedInventoriesView = withPermission(Inventories, [
   'view_inventories',
-);
+  'view_self_inventories',
+]);
 
 export default ProtectedInventoriesView;

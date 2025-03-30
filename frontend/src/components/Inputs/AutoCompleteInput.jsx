@@ -259,3 +259,5 @@ const AutocompleteInput = ({
 };
 
 export default React.memo(AutocompleteInput);
+
+//TO DO agregar el on other option para que se pueda agregar un nuevo elemento al catalogo

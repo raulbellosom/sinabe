@@ -107,6 +107,7 @@ async function main() {
       { name: "edit_roles", description: "Editar roles" },
       { name: "delete_roles", description: "Eliminar roles" },
       { name: "view_inventories", description: "Ver inventarios" },
+      { name: "view_self_inventories", description: "Ver mis inventarios" },
       { name: "create_inventories", description: "Crear inventarios" },
       { name: "edit_inventories", description: "Editar inventarios" },
       { name: "delete_inventories", description: "Eliminar inventarios" },

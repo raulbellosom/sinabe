@@ -19,6 +19,7 @@ import { HiCubeTransparent } from 'react-icons/hi';
 import withPermission from '../../../utils/withPermissions';
 import useCheckPermissions from '../../../hooks/useCheckPermissions';
 import CatalogCardList from '../../../components/InventoryComponents/CatalogCardList';
+import TableFooter from '../../../components/Table/TableFooter';
 const TableHeader = lazy(() => import('../../../components/Table/TableHeader'));
 const TableActions = lazy(
   () => import('../../../components/Table/TableActions'),
@@ -48,12 +49,13 @@ const Models = () => {
     brandId: '',
     typeId: '',
     id: '',
+    count: 0,
   });
   const [refreshData, setRefreshData] = useState(false);
   const [currentPageNumber, setCurrentPageNumber] = useState(1);
   const [searchFilters, setSearchFilters] = useState({
     searchTerm: '',
-    pageSize: 100,
+    pageSize: 30,
     page: currentPageNumber,
     sortBy: 'name',
     order: 'asc',
@@ -159,6 +161,7 @@ const Models = () => {
       name: model.name,
       brandId: model.brandId,
       typeId: model.typeId,
+      count: model.count,
     });
     setIsOpenModal(true);
   };
@@ -176,6 +179,7 @@ const Models = () => {
         name: '',
         brandId: '',
         typeId: '',
+        count: 0,
       });
       setIsOpenModal(false);
     } catch (error) {
@@ -192,6 +196,7 @@ const Models = () => {
       name: '',
       brandId: '',
       typeId: '',
+      count: 0,
     });
   };
 
@@ -219,7 +224,7 @@ const Models = () => {
   const isCreatePermission = useCheckPermissions('create_inventories_models');
   const isDeletePermission = useCheckPermissions('delete_inventories_models');
   return (
-    <div className="flex min-h-[77dvh] h-full flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
+    <div className="flex h-full flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
       <TableHeader
         icon={HiCubeTransparent}
         title={'Modelos'}
@@ -254,10 +259,9 @@ const Models = () => {
             data={models.data.map((model) => ({
               ...model,
               name: model.name,
-              description: `${model.type.name} - ${model.brand.name}`,
+              description: `${model.type.name} - ${model.brand.name} (${model?.inventoryCount})`,
             }))}
             title="Modelos de los inventarios"
-            hiddeHeader
             onCreate={
               isCreatePermission.hasPermission
                 ? () => setIsOpenModal(true)
@@ -265,7 +269,7 @@ const Models = () => {
             }
             onEdit={
               isEditPermission.hasPermission
-                ? (type) => onEditBrand(type)
+                ? (type) => onEditModel(type)
                 : null
             }
             onRemove={
@@ -280,7 +284,15 @@ const Models = () => {
       ) : (
         <Skeleton count={10} className="h-10" />
       )}
-
+      {models && (
+        <TableFooter
+          pagination={models?.pagination}
+          goOnNextPage={goOnNextPage}
+          goOnPrevPage={goOnPrevPage}
+          handleSelectChange={handleSelectChange}
+          changePageSize={changePageSize}
+        />
+      )}
       {isOpenModal && (
         <ModalFormikForm
           onClose={onCloseModal}

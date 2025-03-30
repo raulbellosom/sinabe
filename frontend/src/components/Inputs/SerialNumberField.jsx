@@ -6,7 +6,7 @@ import TextInput from './TextInput';
 import classNames from 'classnames';
 
 const SerialNumberField = ({ inventoryId, ...props }) => {
-  const [field] = useField(props?.field?.name || name);
+  const [field] = useField(props?.field?.name);
   const { setFieldError } = useFormikContext();
 
   const handleBlur = async (e) => {
@@ -16,6 +16,7 @@ const SerialNumberField = ({ inventoryId, ...props }) => {
     if (serial) {
       try {
         const result = await checkSerialNumber(serial, inventoryId);
+        console.log(result);
         if (result.exists) {
           setFieldError(props?.field?.name, 'El número de serie ya existe');
         }

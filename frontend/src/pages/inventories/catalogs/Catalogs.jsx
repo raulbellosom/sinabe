@@ -43,7 +43,7 @@ const Catalogs = () => {
       variant="fullWidth"
       ref={tabsRef}
       onActiveTabChange={(tab) => handleTabChange(tab)}
-      className="text-nowrap overflow-x-auto"
+      className="text-nowrap overflow-x-auto "
     >
       {isViewModelPermission.hasPermission && (
         <Tabs.Item title="Modelos" icon={HiCubeTransparent}>

@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useUserContext } from '../../context/UserContext';
 import { useQuery } from '@tanstack/react-query';
 import Skeleton from 'react-loading-skeleton';
-import { IoMdAdd } from 'react-icons/io';
-import { Table as T } from 'flowbite-react';
+import { IoMdAdd, IoMdTrash } from 'react-icons/io';
+import { Dropdown, Table as T } from 'flowbite-react';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import { searchUsers } from '../../services/api';
 import usersColumns from '../../utils/usersColumns';
@@ -38,6 +38,7 @@ import classNames from 'classnames';
 import UserChangePasswordFormFields from '../../components/Users/UserChangePasswordFormFields';
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
+import { BsThreeDotsVertical } from 'react-icons/bs';
 
 const Users = () => {
   const lastChange = useRef();
@@ -217,6 +218,7 @@ const Users = () => {
 
   const onCloseModal = () => {
     setIsOpenModal(false);
+    setChangePasswordModal(false);
     setEditMode(false);
     setInitialValues({
       firstName: '',
@@ -267,6 +269,32 @@ const Users = () => {
   const isCreateUserPermission = useCheckPermissions('create_users');
   const isEditUserPermission = useCheckPermissions('edit_users');
   const isRemoveUserPermission = useCheckPermissions('delete_users');
+
+  const collapsedActions = (user) => [
+    {
+      label: 'Cambiar contraseña',
+      action: isEditUserPermission.hasPermission
+        ? () => {
+            setInitialValues({
+              id: user.id,
+              password: '',
+              repeatPassword: '',
+            });
+            setChangePasswordModal(true);
+          }
+        : null,
+      color: 'indigo',
+      icon: FaLock,
+    },
+    {
+      label: 'Eliminar',
+      action: isRemoveUserPermission.hasPermission
+        ? () => onRemoveUser(user.id)
+        : null,
+      color: 'red',
+      icon: IoMdTrash,
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
@@ -367,29 +395,56 @@ const Users = () => {
                                     ? () => onEditUser(user)
                                     : null
                                 }
-                                onRemove={
-                                  isRemoveUserPermission.hasPermission
-                                    ? () => onRemoveUser(user.id)
-                                    : null
-                                }
-                                extraActions={[
-                                  {
-                                    label: 'Cambiar contraseña',
-                                    action: isEditUserPermission.hasPermission
-                                      ? () => {
-                                          setInitialValues({
-                                            id: user.id,
-                                            password: '',
-                                            repeatPassword: '',
-                                          });
-                                          setChangePasswordModal(true);
-                                        }
-                                      : null,
-                                    color: 'indigo',
-                                    icon: FaLock,
-                                  },
-                                ]}
+                                //   onRemove={
+                                //     isRemoveUserPermission.hasPermission
+                                //       ? () => onRemoveUser(user.id)
+                                //       : null
+                                //   }
+                                //   extraActions={[
+                                //     {
+                                //       label: 'Cambiar contraseña',
+                                //       action: isEditUserPermission.hasPermission
+                                //         ? () => {
+                                //             setInitialValues({
+                                //               id: user.id,
+                                //               password: '',
+                                //               repeatPassword: '',
+                                //             });
+                                //             setChangePasswordModal(true);
+                                //           }
+                                //         : null,
+                                //       color: 'indigo',
+                                //       icon: FaLock,
+                                //     },
+                                //   ]}
                               />
+                              {collapsedActions(user) && (
+                                <Dropdown
+                                  renderTrigger={() => (
+                                    <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
+                                      <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                                    </button>
+                                  )}
+                                  dismissOnClick={false}
+                                  inline
+                                  arrowIcon={null}
+                                  placement="right"
+                                  className="md:w-52"
+                                >
+                                  {collapsedActions(user).map(
+                                    (action, index) => (
+                                      <Dropdown.Item
+                                        key={index}
+                                        className="min-w-36 min-h-12"
+                                        onClick={() => action?.action()}
+                                        icon={action?.icon}
+                                      >
+                                        <span>{action?.label}</span>
+                                      </Dropdown.Item>
+                                    ),
+                                  )}
+                                </Dropdown>
+                              )}
                             </div>
                           </T.Cell>
                         ) : null,
@@ -429,35 +484,40 @@ const Users = () => {
                   actions: {
                     key: 'Acciones',
                     value: (
-                      <ActionButtons
-                        onEdit={
-                          isEditUserPermission.hasPermission
-                            ? () => onEditUser(user)
-                            : null
-                        }
-                        onRemove={
-                          isRemoveUserPermission.hasPermission
-                            ? () => onRemoveUser(user.id)
-                            : null
-                        }
-                        extraActions={[
-                          {
-                            label: 'Cambiar contraseña',
-                            action: isEditUserPermission.hasPermission
-                              ? () => {
-                                  setInitialValues({
-                                    id: user.id,
-                                    password: '',
-                                    repeatPassword: '',
-                                  });
-                                  setChangePasswordModal(true);
-                                }
-                              : null,
-                            color: 'indigo',
-                            icon: FaLock,
-                          },
-                        ]}
-                      />
+                      <div className="flex items-center justify-end gap-3">
+                        <ActionButtons
+                          onEdit={
+                            isEditUserPermission.hasPermission
+                              ? () => onEditUser(user)
+                              : null
+                          }
+                        />
+                        {collapsedActions(user) && (
+                          <Dropdown
+                            renderTrigger={() => (
+                              <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
+                                <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                              </button>
+                            )}
+                            dismissOnClick={false}
+                            inline
+                            arrowIcon={null}
+                            placement="right"
+                            className="md:w-52"
+                          >
+                            {collapsedActions(user).map((action, index) => (
+                              <Dropdown.Item
+                                key={index}
+                                className="min-w-36 min-h-12"
+                                onClick={() => action?.action()}
+                                icon={action?.icon}
+                              >
+                                <span>{action?.label}</span>
+                              </Dropdown.Item>
+                            ))}
+                          </Dropdown>
+                        )}
+                      </div>
                     ),
                   },
                 };
@@ -515,11 +575,13 @@ const Users = () => {
           saveLabel={editMode ? 'Actualizar' : 'Guardar'}
         />
       )}
-      <ModalRemove
-        isOpenModal={isRemoveModalOpen}
-        onCloseModal={() => setIsRemoveModalOpen(false)}
-        removeFunction={onConfirmRemoveUser}
-      />
+      {isRemoveModalOpen && (
+        <ModalRemove
+          isOpenModal={isRemoveModalOpen}
+          onCloseModal={() => setIsRemoveModalOpen(false)}
+          removeFunction={onConfirmRemoveUser}
+        />
+      )}
     </div>
   );
 };

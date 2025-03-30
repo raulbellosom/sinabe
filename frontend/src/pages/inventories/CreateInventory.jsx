@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import withPermission from '../../utils/withPermissions';
 import { MdCancel } from 'react-icons/md';
 import { useCustomFieldContext } from '../../context/CustomFieldContext';
+import Notifies from '../../components/Notifies/Notifies';
 
 const initValues = {
   modelId: '',
@@ -56,8 +57,8 @@ const CreateInventory = () => {
   useEffect(() => {
     if (inventoryModels) {
       const formattedModels = inventoryModels?.map((model) => ({
-        name: `${model.name} - ${model.brand.name} - ${model.type.name}`,
-        id: model.id,
+        name: `${model?.name} - ${model?.brandName} - ${model?.typeName}`,
+        id: model?.id,
       }));
       setFormattedModels(formattedModels);
     }
@@ -87,12 +88,15 @@ const CreateInventory = () => {
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       const inventory = await createInventory(values);
-      setSubmitting(false);
-      resetForm({ values: initValues });
-      navigate(`/inventories/view/${inventory.id}`);
+      if (inventory?.id) {
+        setSubmitting(false);
+        resetForm({ values: initValues });
+        setInitialValues(initValues);
+      }
     } catch (error) {
-      console.error(error);
+      Notifies('error', error?.response?.data?.message);
       setSubmitting(false);
+      console.error(error);
     }
   };
 

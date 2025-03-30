@@ -180,6 +180,9 @@ const Sidebar = ({ children }) => {
   const isAccountPermission = useCheckPermissions('view_account');
   const isRolesPermission = useCheckPermissions('view_roles');
   const isInventoriesPermission = useCheckPermissions('view_inventories');
+  const isSelfInventoriesPermission = useCheckPermissions(
+    'view_self_inventories',
+  );
   const isCreateInventoryPermission = useCheckPermissions('create_inventories');
   const isModelsPermission = useCheckPermissions('view_inventories_models');
   const isBrandsPermission = useCheckPermissions('view_inventories_brands');
@@ -246,7 +249,8 @@ const Sidebar = ({ children }) => {
                 </MenuItem>
               )}
               {(isCatalogsPermission ||
-                isInventoriesPermission.hasPermission) && (
+                isInventoriesPermission.hasPermission ||
+                isSelfInventoriesPermission.hasPermission) && (
                 <SubMenu label="Inventarios" icon={<FaListCheck size={23} />}>
                   {isCreateInventoryPermission.hasPermission && (
                     <MenuItem
@@ -260,7 +264,8 @@ const Sidebar = ({ children }) => {
                       Nuevo Inventario
                     </MenuItem>
                   )}
-                  {isInventoriesPermission.hasPermission && (
+                  {(isInventoriesPermission.hasPermission ||
+                    isSelfInventoriesPermission.hasPermission) && (
                     <MenuItem
                       icon={<FaClipboardList size={23} />}
                       active={isActivePath('/inventories')}
@@ -269,7 +274,7 @@ const Sidebar = ({ children }) => {
                         setToggled(false);
                       }}
                     >
-                      Mis Inventarios
+                      Inventarios
                     </MenuItem>
                   )}
                   {isCatalogsPermission && (

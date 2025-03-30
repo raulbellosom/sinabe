@@ -38,12 +38,12 @@ const TableFooter = ({
 
   return (
     <nav
-      className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
+      className="flex flex-col md:flex-row justify-center md:justify-between items-center md:items-center space-y-3 md:space-y-0 p-4"
       aria-label="Table navigation"
     >
       <div className="flex items-center gap-2">
-        <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-          Mostrando&nbsp;
+        <span className="text-sm font-normal text-gray-500 dark:text-gray-400 truncate">
+          Página&nbsp;
           <span className="font-semibold text-gray-900 dark:text-white">
             {totalRecords === index
               ? totalRecords
@@ -72,9 +72,9 @@ const TableFooter = ({
             onChange={changePageSize}
             disabled={totalRecords === 0}
           >
-            {[3, 5, 10, 15, 20, 30, 50, 100].map((item) => (
+            {[3, 5, 10, 15, 20, 30, 50, 100, 0].map((item) => (
               <option key={item} value={item}>
-                {item}
+                {item > 1 ? item : 'Todos'}
               </option>
             ))}
           </Select>
@@ -111,7 +111,7 @@ const TableFooter = ({
           key="next"
           onClick={goOnNextPage}
           className={
-            pageSize + index - 1 >= totalRecords
+            pageSize === 0 || pageSize + index - 1 >= totalRecords
               ? 'pointer-events-none opacity-60'
               : 'cursor-pointer'
           }

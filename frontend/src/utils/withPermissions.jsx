@@ -10,7 +10,18 @@ const withPermission = (WrappedComponent, requiredPermission) => {
     const userPermissions = useMemo(() => {
       return authPermissions;
     }, [authPermissions]);
-    const hasPermission = userPermissions?.includes(requiredPermission);
+
+    const hasPermission = useMemo(() => {
+      if (typeof requiredPermission === 'string') {
+        return userPermissions?.includes(requiredPermission);
+      }
+      if (Array.isArray(requiredPermission)) {
+        return requiredPermission.some((permission) =>
+          userPermissions?.includes(permission),
+        );
+      }
+      return false;
+    }, [requiredPermission, userPermissions]);
 
     if (loading) {
       return null;

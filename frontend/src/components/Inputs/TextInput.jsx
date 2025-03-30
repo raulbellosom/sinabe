@@ -23,7 +23,7 @@ const TextInput = ({
       <Label
         htmlFor={props.id || props.name}
         className={'block text-sm font-medium'}
-        color={touched[field.name] && errors[field.name] ? 'failure' : ''}
+        color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
         value={props.label}
       />
       <div className="relative">
@@ -31,7 +31,7 @@ const TextInput = ({
           {...field}
           {...props}
           type={inputType}
-          color={touched[field.name] && errors[field.name] ? 'failure' : ''}
+          color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
           className="mt-1 text-neutral-800"
         />
         {props.type === 'password' && (
@@ -45,7 +45,7 @@ const TextInput = ({
         )}
       </div>
       <ErrorMessage
-        name={field.name}
+        name={field?.name}
         component="div"
         className="text-red-500 text-sm"
       />

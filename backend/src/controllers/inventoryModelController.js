@@ -9,7 +9,13 @@ export const getInventoryTypes = async (req, res) => {
         models: {
           include: {
             _count: {
-              select: { inventories: true },
+              select: {
+                inventories: {
+                  where: {
+                    enabled: true,
+                  },
+                },
+              },
             },
           },
         },
@@ -44,7 +50,13 @@ export const getInventoryTypeById = async (req, res) => {
         models: {
           include: {
             _count: {
-              select: { inventories: true },
+              select: {
+                inventories: {
+                  where: {
+                    enabled: true,
+                  },
+                },
+              },
             },
           },
         },
@@ -108,7 +120,7 @@ export const updateInventoryType = async (req, res) => {
 
   try {
     const inventoryType = await db.inventoryType.findUnique({
-      where: { id: parseInt(id, 10) },
+      where: { id: parseInt(id, 10), enabled: true },
     });
 
     if (!inventoryType) {
@@ -116,19 +128,20 @@ export const updateInventoryType = async (req, res) => {
     }
 
     const updatedInventoryType = await db.inventoryType.update({
-      where: { id: parseInt(id, 10) },
+      where: { id: parseInt(id, 10), enabled: true },
       data: {
         name,
       },
       include: {
         models: {
           include: {
-            inventories: {
-              where: {
-                enabled: true,
-              },
+            _count: {
               select: {
-                _count: true,
+                inventories: {
+                  where: {
+                    enabled: true,
+                  },
+                },
               },
             },
           },
@@ -178,7 +191,13 @@ export const deleteInventoryType = async (req, res) => {
         models: {
           include: {
             _count: {
-              select: { inventories: true },
+              select: {
+                inventories: {
+                  where: {
+                    enabled: true,
+                  },
+                },
+              },
             },
           },
         },
@@ -246,7 +265,13 @@ export const getInventoryBrandById = async (req, res) => {
         models: {
           include: {
             _count: {
-              select: { inventories: true },
+              select: {
+                inventories: {
+                  where: {
+                    enabled: true,
+                  },
+                },
+              },
             },
           },
         },
@@ -327,7 +352,13 @@ export const updateInventoryBrand = async (req, res) => {
         models: {
           include: {
             _count: {
-              select: { inventories: true },
+              select: {
+                inventories: {
+                  where: {
+                    enabled: true,
+                  },
+                },
+              },
             },
           },
         },
@@ -376,7 +407,13 @@ export const deleteInventoryBrand = async (req, res) => {
         models: {
           include: {
             _count: {
-              select: { inventories: true },
+              select: {
+                inventories: {
+                  where: {
+                    enabled: true,
+                  },
+                },
+              },
             },
           },
         },
@@ -407,9 +444,26 @@ export const getInventoryModels = async (req, res) => {
       include: {
         brand: true,
         type: true,
+        inventories: {
+          where: { enabled: true },
+          select: { id: true },
+        },
       },
     });
-    res.json(inventoryModels);
+
+    const inventoryModelsWithCount = inventoryModels.map((model) => ({
+      id: model.id,
+      name: model.name,
+      brandId: model.brandId,
+      typeId: model.typeId,
+      brandName: model.brand.name,
+      typeName: model.type.name,
+      brand: model.brand,
+      type: model.type,
+      count: model.inventories.length,
+    }));
+
+    res.json(inventoryModelsWithCount);
   } catch (error) {
     console.log("error on getInventoryModels", error);
     res.status(500).json({ message: error.message });
@@ -624,8 +678,19 @@ export const searchModels = async (req, res) => {
       include: {
         brand: true,
         type: true,
+        inventories: {
+          where: { enabled: true },
+          select: { id: true },
+        },
       },
+      skip: skip,
+      take: take === 0 ? undefined : take,
     });
+
+    const modelsWithCount = models.map((model) => ({
+      ...model,
+      inventoryCount: model.inventories.length,
+    }));
 
     const totalRecords = await db.model.count({
       where: whereConditions,
@@ -634,12 +699,11 @@ export const searchModels = async (req, res) => {
     const totalPages = Math.ceil(totalRecords / pageSize);
 
     res.json({
-      data: models,
+      data: modelsWithCount,
       pagination: {
         totalRecords,
         totalPages,
         currentPage: parseInt(page),
-        page: parseInt(page),
         pageSize: parseInt(pageSize),
       },
     });

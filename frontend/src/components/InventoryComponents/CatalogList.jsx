@@ -22,7 +22,7 @@ const CatalogList = ({
   );
 
   return (
-    <div className="relative h-[74dvh] md:h-[77dvh] flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
+    <div className="relative h-[74dvh] md:h-[78dvh] flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
       <div className="absolute inset-x-0 top-0 p-3">
         <div className="flex flex-col gap-3">
           <TableHeader
@@ -47,7 +47,7 @@ const CatalogList = ({
             filteredData.map((item) => (
               <div
                 key={item.id}
-                className="w-full h-fit relative bg-neutral-100 p-2 px-4"
+                className="w-full h-fit relative border rounded-md hover:bg-neutral-100 p-2 px-4 transition-all duration-200 ease-in-out"
               >
                 <div className="flex flex-col justify-start items-start">
                   <p className="text-sm md:text-base font-medium text-gray-900 dark:text-white">
@@ -100,7 +100,7 @@ const CatalogList = ({
 
 CatalogList.Skeleton = () => {
   return (
-    <div className="relative h-[74dvh] md:h-[77dvh] flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
+    <div className="relative h-[74dvh] md:h-[78dvh] flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
       <div className="absolute inset-x-0 top-0 p-3">
         <div>
           <div className="grid grid-cols-2 gap-4">
