@@ -25,6 +25,8 @@ import GradientChart from './graphics/GradientChart';
 import { Dropdown } from 'flowbite-react';
 import { BsGrid1X2Fill, BsThreeDotsVertical } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
+import { WiSunrise } from 'react-icons/wi';
+import { ThreeCircles } from 'react-loader-spinner';
 
 const getCurrentUser = () => {
   // Si tienes contexto de usuario, reemplaza esto por el hook/contexto real
@@ -37,24 +39,23 @@ const getGreeting = () => {
   if (hour >= 6 && hour < 12) {
     return {
       text: '¡Buenos días',
-      icon: <MdWbSunny className="inline text-yellow-400 mb-1" />,
+      icon: <WiSunrise size={40} className="inline text-yellow-400 mb-1" />,
     };
   }
   if (hour >= 12 && hour < 19) {
     return {
       text: '¡Buenas tardes',
-      icon: <FaSun className="inline text-orange-400 mb-1" />,
+      icon: <FaSun size={40} className="inline text-orange-400 mb-1" />,
     };
   }
   return {
     text: '¡Buenas noches',
-    icon: <MdNightsStay className="inline text-blue-500 mb-1" />,
+    icon: <MdNightsStay size={40} className="inline text-blue-500 mb-1" />,
   };
 };
 
 const Dashboard = () => {
   const [dashboard, setDashboard] = useState(null);
-  const [showDashboard, setShowDashboard] = useState(false);
 
   useEffect(() => {
     getDashboardData().then(setDashboard).catch(console.error);
@@ -77,60 +78,6 @@ const Dashboard = () => {
       disabled: true,
     },
   ];
-
-  const [contextMenu, setContextMenu] = useState(null);
-
-  const handleContextMenu = (e) => {
-    e.preventDefault();
-    setContextMenu({
-      mouseX: e.clientX + 2,
-      mouseY: e.clientY - 6,
-    });
-  };
-
-  const handleShowDashboard = () => {
-    setShowDashboard(true);
-    setContextMenu(null);
-  };
-
-  const handleCloseContextMenu = () => {
-    setContextMenu(null);
-  };
-
-  if (!showDashboard) {
-    return (
-      <div
-        className="flex items-center justify-center h-full"
-        onContextMenu={handleContextMenu}
-        style={{ width: '100%', height: '100%', position: 'relative' }}
-      >
-        <span className="text-gray-500"></span>
-        {contextMenu && (
-          <ul
-            className="absolute bg-white border rounded shadow-md z-50"
-            style={{
-              top: contextMenu.mouseY,
-              left: contextMenu.mouseX,
-              minWidth: 180,
-              padding: 0,
-              margin: 0,
-              listStyle: 'none',
-            }}
-            onMouseLeave={handleCloseContextMenu}
-          >
-            <li>
-              <button
-                className="w-full text-left px-4 py-2 hover:bg-purple-100"
-                onClick={handleShowDashboard}
-              >
-                Mostrar dashboard
-              </button>
-            </li>
-          </ul>
-        )}
-      </div>
-    );
-  }
 
   return (
     <div className="h-full">
@@ -279,8 +226,16 @@ const Dashboard = () => {
       )}
 
       {!dashboard && (
-        <div className="flex items-center justify-center h-64">
-          <span className="text-gray-500">Cargando datos del dashboard...</span>
+        <div className="flex items-center justify-center h-96">
+          <ThreeCircles
+            visible={true}
+            height="150"
+            width="150"
+            color="#7e3af2"
+            ariaLabel="three-circles-loading"
+            wrapperStyle={{}}
+            wrapperclassName=""
+          />
         </div>
       )}
     </div>

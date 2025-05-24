@@ -27,6 +27,20 @@ export const getDashboardData = async (req, res) => {
       where: { enabled: true },
     });
 
+    function limitAndGroupOthers(obj, max = 15) {
+      const entries = Object.entries(obj);
+      // Ordena de mayor a menor
+      entries.sort((a, b) => b[1] - a[1]);
+      const top = entries.slice(0, max);
+      const others = entries.slice(max);
+      const result = Object.fromEntries(top);
+      if (others.length > 0) {
+        const othersSum = others.reduce((sum, [, count]) => sum + count, 0);
+        result["Otros"] = (result["Otros"] || 0) + othersSum;
+      }
+      return result;
+    }
+
     // 2. Distribución por tipo
     const typeDistribution = await db.inventory.groupBy({
       by: ["modelId"],
@@ -41,11 +55,12 @@ export const getDashboardData = async (req, res) => {
     typeDetails.forEach((m) => {
       typeMap[m.id] = m.type.name;
     });
-    const typeResult = {};
+    const typeResultRaw = {};
     typeDistribution.forEach((t) => {
       const typeName = typeMap[t.modelId] || "Otro";
-      typeResult[typeName] = (typeResult[typeName] || 0) + t._count._all;
+      typeResultRaw[typeName] = (typeResultRaw[typeName] || 0) + t._count._all;
     });
+    const typeResult = limitAndGroupOthers(typeResultRaw, 15);
 
     // 3. Distribución por marca
     const brandDistribution = await db.inventory.groupBy({
@@ -61,11 +76,13 @@ export const getDashboardData = async (req, res) => {
     brandDetails.forEach((m) => {
       brandMap[m.id] = m.brand.name;
     });
-    const brandResult = {};
+    const brandResultRaw = {};
     brandDistribution.forEach((b) => {
       const brandName = brandMap[b.modelId] || "Otro";
-      brandResult[brandName] = (brandResult[brandName] || 0) + b._count._all;
+      brandResultRaw[brandName] =
+        (brandResultRaw[brandName] || 0) + b._count._all;
     });
+    const brandResult = limitAndGroupOthers(brandResultRaw, 15);
 
     // 4. Inventarios por condición
     const conditionCounts = await db.inventoryCondition.groupBy({
@@ -77,12 +94,13 @@ export const getDashboardData = async (req, res) => {
     conditionDetails.forEach((c) => {
       conditionMap[c.id] = c.name;
     });
-    const conditionResult = {};
+    const conditionResultRaw = {};
     conditionCounts.forEach((c) => {
       const condName = conditionMap[c.conditionId] || "Otro";
-      conditionResult[condName] =
-        (conditionResult[condName] || 0) + c._count._all;
+      conditionResultRaw[condName] =
+        (conditionResultRaw[condName] || 0) + c._count._all;
     });
+    const conditionResult = limitAndGroupOthers(conditionResultRaw, 15);
 
     // 5. Inventarios por status (pie chart)
     const statusPie = {};
