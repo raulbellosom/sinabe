@@ -27,6 +27,7 @@ import { BsGrid1X2Fill, BsThreeDotsVertical } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
 import { WiSunrise } from 'react-icons/wi';
 import { ThreeCircles } from 'react-loader-spinner';
+import Skeleton from 'react-loading-skeleton';
 
 const getCurrentUser = () => {
   // Si tienes contexto de usuario, reemplaza esto por el hook/contexto real
@@ -81,32 +82,35 @@ const Dashboard = () => {
 
   return (
     <div className="h-full">
-      <div className="mb-4 p-4 bg-white shadow rounded-lg flex flex-col-reverse md:flex-row items-center justify-between">
-        <div className="flex items-center gap-1 w-full">
-          <span>
-            <BsGrid1X2Fill
-              size={32}
-              className="inline text-sinabe-primary-500 mr-2 text-sinabe-primary"
-            />
-          </span>
-          <div>
-            <h1 className="text-base md:text-xl font-bold">Dashboard</h1>
-            <p className="text-gray-600 text-sm">
-              Aquí puedes ver un resumen de los inventarios y su estado actual.
-            </p>
+      {dashboard && (
+        <div className="mb-4 p-4 bg-white shadow rounded-lg flex flex-col-reverse md:flex-row items-center justify-between">
+          <div className="flex items-center gap-1 w-full">
+            <span>
+              <BsGrid1X2Fill
+                size={32}
+                className="inline text-sinabe-primary-500 mr-2 text-sinabe-primary"
+              />
+            </span>
+            <div>
+              <h1 className="text-base md:text-xl font-bold">Dashboard</h1>
+              <p className="text-gray-600 text-sm">
+                Aquí puedes ver un resumen de los inventarios y su estado
+                actual.
+              </p>
+            </div>
+          </div>
+          <div className="flex w-full md:justify-end items-center gap-2 text-md md:text-lg text-gray-700">
+            <span className="text-2xl">{greeting.icon}</span>
+            <span>
+              {greeting.text},{' '}
+              <span className="font-semibold text-base md:text-xl text-sinabe-primary">
+                {userName}
+              </span>
+              !
+            </span>
           </div>
         </div>
-        <div className="flex w-full md:justify-end items-center gap-2 text-md md:text-lg text-gray-700">
-          <span className="text-2xl">{greeting.icon}</span>
-          <span>
-            {greeting.text},{' '}
-            <span className="font-semibold text-base md:text-xl text-sinabe-primary">
-              {userName}
-            </span>
-            !
-          </span>
-        </div>
-      </div>
+      )}
 
       {dashboard && (
         <InventoryStatusCards
@@ -226,16 +230,22 @@ const Dashboard = () => {
       )}
 
       {!dashboard && (
-        <div className="flex items-center justify-center h-96">
-          <ThreeCircles
-            visible={true}
-            height="150"
-            width="150"
-            color="#7e3af2"
-            ariaLabel="three-circles-loading"
-            wrapperStyle={{}}
-            wrapperclassName=""
-          />
+        <div className="flex flex-col items-start justify-start h-[80dvh]">
+          <div className="mb-4 p-4 w-full">
+            <Skeleton height={138} className="w-full" />
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4 w-full">
+            <Skeleton height={150} className="w-full" />
+            <Skeleton height={150} className="w-full" />
+            <Skeleton height={150} className="w-full" />
+            <Skeleton height={150} className="w-full" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 3xl:grid-cols-4 gap-4 my-4 w-full">
+            <Skeleton height={250} className="w-full" />
+            <Skeleton height={250} className="w-full" />
+            <Skeleton height={250} className="w-full" />
+            <Skeleton height={250} className="w-full" />
+          </div>
         </div>
       )}
     </div>
