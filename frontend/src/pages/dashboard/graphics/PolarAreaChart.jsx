@@ -31,7 +31,7 @@ const PolarAreaChart = ({
   height = 260,
 }) => {
   const labels = Object.keys(dataObj || {});
-  const dataValues = Object.values(dataObj || {});
+  const dataValues = Object.values(dataObj || {}).map((v) => Number(v) || 0);
 
   let backgroundColors;
   if (Array.isArray(colors)) {
@@ -69,7 +69,10 @@ const PolarAreaChart = ({
         callbacks: {
           label: function (context) {
             const total = dataValues.reduce((a, b) => a + b, 0);
-            const value = context.parsed;
+            const value =
+              typeof context.parsed === 'object' && context.parsed !== null
+                ? context.parsed.r
+                : context.parsed;
             const percent = total ? ((value / total) * 100).toFixed(1) : 0;
             return `${context.label}: ${value} (${percent}%)`;
           },
