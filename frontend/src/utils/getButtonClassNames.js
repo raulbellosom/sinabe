@@ -11,11 +11,13 @@ export const getButtonClassNames = (
 
   let notFilledClasses = {
     'hover:bg-purple-500 hover:text-white': color === 'mycad' && !disabled,
-    'hover:bg-mycad-danger hover:text-white': color === 'danger' && !disabled,
-    'hover:bg-mycad-warning hover:text-white': color === 'warning' && !disabled,
-    'hover:bg-mycad-success hover:text-white': color === 'success' && !disabled,
-    'hover:bg-mycad-info hover:text-white': color === 'info' && !disabled,
-    'hover:bg-mycad-dark hover:text-white': color === 'dark' && !disabled,
+    'hover:bg-sinabe-danger hover:text-white': color === 'danger' && !disabled,
+    'hover:bg-sinabe-warning hover:text-white':
+      color === 'warning' && !disabled,
+    'hover:bg-sinabe-success hover:text-white':
+      color === 'success' && !disabled,
+    'hover:bg-sinabe-info hover:text-white': color === 'info' && !disabled,
+    'hover:bg-sinabe-dark hover:text-white': color === 'dark' && !disabled,
     'hover:bg-red-500 hover:text-white': color === 'red' && !disabled,
     'hover:bg-yellow-300 hover:text-white': color === 'yellow' && !disabled,
     'hover:bg-cyan-500 hover:text-white': color === 'cyan' && !disabled,
@@ -41,15 +43,15 @@ export const getButtonClassNames = (
   let filledClasses = {
     'bg-purple-500 text-white border-purple-500 hover:bg-purple-600':
       color === 'mycad',
-    'bg-mycad-danger text-white border-mycad-danger hover:bg-mycad-rose':
+    'bg-sinabe-danger text-white border-sinabe-danger hover:bg-mycad-rose':
       color === 'danger',
-    'bg-mycad-warning text-white border-mycad-warning hover:bg-mycad-salmon':
+    'bg-sinabe-warning text-white border-sinabe-warning hover:bg-mycad-salmon':
       color === 'warning',
-    'bg-mycad-success text-white border-mycad-success hover:bg-mycad-success':
+    'bg-sinabe-success text-white border-sinabe-success hover:bg-sinabe-success':
       color === 'success',
-    'bg-mycad-info text-white border-mycad-info hover:bg-mycad-info':
+    'bg-sinabe-info text-white border-sinabe-info hover:bg-sinabe-info':
       color === 'info',
-    'bg-mycad-dark text-white border-mycad-dark hover:bg-mycad-dark':
+    'bg-sinabe-dark text-white border-sinabe-dark hover:bg-sinabe-dark':
       color === 'dark',
     'bg-red-500 text-white border-red-500 hover:bg-red-700': color === 'red',
     'bg-yellow-300 text-white border-yellow-300 hover:bg-yellow-400':

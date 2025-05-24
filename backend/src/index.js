@@ -10,6 +10,7 @@ import pingRoutes from "./routes/pingRoutes.js";
 import permissionRoutes from "./routes/permissionRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import rolePermissionRoutes from "./routes/rolePermissionRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/inventories", inventoryRoutes);
 app.use("/api/permissions", permissionRoutes);
 app.use("/api/roles", roleRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/role-permissions", rolePermissionRoutes);
 app.use("/api/ping", pingRoutes);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));

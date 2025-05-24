@@ -1,59 +1,30 @@
+import { Badge } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { API_URL, getInventory } from '../../services/api';
-import { useQuery } from '@tanstack/react-query';
-import InventoryProperty from '../../components/InventoryComponents/InventoryView/InventoryProperty';
-import ModalRemove from '../../components/Modals/ModalRemove';
-import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import { FaClipboardList, FaUser } from 'react-icons/fa';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
-import { MdInfo, MdOutlineTextsms, MdInventory } from 'react-icons/md';
-import { TbNumber123 } from 'react-icons/tb';
-import { AiOutlineFieldNumber } from 'react-icons/ai';
+import ImageViewer from '../../../components/ImageViewer/ImageViewer';
+import FileIcon from '../../../components/FileIcon/FileIcon';
+import InventoryProperty from '../../../components/InventoryComponents/InventoryView/InventoryProperty';
+import formatFileData from '../../../utils/fileDataFormatter';
+import { MdClose, MdInfo, MdInventory, MdOutlineTextsms } from 'react-icons/md';
+import { FaUser } from 'react-icons/fa';
 import {
   BiCategory,
   BiSolidCalendarCheck,
   BiSolidCalendarEdit,
   BiSolidCalendarPlus,
 } from 'react-icons/bi';
-import { Badge, Label, Select } from 'flowbite-react';
+import { parseToLocalDate } from '../../../utils/formatValues';
+import { AiOutlineFieldNumber } from 'react-icons/ai';
+import { TbNumber123 } from 'react-icons/tb';
+import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import classNames from 'classnames';
-import { useInventoryContext } from '../../context/InventoryContext';
 import { IoCopyOutline } from 'react-icons/io5';
-import formatFileData from '../../utils/fileDataFormatter';
-import { parseToLocalDate } from '../../utils/formatValues';
-import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import withPermission from '../../utils/withPermissions';
 import { RiInputField } from 'react-icons/ri';
-import QRCodeGenerator from '../../components/QRGenerator/QRGenerator';
-import { BsQrCodeScan } from 'react-icons/bs';
-import ModalViewer from '../../components/Modals/ModalViewer';
-import NotFound from '../notFound/NotFound';
-import { ThreeCircles } from 'react-loader-spinner';
-const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
 
-const ViewInventory = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { deleteInventory } = useInventoryContext();
-  const [inventoryData, setInventoryData] = useState(null);
-  const [isOpenModal, setIsOpenModal] = useState(false);
-  const [isModalViewerOpen, setIsModalViewerOpen] = useState(false);
-  const [qrType, setQrType] = useState('link');
-  const [qrSize, setQrSize] = useState('md');
+const InventoryPreview = ({ inventory, onClose }) => {
   const [images, setImages] = useState([]);
   const [files, setFiles] = useState([]);
   const [customFields, setCustomFields] = useState([]);
-  const {
-    data: inventory,
-    refetch,
-    isFetching,
-    isPending,
-    error,
-  } = useQuery({
-    queryKey: ['inventory', id],
-    queryFn: ({ signal }) => getInventory({ id, signal }),
-  });
+  const [inventoryData, setInventoryData] = useState(null);
 
   useEffect(() => {
     const data = {
@@ -132,98 +103,43 @@ const ViewInventory = () => {
     setInventoryData(data);
   }, [inventory]);
 
-  const onEdit = (e) => {
-    if (e.ctrlKey) {
-      window.open(`/inventories/edit/${id}`, '_blank');
-    } else {
-      navigate(`/inventories/edit/${id}`);
-    }
-  };
-
-  const handleDeleteInventory = () => {
-    deleteInventory(id);
-    navigate('/inventories');
-  };
-
-  const onRemove = () => {
-    setIsOpenModal(true);
-  };
-
-  const onCreate = () => {
-    navigate('/inventories/create');
-  };
-
   const handleShareImage = (img) => {
     const imgURL =
       img instanceof File ? URL.createObjectURL(img) : `${API_URL}/${img.url}`;
     navigator.clipboard.writeText(imgURL);
   };
 
-  if (isPending) {
+  if (!inventory) {
     return (
-      <div className="h-full bg-white p-3 rounded-md">
-        <div className="flex flex-col items-center justify-center h-full">
-          <ThreeCircles
-            visible={true}
-            height="100"
-            width="100"
-            color="#7e3af2"
-            ariaLabel="three-circles-loading"
-            wrapperStyle={{}}
-            wrapperclassName=""
-          />
-          <p className="text-gray-500 text-lg mt-4">Cargando...</p>
-        </div>
+      <div className="flex items-center justify-center w-full h-full">
+        <p className="text-sm 2xl:text-base text-gray-500">
+          No hay información disponible
+        </p>
       </div>
     );
   }
 
-  if (error) {
-    return <NotFound />;
-  }
-
   return (
-    <div className="h-full bg-white p-3 rounded-md">
-      <div className="w-full flex flex-col-reverse lg:flex-row items-center justify-between gap-4 pb-2">
+    <div className="shadow-md border border-neutral-200 bg-white rounded-lg p-3 pr-1 w-full max-h-[80dvh] overflow-y-auto flex flex-col gap-3">
+      <div className="flex items-center justify-between w-full">
+        <h1 className="text-xl font-bold text-neutral-800">
+          Vista previa del inventario
+        </h1>
         <div
-          className={classNames(
-            'w-full rounded-md flex items-center md:justify-center lg:justify-start pb-4 md:pb-0',
-            {
-              'text-green-500':
-                inventory?.status !== 'PROPUESTA' &&
-                inventory?.status !== 'BAJA',
-              'text-yellow-500': inventory?.status === 'PROPUESTA',
-              'text-red-500': inventory?.status === 'BAJA',
-            },
-          )}
+          className="flex items-center gap-2 hover:cursor-pointer hover:bg-neutral-100 p-2 rounded-md"
+          onClick={onClose}
         >
-          <FaClipboardList size={24} className="mr-4" />
-          <h1 className="md:text-xl 2xl:text-2xl font-bold">
-            Detalles del Inventario
-          </h1>
-        </div>
-        <div className="w-full grid grid-cols-2 md:flex items-center justify-center lg:justify-end gap-2">
-          <ActionButtons
-            onEdit={onEdit}
-            onCreate={onCreate}
-            onRemove={onRemove}
-            extraActions={[
-              {
-                label: 'QR',
-                icon: BsQrCodeScan,
-                action: () => setIsModalViewerOpen(true),
-                color: 'purple',
-              },
-            ]}
-          />
+          <span className="text-sm 2xl:text-base text-neutral-500">
+            <MdClose size={20} className="inline" />
+          </span>
         </div>
       </div>
-      <div className="flex flex-wrap gap-2 items-center justify-start pb-4">
-        {inventory?.conditions &&
-          inventory?.conditions?.length > 0 &&
-          inventory?.conditions?.map((condition, index) => (
+
+      {inventory?.conditions && inventory?.conditions?.length > 0 && (
+        <div className="flex flex-wrap gap-2 items-center justify-start">
+          {inventory?.conditions?.map((condition, index) => (
             <Badge
-              size={'sm'}
+              size={'xs'}
               key={index}
               color={
                 inventory.status === 'PROPUESTA'
@@ -236,11 +152,13 @@ const ViewInventory = () => {
               {condition.condition.name}
             </Badge>
           ))}
-      </div>
+        </div>
+      )}
+
       <div className="h-fit flex flex-col gap-4">
         <div className="h-full flex flex-col">
           <div className="grid grid-cols-12 gap-4 w-full h-full">
-            {isFetching && !inventoryData ? (
+            {!inventoryData ? (
               <>
                 {Array.from({ length: 8 }).map((_, index) => (
                   <div key={index} className="col-span-12">
@@ -254,15 +172,14 @@ const ViewInventory = () => {
                 return (
                   <div
                     key={key}
-                    className="col-span-12 md:col-span-4 lg:col-span-3 last:col-span-12"
+                    className="col-span-12 xl:col-span-6 last:col-span-12 text-xs"
+                    style={{ fontSize: '0.3rem', width: '100%' }}
                   >
                     <InventoryProperty
-                      onSearch={() => {
-                        navigate(`/inventories?field=${key}&value=${name}`);
-                      }}
                       label={label}
                       value={name}
                       icon={icon}
+                      onSearch={null}
                       color={
                         inventory.status === 'PROPUESTA'
                           ? 'yellow'
@@ -292,19 +209,12 @@ const ViewInventory = () => {
           </p>
           <div className="grid grid-cols-12 gap-2 w-full h-full">
             {customFields.map((field, index) => (
-              <div
-                key={index}
-                className="col-span-12 md:col-span-4 lg:col-span-3"
-              >
+              <div key={index} className="col-span-12 md:col-span-6">
                 <InventoryProperty
                   label={field.label}
                   value={field.value}
                   icon={RiInputField}
-                  onSearch={() => {
-                    navigate(
-                      `/inventories?field=customField:${field.label}&value=${field.value}`,
-                    );
-                  }}
+                  onSearch={null}
                   color={
                     inventory.status === 'PROPUESTA'
                       ? 'yellow'
@@ -318,7 +228,7 @@ const ViewInventory = () => {
           </div>
         </div>
         <div className="grid grid-cols-12 gap-4 lg:gap-8">
-          <div className="flex flex-col gap-4 col-span-12 lg:col-span-6">
+          <div className="flex flex-col gap-4 col-span-12">
             <p
               style={{
                 width: '100%',
@@ -343,7 +253,7 @@ const ViewInventory = () => {
               )}
             </div>
           </div>
-          <div className="flex flex-col gap-4 col-span-12 lg:col-span-6">
+          <div className="flex flex-col gap-4 col-span-12">
             <p
               style={{
                 width: '100%',
@@ -360,14 +270,12 @@ const ViewInventory = () => {
             </p>
             <div
               className={classNames(
-                'h-fit max-h-fit grid gap-2 overflow-y-auto',
-                images.length > 0
-                  ? 'grid-cols-[repeat(auto-fill,_minmax(6rem,_1fr))] xl:grid-cols-[repeat(auto-fill,_minmax(8rem,_1fr))]'
-                  : '',
+                'h-fit max-h-fit flex flex-wrap gap-4 overflow-y-auto',
               )}
             >
               {images.length > 0 ? (
                 <ImageViewer
+                  containerClassNames={'max-w-16 max-h-16'}
                   images={images}
                   renderMenuOptions={[
                     {
@@ -386,70 +294,8 @@ const ViewInventory = () => {
           </div>
         </div>
       </div>
-      {isOpenModal && (
-        <ModalRemove
-          isOpenModal={isOpenModal}
-          onCloseModal={() => setIsOpenModal(false)}
-          removeFunction={handleDeleteInventory}
-        />
-      )}
-      {isModalViewerOpen && (
-        <ModalViewer
-          isOpenModal={isModalViewerOpen}
-          onCloseModal={() => setIsModalViewerOpen(false)}
-          title="Generar QR"
-          size="3xl"
-          dismissible={true}
-        >
-          <div className="flex flex-col items-center gap-4 p-4">
-            <div className="w-full">
-              <Label htmlFor="qrType">Tipo de QR</Label>
-              <Select
-                className="mt-1"
-                id="qrType"
-                name="qrType"
-                value={qrType}
-                onChange={(e) => setQrType(e.target.value)}
-              >
-                <option value="url">URL</option>
-                <option value="sn">Número de Serie</option>
-                <option value="info">Información</option>
-              </Select>
-            </div>
-            <div className="w-full">
-              <Label htmlFor="qrSize">Tamaño del QR</Label>
-              <Select
-                className="mt-1"
-                id="qrSize"
-                name="qrSize"
-                value={qrSize}
-                onChange={(e) => setQrSize(e.target.value)}
-              >
-                <option value="xs">Extra pequeño</option>
-                <option value="sm">Pequeño</option>
-                <option value="md">Medina</option>
-                <option value="lg">grande</option>
-              </Select>
-            </div>
-            {inventory && (
-              <div className="p-4 pb-0 flex justify-center items-center w-full">
-                <QRCodeGenerator
-                  inventoryInfo={inventory}
-                  type={qrType}
-                  qrSize={qrSize}
-                />
-              </div>
-            )}
-          </div>
-        </ModalViewer>
-      )}
     </div>
   );
 };
 
-const ProtectedInventoriesView = withPermission(ViewInventory, [
-  'view_inventories',
-  'view_self_inventories',
-]);
-
-export default ProtectedInventoriesView;
+export default InventoryPreview;

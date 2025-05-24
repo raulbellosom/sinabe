@@ -1,18 +1,23 @@
-import React from 'react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import classNames from 'classnames';
 import Notifies from '../../Notifies/Notifies';
 import { FaSearch } from 'react-icons/fa';
 
-const InventoryProperty = ({ label, value, icon: Icon, onSearch }) => {
+const InventoryProperty = ({
+  label,
+  value,
+  icon: Icon,
+  onSearch,
+  color = 'purple',
+}) => {
   const formattedValue =
     value && typeof value === 'string'
       ? value.replace(/\n/g, '<br />')
       : String(value);
 
   const handleDoubleClick = () => {
-    Notifies('success', `Campo ${label} copiado al portapapeles`);
+    Notifies('info', `Campo ${label} copiado al portapapeles`);
     navigator.clipboard.writeText(value);
   };
 
@@ -23,14 +28,15 @@ const InventoryProperty = ({ label, value, icon: Icon, onSearch }) => {
         onDoubleClick={() => handleDoubleClick()}
         className="group flex flex-col h-full text-nowrap"
       >
-        <h2 className="text-sm 2xl:text-base font-semibold">{label}</h2>
+        <h2 className="text-sm 3xl:text-base font-semibold">{label}</h2>
         <p
           className={classNames(
-            'relative text-xs font-semibold md:text-sm 2xl:text-base p-1.5 rounded-md text-white flex items-center gap-2 justify-start min-h-6 w-full',
+            'relative text-xs font-semibold md:text-sm 3xl:text-base p-1.5 rounded-md text-white flex items-center gap-2 justify-start min-h-6 w-full',
             {
-              'bg-mycad-primary': value === 'ALTA',
-              'bg-mycad-danger': value === 'BAJA',
-              'bg-mycad-warning': value === 'PROPUESTA DE BAJA',
+              'bg-sinabe-green': color === 'green',
+              'bg-sinabe-danger': color === 'red',
+              'bg-sinabe-warning': color === 'yellow',
+              'bg-sinabe-primary': color === 'purple',
             },
           )}
         >
@@ -52,17 +58,24 @@ const InventoryProperty = ({ label, value, icon: Icon, onSearch }) => {
       </div>
     );
   }
-
   return (
     <div
       onDoubleClick={() => handleDoubleClick()}
       className="group flex flex-col h-full"
     >
-      <h2 className="text-sm 2xl:text-base font-semibold">{label}</h2>
-      <p className="relative text-xs md:text-sm 2xl:text-base p-1.5 flex items-center gap-2 justify-start min-h-6 border-b border-neutral-100 pb-1">
+      <h2 className="text-sm 3xl:text-base font-semibold">{label}</h2>
+      <p className="relative text-xs md:text-sm 3xl:text-base p-1.5 flex items-center gap-2 justify-start min-h-6 border-b border-neutral-100 pb-1">
         {Icon && (
           <i>
-            <Icon size={22} className="inline text-purple-500" />
+            <Icon
+              size={22}
+              className={classNames('inline ', {
+                'text-sinabe-green': color === 'green',
+                'text-sinabe-danger': color === 'red',
+                'text-sinabe-warning': color === 'yellow',
+                'text-sinabe-primary': color === 'purple',
+              })}
+            />
           </i>
         )}
         <span dangerouslySetInnerHTML={{ __html: formattedValue }} />

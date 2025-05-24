@@ -5,3 +5,7 @@
 html {
   scroll-behavior: auto;
 }
+
+.force-small-font {
+  font-size: 0.75rem !important;
+}

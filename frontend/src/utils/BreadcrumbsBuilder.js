@@ -10,12 +10,17 @@ import { PiStackPlusFill } from 'react-icons/pi';
 import { BiCategory } from 'react-icons/bi';
 
 const BreadcrumbsBuilder = (path) => {
+  // No mostrar breadcrumbs en home o dashboard
+  if (path === '/' || path === '/dashboard') {
+    return [];
+  }
+
   const breadcrumbs = [
-    {
-      label: 'Home',
-      href: '/',
-      icon: HiHome,
-    },
+    // {
+    //   label: 'Home',
+    //   href: '/',
+    //   icon: HiHome,
+    // },
     {
       label: 'Inventarios',
       href: '/inventories',

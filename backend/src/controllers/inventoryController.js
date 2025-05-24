@@ -828,6 +828,14 @@ export const searchInventories = async (req, res) => {
             customField: true,
           },
         },
+        createdBy: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
       },
       orderBy: formSortBy(orderField, orderDirection),
       skip,
@@ -839,7 +847,6 @@ export const searchInventories = async (req, res) => {
     });
 
     const totalPages = Math.ceil(totalRecords / pageSize);
-
     res.json({
       data: inventories,
       pagination: {

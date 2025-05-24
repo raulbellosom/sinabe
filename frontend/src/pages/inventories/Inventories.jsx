@@ -44,6 +44,13 @@ import useCheckPermissions from '../../hooks/useCheckPermissions';
 import InventoriesImagesView from './views/InventoriesImagesView';
 import { downloadImagesAsZip } from '../../utils/downloadImagesAsZip';
 import { BsThreeDotsVertical } from 'react-icons/bs';
+import classNames from 'classnames';
+import InventoryPreview from './views/InventoryPreview';
+import {
+  TbLayoutSidebarLeftCollapseFilled,
+  TbLayoutSidebarLeftExpandFilled,
+} from 'react-icons/tb';
+import { formatInventoriesToCSVString } from '../../utils/inventoriesUtils';
 
 const formatInventory = (inventoryData) => {
   const { model, receptionDate, activeNumber, serialNumber } = inventoryData;
@@ -65,6 +72,17 @@ const Inventories = () => {
   const [refreshData, setRefreshData] = useState(false);
   const [viewMode, setViewMode] = useState('table');
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isOpenPreview, setIsOpenPreview] = useState(() => {
+    const stored = localStorage.getItem('isOpenPreview');
+    return (
+      (stored && stored !== 'undefined' ? JSON.parse(stored) : false) || false
+    );
+  });
+  const [inventoryPreview, setInventoryPreview] = useState(() => {
+    const stored = localStorage.getItem('inventoryPreview');
+    if (!stored || stored === 'undefined') return null;
+    return JSON.parse(stored);
+  });
 
   // Agregamos el filtro de estado; por defecto, si no hay selección, mostramos todos
   const initialFilters = {
@@ -152,6 +170,14 @@ const Inventories = () => {
     refetch();
     setRefreshData(false);
   }, [searchFilters, refreshData]);
+
+  useEffect(() => {
+    localStorage.setItem('isOpenPreview', JSON.stringify(isOpenPreview));
+  }, [isOpenPreview]);
+
+  useEffect(() => {
+    localStorage.setItem('inventoryPreview', JSON.stringify(inventoryPreview));
+  }, [inventoryPreview]);
 
   const goOnPrevPage = useCallback(() => {
     setSearchFilters((prevState) => ({
@@ -314,7 +340,7 @@ const Inventories = () => {
     if (inventoryId) {
       let items = { ...itemsToDownload };
       if (!items[inventoryId]) {
-        items[inventoryId] = formatInventory(inventory);
+        items[inventoryId] = inventory;
       } else {
         delete items[inventoryId];
       }
@@ -322,16 +348,25 @@ const Inventories = () => {
     }
   };
 
+  // const downloadInventoriesCSV = () => {
+  //   const items = Object.keys(itemsToDownload);
+  //   if (items.length > 0) {
+  //     let formattedString =
+  //       'Nombre,Tipo,Marca,Número de serie,Número de activo,Fecha de recepción';
+  //     for (let i = 0; i < items.length; i++) {
+  //       const inventory = items[i];
+  //       formattedString += itemsToDownload[inventory];
+  //     }
+  //     downloadCSV({ data: formattedString, fileName: 'inventories' });
+  //   } else {
+  //     Notifies('error', 'Selecciona los inventarios a descargar');
+  //   }
+  // };
+
   const downloadInventoriesCSV = () => {
-    const items = Object.keys(itemsToDownload);
-    if (items.length > 0) {
-      let formattedString =
-        'Nombre,Tipo,Marca,Número de serie,Número de activo,Fecha de recepción';
-      for (let i = 0; i < items.length; i++) {
-        const inventory = items[i];
-        formattedString += itemsToDownload[inventory];
-      }
-      downloadCSV({ data: formattedString, fileName: 'inventories' });
+    if (Object.keys(itemsToDownload).length > 0) {
+      const formattedCSV = formatInventoriesToCSVString(itemsToDownload);
+      downloadCSV({ data: formattedCSV, fileName: 'inventarios' });
     } else {
       Notifies('error', 'Selecciona los inventarios a descargar');
     }
@@ -387,6 +422,18 @@ const Inventories = () => {
           title="Inventario"
           actions={[
             {
+              label: 'Nuevo',
+              href: isCreatePermission.hasPermission
+                ? '/inventories/create'
+                : null,
+              color: 'mycad',
+              icon: IoMdAdd,
+              filled: true,
+            },
+          ]}
+          // TODO AUN no termino de implementar el dropdown de acciones
+          collapsedActions={[
+            {
               label: 'Exportar',
               action: downloadInventoriesCSV,
               color: 'green',
@@ -409,13 +456,18 @@ const Inventories = () => {
               icon: viewMode === 'table' ? MdPhotoAlbum : FaTable,
             },
             {
-              label: 'Nuevo',
-              href: isCreatePermission.hasPermission
-                ? '/inventories/create'
-                : null,
-              color: 'mycad',
-              icon: IoMdAdd,
-              filled: true,
+              label: isOpenPreview
+                ? 'Ocultar vista previa'
+                : 'Mostrar vista previa',
+              action: () => {
+                setIsOpenPreview(!isOpenPreview);
+                if (!isOpenPreview) {
+                  setInventoryPreview();
+                }
+              },
+              icon: isOpenPreview
+                ? TbLayoutSidebarLeftCollapseFilled
+                : TbLayoutSidebarLeftExpandFilled,
             },
           ]}
         />
@@ -448,213 +500,266 @@ const Inventories = () => {
             {inventories && !isPending ? (
               inventories?.data?.length > 0 ? (
                 <>
-                  <div className="hidden md:block">
-                    <Table
-                      columns={columns}
-                      sortBy={sortBy}
-                      sortedBy={searchFilters.sortBy}
-                      selectAll={selectAll}
+                  <div
+                    className={classNames('hidden md:grid gap-4', {
+                      'md:grid-cols-1': !isOpenPreview,
+                      'md:grid-cols-3': isOpenPreview,
+                    })}
+                  >
+                    <div
+                      className={classNames({
+                        'col-span-3': !isOpenPreview,
+                        'col-span-2': isOpenPreview,
+                      })}
                     >
-                      {inventories &&
-                        !isPending &&
-                        inventories?.data?.map((inventory) => {
-                          if (selectAllCheckbox) {
-                            inventory = {
-                              ...inventory,
-                              checked: true,
-                            };
-                          }
-                          return (
-                            <T.Row
-                              onDoubleClick={() =>
-                                (isViewPermission.hasPermission ||
-                                  isViewSelfPermission.hasPermission) &&
-                                navigate(`/inventories/view/${inventory.id}`)
-                              }
-                              onClick={(event) => {
-                                if (event.ctrlKey) {
+                      <Table
+                        columns={columns}
+                        sortBy={sortBy}
+                        sortedBy={searchFilters.sortBy}
+                        selectAll={selectAll}
+                      >
+                        {inventories &&
+                          !isPending &&
+                          inventories?.data?.map((inventory) => {
+                            if (selectAllCheckbox) {
+                              inventory = {
+                                ...inventory,
+                                checked: true,
+                              };
+                            }
+                            return (
+                              <T.Row
+                                onDoubleClick={() =>
                                   (isViewPermission.hasPermission ||
                                     isViewSelfPermission.hasPermission) &&
-                                    window.open(
-                                      `/inventories/view/${inventory.id}`,
-                                      '_blank',
-                                    );
+                                  navigate(`/inventories/view/${inventory.id}`)
                                 }
-                              }}
-                              key={inventory.id}
-                              className="border-b whitespace-nowrap dark:border-gray-600 text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
-                            >
-                              {inventoryColumns?.map((column) => {
-                                let content;
-                                if (column.id === 'checkbox') {
-                                  return (
-                                    <T.Cell className="py-2" key={column.id}>
-                                      <Checkbox
-                                        className="cursor-pointer text-purple-500 focus:ring-purple-500"
-                                        onChange={() =>
-                                          inventoriesToDownload(
-                                            inventory.id,
-                                            inventory,
-                                          )
-                                        }
-                                        checked={
-                                          itemsToDownload[inventory?.id]
-                                            ? true
-                                            : false
-                                        }
-                                      />
-                                    </T.Cell>
-                                  );
-                                } else if (
-                                  [
-                                    'receptionDate',
-                                    'createdAt',
-                                    'updatedAt',
-                                  ].includes(column.id)
-                                ) {
-                                  content = parseToLocalDate(
-                                    getNestedValue(inventory, column.id),
-                                  );
-                                } else {
-                                  content = getNestedValue(
-                                    inventory,
-                                    column.id,
-                                  );
-                                }
-
-                                if (
-                                  column.id === 'images' &&
-                                  inventory?.images?.length > 0
-                                ) {
-                                  return (
-                                    <T.Cell
-                                      key={column.id}
-                                      className="w-20 py-2"
-                                    >
-                                      <ImageViewer
-                                        images={[inventory?.images[0]]}
-                                        containerClassNames={
-                                          'first:w-12 first:h-12 first:rounded-md'
-                                        }
-                                      />
-                                    </T.Cell>
-                                  );
-                                }
-
-                                if (column.id === 'model.name') {
-                                  return (
-                                    <T.Cell
-                                      key={column.id}
-                                      className="font-semibold whitespace-nowrap dark:text-white py-2"
-                                    >
-                                      {getNestedValue(inventory, column.id)}
-                                    </T.Cell>
-                                  );
-                                }
-                                if (column.id === 'status') {
-                                  return (
-                                    <T.Cell className="py-2" key={column.id}>
-                                      <span
-                                        className={`px-4 py-1 text-white rounded-full text-xs font-medium ${
-                                          inventory.status === 'ALTA'
-                                            ? 'bg-mycad-primary'
-                                            : inventory.status === 'BAJA'
-                                              ? 'bg-mycad-danger'
-                                              : 'bg-mycad-warning'
-                                        }`}
+                                onClick={(event) => {
+                                  if (event.ctrlKey) {
+                                    (isViewPermission.hasPermission ||
+                                      isViewSelfPermission.hasPermission) &&
+                                      window.open(
+                                        `/inventories/view/${inventory.id}`,
+                                        '_blank',
+                                      );
+                                  } else {
+                                    if (isOpenPreview) {
+                                      setInventoryPreview(inventory);
+                                    }
+                                  }
+                                }}
+                                key={inventory.id}
+                                className={classNames(
+                                  'whitespace-nowrap dark:border-gray-600 text-gray-800 hover:bg-neutral-100 dark:hover:bg-gray-700 border-b border-b-neutral-200',
+                                  {
+                                    // 'bg-purple-400 text-white hover:text-black dark:bg-gray-700':
+                                    //   itemsToDownload[inventory?.id],
+                                    'bg-neutral-200':
+                                      inventoryPreview?.id === inventory.id &&
+                                      isOpenPreview,
+                                  },
+                                )}
+                              >
+                                {inventoryColumns?.map((column) => {
+                                  let content;
+                                  if (column.id === 'checkbox') {
+                                    return (
+                                      <T.Cell
+                                        className={classNames('py-2', {
+                                          'bg-sinabe-success/20':
+                                            inventory.status === 'ALTA',
+                                          'bg-sinabe-danger/20':
+                                            inventory.status === 'BAJA',
+                                          'bg-sinabe-warning/20 ':
+                                            inventory.status === 'PROPUESTA',
+                                        })}
+                                        key={column.id}
                                       >
-                                        {inventory.status === 'PROPUESTA'
-                                          ? 'PROPUESTA DE BAJA'
-                                          : inventory.status}
-                                      </span>
-                                    </T.Cell>
-                                  );
-                                }
-                                if (column.id === 'comments') {
+                                        <Checkbox
+                                          className="cursor-pointer text-purple-500 focus:ring-purple-500"
+                                          onChange={() =>
+                                            inventoriesToDownload(
+                                              inventory.id,
+                                              inventory,
+                                            )
+                                          }
+                                          checked={
+                                            itemsToDownload[inventory?.id]
+                                              ? true
+                                              : false
+                                          }
+                                        />
+                                      </T.Cell>
+                                    );
+                                  } else if (
+                                    [
+                                      'receptionDate',
+                                      'createdAt',
+                                      'updatedAt',
+                                    ].includes(column.id)
+                                  ) {
+                                    content = parseToLocalDate(
+                                      getNestedValue(inventory, column.id),
+                                    );
+                                  } else {
+                                    content = getNestedValue(
+                                      inventory,
+                                      column.id,
+                                    );
+                                  }
+                                  if (
+                                    column.id === 'images' &&
+                                    inventory?.images?.length > 0
+                                  ) {
+                                    return (
+                                      <T.Cell
+                                        key={column.id}
+                                        className="w-20 py-2"
+                                      >
+                                        <ImageViewer
+                                          images={[inventory?.images[0]]}
+                                          containerClassNames={
+                                            'first:w-12 first:h-12 first:rounded-md'
+                                          }
+                                        />
+                                      </T.Cell>
+                                    );
+                                  }
+
+                                  if (column.id === 'model.name') {
+                                    return (
+                                      <T.Cell
+                                        key={column.id}
+                                        className="font-semibold whitespace-nowrap dark:text-white py-2"
+                                      >
+                                        {getNestedValue(inventory, column.id)}
+                                      </T.Cell>
+                                    );
+                                  }
+                                  if (column.id === 'status') {
+                                    return (
+                                      <T.Cell className="py-2" key={column.id}>
+                                        <span
+                                          className={`px-4 py-1 text-white rounded-full text-xs font-medium ${
+                                            inventory.status === 'ALTA'
+                                              ? 'bg-sinabe-success'
+                                              : inventory.status === 'BAJA'
+                                                ? 'bg-sinabe-danger'
+                                                : 'bg-sinabe-warning'
+                                          }`}
+                                        >
+                                          {inventory.status === 'PROPUESTA'
+                                            ? 'PROPUESTA DE BAJA'
+                                            : inventory.status}
+                                        </span>
+                                      </T.Cell>
+                                    );
+                                  }
+                                  if (column.id === 'comments') {
+                                    return (
+                                      <T.Cell
+                                        key={column.id}
+                                        className="whitespace-wrap text-wrap py-2 min-w-72 max-w-72 truncate"
+                                      >
+                                        {content?.substring(0, 50)}
+                                      </T.Cell>
+                                    );
+                                  }
+                                  if (column.id === 'files') {
+                                    return (
+                                      <T.Cell key={column.id}>
+                                        <span className="w-fit p-2 px-4 flex justify-center items-center gap-2 bg-sky-50 text-black rounded-md">
+                                          <FaRegFile className="text-neutral-500" />
+                                          {content?.length}
+                                        </span>
+                                      </T.Cell>
+                                    );
+                                  }
+                                  if (column.id === 'actions') {
+                                    return (
+                                      <T.Cell className="py-2" key={column.id}>
+                                        <div className="flex justify-center items-center gap-2">
+                                          {(isViewPermission.hasPermission ||
+                                            isViewSelfPermission.hasPermission) && (
+                                            <LinkButton
+                                              route={`/inventories/view/${inventory.id}`}
+                                              label="Ver"
+                                              icon={FaEye}
+                                              color="cyan"
+                                            />
+                                          )}
+                                          {collapsedActions(inventory).some(
+                                            (item) => item.disabled === true,
+                                          ) &&
+                                            collapsedActions(inventory) && (
+                                              <Dropdown
+                                                renderTrigger={() => (
+                                                  <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
+                                                    <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                                                  </button>
+                                                )}
+                                                dismissOnClick={true}
+                                                inline
+                                                arrowIcon={null}
+                                                placement="right"
+                                                className="md:w-52"
+                                              >
+                                                {collapsedActions(
+                                                  inventory,
+                                                ).map(
+                                                  (action, index) =>
+                                                    action.disabled && (
+                                                      <Dropdown.Item
+                                                        key={index}
+                                                        className="min-w-36 min-h-12"
+                                                        onClick={() =>
+                                                          action?.action()
+                                                        }
+                                                        icon={action?.icon}
+                                                      >
+                                                        <span>
+                                                          {action?.label}
+                                                        </span>
+                                                      </Dropdown.Item>
+                                                    ),
+                                                )}
+                                              </Dropdown>
+                                            )}
+                                        </div>
+                                      </T.Cell>
+                                    );
+                                  }
                                   return (
                                     <T.Cell
+                                      className="text-nowrap py-2"
                                       key={column.id}
-                                      className="whitespace-wrap text-wrap py-2 min-w-72 max-w-72 truncate"
                                     >
-                                      {content?.substring(0, 50)}
+                                      {content}
                                     </T.Cell>
                                   );
-                                }
-                                if (column.id === 'files') {
-                                  return (
-                                    <T.Cell key={column.id}>
-                                      <span className="w-fit p-2 px-4 flex justify-center items-center gap-2 bg-sky-50 rounded-md">
-                                        <FaRegFile className="text-neutral-500" />
-                                        {content?.length}
-                                      </span>
-                                    </T.Cell>
-                                  );
-                                }
-                                if (column.id === 'actions') {
-                                  return (
-                                    <T.Cell className="py-2" key={column.id}>
-                                      <div className="flex justify-center items-center gap-2">
-                                        {(isViewPermission.hasPermission ||
-                                          isViewSelfPermission.hasPermission) && (
-                                          <LinkButton
-                                            route={`/inventories/view/${inventory.id}`}
-                                            label="Ver"
-                                            icon={FaEye}
-                                            color="cyan"
-                                          />
-                                        )}
-                                        {collapsedActions(inventory).some(
-                                          (item) => item.disabled === true,
-                                        ) &&
-                                          collapsedActions(inventory) && (
-                                            <Dropdown
-                                              renderTrigger={() => (
-                                                <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
-                                                  <BsThreeDotsVertical className="text-lg text-neutral-600" />
-                                                </button>
-                                              )}
-                                              dismissOnClick={false}
-                                              inline
-                                              arrowIcon={null}
-                                              placement="right"
-                                              className="md:w-52"
-                                            >
-                                              {collapsedActions(inventory).map(
-                                                (action, index) =>
-                                                  action.disabled && (
-                                                    <Dropdown.Item
-                                                      key={index}
-                                                      className="min-w-36 min-h-12"
-                                                      onClick={() =>
-                                                        action?.action()
-                                                      }
-                                                      icon={action?.icon}
-                                                    >
-                                                      <span>
-                                                        {action?.label}
-                                                      </span>
-                                                    </Dropdown.Item>
-                                                  ),
-                                              )}
-                                            </Dropdown>
-                                          )}
-                                      </div>
-                                    </T.Cell>
-                                  );
-                                }
-                                return (
-                                  <T.Cell
-                                    className="text-nowrap py-2"
-                                    key={column.id}
-                                  >
-                                    {content}
-                                  </T.Cell>
-                                );
-                              })}
-                            </T.Row>
-                          );
-                        })}
-                    </Table>
+                                })}
+                              </T.Row>
+                            );
+                          })}
+                      </Table>
+                    </div>
+                    <div
+                      className={classNames('hidden ', {
+                        'md:hidden': !isOpenPreview,
+                        'col-span-1 md:flex items-start justify-start gap-3 w-full h-full overflow-hidden':
+                          isOpenPreview,
+                      })}
+                    >
+                      {inventoryPreview && (
+                        <InventoryPreview
+                          inventory={inventoryPreview}
+                          onClose={() => {
+                            setIsOpenPreview(false);
+                            setInventoryPreview();
+                          }}
+                        />
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4 md:hidden">
                     {inventories?.data?.map((inventory) => {
@@ -738,7 +843,7 @@ const Inventories = () => {
                                         <BsThreeDotsVertical className="text-lg text-neutral-600" />
                                       </button>
                                     )}
-                                    dismissOnClick={false}
+                                    dismissOnClick={true}
                                     inline
                                     arrowIcon={null}
                                     placement="right"

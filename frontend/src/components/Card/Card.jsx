@@ -89,11 +89,11 @@ const Card = ({ data = {}, showImage = false }) => {
                           data[key].key === 'Estado',
                       },
                       {
-                        'bg-mycad-primary text-white text-center':
+                        'bg-sinabe-primary text-white text-center':
                           data[key].value === 'ALTA',
-                        'bg-mycad-danger text-white text-center':
+                        'bg-sinabe-danger text-white text-center':
                           data[key].value === 'BAJA',
-                        'bg-mycad-warning text-white text-center':
+                        'bg-sinabe-warning text-white text-center':
                           data[key].value === 'PROPUESTA DE BAJA',
                       },
                     )}

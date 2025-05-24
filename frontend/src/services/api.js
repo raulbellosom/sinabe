@@ -235,6 +235,16 @@ export const searchUsers = async ({
   }
 };
 
+export const getDashboardData = async () => {
+  try {
+    const response = await api.get(`/dashboard`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const getInventories = async () => {
   try {
     const response = await api.get(`/inventories`);

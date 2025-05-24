@@ -67,6 +67,10 @@ const GlobalInventorySearch = () => {
     setSelectedSuggestion(null);
     setSuggestions([]);
     setHighlightedIndex(-1);
+
+    if (inputRef.current) {
+      inputRef.current.querySelector('input')?.focus();
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -141,14 +145,16 @@ const GlobalInventorySearch = () => {
             className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-neutral-500"
           />
         )}
-        <MdOutlineKeyboardArrowDown
-          size={24}
-          onClick={() => setShowDropdown((prev) => !prev)}
-          className={classNames(
-            'absolute right-8 top-1/2 transform -translate-y-1/2 cursor-pointer',
-            { 'rotate-180': showDropdown },
-          )}
-        />
+        {suggestions.length > 0 && (
+          <MdOutlineKeyboardArrowDown
+            size={24}
+            onClick={() => setShowDropdown((prev) => !prev)}
+            className={classNames(
+              'absolute right-8 top-1/2 transform -translate-y-1/2 cursor-pointer',
+              { 'rotate-180': !showDropdown },
+            )}
+          />
+        )}
       </div>
       {showDropdown && suggestions.length > 0 && (
         <div className="mt-2 max-h-60 overflow-y-auto border border-gray-300 bg-white rounded-md shadow-lg absolute z-30 w-full">
