@@ -168,13 +168,13 @@ const InventoriesImagesView = ({
 
   // Renderizado
   return (
-    <div className="p-4 bg-white rounded shadow-md dark:bg-gray-900">
+    <div className="p-4 bg-white rounded shadow-md dark:bg-gray-900 relative">
       <h2 className="text-2xl font-semibold mb-4">
         Inventario por {mode === 'files' ? 'Archivos' : 'Imágenes'}
       </h2>
 
       {/* Botones para cambiar el modo de visualización */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-2 mb-4">
+      <div className="sticky -top-4 bg p-4 border-b bg-white left-0 flex flex-col md:flex-row items-center justify-between gap-2 mb-4">
         <div className="flex gap-2">
           <ActionButtons
             extraActions={[
