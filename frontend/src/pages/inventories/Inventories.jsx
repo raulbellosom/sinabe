@@ -19,7 +19,7 @@ import { useQuery } from '@tanstack/react-query';
 import { searchInventories } from '../../services/api';
 import Card from '../../components/Card/Card';
 import { parseToLocalDate } from '../../utils/formatValues';
-import { MdOutlineFileUpload, MdPhotoAlbum } from 'react-icons/md';
+import { MdOutlineFileUpload } from 'react-icons/md';
 import CreateMultipleInventory from './CreateMultipleInventory';
 import { downloadCSV } from '../../utils/DownloadCSV';
 import Notifies from '../../components/Notifies/Notifies';
@@ -54,6 +54,7 @@ import {
   TbLayoutSidebarLeftExpandFilled,
 } from 'react-icons/tb';
 import { formatInventoriesToCSVString } from '../../utils/inventoriesUtils';
+import { RiFolderImageFill } from 'react-icons/ri';
 
 const Inventories = () => {
   const { deleteInventory } = useInventoryContext();
@@ -446,11 +447,11 @@ const Inventories = () => {
               icon: MdOutlineFileUpload,
             },
             {
-              label: viewMode === 'table' ? 'Imágenes' : 'Tabla',
+              label: viewMode === 'table' ? 'Recursos' : 'Tabla',
               action: () =>
                 setViewMode(viewMode === 'table' ? 'images' : 'table'),
               color: 'black',
-              icon: viewMode === 'table' ? MdPhotoAlbum : FaTable,
+              icon: viewMode === 'table' ? RiFolderImageFill : FaTable,
             },
             {
               label: isOpenPreview
