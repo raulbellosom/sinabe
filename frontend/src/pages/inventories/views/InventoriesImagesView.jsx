@@ -174,7 +174,7 @@ const InventoriesImagesView = ({
       </h2>
 
       {/* Botones para cambiar el modo de visualización */}
-      <div className="sticky -top-4 bg p-4 border-b bg-white left-0 flex flex-col md:flex-row items-center justify-between gap-2 mb-4">
+      <div className="sticky -top-4 z-50 bg p-4 border-b bg-white left-0 flex flex-col md:flex-row items-center justify-between gap-2 mb-4">
         <div className="flex gap-2">
           <ActionButtons
             extraActions={[
