@@ -42,7 +42,10 @@ import LinkButton from '../../components/ActionButtons/LinkButton';
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
 import InventoriesImagesView from './views/InventoriesImagesView';
-import { downloadImagesAsZip } from '../../utils/downloadImagesAsZip';
+import {
+  downloadImagesAsZip,
+  downloadFilesAsZip,
+} from '../../utils/downloadImagesAsZip';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import classNames from 'classnames';
 import InventoryPreview from './views/InventoryPreview';
@@ -51,12 +54,6 @@ import {
   TbLayoutSidebarLeftExpandFilled,
 } from 'react-icons/tb';
 import { formatInventoriesToCSVString } from '../../utils/inventoriesUtils';
-
-const formatInventory = (inventoryData) => {
-  const { model, receptionDate, activeNumber, serialNumber } = inventoryData;
-  const inventory = `\n${model?.name},${model?.type?.name},${model?.brand?.name},${serialNumber},${activeNumber},${receptionDate}`;
-  return inventory;
-};
 
 const Inventories = () => {
   const { deleteInventory } = useInventoryContext();
@@ -268,7 +265,7 @@ const Inventories = () => {
     setSelectAllCheckbox((prevState) => !prevState);
     let inventoriesObj = {};
     for (let i = 0; i < items?.length; i++) {
-      inventoriesObj[items[i].id] = formatInventory(items[i]);
+      inventoriesObj[items[i].id] = items[i]; // Guarda el objeto, no el string
     }
     setItemsToDownload(!selectAllCheckbox ? inventoriesObj : {});
   };
@@ -886,6 +883,7 @@ const Inventories = () => {
                 <InventoriesImagesView
                   inventories={inventories?.data || []}
                   onDownloadZip={handleDownloadZipImages}
+                  onDownloadFilesZip={downloadFilesAsZip}
                 />
               ) : (
                 <TableResultsNotFound />

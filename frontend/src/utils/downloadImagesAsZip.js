@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
 import FileSaver from 'file-saver';
-import { API_URL } from '../services/api';
+import { API_URL, fetchFileBlob } from '../services/api';
 
 /**
  * Función que recibe un blob de imagen, lo dibuja en un canvas y genera un nuevo blob comprimido
@@ -74,6 +74,42 @@ export const downloadImagesAsZip = async (
   const fileName = `images_${formattedDate}.zip`;
 
   // Se genera el ZIP y se inicia la descarga.
+  zip.generateAsync({ type: 'blob' }).then((content) => {
+    FileSaver.saveAs(content, fileName);
+  });
+};
+
+/**
+ * Descarga y comprime archivos en un ZIP.
+ * @param {Array} selectedFiles - Archivos seleccionados, cada uno debe tener al menos { url, metadata.originalname }
+ */
+export const downloadFilesAsZip = async (selectedFiles = []) => {
+  if (!selectedFiles || selectedFiles.length === 0) {
+    alert('No hay archivos seleccionados para descargar.');
+    return;
+  }
+
+  const zip = new JSZip();
+  const folder = zip.folder('archivos');
+
+  // Procesa cada archivo seleccionado usando fetchFileBlob
+  const promises = selectedFiles.map(async (file, index) => {
+    try {
+      const { blob, fileName } = await fetchFileBlob(file);
+      folder.file(fileName, blob);
+    } catch (error) {
+      console.error(`Error descargando el archivo ${file.name}:`, error);
+    }
+  });
+
+  await Promise.all(promises);
+
+  // Nombre del ZIP con fecha
+  const currentDate = new Date();
+  const formattedDate = `${currentDate.getFullYear()}-${('0' + (currentDate.getMonth() + 1)).slice(-2)}-${('0' + currentDate.getDate()).slice(-2)}`;
+  const fileName = `archivos_${formattedDate}.zip`;
+
+  // Genera y descarga el ZIP
   zip.generateAsync({ type: 'blob' }).then((content) => {
     FileSaver.saveAs(content, fileName);
   });

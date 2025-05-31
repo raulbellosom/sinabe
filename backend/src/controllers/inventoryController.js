@@ -697,6 +697,11 @@ export const searchInventories = async (req, res) => {
               case "different":
                 condition = { [path[path.length - 1]]: { not: searchTerm } };
                 break;
+              case "contains":
+                condition = {
+                  [path[path.length - 1]]: { contains: searchTerm },
+                };
+                break;
               default:
                 break;
             }

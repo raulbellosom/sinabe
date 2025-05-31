@@ -1,3 +1,6 @@
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+
 export const formatInventoriesToCSVString = (inventoriesObj) => {
   const inventories = Object.values(inventoriesObj);
 
@@ -26,7 +29,7 @@ export const formatInventoriesToCSVString = (inventoriesObj) => {
     'Fecha de creacion',
     'Ultima modificacion',
     'Condiciones',
-    'Imagenes',
+    // 'Imagenes',
     ...allCustomFieldNames,
   ];
 
@@ -78,4 +81,34 @@ export const formatInventoriesToCSVString = (inventoriesObj) => {
   }
 
   return csv;
+};
+
+/**
+ * Descarga un array de archivos en un ZIP.
+ * @param {Array} files - Array de archivos, cada uno debe tener url y name.
+ * @param {String} [zipName] - Nombre del archivo ZIP.
+ */
+export const downloadFilesAsZip = async (files, zipName = 'archivos.zip') => {
+  if (!files || files.length === 0) return;
+
+  const zip = new JSZip();
+  const folder = zip.folder('archivos');
+
+  // Descarga cada archivo y lo agrega al ZIP
+  await Promise.all(
+    files.map(async (file) => {
+      try {
+        const response = await fetch(file.url);
+        const blob = await response.blob();
+        // Usa el nombre original si existe
+        const fileName = file.metadata?.originalname || file.name || 'archivo';
+        folder.file(fileName, blob);
+      } catch (e) {
+        // Si falla, ignora ese archivo
+      }
+    }),
+  );
+
+  const content = await zip.generateAsync({ type: 'blob' });
+  saveAs(content, zipName);
 };

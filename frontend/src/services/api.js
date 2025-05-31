@@ -792,4 +792,22 @@ export const downloadFile = async (file) => {
   }
 };
 
+/**
+ * Descarga un archivo y retorna el blob (sin guardarlo).
+ * @param {Object} file
+ * @returns {Promise<{blob: Blob, fileName: string}>}
+ */
+export const fetchFileBlob = async (file) => {
+  try {
+    const response = await api.get(file.url, {
+      responseType: 'blob',
+    });
+    const fileName = file?.metadata?.originalname || file?.id || 'archivo';
+    return { blob: response.data, fileName };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export default api;
