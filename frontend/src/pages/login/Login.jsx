@@ -94,7 +94,7 @@ const Login = () => {
               id="email"
               name="email"
               type="text"
-              label="Correo Electrónico"
+              label="Correo Electrónico o Usuario"
               icon={MdOutlineAlternateEmail}
             />
             <Field

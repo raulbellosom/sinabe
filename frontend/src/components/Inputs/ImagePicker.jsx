@@ -3,6 +3,7 @@ import { FileInput, Label } from 'flowbite-react';
 import { ErrorMessage } from 'formik';
 import ImageViewer from '../ImageViewer/ImageViewer';
 import classNames from 'classnames';
+import imageCompression from 'browser-image-compression';
 
 const ImagePicker = ({
   className,
@@ -10,10 +11,53 @@ const ImagePicker = ({
   form: { setFieldValue, touched, errors },
   ...props
 }) => {
-  const handleFileChange = (event) => {
-    const newFiles = Array.from(event.target.files);
+  const handleFileChange = async (event) => {
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      'image/svg+xml',
+      'image/heic',
+      'image/heif',
+      '',
+    ];
+    const allowedExtensions = [
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.webp',
+      '.gif',
+      '.svg',
+      '.heic',
+      '.heif',
+    ];
+    const files = Array.from(event.target.files);
     const currentFiles = field.value || [];
-    const combinedFiles = [...currentFiles, ...newFiles];
+
+    const compressedFiles = [];
+    for (const file of files) {
+      // Permitir si el tipo es válido o si el tipo es vacío pero la extensión es de imagen
+      const ext = file.name
+        ? file.name.toLowerCase().slice(file.name.lastIndexOf('.'))
+        : '';
+      if (
+        allowedTypes.includes(file.type) ||
+        (file.type === '' && allowedExtensions.includes(ext))
+      ) {
+        if (file.size > 3 * 1024 * 1024) {
+          const compressed = await imageCompression(file, {
+            maxSizeMB: 3,
+            maxWidthOrHeight: 1920,
+          });
+          compressedFiles.push(compressed);
+        } else {
+          compressedFiles.push(file);
+        }
+      }
+    }
+
+    const combinedFiles = [...currentFiles, ...compressedFiles];
     setFieldValue(field.name, combinedFiles);
   };
 
@@ -102,10 +146,9 @@ const ImagePicker = ({
         <FileInput
           id={props.id || props.name}
           multiple={props.multiple}
-          accept={props.accept || 'image/*'}
+          accept=""
           className="hidden"
           hidden
-          capture="environment"
           onChange={handleFileChange}
         />
         {field.value && field.value.length > 0 && (

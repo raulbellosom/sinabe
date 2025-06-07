@@ -126,7 +126,6 @@ export const loadUser = async (req, res) => {
   } catch (error) {
     console.log("Error on loadUser: ", error.message);
     res.status(500).json({ message: error.message });
-    c;
   }
 };
 

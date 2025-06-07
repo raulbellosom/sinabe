@@ -17,6 +17,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.49.2",
     "axios": "^1.7.4",
+    "browser-image-compression": "^2.0.2",
     "chart.js": "^4.4.9",
     "downshift": "^9.0.8",
     "file-saver": "^2.0.5",

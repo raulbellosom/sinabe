@@ -161,8 +161,6 @@ const InventoryFormFields = ({
             component={ImagePicker}
             label="Imagenes"
             multiple
-            capture="environment"
-            accept="image/.png,.jpg,.jpeg,.webp"
           />
           <Field
             name="files"
