@@ -1,82 +1,33 @@
 /*
   Warnings:
 
-  - The primary key for the `Project` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `inventoryId` on the `PurchaseOrder` table. All the data in the column will be lost.
-  - You are about to drop the column `orderDate` on the `PurchaseOrder` table. All the data in the column will be lost.
-  - You are about to drop the `ProjectFiles` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `ProjectImage` table. If the table is not empty, all the data it contains will be lost.
   - A unique constraint covering the columns `[internalFolio]` on the table `Inventory` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[code]` on the table `Project` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[code]` on the table `PurchaseOrder` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `budgetTotal` to the `Project` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `code` to the `Project` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `createdById` to the `Project` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `provider` to the `Project` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `status` to the `Project` table without a default value. This is not possible if the table is not empty.
-  - Made the column `endDate` on table `Project` required. This step will fail if there are existing NULL values in that column.
-  - Added the required column `code` to the `PurchaseOrder` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `createdById` to the `PurchaseOrder` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `date` to the `PurchaseOrder` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `status` to the `PurchaseOrder` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `supplier` to the `PurchaseOrder` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `updatedAt` to the `PurchaseOrder` table without a default value. This is not possible if the table is not empty.
-  - Made the column `projectId` on table `PurchaseOrder` required. This step will fail if there are existing NULL values in that column.
 
 */
--- DropForeignKey
-ALTER TABLE `ProjectFiles` DROP FOREIGN KEY `ProjectFiles_projectId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `ProjectImage` DROP FOREIGN KEY `ProjectImage_projectId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `PurchaseOrder` DROP FOREIGN KEY `PurchaseOrder_inventoryId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `PurchaseOrder` DROP FOREIGN KEY `PurchaseOrder_projectId_fkey`;
-
--- DropIndex
-DROP INDEX `PurchaseOrder_inventoryId_fkey` ON `PurchaseOrder`;
-
--- DropIndex
-DROP INDEX `PurchaseOrder_projectId_fkey` ON `PurchaseOrder`;
-
 -- AlterTable
 ALTER TABLE `Inventory` ADD COLUMN `internalFolio` VARCHAR(191) NULL,
     ADD COLUMN `projectId` VARCHAR(191) NULL;
 
--- AlterTable
-ALTER TABLE `Project` DROP PRIMARY KEY,
-    ADD COLUMN `budgetTotal` DOUBLE NOT NULL,
-    ADD COLUMN `budgetUsed` DOUBLE NOT NULL DEFAULT 0,
-    ADD COLUMN `code` VARCHAR(191) NOT NULL,
-    ADD COLUMN `createdById` VARCHAR(191) NOT NULL,
-    ADD COLUMN `provider` VARCHAR(191) NOT NULL,
-    ADD COLUMN `status` VARCHAR(191) NOT NULL,
-    MODIFY `id` VARCHAR(191) NOT NULL,
-    MODIFY `endDate` DATETIME(3) NOT NULL,
-    ADD PRIMARY KEY (`id`);
+-- CreateTable
+CREATE TABLE `Project` (
+    `id` VARCHAR(191) NOT NULL,
+    `code` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `provider` VARCHAR(191) NOT NULL,
+    `status` VARCHAR(191) NOT NULL,
+    `budgetTotal` DOUBLE NOT NULL,
+    `budgetUsed` DOUBLE NOT NULL DEFAULT 0,
+    `startDate` DATETIME(3) NOT NULL,
+    `endDate` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `enabled` BOOLEAN NOT NULL DEFAULT true,
+    `createdById` VARCHAR(191) NOT NULL,
 
--- AlterTable
-ALTER TABLE `PurchaseOrder` DROP COLUMN `inventoryId`,
-    DROP COLUMN `orderDate`,
-    ADD COLUMN `code` VARCHAR(191) NOT NULL,
-    ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    ADD COLUMN `createdById` VARCHAR(191) NOT NULL,
-    ADD COLUMN `date` DATETIME(3) NOT NULL,
-    ADD COLUMN `description` VARCHAR(191) NULL,
-    ADD COLUMN `enabled` BOOLEAN NOT NULL DEFAULT true,
-    ADD COLUMN `status` VARCHAR(191) NOT NULL,
-    ADD COLUMN `supplier` VARCHAR(191) NOT NULL,
-    ADD COLUMN `updatedAt` DATETIME(3) NOT NULL,
-    MODIFY `projectId` VARCHAR(191) NOT NULL;
-
--- DropTable
-DROP TABLE `ProjectFiles`;
-
--- DropTable
-DROP TABLE `ProjectImage`;
+    UNIQUE INDEX `Project_code_key`(`code`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Deadline` (
@@ -115,6 +66,25 @@ CREATE TABLE `InventoryDeadline` (
     `inventoryId` VARCHAR(191) NOT NULL,
     `deadlineId` INTEGER NOT NULL,
 
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `PurchaseOrder` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `code` VARCHAR(191) NOT NULL,
+    `supplier` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `amount` DOUBLE NOT NULL,
+    `status` VARCHAR(191) NOT NULL,
+    `date` DATETIME(3) NOT NULL,
+    `projectId` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `enabled` BOOLEAN NOT NULL DEFAULT true,
+    `createdById` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `PurchaseOrder_code_key`(`code`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -184,12 +154,6 @@ CREATE TABLE `_ProjectVerticalsOnProjects` (
 
 -- CreateIndex
 CREATE UNIQUE INDEX `Inventory_internalFolio_key` ON `Inventory`(`internalFolio`);
-
--- CreateIndex
-CREATE UNIQUE INDEX `Project_code_key` ON `Project`(`code`);
-
--- CreateIndex
-CREATE UNIQUE INDEX `PurchaseOrder_code_key` ON `PurchaseOrder`(`code`);
 
 -- AddForeignKey
 ALTER TABLE `Inventory` ADD CONSTRAINT `Inventory_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

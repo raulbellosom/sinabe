@@ -123,31 +123,6 @@ CREATE TABLE `InventoryCustomField` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Project` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(191) NOT NULL,
-    `description` VARCHAR(191) NULL,
-    `startDate` DATETIME(3) NOT NULL,
-    `endDate` DATETIME(3) NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-    `enabled` BOOLEAN NOT NULL DEFAULT true,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `PurchaseOrder` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `orderDate` DATETIME(3) NOT NULL,
-    `amount` DOUBLE NOT NULL,
-    `inventoryId` VARCHAR(191) NULL,
-    `projectId` INTEGER NULL,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
 CREATE TABLE `File` (
     `id` VARCHAR(191) NOT NULL,
     `inventoryId` VARCHAR(191) NOT NULL,
@@ -198,36 +173,6 @@ CREATE TABLE `Image` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `ProjectImage` (
-    `id` VARCHAR(191) NOT NULL,
-    `url` VARCHAR(191) NOT NULL,
-    `thumbnail` VARCHAR(191) NULL,
-    `type` VARCHAR(191) NOT NULL,
-    `metadata` JSON NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `enabled` BOOLEAN NOT NULL DEFAULT true,
-    `projectId` INTEGER NULL,
-
-    INDEX `ProjectImage_projectId_idx`(`projectId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `ProjectFiles` (
-    `id` VARCHAR(191) NOT NULL,
-    `url` VARCHAR(191) NOT NULL,
-    `thumbnail` VARCHAR(191) NULL,
-    `type` VARCHAR(191) NOT NULL,
-    `metadata` JSON NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `enabled` BOOLEAN NOT NULL DEFAULT true,
-    `projectId` INTEGER NULL,
-
-    INDEX `ProjectFiles_projectId_idx`(`projectId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
 CREATE TABLE `UserImage` (
     `id` VARCHAR(191) NOT NULL,
     `url` VARCHAR(191) NOT NULL,
@@ -270,12 +215,6 @@ ALTER TABLE `InventoryCustomField` ADD CONSTRAINT `InventoryCustomField_customFi
 ALTER TABLE `InventoryCustomField` ADD CONSTRAINT `InventoryCustomField_inventoryId_fkey` FOREIGN KEY (`inventoryId`) REFERENCES `Inventory`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `PurchaseOrder` ADD CONSTRAINT `PurchaseOrder_inventoryId_fkey` FOREIGN KEY (`inventoryId`) REFERENCES `Inventory`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `PurchaseOrder` ADD CONSTRAINT `PurchaseOrder_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE `File` ADD CONSTRAINT `File_inventoryId_fkey` FOREIGN KEY (`inventoryId`) REFERENCES `Inventory`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -286,12 +225,6 @@ ALTER TABLE `InventoryCondition` ADD CONSTRAINT `InventoryCondition_inventoryId_
 
 -- AddForeignKey
 ALTER TABLE `Image` ADD CONSTRAINT `Image_inventoryId_fkey` FOREIGN KEY (`inventoryId`) REFERENCES `Inventory`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `ProjectImage` ADD CONSTRAINT `ProjectImage_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `ProjectFiles` ADD CONSTRAINT `ProjectFiles_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `UserImage` ADD CONSTRAINT `UserImage_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
