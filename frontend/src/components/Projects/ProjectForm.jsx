@@ -74,7 +74,7 @@ const ProjectForm = ({
       validationSchema={validationSchema}
       enableReinitialize
     >
-      {({ setFieldValue, isSubmitting, values }) => {
+      {({ setFieldValue, isSubmitting, values, submitForm }) => {
         useEffect(() => {
           if (setFormValues) setFormValues(values);
         }, [values, setFormValues]);
@@ -228,10 +228,7 @@ const ProjectForm = ({
                     filled: isChanged,
                     icon: isEdit ? FaSave : FaPlus,
                     disabled: (isEdit ? !isChanged : false) || isSubmitting,
-                    action: () => {
-                      if (isSubmitting) return;
-                      onSubmit(values, { setSubmitting: () => {} });
-                    },
+                    action: submitForm,
                   },
                 ]}
               />
