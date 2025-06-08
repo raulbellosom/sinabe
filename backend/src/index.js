@@ -11,6 +11,11 @@ import permissionRoutes from "./routes/permissionRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import rolePermissionRoutes from "./routes/rolePermissionRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import projectRoutes from "./routes/projectRoutes.js";
+import deadlineRoutes from "./routes/deadlineRoutes.js";
+import purchaseOrderRoutes from "./routes/purchaseOrderRoutes.js";
+import projectDocumentRoutes from "./routes/projectDocumentRoutes.js";
+import projectVerticalRoutes from "./routes/projectVerticalRoutes.js";
 
 dotenv.config();
 
@@ -32,6 +37,11 @@ app.use("/api/permissions", permissionRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/role-permissions", rolePermissionRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/deadlines", deadlineRoutes);
+app.use("/api/project-documents", projectDocumentRoutes);
+app.use("/api/purchase-orders", purchaseOrderRoutes);
+app.use("/api/project-verticals", projectVerticalRoutes);
 app.use("/api/ping", pingRoutes);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 

@@ -48,7 +48,7 @@ const processImage = async (imagePath, fileName) => {
 
 // Función de transformación para adaptar el JSON recibido al formato que usaremos
 const transformInventory = (oldInventory) => {
-  const baseUrl = "https://apisinabe.sytes.net";
+  const baseUrl = "";
   return {
     serialNumber: oldInventory.serialNumber,
     activeNumber: oldInventory.activeNumber || oldInventory.activo,
@@ -250,16 +250,11 @@ export const migrateInventory = async (req, res) => {
 
     // Función helper para mapear el valor numérico de status al enum correspondiente
     const getStatusEnum = (statusValue) => {
-      switch (statusValue) {
-        case 1:
-          return "ALTA";
-        case 2:
-          return "PROPUESTA";
-        case 3:
-          return "BAJA";
-        default:
-          throw new Error(`Valor de status inválido: ${statusValue}`);
+      const allowed = ["ALTA", "PROPUESTA", "BAJA"];
+      if (allowed.includes(statusValue)) {
+        return statusValue;
       }
+      throw new Error(`Valor de status inválido: ${statusValue}`);
     };
 
     // Crear el inventario en la base de datos

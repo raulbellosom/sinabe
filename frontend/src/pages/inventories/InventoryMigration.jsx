@@ -36,49 +36,60 @@ function stripHtml(html) {
 }
 
 // Función de transformación: convierte el inventario antiguo al nuevo formato
-const transformInventory = (oldInventory) => {
-  const baseUrl = 'https://apisinabe.sytes.net';
+const transformInventory = (oldInventory, baseUrl) => {
   return {
     serialNumber: oldInventory.serialNumber,
-    activeNumber: oldInventory.activo,
-    status: oldInventory.status, // 1 = ALTA, 2 = PROPUESTA, 3 = BAJA
+    activeNumber: oldInventory.activeNumber ?? oldInventory.activo ?? '',
+    status: oldInventory.status,
     images: oldInventory?.images?.map((img) => ({
-      url: baseUrl + img,
-      thumbnail: baseUrl + img,
+      url: img.url
+        ? baseUrl.replace(/\/$/, '') + '/' + img.url.replace(/^\//, '')
+        : '',
+      thumbnail: img.thumbnail
+        ? baseUrl.replace(/\/$/, '') + '/' + img.thumbnail.replace(/^\//, '')
+        : '',
     })),
     files: oldInventory?.files?.map((file) => ({
-      url: baseUrl + file.url,
-      name: file.file?.name || '',
-      type: file.file?.type || '',
+      url: file.url
+        ? baseUrl.replace(/\/$/, '') + '/' + file.url.replace(/^\//, '')
+        : '',
+      name: file.name || file.file?.name || '',
+      type: file.type || file.file?.type || '',
       metadata: {
-        name: file.file?.name || '',
-        path: file.file?.path || '',
-        size: file.file?.size || 0,
-        type: file.file?.type || '',
-        lastModified: file.file?.lastModified || 0,
-        lastModifiedDate: file.file?.lastModifiedDate || '',
-        webkitRelativePath: file.file?.webkitRelativePath || '',
+        name: file.name || file.file?.name || '',
+        path: file.path || file.file?.path || '',
+        size: file.size || file.file?.size || 0,
+        type: file.type || file.file?.type || '',
+        lastModified: file.lastModified || file.file?.lastModified || 0,
+        lastModifiedDate:
+          file.lastModifiedDate || file.file?.lastModifiedDate || '',
+        webkitRelativePath:
+          file.webkitRelativePath || file.file?.webkitRelativePath || '',
       },
     })),
     altaDate: oldInventory.altaDate,
     bajaDate: oldInventory.bajaDate,
-    receptionDate: oldInventory.recepcionDate,
+    receptionDate: oldInventory.receptionDate ?? oldInventory.recepcionDate,
     createdAt: oldInventory.createdAt,
     updatedAt: oldInventory.updatedAt,
     comments: oldInventory.comments,
-    inventoryModel: {
-      name: oldInventory.inventoryModel.name,
-      inventoryBrand: { name: oldInventory.inventoryModel.inventoryBrand.name },
-      inventoryType: { name: oldInventory.inventoryModel.inventoryType.name },
-    },
-    customFields: oldInventory.details
-      .filter(
-        (detail) => detail.key.trim() !== '' && detail.value.trim() !== '',
-      )
-      .map((detail) => ({
-        customField: detail.key,
-        customFieldValue: detail.value,
-      })),
+    inventoryModel: oldInventory.model
+      ? {
+          name: oldInventory.model.name,
+          inventoryBrand: { name: oldInventory.model.brand?.name || '' },
+          inventoryType: { name: oldInventory.model.type?.name || '' },
+        }
+      : {
+          name: '',
+          inventoryBrand: { name: '' },
+          inventoryType: { name: '' },
+        },
+    customFields: Array.isArray(oldInventory.customField)
+      ? oldInventory.customField.map((cf) => ({
+          customField: cf.customField?.name || cf.customFieldName || '',
+          customFieldValue: cf.value || '',
+        }))
+      : [],
   };
 };
 
@@ -331,6 +342,7 @@ const MigratedInventoryPreview = ({ inventory }) => {
 
 const InventoryMigration = () => {
   // Estados para pestañas "Importar por URL" y "Pegar JSON"
+  const [apiBaseUrl, setApiBaseUrl] = useState('https://sinabe.giize.com/api');
   const [url, setUrl] = useState('');
   const [token, setToken] = useState('');
   const [jsonText, setJsonText] = useState('');
@@ -351,7 +363,7 @@ const InventoryMigration = () => {
     try {
       const response = await fetch(url, {
         headers: {
-          'x-access-token': token,
+          Authorization: `Bearer ${token}`,
         },
       });
       if (!response.ok) {
@@ -393,7 +405,10 @@ const InventoryMigration = () => {
   const handleSendInventory = async () => {
     if (!result || !result.inventory) return;
     setIsSending(true);
-    const transformedInventory = transformInventory(result.inventory);
+    const transformedInventory = transformInventory(
+      result.inventory,
+      apiBaseUrl,
+    );
     const parsedInventory = {
       ...transformedInventory,
       comments: stripHtml(transformedInventory.comments),
@@ -459,10 +474,10 @@ const InventoryMigration = () => {
         try {
           // Se consulta a apisinabe.sytes.net usando el id y el token (usando el header 'x-access-token')
           const response = await fetch(
-            `https://apisinabe.sytes.net/api/inventories/${uuid}`,
+            `${apiBaseUrl.replace(/\/$/, '')}/inventories/${uuid}`,
             {
               headers: {
-                'x-access-token': csvToken,
+                Authorization: `Bearer ${csvToken}`,
               },
             },
           );
@@ -470,11 +485,11 @@ const InventoryMigration = () => {
             throw new Error(`No se pudo obtener el inventario ${uuid}`);
           }
           const data = await response.json();
-          if (!data.inventory) {
+          if (!data) {
             throw new Error(`Inventario ${uuid} no tiene información.`);
           }
           // Se transforma la información obtenida
-          const transformed = transformInventory(data.inventory);
+          const transformed = transformInventory(data, apiBaseUrl);
           const parsedInventory = {
             ...transformed,
             comments: stripHtml(transformed.comments),
@@ -502,7 +517,9 @@ const InventoryMigration = () => {
   };
 
   const transformedInventory =
-    result && result.inventory ? transformInventory(result.inventory) : null;
+    result && result.inventory
+      ? transformInventory(result.inventory, apiBaseUrl)
+      : null;
 
   return (
     <section className="bg-white shadow-md rounded-md dark:bg-gray-900 p-6">
@@ -545,6 +562,23 @@ const InventoryMigration = () => {
                   placeholder="Ingresa el token"
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
+                  required
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                />
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="apiBaseUrl"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                >
+                  URL base del API
+                </label>
+                <input
+                  type="url"
+                  id="apiBaseUrl"
+                  placeholder="https://miapi.com"
+                  value={apiBaseUrl}
+                  onChange={(e) => setApiBaseUrl(e.target.value)}
                   required
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 />
@@ -620,6 +654,23 @@ const InventoryMigration = () => {
                   placeholder="Ingresa el token"
                   value={csvToken}
                   onChange={(e) => setCsvToken(e.target.value)}
+                  required
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                />
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="apiBaseUrlCsv"
+                  className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                >
+                  URL base del API
+                </label>
+                <input
+                  type="url"
+                  id="apiBaseUrlCsv"
+                  placeholder="https://miapi.com"
+                  value={apiBaseUrl}
+                  onChange={(e) => setApiBaseUrl(e.target.value)}
                   required
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 />

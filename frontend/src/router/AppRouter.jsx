@@ -22,6 +22,9 @@ import Account from '../pages/account/Account';
 import Users from '../pages/users/Users';
 import NotFound from '../pages/notFound/NotFound';
 import Roles from '../pages/roles/Roles';
+import ProjectsPage from '../pages/projects/ProjectsPage';
+import CreateProjectPage from '../pages/projects/CreateProjectPage';
+import EditProjectPage from '../pages/projects/EditProjectPage';
 
 const AppRouter = () => {
   const { user } = useContext(AuthContext);
@@ -67,6 +70,15 @@ const AuthorizedRoute = ({ user }) => {
                   <Route
                     path="/inventories/view/:id"
                     element={<ViewInventory />}
+                  />
+                  <Route path="/projects" element={<ProjectsPage />} />
+                  <Route
+                    path="/projects/create"
+                    element={<CreateProjectPage />}
+                  />
+                  <Route
+                    path="/projects/edit/:id"
+                    element={<EditProjectPage />}
                   />
                   <Route path="/catalogs" element={<Catalogs />} />
                   <Route path="/roles" element={<Roles />} />

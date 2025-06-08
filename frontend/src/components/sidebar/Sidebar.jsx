@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Sidebar as ProSidebar,
@@ -25,7 +25,7 @@ import MainLayout from '../../Layout/MainLayout';
 import { BiCategory } from 'react-icons/bi';
 import { MdAddBox, MdAdminPanelSettings } from 'react-icons/md';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
-import { FaListCheck } from 'react-icons/fa6';
+import { FaDiagramProject, FaListCheck } from 'react-icons/fa6';
 import { LuArchiveRestore } from 'react-icons/lu';
 
 const themes = {
@@ -301,6 +301,16 @@ const Sidebar = ({ children }) => {
                   </MenuItem>
                 </SubMenu>
               )}
+              <MenuItem
+                icon={<FaDiagramProject size={23} />}
+                active={isActivePath('/projects')}
+                component={<Link to={'/projects'} />}
+                onClick={() => {
+                  setToggled(false);
+                }}
+              >
+                Proyectos
+              </MenuItem>
               {(isUsersPermission.hasPermission ||
                 isRolesPermission.hasPermission) && (
                 <SubMenu

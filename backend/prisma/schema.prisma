@@ -56,11 +56,13 @@ model User {
 model Inventory {
   id            String                 @id @default(uuid())
   status        Status
-  createdById   String // Referencia al usuario creador
+  createdById   String
+  internalFolio String?                @unique
   activeNumber  String?
   serialNumber  String?
   comments      String?                @db.Text
   modelId       Int
+  projectId   Int? 
   enabled       Boolean                @default(true)
   receptionDate DateTime?
   altaDate      DateTime?
@@ -74,10 +76,12 @@ model Inventory {
   model         Model                  @relation(fields: [modelId], references: [id])
   conditions    InventoryCondition[]
   customField   InventoryCustomField[]
-  purchaseOrders PurchaseOrder[]
+  project     Project?     @relation("ProjectInventories", fields: [projectId], references: [id])
+
 
   @@index([createdById], map: "Inventory_createdById_fkey")
   @@index([modelId], map: "Inventory_modelId_fkey")
+  InventoryDeadline InventoryDeadline[]
 }
 
 model InventoryType {
@@ -129,30 +133,129 @@ model InventoryCustomField {
 }
 
 model Project {
-  id             Int             @id @default(autoincrement())
-  name           String
-  description    String?
-  startDate      DateTime
-  endDate        DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  enabled        Boolean        @default(true)
+  id            Int              @id @default(autoincrement())
+  code          String           @unique // Ej: PROJ-001
+  name          String
+  description   String?
+  provider      String
+  status        String           // En progreso, Completado, Planificación
+  budgetTotal   Float
+  budgetUsed    Float            @default(0)
+  startDate     DateTime
+  endDate       DateTime
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  enabled       Boolean          @default(true)
+  createdById   String
 
-  purchaseOrders PurchaseOrder[]
-  projectImages  ProjectImage[] @relation("ProjectImages")
-  projectFiles   ProjectFiles[] @relation("ProjectFiles")
+  deadlines       Deadline[]
+  purchaseOrders  PurchaseOrder[]
+  documents       ProjectDocument[]
+  inventories     Inventory[]      @relation("ProjectInventories")
+  teamMembers     ProjectMember[]
+  verticals     ProjectVertical[] @relation("ProjectVerticalsOnProjects")
+}
+
+model Deadline {
+  id         Int             @id @default(autoincrement())
+  name       String          // Ej: Suministro, Instalación
+  description String?
+  status     String          // Completado, En progreso, Pendiente
+  responsible String?
+  dueDate    DateTime
+  projectId  Int
+  project    Project         @relation(fields: [projectId], references: [id])
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  enabled    Boolean         @default(true)
+  createdById String
+
+  inventoryAssignments InventoryDeadline[]
+  tasks      DeadlineTask[]
+}
+
+model DeadlineTask {
+  id         Int        @id @default(autoincrement())
+  name       String
+  date       DateTime
+  deadlineId Int
+  deadline   Deadline   @relation(fields: [deadlineId], references: [id])
+  enabled    Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  createdById String
+}
+
+model InventoryDeadline {
+  id           Int        @id @default(autoincrement())
+  inventoryId  String
+  deadlineId   Int
+  inventory    Inventory  @relation(fields: [inventoryId], references: [id])
+  deadline     Deadline   @relation(fields: [deadlineId], references: [id])
 }
 
 model PurchaseOrder {
-  id            Int      @id @default(autoincrement())
-  orderDate     DateTime
-  amount        Float
+  id          Int       @id @default(autoincrement())
+  code        String    @unique // Ej: OC-2025-001
+  supplier    String
+  description String?
+  amount      Float
+  status      String    // Aprobada, En proceso, Rechazada
+  date        DateTime
+  projectId   Int
+  project     Project   @relation(fields: [projectId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  enabled     Boolean   @default(true)
+  createdById String
 
-  inventory     Inventory?   @relation(fields: [inventoryId], references: [id])
-  inventoryId   String?
+  invoices    Invoice[]
+}
 
-  project       Project?     @relation(fields: [projectId], references: [id])
-  projectId     Int?
+model Invoice {
+  id             Int       @id @default(autoincrement())
+  code           String    // Ej: INV-001
+  concept        String
+  amount         Float
+  status         String    // Pagada, Pendiente
+  date           DateTime
+  fileUrl        String?
+  purchaseOrderId Int
+  purchaseOrder  PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  enabled        Boolean   @default(true)
+  createdById    String
+}
+
+model ProjectMember {
+  id         Int      @id @default(autoincrement())
+  role       String   // Project Manager, Instalador, etc
+  name       String
+  projectId  Int
+  project    Project  @relation(fields: [projectId], references: [id])
+}
+
+model ProjectDocument {
+  id         Int      @id @default(autoincrement())
+  name       String
+  fileUrl    String
+  description String?
+  metadata   Json?
+  enabled    Boolean  @default(true)
+  uploadDate DateTime
+  projectId  Int
+  project    Project  @relation(fields: [projectId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  createdById String
+}
+
+model ProjectVertical {
+  id        Int     @id @default(autoincrement())
+  name      String  @unique
+  enabled   Boolean @default(true)
+  projects  Project[] @relation("ProjectVerticalsOnProjects")
 }
 
 model File {
@@ -199,34 +302,6 @@ model Image {
   inventory   Inventory? @relation("InventoryImages", fields: [inventoryId], references: [id])
 
   @@index([inventoryId])
-}
-
-model ProjectImage {
-  id          String     @id @default(uuid())
-  url         String
-  thumbnail   String?
-  type        String
-  metadata    Json?
-  createdAt   DateTime   @default(now())
-  enabled     Boolean    @default(true)
-  projectId   Int?
-  project     Project?   @relation("ProjectImages", fields: [projectId], references: [id])
-
-  @@index([projectId])
-}
-
-model ProjectFiles {
-  id          String     @id @default(uuid())
-  url         String
-  thumbnail   String?
-  type        String
-  metadata    Json?
-  createdAt   DateTime   @default(now())
-  enabled     Boolean    @default(true)
-  projectId   Int?
-  project     Project?   @relation("ProjectFiles", fields: [projectId], references: [id])
-
-  @@index([projectId])
 }
 
 model UserImage {

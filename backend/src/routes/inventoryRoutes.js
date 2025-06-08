@@ -8,6 +8,7 @@ import {
   deleteInventory,
   searchInventories,
   checkSerialNumber,
+  assignMissingFolios,
 } from "../controllers/inventoryController.js";
 import {
   getInventoryTypes,
@@ -131,5 +132,6 @@ router
 router
   .route("/customFields/:customFieldId/values")
   .get(protect, getCustomFieldValues);
+router.route("/assignMissingFolios").post(protect, assignMissingFolios);
 
 export default router;

@@ -8,6 +8,7 @@ import { HiHome } from 'react-icons/hi';
 import { MdChecklist } from 'react-icons/md';
 import { PiStackPlusFill } from 'react-icons/pi';
 import { BiCategory } from 'react-icons/bi';
+import { AiOutlineProject } from 'react-icons/ai';
 
 const BreadcrumbsBuilder = (path) => {
   // No mostrar breadcrumbs en home o dashboard
@@ -40,7 +41,31 @@ const BreadcrumbsBuilder = (path) => {
       href: '/inventories/view',
       icon: MdChecklist,
     },
-
+    {
+      label: 'Migrar Inventarios',
+      href: '/inventories/migrate',
+      icon: HiHome,
+    },
+    {
+      label: 'Proyectos',
+      href: '/projects',
+      icon: AiOutlineProject,
+    },
+    {
+      label: 'Detalles del Proyecto',
+      href: '/projects/view',
+      icon: MdChecklist,
+    },
+    {
+      label: 'Crear Proyecto',
+      href: '/projects/create',
+      icon: PiStackPlusFill,
+    },
+    {
+      label: 'Editar Proyecto',
+      href: '/projects/edit',
+      icon: null,
+    },
     {
       label: 'Catalogos',
       href: '/catalogs',

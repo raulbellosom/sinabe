@@ -1,6 +1,26 @@
 import { db } from "../lib/db.js";
 
 // Función para obtener los permisos del usuario
+
+const generateInternalFolio = async (model) => {
+  const typeCode = model.type.name.substring(0, 3).toUpperCase(); // Ej: "CAM"
+  const brandCode = model.brand.name.substring(0, 3).toUpperCase(); // Ej: "HIK"
+
+  const baseCode = `INV-${typeCode}-${brandCode}`;
+
+  const count = await db.inventory.count({
+    where: {
+      modelId: model.id,
+      enabled: true,
+      internalFolio: { not: null },
+    },
+  });
+
+  const consecutive = String(count + 1).padStart(3, "0");
+
+  return `${baseCode}-${consecutive}`; // Ej: INV-CAM-HIK-001
+};
+
 const getUserPermissions = async (userId) => {
   const user = await db.user.findUnique({
     where: { id: userId },
@@ -152,12 +172,21 @@ export const createInventory = async (req, res) => {
       }
     }
 
+    const internalFolio = await generateInternalFolio(model);
+
+    // check folio is generated
+    if (!internalFolio) {
+      res.status(500).json({ message: "Error al generar el folio interno" });
+      return;
+    }
+
     const createdInventory = await db.$transaction(async (prisma) => {
       const inventory = await prisma.inventory.create({
         data: {
           modelId: parseInt(modelId, 10),
           activeNumber,
           serialNumber,
+          internalFolio,
           receptionDate: receptionDate ? new Date(receptionDate) : null,
           comments,
           status,
@@ -864,5 +893,37 @@ export const searchInventories = async (req, res) => {
   } catch (error) {
     console.error("Error fetching inventories:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const assignMissingFolios = async (req, res) => {
+  try {
+    const inventories = await db.inventory.findMany({
+      where: {
+        internalFolio: null,
+        enabled: true,
+      },
+      include: {
+        model: {
+          include: {
+            brand: true,
+            type: true,
+          },
+        },
+      },
+    });
+
+    for (const inventory of inventories) {
+      const folio = await generateInternalFolio(inventory.model);
+
+      await db.inventory.update({
+        where: { id: inventory.id },
+        data: { internalFolio: folio },
+      });
+    }
+
+    res.status(200).json({ message: "Folios generados correctamente." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
