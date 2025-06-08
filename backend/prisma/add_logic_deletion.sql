@@ -1,3 +1,38 @@
--- AlterTable
-ALTER TABLE `Project` DROP COLUMN `client`,
-    ADD COLUMN `provider` VARCHAR(191) NOT NULL;
+-- AlterTable: Deadline
+ALTER TABLE `Deadline`
+    ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    ADD COLUMN `createdById` VARCHAR(191) NOT NULL,
+    ADD COLUMN `enabled` BOOLEAN NOT NULL DEFAULT true,
+    ADD COLUMN `updatedAt` DATETIME(3) NOT NULL;
+
+-- AlterTable: DeadlineTask
+ALTER TABLE `DeadlineTask`
+    ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    ADD COLUMN `createdById` VARCHAR(191) NOT NULL,
+    ADD COLUMN `enabled` BOOLEAN NOT NULL DEFAULT true,
+    ADD COLUMN `updatedAt` DATETIME(3) NOT NULL;
+
+-- AlterTable: Invoice
+ALTER TABLE `Invoice`
+    ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    ADD COLUMN `createdById` VARCHAR(191) NOT NULL,
+    ADD COLUMN `enabled` BOOLEAN NOT NULL DEFAULT true,
+    ADD COLUMN `updatedAt` DATETIME(3) NOT NULL;
+
+-- AlterTable: Project
+ALTER TABLE `Project`
+    ADD COLUMN `createdById` VARCHAR(191) NOT NULL,
+    ADD COLUMN `enabled` BOOLEAN NOT NULL DEFAULT true;
+
+-- AlterTable: ProjectDocument
+ALTER TABLE `ProjectDocument`
+    ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    ADD COLUMN `createdById` VARCHAR(191) NOT NULL,
+    ADD COLUMN `updatedAt` DATETIME(3) NOT NULL;
+
+-- AlterTable: PurchaseOrder
+ALTER TABLE `PurchaseOrder`
+    ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    ADD COLUMN `createdById` VARCHAR(191) NOT NULL,
+    ADD COLUMN `enabled` BOOLEAN NOT NULL DEFAULT true,
+    ADD COLUMN `updatedAt` DATETIME(3) NOT NULL;
