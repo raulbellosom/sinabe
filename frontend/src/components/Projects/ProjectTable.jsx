@@ -8,6 +8,7 @@ import ActionButtons from '../ActionButtons/ActionButtons';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import { parseToLocalDate } from '../../utils/formatValues';
+import { useDeleteProject } from '../../hooks/useProjects';
 
 const ProjectTable = ({
   projects,
@@ -22,6 +23,7 @@ const ProjectTable = ({
   onPageSizeChange,
 }) => {
   const navigate = useNavigate();
+  const { mutate: deleteProject } = useDeleteProject();
 
   const collapsedActions = (project) => [
     {
@@ -31,7 +33,7 @@ const ProjectTable = ({
     },
     {
       label: 'Eliminar',
-      action: () => console.log('Eliminar', project.id),
+      action: () => deleteProject(project.id),
       icon: FaTrash,
       color: 'red',
     },

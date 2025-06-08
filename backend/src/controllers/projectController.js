@@ -255,7 +255,7 @@ export const deleteProject = async (req, res) => {
 
   try {
     await db.project.update({
-      where: { id: parseInt(id, 10) },
+      where: { id },
       data: { enabled: false },
     });
 
@@ -306,30 +306,6 @@ export const getProjectSummary = async (req, res) => {
     res.json(project);
   } catch (error) {
     console.error("Error fetching project summary:", error.message);
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Remove logic project
-export const removeProject = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const project = await db.project.findUnique({
-      where: { id },
-    });
-
-    if (!project) {
-      return res.status(404).json({ message: "Proyecto no encontrado" });
-    }
-
-    await db.project.delete({
-      where: { id },
-    });
-
-    res.status(204).end();
-  } catch (error) {
-    console.error("Error removing project:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
