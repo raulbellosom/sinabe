@@ -1,5 +1,5 @@
 // src/pages/ProjectsPage.jsx
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useProjectSearch } from '../../hooks/useProjectSearch';
 import { useProjects } from '../../hooks/useProjects';
 import Skeleton from 'react-loading-skeleton';
@@ -8,13 +8,33 @@ import ProjectTable from '../../components/Projects/ProjectTable';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import { FaPlus } from 'react-icons/fa';
 import { useDebounce } from '../../hooks/useDebounce';
+import ProjectSearchBar from '../../components/Projects/ProjectSearchBar';
+import ProjectFilters from '../../components/Projects/ProjectFilters';
+import { useProjectVerticals } from '../../hooks/useProjectVerticals';
 
 const ProjectsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    statuses: [],
+    verticalIds: [],
+  });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortBy, setSortBy] = useState('updatedAt');
+  const [order, setOrder] = useState('desc');
+
   const debouncedSearch = useDebounce(searchTerm, 400);
 
+  const { verticals = [] } = useProjectVerticals();
   const { data: allProjects, isLoading: isLoadingAll } = useProjects();
-  const { data: projects, isLoading } = useProjectSearch(debouncedSearch);
+  const { data: projectsData, isLoading } = useProjectSearch({
+    searchTerm: debouncedSearch,
+    filters,
+    pagination: { page, pageSize },
+    sorting: { sortBy, order },
+  });
+
+  const { projects = [], total = 0 } = projectsData || {};
 
   return (
     <section className="px-4 py-6 md:px-8 bg-white dark:bg-sinabe-blue-dark rounded-lg shadow-md">
@@ -39,17 +59,46 @@ const ProjectsPage = () => {
       {isLoadingAll ? (
         <Skeleton height={120} count={1} className="mb-6 rounded-lg" />
       ) : (
-        <ProjectSummaryCards projects={allProjects || []} />
+        <>
+          <ProjectSummaryCards projects={allProjects || []} />
+          <div className="flex items-center justify-start w-full gap-4 mb-6">
+            <ProjectFilters
+              verticals={verticals || []}
+              filters={filters}
+              setFilters={setFilters}
+            />
+            <ProjectSearchBar
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+            />
+          </div>
+        </>
       )}
 
       {isLoading ? (
         <Skeleton height={400} className="rounded-lg" />
       ) : (
         <ProjectTable
-          projects={projects || []}
+          projects={projects}
           isLoading={isLoading}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
+          sortBy={sortBy}
+          order={order}
+          onSortChange={(newSort) => {
+            if (newSort === sortBy) {
+              setOrder(order === 'asc' ? 'desc' : 'asc');
+            } else {
+              setSortBy(newSort);
+              setOrder('asc');
+            }
+          }}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={(p) => setPage(p)}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setPage(1); // Reiniciar al cambiar tamaño
+          }}
         />
       )}
     </section>

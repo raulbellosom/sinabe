@@ -1,4 +1,4 @@
-import { FaEye, FaPen, FaTrash, FaSearch } from 'react-icons/fa';
+import { FaEye, FaPen, FaTrash } from 'react-icons/fa';
 import ProjectStatusBadge from './ProjectStatusBadge';
 import ProjectProgressBar from './ProjectProgressBar';
 import Skeleton from 'react-loading-skeleton';
@@ -9,55 +9,57 @@ import { BsThreeDotsVertical } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 import { parseToLocalDate } from '../../utils/formatValues';
 
-const ProjectTable = ({ projects, isLoading, searchTerm, setSearchTerm }) => {
+const ProjectTable = ({
+  projects,
+  isLoading,
+  sortBy,
+  order,
+  onSortChange,
+  page,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
+}) => {
   const navigate = useNavigate();
-  const collapsedActions = (inventory) => [
+
+  const collapsedActions = (project) => [
     {
       label: 'Editar',
-      action: () => navigate(`/projects/edit/${inventory.id}/`),
+      action: () => navigate(`/projects/edit/${project.id}/`),
       icon: FaPen,
-      disabled: false,
     },
     {
       label: 'Eliminar',
-      action: () => console.log('Eliminar', inventory.id),
+      action: () => console.log('Eliminar', project.id),
       icon: FaTrash,
       color: 'red',
-      disabled: false,
     },
   ];
 
+  const renderSortHeader = (label, field) => (
+    <th
+      className="px-4 py-3 cursor-pointer select-none"
+      onClick={() => onSortChange(field)}
+    >
+      {label} {sortBy === field && (order === 'asc' ? '▲' : '▼')}
+    </th>
+  );
+
   return (
     <div className="mb-6">
-      {/* Search bar */}
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <div className="relative w-full md:w-1/3">
-          <FaSearch className="absolute left-3 top-3 text-gray-400" />
-          <form onSubmit={(e) => e.preventDefault()}>
-            <input
-              type="text"
-              placeholder="Buscar proyecto..."
-              className="w-full pl-10 pr-4 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sinabe-primary"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </form>
-        </div>
-      </div>
-
-      {/* Table */}
       <div className="overflow-x-auto bg-white shadow rounded-lg">
         <table className="min-w-[900px] w-full text-sm text-left text-gray-700">
           <thead className="bg-sinabe-gray text-gray-600 uppercase text-xs">
             <tr>
-              <th className="px-4 py-3">ID</th>
-              <th className="px-4 py-3">Proyecto</th>
-              <th className="px-4 py-3">Vertical</th>
-              <th className="px-4 py-3">Proveedor</th>
-              <th className="px-4 py-3">Estado</th>
+              {renderSortHeader('ID', 'code')}
+              {renderSortHeader('Proyecto', 'name')}
+              {renderSortHeader('Vertical', 'verticals')}
+              {renderSortHeader('Proveedor', 'provider')}
+              {renderSortHeader('Estado', 'status')}
               <th className="px-4 py-3">Progreso</th>
-              <th className="px-4 py-3">Presupuesto</th>
-              <th className="px-4 py-3">Fechas</th>
+              {renderSortHeader('Presupuesto', 'budgetTotal')}
+              {renderSortHeader('Fechas', 'startDate')}
               <th className="px-4 py-3">OC / Facturas</th>
               <th className="px-4 py-3">Acciones</th>
             </tr>
@@ -85,8 +87,7 @@ const ProjectTable = ({ projects, isLoading, searchTerm, setSearchTerm }) => {
                   return (
                     <tr
                       key={p.id}
-                      className="border-t hover:bg-gray-50 animate-fade-in-up"
-                      // style={{ animationDelay: `${i * 50}ms` }}
+                      className="border-t hover:bg-gray-50 transition-opacity duration-500 animate-fade-in-up"
                     >
                       <td className="px-4 py-3 font-mono text-sm text-nowrap">
                         {p.code}
@@ -119,10 +120,10 @@ const ProjectTable = ({ projects, isLoading, searchTerm, setSearchTerm }) => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 min-w-40">
                         <div className="text-xs leading-tight">
-                          {parseToLocalDate(p.startDate)} →{' '}
-                          {parseToLocalDate(p.endDate)}
+                          <strong>{parseToLocalDate(p.startDate)} → </strong>
+                          <span>{parseToLocalDate(p.endDate)}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -172,6 +173,42 @@ const ProjectTable = ({ projects, isLoading, searchTerm, setSearchTerm }) => {
                 })}
           </tbody>
         </table>
+      </div>
+
+      {/* Paginación */}
+      <div className="flex flex-col-reverse gap-3 md:flex-row justify-between items-center mt-6">
+        <span>
+          Página {page} de {Math.ceil(total / pageSize)}
+        </span>
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onPageChange(page - 1)}
+              disabled={page === 1}
+              className="px-3 py-1 rounded bg-gray-100 text-sm disabled:opacity-50"
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => onPageChange(page + 1)}
+              disabled={page * pageSize >= total}
+              className="px-3 py-1 rounded bg-gray-100 text-sm disabled:opacity-50"
+            >
+              Siguiente
+            </button>
+          </div>
+          <select
+            className="text-sm px-2 py-1 border rounded"
+            value={pageSize}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+          >
+            {[10, 25, 50].map((size) => (
+              <option key={size} value={size}>
+                {size} por página
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     </div>
   );

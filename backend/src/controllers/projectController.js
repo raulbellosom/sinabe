@@ -20,9 +20,18 @@ import { db } from "../lib/db.js";
 // };
 
 // 🔍 Buscar proyectos (nombre, código, proveedor, vertical, inventarios, OCs, facturas)
-export const searchProjects = async (req, res) => {
-  const { searchTerm = "" } = req.query;
+// controllers/projectController.js
 
+export const searchProjects = async (req, res) => {
+  const {
+    searchTerm = "",
+    statuses = [],
+    verticalIds = [],
+    sortBy = "createdAt",
+    order = "desc",
+    page = 1,
+    pageSize = 10,
+  } = req.query;
   try {
     const baseInclude = {
       verticals: true,
@@ -35,59 +44,58 @@ export const searchProjects = async (req, res) => {
       documents: true,
     };
 
-    // Si no hay término de búsqueda, retorna todos
-    if (!searchTerm || searchTerm.trim() === "") {
-      const allProjects = await db.project.findMany({
-        where: { enabled: true },
+    const parsedVerticalIds = verticalIds.length
+      ? verticalIds
+          .split(",")
+          .map((id) => parseInt(id))
+          .filter((id) => !isNaN(id))
+      : [];
+    const parsedStatuses = Array.isArray(statuses)
+      ? statuses
+      : statuses?.split(",").filter((s) => !!s);
+
+    const where = {
+      enabled: true,
+      ...(parsedStatuses.length > 0 && { status: { in: parsedStatuses } }),
+      ...(parsedVerticalIds.length > 0 && {
+        verticals: {
+          some: { id: { in: parsedVerticalIds } },
+        },
+      }),
+      OR: [
+        { name: { contains: searchTerm } },
+        { code: { contains: searchTerm } },
+        { provider: { contains: searchTerm } },
+        { verticals: { some: { name: { contains: searchTerm } } } },
+        { purchaseOrders: { some: { description: { contains: searchTerm } } } },
+        {
+          purchaseOrders: {
+            some: {
+              invoices: { some: { code: { contains: searchTerm } } },
+            },
+          },
+        },
+        { inventories: { some: { serialNumber: { contains: searchTerm } } } },
+        { inventories: { some: { internalFolio: { contains: searchTerm } } } },
+        { teamMembers: { some: { name: { contains: searchTerm } } } },
+      ],
+    };
+
+    const skip = (parseInt(page) - 1) * parseInt(pageSize);
+    const take = parseInt(pageSize);
+
+    const [projects, total] = await Promise.all([
+      db.project.findMany({
+        where,
         include: baseInclude,
-      });
-      return res.json(allProjects);
-    }
+        skip,
+        take,
+        orderBy: { [sortBy]: order },
+      }),
+      db.project.count({ where }),
+    ]);
 
-    // Si sí hay término, aplica búsqueda profunda
-    const projects = await db.project.findMany({
-      where: {
-        enabled: true,
-        OR: [
-          { name: { contains: searchTerm } },
-          { code: { contains: searchTerm } },
-          { provider: { contains: searchTerm } },
-          { verticals: { some: { name: { contains: searchTerm } } } }, // CORREGIDO: vertical es objeto
-          {
-            purchaseOrders: {
-              some: { description: { contains: searchTerm } },
-            },
-          },
-          {
-            purchaseOrders: {
-              some: {
-                invoices: {
-                  some: { code: { contains: searchTerm } },
-                },
-              },
-            },
-          },
-          {
-            inventories: {
-              some: { serialNumber: { contains: searchTerm } },
-            },
-          },
-          {
-            inventories: {
-              some: { internalFolio: { contains: searchTerm } },
-            },
-          },
-          {
-            teamMembers: {
-              some: { name: { contains: searchTerm } },
-            },
-          },
-        ],
-      },
-      include: baseInclude,
-    });
-
-    res.json(projects);
+    res.json({ projects, total });
   } catch (error) {
     console.error("Error searching projects:", error.message);
     res.status(500).json({ error: error.message });
