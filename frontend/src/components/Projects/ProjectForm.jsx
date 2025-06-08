@@ -227,7 +227,7 @@ const ProjectForm = ({
                     color: 'indigo',
                     filled: isChanged,
                     icon: isEdit ? FaSave : FaPlus,
-                    disabled: !isChanged || isSubmitting,
+                    disabled: (isEdit ? !isChanged : false) || isSubmitting,
                     action: () => {
                       if (isSubmitting) return;
                       onSubmit(values, { setSubmitting: () => {} });
