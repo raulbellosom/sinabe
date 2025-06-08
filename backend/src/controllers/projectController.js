@@ -132,7 +132,7 @@ export const getProjectById = async (req, res) => {
 
   try {
     const project = await db.project.findUnique({
-      where: { id: parseInt(id, 10) },
+      where: { id }, // <-- ya no se hace parseInt
       include: {
         verticals: true,
         deadlines: true,
@@ -227,7 +227,7 @@ export const updateProject = async (req, res) => {
     } = req.body;
 
     const project = await db.project.update({
-      where: { id: parseInt(id, 10) },
+      where: { id },
       data: {
         name,
         description,
@@ -271,7 +271,7 @@ export const getProjectSummary = async (req, res) => {
 
   try {
     const project = await db.project.findUnique({
-      where: { id: parseInt(id) },
+      where: { id },
       include: {
         verticals: true,
         deadlines: {
@@ -306,6 +306,30 @@ export const getProjectSummary = async (req, res) => {
     res.json(project);
   } catch (error) {
     console.error("Error fetching project summary:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Remove logic project
+export const removeProject = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const project = await db.project.findUnique({
+      where: { id },
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: "Proyecto no encontrado" });
+    }
+
+    await db.project.delete({
+      where: { id },
+    });
+
+    res.status(204).end();
+  } catch (error) {
+    console.error("Error removing project:", error.message);
     res.status(500).json({ error: error.message });
   }
 };

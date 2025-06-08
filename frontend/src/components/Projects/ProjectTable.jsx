@@ -136,7 +136,7 @@ const ProjectTable = ({
                           extraActions={[
                             {
                               label: 'Ver',
-                              href: `/projects/${p.id}`,
+                              href: `/projects/view/${p.id}`,
                               icon: FaEye,
                             },
                           ]}

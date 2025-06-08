@@ -62,7 +62,7 @@ model Inventory {
   serialNumber  String?
   comments      String?                @db.Text
   modelId       Int
-  projectId   Int? 
+  projectId   String?
   enabled       Boolean                @default(true)
   receptionDate DateTime?
   altaDate      DateTime?
@@ -133,7 +133,7 @@ model InventoryCustomField {
 }
 
 model Project {
-  id            Int              @id @default(autoincrement())
+  id            String           @id @default(uuid())
   code          String           @unique // Ej: PROJ-001
   name          String
   description   String?
@@ -163,7 +163,7 @@ model Deadline {
   status     String          // Completado, En progreso, Pendiente
   responsible String?
   dueDate    DateTime
-  projectId  Int
+  projectId  String
   project    Project         @relation(fields: [projectId], references: [id])
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
@@ -202,7 +202,7 @@ model PurchaseOrder {
   amount      Float
   status      String    // Aprobada, En proceso, Rechazada
   date        DateTime
-  projectId   Int
+  projectId   String
   project     Project   @relation(fields: [projectId], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -232,7 +232,7 @@ model ProjectMember {
   id         Int      @id @default(autoincrement())
   role       String   // Project Manager, Instalador, etc
   name       String
-  projectId  Int
+  projectId  String
   project    Project  @relation(fields: [projectId], references: [id])
 }
 
@@ -244,7 +244,7 @@ model ProjectDocument {
   metadata   Json?
   enabled    Boolean  @default(true)
   uploadDate DateTime
-  projectId  Int
+  projectId  String
   project    Project  @relation(fields: [projectId], references: [id])
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

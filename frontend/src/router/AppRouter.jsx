@@ -25,6 +25,7 @@ import Roles from '../pages/roles/Roles';
 import ProjectsPage from '../pages/projects/ProjectsPage';
 import CreateProjectPage from '../pages/projects/CreateProjectPage';
 import EditProjectPage from '../pages/projects/EditProjectPage';
+import ProjectDetailPage from '../pages/projects/ProjectDetailPage';
 
 const AppRouter = () => {
   const { user } = useContext(AuthContext);
@@ -79,6 +80,10 @@ const AuthorizedRoute = ({ user }) => {
                   <Route
                     path="/projects/edit/:id"
                     element={<EditProjectPage />}
+                  />
+                  <Route
+                    path="/projects/view/:id"
+                    element={<ProjectDetailPage />}
                   />
                   <Route path="/catalogs" element={<Catalogs />} />
                   <Route path="/roles" element={<Roles />} />
