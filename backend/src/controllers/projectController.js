@@ -65,6 +65,7 @@ export const searchProjects = async (req, res) => {
       OR: [
         { name: { contains: searchTerm } },
         { code: { contains: searchTerm } },
+        { description: { contains: searchTerm } },
         { provider: { contains: searchTerm } },
         { verticals: { some: { name: { contains: searchTerm } } } },
         { purchaseOrders: { some: { description: { contains: searchTerm } } } },
@@ -178,12 +179,23 @@ export const createProject = async (req, res) => {
     }
 
     // Generar código único
-    const lastProject = await db.project.findFirst({
-      orderBy: { id: "desc" },
+    const allProjects = await db.project.findMany({
+      where: {
+        code: { startsWith: "PROJ-" },
+      },
+      select: { code: true },
     });
 
-    const nextId = (lastProject?.id || 0) + 1;
-    const code = `PROJ-${String(nextId).padStart(3, "0")}`;
+    let maxNumber = 0;
+    for (const p of allProjects) {
+      const match = p.code.match(/^PROJ-(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNumber) maxNumber = num;
+      }
+    }
+    const nextNumber = maxNumber + 1;
+    const code = `PROJ-${String(nextNumber).padStart(3, "0")}`;
 
     const project = await db.project.create({
       data: {

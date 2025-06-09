@@ -11,6 +11,7 @@ const initialValues = {
   verticalId: '',
   startDate: '',
   endDate: '',
+  description: '',
 };
 
 const CreateProjectPage = () => {

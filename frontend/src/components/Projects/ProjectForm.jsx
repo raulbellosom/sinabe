@@ -37,6 +37,7 @@ const ProjectForm = ({
     startDate: Yup.date().required('Fecha inicio requerida'),
     endDate: Yup.date().required('Fecha fin requerida'),
     verticalIds: Yup.array().min(1, 'Vertical requerida'),
+    description: Yup.string().optional(),
   });
 
   const loadVerticalOptions = (inputValue, callback) => {
@@ -206,6 +207,23 @@ const ProjectForm = ({
                 />
                 <ErrorMessage
                   name="endDate"
+                  component="div"
+                  className="text-sm text-sinabe-danger mt-1"
+                />
+              </div>
+
+              <div className="col-span-2">
+                <label className="block text-sm font-semibold mb-1">
+                  Descripción
+                </label>
+                <Field
+                  name="description"
+                  as="textarea"
+                  rows="4"
+                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                />
+                <ErrorMessage
+                  name="description"
                   component="div"
                   className="text-sm text-sinabe-danger mt-1"
                 />
