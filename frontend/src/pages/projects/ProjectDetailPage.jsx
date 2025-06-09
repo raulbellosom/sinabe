@@ -66,9 +66,31 @@ const ProjectDetailPage = () => {
 
   return (
     <section className="w-full px-4 py-6 md:px-8 bg-white dark:bg-sinabe-blue-dark rounded-lg shadow-md overflow-hidden">
-      <h1 className="text-base md:text-xl font-bold text-sinabe-primary mb-4">
-        {project.code} - {project.name}
-      </h1>
+      <div className="mb-4">
+        <h1 className="text-xl font-bold text-sinabe-primary">
+          {project.name}
+        </h1>
+        <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-gray-600 dark:text-gray-300">
+          <span className="font-medium">{project.provider}</span>
+          <span className="text-gray-400">·</span>
+          {project.verticals?.map((v, i) => (
+            <span
+              key={i}
+              className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-2 py-0.5 rounded-full text-xs"
+            >
+              {v.name}
+            </span>
+          ))}
+          <span className="text-gray-400">·</span>
+          <span className="text-xs uppercase tracking-widest">
+            {project.code}
+          </span>
+          <span className="text-gray-400">·</span>
+          <span className="inline-block bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-white text-xs px-2 py-0.5 rounded-full font-medium">
+            {project.status}
+          </span>
+        </div>
+      </div>
 
       <CustomTabs tabs={tabs} />
     </section>
