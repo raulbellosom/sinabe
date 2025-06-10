@@ -200,7 +200,7 @@ const ProjectTable = ({
             </button>
           </div>
           <select
-            className="text-sm px-2 py-1 border rounded"
+            className="text-sm px-2 py-1 border-white bg-gray-200 rounded-md"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
           >

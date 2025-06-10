@@ -51,6 +51,7 @@ import {
 import { processFiles } from "../controllers/uploadFilesController.js";
 
 const router = express.Router();
+router.route("/assignMissingFolios").get(assignMissingFolios);
 
 router
   .route("/")
@@ -132,6 +133,5 @@ router
 router
   .route("/customFields/:customFieldId/values")
   .get(protect, getCustomFieldValues);
-router.route("/assignMissingFolios").post(protect, assignMissingFolios);
 
 export default router;

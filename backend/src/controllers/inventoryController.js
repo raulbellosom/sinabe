@@ -3,22 +3,44 @@ import { db } from "../lib/db.js";
 // Función para obtener los permisos del usuario
 
 const generateInternalFolio = async (model) => {
-  const typeCode = model.type.name.substring(0, 3).toUpperCase(); // Ej: "CAM"
-  const brandCode = model.brand.name.substring(0, 3).toUpperCase(); // Ej: "HIK"
-
+  const normalize = (str) =>
+    str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .trim()
+      .substring(0, 3)
+      .toUpperCase();
+  const typeCode = normalize(model.type.name);
+  const brandCode = normalize(model.brand.name);
   const baseCode = `INV-${typeCode}-${brandCode}`;
 
-  const count = await db.inventory.count({
+  // Busca TODOS los folios existentes para este modelo (sin filtrar por enabled)
+  const inventories = await db.inventory.findMany({
     where: {
       modelId: model.id,
-      enabled: true,
-      internalFolio: { not: null },
+      internalFolio: { startsWith: baseCode },
     },
+    select: { internalFolio: true },
   });
 
-  const consecutive = String(count + 1).padStart(3, "0");
+  // Extrae el número más alto
+  let max = 0;
+  const usedNumbers = new Set();
+  for (const inv of inventories) {
+    const match = inv.internalFolio.match(new RegExp(`^${baseCode}-(\\d+)$`));
+    if (match) {
+      const num = parseInt(match[1], 10);
+      usedNumbers.add(num);
+      if (num > max) max = num;
+    }
+  }
 
-  return `${baseCode}-${consecutive}`; // Ej: INV-CAM-HIK-001
+  // Busca el siguiente número libre
+  let next = 1;
+  while (usedNumbers.has(next)) next++;
+  const consecutive = String(next).padStart(3, "0");
+  return `${baseCode}-${consecutive}`;
 };
 
 const getUserPermissions = async (userId) => {
@@ -153,6 +175,10 @@ export const createInventory = async (req, res) => {
     // check if model exists
     const model = await db.model.findUnique({
       where: { id: parseInt(modelId, 10) },
+      include: {
+        brand: true,
+        type: true,
+      },
     });
 
     if (!model) {
@@ -624,23 +650,327 @@ export const checkSerialNumber = async (req, res) => {
   }
 };
 
+// export const searchInventories = async (req, res) => {
+//   try {
+//     const userId = req.user?.id; // Asegurarse de que el usuario esté autenticado
+//     if (!userId) {
+//       return res.status(401).json({ error: "Unauthorized" });
+//     }
+//     const permissions = await getUserPermissions(userId);
+//     // const permissions = user.role.permissions.map((p) => p.permission.name);
+//     const canViewAll = permissions.includes("view_inventories");
+//     const canViewSelf = permissions.includes("view_self_inventories");
+//     // Si el usuario no tiene ninguno de los permisos necesarios, se le niega el acceso.
+//     if (!canViewAll && !canViewSelf) {
+//       return res.status(403).json({
+//         error: "Forbidden: No tienes permisos para acceder a los inventarios",
+//       });
+//     }
+
+//     const {
+//       searchTerm,
+//       sortBy = "updatedAt",
+//       order = "desc",
+//       page = 1,
+//       pageSize = 10,
+//       conditionName,
+//       deepSearch = [],
+//       status,
+//     } = req.query;
+
+//     const validSortFields = [
+//       "createdAt",
+//       "status",
+//       "model.name",
+//       "model.brand.name",
+//       "model.type.name",
+//       "activeNumber",
+//       "serialNumber",
+//       "updatedAt",
+//       "receptionDate",
+//       "comments",
+//     ];
+
+//     const mapSearchHeaderToColumn = (searchHeader, customFieldName) => {
+//       const columnsMap = {
+//         "model.name": "model.name",
+//         "model.type.name": "model.type.name",
+//         "model.brand.name": "model.brand.name",
+//         activeNumber: "activeNumber",
+//         serialNumber: "serialNumber",
+//         comments: "comments",
+//         customField: `customField.${customFieldName}`,
+//       };
+//       return columnsMap[searchHeader] || null;
+//     };
+
+//     const buildDeepSearchConditions = (deepSearchArray) => {
+//       const conditions = [];
+
+//       deepSearchArray.forEach(
+//         ({ searchHeader, searchTerm, searchCriteria, customFieldName }) => {
+//           const column = mapSearchHeaderToColumn(searchHeader, customFieldName);
+
+//           if (!column || typeof column !== "string") return;
+
+//           if (searchHeader === "customField" && customFieldName) {
+//             // Crear condiciones específicas para customFields
+//             const condition = {
+//               customField: {
+//                 some: {
+//                   customField: {
+//                     name: customFieldName, // Nombre del campo personalizado
+//                   },
+//                   value: { [searchCriteria]: searchTerm }, // Valor buscado
+//                 },
+//               },
+//             };
+//             conditions.push(condition);
+//           } else {
+//             const path = column.split(".");
+//             let condition = {};
+
+//             switch (searchCriteria) {
+//               case "equals":
+//                 condition = { [path[path.length - 1]]: { equals: searchTerm } };
+//                 break;
+//               case "startsWith":
+//                 condition = {
+//                   [path[path.length - 1]]: { startsWith: searchTerm },
+//                 };
+//                 break;
+//               case "endsWith":
+//                 condition = {
+//                   [path[path.length - 1]]: { endsWith: searchTerm },
+//                 };
+//                 break;
+//               case "contains":
+//                 condition = {
+//                   [path[path.length - 1]]: { contains: searchTerm },
+//                 };
+//                 break;
+//               case "different":
+//                 condition = { [path[path.length - 1]]: { not: searchTerm } };
+//                 break;
+//               case "contains":
+//                 condition = {
+//                   [path[path.length - 1]]: { contains: searchTerm },
+//                 };
+//                 break;
+//               default:
+//                 break;
+//             }
+
+//             let nestedCondition = condition;
+//             for (let i = path.length - 2; i >= 0; i--) {
+//               nestedCondition = { [path[i]]: nestedCondition };
+//             }
+
+//             conditions.push(nestedCondition);
+//           }
+//         }
+//       );
+
+//       return conditions.length > 0 ? { AND: conditions } : {};
+//     };
+
+//     // Ampliamos la búsqueda por texto para incluir archivos y customFields
+//     // const textSearchConditions = searchTerm
+//     //   ? {
+//     //       OR: [
+//     //         { model: { name: { contains: searchTerm } } },
+//     //         { model: { brand: { name: { contains: searchTerm } } } },
+//     //         { model: { type: { name: { contains: searchTerm } } } },
+//     //         { activeNumber: { contains: searchTerm } },
+//     //         { serialNumber: { contains: searchTerm } },
+//     //         { comments: { contains: searchTerm } },
+//     //         {
+//     //           customField: {
+//     //             some: {
+//     //               OR: [
+//     //                 { value: { contains: searchTerm } },
+//     //                 { customField: { name: { contains: searchTerm } } },
+//     //               ],
+//     //             },
+//     //           },
+//     //         },
+//     //       ],
+//     //     }
+//     //   : {};
+//     const terms = searchTerm?.split(/\s+/).filter(Boolean) || [];
+//     const generateSearchConditions = (terms) => {
+//       const fields = [
+//         { model: { name: true } },
+//         { model: { brand: { name: true } } },
+//         { model: { type: { name: true } } },
+//         { activeNumber: true },
+//         { serialNumber: true },
+//         { comments: true },
+//         {
+//           customField: {
+//             some: {
+//               OR: [{ value: true }, { customField: { name: true } }],
+//             },
+//           },
+//         },
+//       ];
+
+//       const conditions = [];
+
+//       for (const term of terms) {
+//         for (const field of fields) {
+//           const condition = JSON.parse(JSON.stringify(field));
+//           applyContainsCondition(condition, term);
+//           conditions.push(condition);
+//         }
+//       }
+
+//       return { OR: conditions };
+//     };
+
+//     const applyContainsCondition = (obj, term) => {
+//       for (const key in obj) {
+//         if (typeof obj[key] === "object") {
+//           applyContainsCondition(obj[key], term);
+//         } else if (obj[key] === true) {
+//           obj[key] = { contains: term };
+//         }
+//       }
+//     };
+
+//     const textSearchConditions = searchTerm
+//       ? generateSearchConditions(terms)
+//       : {};
+
+//     const deepSearchConditions = buildDeepSearchConditions(
+//       JSON?.parse(deepSearch)
+//     );
+
+//     const orderField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
+//     const orderDirection = order === "desc" ? "desc" : "asc";
+
+//     const formSortBy = (value, order) => {
+//       let arr = value.split(".");
+//       let obj = {};
+//       if (arr.length === 3) {
+//         obj = {
+//           [arr[0]]: {
+//             [arr[1]]: {
+//               [arr[2]]: order,
+//             },
+//           },
+//         };
+//       } else if (arr.length === 2) {
+//         obj = {
+//           [arr[0]]: {
+//             [arr[1]]: order,
+//           },
+//         };
+//       } else {
+//         obj = {
+//           [arr[0]]: order,
+//         };
+//       }
+//       return obj;
+//     };
+
+//     const skip = (page - 1) * pageSize;
+//     const take = parseInt(pageSize);
+
+//     const statusFilter = Array.isArray(status)
+//       ? status
+//       : status
+//       ? [status]
+//       : [];
+
+//     const whereConditions = {
+//       ...textSearchConditions,
+//       ...deepSearchConditions,
+//       enabled: true,
+//       ...(conditionName && conditionName.includes("ALL")
+//         ? {} // Si viene ALL, no filtramos por condiciones
+//         : conditionName && {
+//             conditions: {
+//               some: {
+//                 condition: {
+//                   name: {
+//                     in: Array.isArray(conditionName)
+//                       ? conditionName
+//                       : [conditionName],
+//                   },
+//                 },
+//               },
+//             },
+//           }),
+
+//       ...(statusFilter.length > 0 ? { status: { in: statusFilter } } : {}),
+//     };
+
+//     if (!canViewAll && canViewSelf) {
+//       whereConditions.createdById = userId;
+//     }
+
+//     const inventories = await db.inventory.findMany({
+//       where: whereConditions,
+//       include: {
+//         model: {
+//           include: {
+//             brand: true,
+//             type: true,
+//           },
+//         },
+//         conditions: {
+//           include: {
+//             condition: true,
+//           },
+//         },
+//         images: {
+//           where: { enabled: true },
+//         },
+//         files: {
+//           where: { enabled: true },
+//         },
+//         customField: {
+//           include: {
+//             customField: true,
+//           },
+//         },
+//         createdBy: {
+//           select: {
+//             id: true,
+//             firstName: true,
+//             lastName: true,
+//             email: true,
+//           },
+//         },
+//       },
+//       orderBy: formSortBy(orderField, orderDirection),
+//       skip,
+//       take: take === 0 ? undefined : take, // If take is 0, fetch all inventories
+//     });
+
+//     const totalRecords = await db.inventory.count({
+//       where: whereConditions,
+//     });
+
+//     const totalPages = Math.ceil(totalRecords / pageSize);
+//     res.json({
+//       data: inventories,
+//       pagination: {
+//         totalRecords,
+//         totalPages,
+//         currentPage: parseInt(page),
+//         pageSize: parseInt(pageSize),
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Error fetching inventories:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// };
+
 export const searchInventories = async (req, res) => {
   try {
-    const userId = req.user?.id; // Asegurarse de que el usuario esté autenticado
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-    const permissions = await getUserPermissions(userId);
-    // const permissions = user.role.permissions.map((p) => p.permission.name);
-    const canViewAll = permissions.includes("view_inventories");
-    const canViewSelf = permissions.includes("view_self_inventories");
-    // Si el usuario no tiene ninguno de los permisos necesarios, se le niega el acceso.
-    if (!canViewAll && !canViewSelf) {
-      return res.status(403).json({
-        error: "Forbidden: No tienes permisos para acceder a los inventarios",
-      });
-    }
-
     const {
       searchTerm,
       sortBy = "updatedAt",
@@ -648,251 +978,195 @@ export const searchInventories = async (req, res) => {
       page = 1,
       pageSize = 10,
       conditionName,
-      deepSearch = [],
+      deepSearch = "[]",
       status,
+      advancedSearch = "true",
     } = req.query;
 
-    const validSortFields = [
-      "createdAt",
-      "status",
-      "model.name",
-      "model.brand.name",
-      "model.type.name",
-      "activeNumber",
-      "serialNumber",
-      "updatedAt",
-      "receptionDate",
-      "comments",
-    ];
+    console.log(advancedSearch);
 
-    const mapSearchHeaderToColumn = (searchHeader, customFieldName) => {
-      const columnsMap = {
-        "model.name": "model.name",
-        "model.type.name": "model.type.name",
-        "model.brand.name": "model.brand.name",
-        activeNumber: "activeNumber",
-        serialNumber: "serialNumber",
-        comments: "comments",
-        customField: `customField.${customFieldName}`,
-      };
-      return columnsMap[searchHeader] || null;
-    };
+    const parsedDeepSearch = JSON.parse(deepSearch);
+    const isAdvanced = advancedSearch === "true";
 
-    const buildDeepSearchConditions = (deepSearchArray) => {
-      const conditions = [];
+    const buildOrderBy = (sortBy, order) => {
+      const parts = sortBy.split(".");
+      let current = {};
+      let nested = current;
 
-      deepSearchArray.forEach(
-        ({ searchHeader, searchTerm, searchCriteria, customFieldName }) => {
-          const column = mapSearchHeaderToColumn(searchHeader, customFieldName);
-
-          if (!column || typeof column !== "string") return;
-
-          if (searchHeader === "customField" && customFieldName) {
-            // Crear condiciones específicas para customFields
-            const condition = {
-              customField: {
-                some: {
-                  customField: {
-                    name: customFieldName, // Nombre del campo personalizado
-                  },
-                  value: { [searchCriteria]: searchTerm }, // Valor buscado
-                },
-              },
-            };
-            conditions.push(condition);
-          } else {
-            const path = column.split(".");
-            let condition = {};
-
-            switch (searchCriteria) {
-              case "equals":
-                condition = { [path[path.length - 1]]: { equals: searchTerm } };
-                break;
-              case "startsWith":
-                condition = {
-                  [path[path.length - 1]]: { startsWith: searchTerm },
-                };
-                break;
-              case "endsWith":
-                condition = {
-                  [path[path.length - 1]]: { endsWith: searchTerm },
-                };
-                break;
-              case "contains":
-                condition = {
-                  [path[path.length - 1]]: { contains: searchTerm },
-                };
-                break;
-              case "different":
-                condition = { [path[path.length - 1]]: { not: searchTerm } };
-                break;
-              case "contains":
-                condition = {
-                  [path[path.length - 1]]: { contains: searchTerm },
-                };
-                break;
-              default:
-                break;
-            }
-
-            let nestedCondition = condition;
-            for (let i = path.length - 2; i >= 0; i--) {
-              nestedCondition = { [path[i]]: nestedCondition };
-            }
-
-            conditions.push(nestedCondition);
-          }
-        }
-      );
-
-      return conditions.length > 0 ? { AND: conditions } : {};
-    };
-
-    // Ampliamos la búsqueda por texto para incluir archivos y customFields
-    const textSearchConditions = searchTerm
-      ? {
-          OR: [
-            { model: { name: { contains: searchTerm } } },
-            { model: { brand: { name: { contains: searchTerm } } } },
-            { model: { type: { name: { contains: searchTerm } } } },
-            { activeNumber: { contains: searchTerm } },
-            { serialNumber: { contains: searchTerm } },
-            { comments: { contains: searchTerm } },
-            {
-              customField: {
-                some: {
-                  OR: [
-                    { value: { contains: searchTerm } },
-                    { customField: { name: { contains: searchTerm } } },
-                  ],
-                },
-              },
-            },
-          ],
-        }
-      : {};
-
-    const deepSearchConditions = buildDeepSearchConditions(
-      JSON?.parse(deepSearch)
-    );
-
-    const orderField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
-    const orderDirection = order === "desc" ? "desc" : "asc";
-
-    const formSortBy = (value, order) => {
-      let arr = value.split(".");
-      let obj = {};
-      if (arr.length === 3) {
-        obj = {
-          [arr[0]]: {
-            [arr[1]]: {
-              [arr[2]]: order,
-            },
-          },
-        };
-      } else if (arr.length === 2) {
-        obj = {
-          [arr[0]]: {
-            [arr[1]]: order,
-          },
-        };
-      } else {
-        obj = {
-          [arr[0]]: order,
-        };
+      for (let i = 0; i < parts.length - 1; i++) {
+        nested[parts[i]] = {};
+        nested = nested[parts[i]];
       }
-      return obj;
+
+      nested[parts[parts.length - 1]] = order;
+      return current;
     };
-
-    const skip = (page - 1) * pageSize;
-    const take = parseInt(pageSize);
-
-    const statusFilter = Array.isArray(status)
-      ? status
-      : status
-      ? [status]
-      : [];
 
     const whereConditions = {
-      ...textSearchConditions,
-      ...deepSearchConditions,
       enabled: true,
-      ...(conditionName && {
-        conditions: {
-          some: {
-            condition: {
-              name: {
-                in: Array.isArray(conditionName)
-                  ? conditionName
-                  : [conditionName],
-              },
-            },
-          },
+      ...(status && {
+        status: {
+          in: Array.isArray(status) ? status : [status],
         },
       }),
-      ...(statusFilter.length > 0 ? { status: { in: statusFilter } } : {}),
+      ...(conditionName && conditionName.includes("ALL")
+        ? {} // No filtrar por condición si es ALL
+        : conditionName && {
+            conditions: {
+              some: {
+                condition: {
+                  name: {
+                    in: Array.isArray(conditionName)
+                      ? conditionName
+                      : [conditionName],
+                  },
+                },
+              },
+            },
+          }),
     };
 
-    if (!canViewAll && canViewSelf) {
-      whereConditions.createdById = userId;
-    }
+    const phraseSearch = searchTerm?.trim();
+    const individualTerms = phraseSearch
+      ? phraseSearch.split(/\s+/).filter(Boolean)
+      : [];
 
-    const inventories = await db.inventory.findMany({
-      where: whereConditions,
-      include: {
-        model: {
-          include: {
-            brand: true,
-            type: true,
-          },
-        },
-        conditions: {
-          include: {
-            condition: true,
-          },
-        },
-        images: {
-          where: { enabled: true },
-        },
-        files: {
-          where: { enabled: true },
-        },
+    const buildSearchConditions = (term) => [
+      { comments: { contains: term } },
+      { model: { name: { contains: term } } },
+      { model: { brand: { name: { contains: term } } } },
+      { model: { type: { name: { contains: term } } } },
+      { activeNumber: { contains: term } },
+      { serialNumber: { contains: term } },
+      {
         customField: {
-          include: {
-            customField: true,
-          },
-        },
-        createdBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
+          some: {
+            OR: [
+              { value: { contains: term } },
+              { customField: { name: { contains: term } } },
+            ],
           },
         },
       },
-      orderBy: formSortBy(orderField, orderDirection),
-      skip,
-      take: take === 0 ? undefined : take, // If take is 0, fetch all inventories
+    ];
+
+    const include = {
+      createdBy: true,
+      model: {
+        include: {
+          brand: true,
+          type: true,
+        },
+      },
+      conditions: {
+        include: {
+          condition: true,
+        },
+      },
+      customField: {
+        include: {
+          customField: true,
+        },
+      },
+      files: true,
+      images: true,
+    };
+
+    let combined = [];
+
+    if (!phraseSearch) {
+      const totalRecords = await db.inventory.count({ where: whereConditions });
+      const results = await db.inventory.findMany({
+        where: whereConditions,
+        orderBy: buildOrderBy(sortBy, order),
+        skip: (page - 1) * pageSize,
+        take: parseInt(pageSize),
+        include,
+      });
+
+      return res.json({
+        data: results,
+        pagination: {
+          totalRecords,
+          totalPages: Math.ceil(totalRecords / pageSize),
+          currentPage: parseInt(page),
+          pageSize: parseInt(pageSize),
+        },
+      });
+    }
+
+    if (!isAdvanced) {
+      const results = await db.inventory.findMany({
+        where: {
+          ...whereConditions,
+          OR: buildSearchConditions(phraseSearch),
+        },
+        orderBy: buildOrderBy(sortBy, order),
+        skip: (page - 1) * pageSize,
+        take: parseInt(pageSize),
+        include,
+      });
+
+      const totalRecords = await db.inventory.count({
+        where: {
+          ...whereConditions,
+          OR: buildSearchConditions(phraseSearch),
+        },
+      });
+
+      return res.json({
+        data: results,
+        pagination: {
+          totalRecords,
+          totalPages: Math.ceil(totalRecords / pageSize),
+          currentPage: parseInt(page),
+          pageSize: parseInt(pageSize),
+        },
+      });
+    }
+
+    const exactMatchWhere = {
+      ...whereConditions,
+      OR: buildSearchConditions(phraseSearch),
+    };
+
+    const wordMatchWhere = {
+      ...whereConditions,
+      OR: individualTerms.flatMap((term) => buildSearchConditions(term)),
+    };
+
+    const exactResults = await db.inventory.findMany({
+      where: exactMatchWhere,
+      include,
     });
 
-    const totalRecords = await db.inventory.count({
-      where: whereConditions,
+    const wordResults = await db.inventory.findMany({
+      where: wordMatchWhere,
+      include,
     });
 
-    const totalPages = Math.ceil(totalRecords / pageSize);
+    combined = [
+      ...exactResults,
+      ...wordResults.filter(
+        (item) => !exactResults.some((ex) => ex.id === item.id)
+      ),
+    ];
+
+    const start = (page - 1) * pageSize;
+    const paginatedResults = combined.slice(start, start + parseInt(pageSize));
+
     res.json({
-      data: inventories,
+      data: paginatedResults,
       pagination: {
-        totalRecords,
-        totalPages,
+        totalRecords: combined.length,
+        totalPages: Math.ceil(combined.length / pageSize),
         currentPage: parseInt(page),
         pageSize: parseInt(pageSize),
       },
     });
   } catch (error) {
-    console.error("Error fetching inventories:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error(error);
+    res.status(500).json({ message: "Error al buscar inventarios" });
   }
 };
 
@@ -913,17 +1187,73 @@ export const assignMissingFolios = async (req, res) => {
       },
     });
 
+    // Agrupa inventarios por modelo
+    const groupedByModel = {};
     for (const inventory of inventories) {
-      const folio = await generateInternalFolio(inventory.model);
+      const modelId = inventory.model.id;
+      if (!groupedByModel[modelId]) groupedByModel[modelId] = [];
+      groupedByModel[modelId].push(inventory);
+    }
 
-      await db.inventory.update({
-        where: { id: inventory.id },
-        data: { internalFolio: folio },
+    const normalize = (str) => str.trim().substring(0, 3).toUpperCase();
+
+    for (const modelId in groupedByModel) {
+      const modelInventories = groupedByModel[modelId];
+      const model = modelInventories[0].model;
+
+      const typeCode = normalize(model.type.name);
+      const brandCode = normalize(model.brand.name);
+      const baseCode = `INV-${typeCode}-${brandCode}`;
+
+      // Busca todos los folios existentes para este modelo (sin filtrar por enabled)
+      const existing = await db.inventory.findMany({
+        where: {
+          modelId: model.id,
+          internalFolio: {
+            startsWith: baseCode,
+          },
+        },
+        select: { internalFolio: true },
       });
+
+      // Extrae todos los números usados
+      const usedNumbers = new Set();
+      for (const inv of existing) {
+        const match = inv.internalFolio.match(
+          new RegExp(`^${baseCode}-(\\d+)$`)
+        );
+        if (match) {
+          usedNumbers.add(parseInt(match[1], 10));
+        }
+      }
+
+      // Asigna folios secuenciales saltando los ya usados y verificando existencia
+      let next = 1;
+      for (const inventory of modelInventories) {
+        let folio;
+        while (true) {
+          while (usedNumbers.has(next)) next++;
+          folio = `${baseCode}-${String(next).padStart(3, "0")}`;
+          // Verifica en la base de datos por si acaso
+          const exists = await db.inventory.findFirst({
+            where: { internalFolio: folio },
+          });
+          if (!exists) break;
+          next++;
+        }
+        usedNumbers.add(next);
+
+        await db.inventory.update({
+          where: { id: inventory.id },
+          data: { internalFolio: folio },
+        });
+        next++;
+      }
     }
 
     res.status(200).json({ message: "Folios generados correctamente." });
   } catch (error) {
+    console.log("Error generating internal folios:", error.message);
     res.status(500).json({ error: error.message });
   }
 };

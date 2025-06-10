@@ -359,6 +359,7 @@ export const searchInventories = async ({
   deepSearch = [],
   status,
   signal,
+  advancedSearch = 'true',
 }) => {
   try {
     const parsedDeepSearch = JSON.stringify(deepSearch);
@@ -372,6 +373,7 @@ export const searchInventories = async ({
         conditionName,
         deepSearch: parsedDeepSearch,
         status,
+        advancedSearch,
       },
       signal: signal,
     });

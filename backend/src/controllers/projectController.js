@@ -44,15 +44,20 @@ export const searchProjects = async (req, res) => {
       documents: true,
     };
 
-    const parsedVerticalIds = verticalIds.length
+    const parsedVerticalIds = Array.isArray(verticalIds)
+      ? verticalIds.map((id) => parseInt(id)).filter((id) => !isNaN(id))
+      : typeof verticalIds === "string" && verticalIds.length > 0
       ? verticalIds
           .split(",")
           .map((id) => parseInt(id))
           .filter((id) => !isNaN(id))
       : [];
+
     const parsedStatuses = Array.isArray(statuses)
-      ? statuses
-      : statuses?.split(",").filter((s) => !!s);
+      ? statuses.filter((s) => !!s)
+      : typeof statuses === "string" && statuses.length > 0
+      ? statuses.split(",").filter((s) => !!s)
+      : [];
 
     const where = {
       enabled: true,

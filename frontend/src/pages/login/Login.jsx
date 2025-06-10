@@ -1,5 +1,5 @@
 import React, { useContext, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Field, Form, FormikProvider, useFormik } from 'formik';
 import * as Yup from 'yup';
 import AuthContext from '../../context/AuthContext';
@@ -13,6 +13,7 @@ import { Button } from 'flowbite-react';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useContext(AuthContext);
   const formRef = useRef(null);
 
@@ -38,6 +39,17 @@ const Login = () => {
         view_account: '/account-settings',
       };
 
+      // 1. Si la url previa es /inventories y tiene permiso, quédate ahí
+      const currentPath = location.pathname;
+      const canViewInventories =
+        res?.user?.authPermissions?.includes('view_inventories');
+      if (currentPath.startsWith('/inventories') && canViewInventories) {
+        // Mantente en la misma url (incluyendo query params)
+        navigate(location.pathname + location.search, { replace: true });
+        return;
+      }
+
+      // 2. Si no, redirige a la primera ruta que tenga permiso
       const matchedPermission = Object.keys(permissionsMap).find((permission) =>
         res?.user?.authPermissions?.some(
           (userPermission) => userPermission === permission,

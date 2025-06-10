@@ -34,7 +34,7 @@ const ProjectDetailPage = () => {
       icon: FaFileAlt,
       content: (
         <>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <ProjectMetrics project={project} />
           </div>
           <ProjectOverview project={project} />
@@ -61,6 +61,11 @@ const ProjectDetailPage = () => {
       title: 'Equipo',
       icon: FaUsers,
       content: <p>Próximamente: Miembros del equipo asignado al proyecto.</p>,
+    },
+    {
+      title: 'Documentos',
+      icon: FaFileAlt,
+      content: <p>Próximamente: Documentos y archivos del proyecto.</p>,
     },
   ];
 

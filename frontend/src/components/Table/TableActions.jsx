@@ -1,37 +1,37 @@
 import React from 'react';
-import TableSearchByHeader from './TableSearchByHeader';
-import { TextInput, Dropdown } from 'flowbite-react';
+import { TextInput, Dropdown, Tooltip } from 'flowbite-react';
 import { TbFilter } from 'react-icons/tb';
 import { LuSearch } from 'react-icons/lu';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import { IoMdRefresh } from 'react-icons/io';
 import { GrStatusInfo } from 'react-icons/gr';
+import { ToggleSwitch } from 'flowbite-react';
 
 const TableActions = ({
   handleSearchTerm,
   onCheckFilter,
   selectedFilters,
-  headers,
-  deepSearch,
-  setDeepSearch,
   filters,
   onRefreshData,
   searchTerm,
-  // Nuevas props para filtrar por estado
   selectedStatuses,
   statusOptions,
   onCheckStatus,
+  advancedSearch,
+  onToggleAdvancedSearch,
 }) => {
   const CustomDropdownItem = ({ name }) => {
     return (
-      <li className="flex items-center cursor-pointer hover:bg-neutral-100 px-4 py-1.5">
+      <li
+        onClick={() => onCheckFilter(name)}
+        className="flex items-center cursor-pointer hover:bg-neutral-100 px-4 py-1.5"
+      >
         <input
           id={name}
           type="checkbox"
           checked={selectedFilters?.includes(name)}
           className="w-4 h-4 bg-gray-100 border-gray-300 cursor-pointer rounded text-purple-600 focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500"
-          onChange={() => onCheckFilter(name)}
         />
         <label
           htmlFor={name}
@@ -48,7 +48,7 @@ const TableActions = ({
       <div className="w-full flex flex-col md:flex-row gap-4 md:gap-2 justify-between">
         <div className="w-full md:w-[40vw]">
           <form
-            className="flex items-center"
+            className="flex items-center gap-2"
             onSubmit={(e) => e.preventDefault()}
           >
             <div className="relative w-full">
@@ -66,6 +66,15 @@ const TableActions = ({
                   height: '36px',
                 }}
               />
+            </div>
+            <div className="flex items-center gap-2">
+              <Tooltip content="Búsqueda avanzada">
+                <ToggleSwitch
+                  color="indigo"
+                  checked={advancedSearch === 'true'}
+                  onChange={onToggleAdvancedSearch}
+                />
+              </Tooltip>
             </div>
           </form>
         </div>
@@ -91,14 +100,7 @@ const TableActions = ({
                   </h2>
                 </div>
                 <Dropdown.Divider />
-                <CustomDropdownItem
-                  key="all"
-                  name={
-                    filters?.length === selectedFilters?.length
-                      ? 'Quitar todos'
-                      : 'Seleccionar todos'
-                  }
-                />
+                <CustomDropdownItem key="all" name="ALL" />
                 <Dropdown.Divider />
                 {filters &&
                   filters?.map((condition) => (
@@ -172,15 +174,6 @@ const TableActions = ({
           />
         </div>
       </div>
-      {deepSearch && (
-        <div className="w-full col-span-12 whitespace-nowrap flex flex-wrap">
-          <TableSearchByHeader
-            currentFilters={deepSearch}
-            setCurrentFilters={setDeepSearch}
-            headers={headers}
-          />
-        </div>
-      )}
     </div>
   );
 };
