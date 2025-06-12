@@ -6,6 +6,7 @@ import {
   useUpdateDeadline,
   useCreateTask,
   useUpdateTask,
+  useDeleteTask,
 } from '../../hooks/useDeadlines';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -51,6 +52,7 @@ const DeadlineFormModal = ({
     order: 0,
     id: null,
   });
+  const [deletedTaskIds, setDeletedTaskIds] = useState([]);
 
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({
@@ -63,6 +65,7 @@ const DeadlineFormModal = ({
   const updateDeadline = useUpdateDeadline(projectId);
   const createTask = useCreateTask(projectId);
   const updateTask = useUpdateTask();
+  const deleteTask = useDeleteTask();
 
   useEffect(() => {
     if (isEditing && initialData) {
@@ -91,13 +94,11 @@ const DeadlineFormModal = ({
 
   const handleSubmit = async () => {
     const payload = { ...deadline };
-    const deadlineId = deadline.id;
 
     if (isEditing) {
       await updateDeadline.mutateAsync({ id: deadline.id, data: payload });
 
-      // 👇 Procesar tareas
-
+      // 🔁 Crear y actualizar tareas
       await Promise.all(
         tasks.map(async (task) => {
           const taskData = {
@@ -105,27 +106,31 @@ const DeadlineFormModal = ({
             description: task.description,
             date: task.date,
             order: task.order,
-            status: task.status,
+            status: task.status || 'PENDIENTE',
             users: task.users || [],
             createdById: task.createdById || 'admin',
           };
 
-          if (task.id && !task.id.includes('-')) {
-            // tarea persistente, actualiza
-            return await updateTask.mutateAsync({
-              id: task.id,
+          // 👇 Verifica si el ID es un UUID (nueva tarea local)
+          const isNew = task.id.length === 36;
+
+          if (!isNew && task.id) {
+            await updateTask.mutateAsync({ id: task.id, data: taskData });
+          } else {
+            await createTask.mutateAsync({
+              deadlineId: deadline.id,
               data: taskData,
             });
-          } else {
-            // nueva tarea (uuid), crea
-            return await createTask.mutateAsync({ deadlineId, data: taskData });
           }
         }),
       );
 
+      // 🗑️ Eliminar tareas marcadas
+      await Promise.all(deletedTaskIds.map((id) => deleteTask.mutateAsync(id)));
+
       Notifies('success', 'Deadline actualizado');
     } else {
-      // Crear nuevo deadline + tareas
+      // Crear nuevo deadline
       const created = await createDeadline.mutateAsync(payload);
       const deadlineId = created?.data?.id;
 
@@ -134,6 +139,7 @@ const DeadlineFormModal = ({
         return;
       }
 
+      // Crear tareas nuevas
       await Promise.all(
         tasks.map((task) =>
           createTask.mutateAsync({
@@ -143,7 +149,7 @@ const DeadlineFormModal = ({
               description: task.description,
               date: task.date,
               order: task.order,
-              status: task.status,
+              status: task.status || 'PENDIENTE',
               users: task.users || [],
               createdById: created.data.createdById || 'admin',
             },
@@ -374,11 +380,14 @@ const DeadlineFormModal = ({
                         {/* Eliminar */}
                         <div className="md:col-span-2 flex items-start justify-end p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">
                           <button
-                            onClick={() =>
+                            onClick={() => {
+                              if (task.id && task.id.length !== 36) {
+                                setDeletedTaskIds((prev) => [...prev, task.id]);
+                              }
                               setTasks((prev) =>
                                 prev.filter((t) => t.id !== task.id),
-                              )
-                            }
+                              );
+                            }}
                             title="Eliminar tarea"
                             className="text-red-500 inline-flex items-center gap-2 text-sm font-medium"
                             aria-label="Eliminar tarea"
