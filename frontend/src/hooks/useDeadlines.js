@@ -1,3 +1,4 @@
+// file: frontend/src/hooks/useDeadlines.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getDeadlinesByProjectId,
@@ -7,6 +8,10 @@ import {
   assignInventoryToDeadline,
   unassignInventoryFromDeadline,
   getInventoriesByDeadline,
+  createTask,
+  updateTask,
+  deleteTask,
+  reorderTasks,
 } from '../services/deadlines.api';
 
 // 📅 Obtener todos los deadlines de un proyecto
@@ -92,3 +97,47 @@ export const useInventoriesByDeadline = (deadlineId) =>
     queryFn: () => getInventoriesByDeadline(deadlineId).then((res) => res.data),
     enabled: !!deadlineId,
   });
+
+// ➕ Crear una tarea
+export const useCreateTask = (projectId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ deadlineId, data }) => createTask(deadlineId, data),
+    onSuccess: (_, { deadlineId }) => {
+      queryClient.invalidateQueries({ queryKey: ['deadlines', projectId] });
+    },
+  });
+};
+
+// ✏️ Actualizar tarea
+export const useUpdateTask = (projectId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => updateTask(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deadlines', projectId] });
+    },
+  });
+};
+
+// ❌ Eliminar tarea
+export const useDeleteTask = (projectId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => deleteTask(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deadlines', projectId] });
+    },
+  });
+};
+
+// 🔃 Reordenar tareas
+export const useReorderTasks = (projectId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (taskList) => reorderTasks(taskList),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deadlines', projectId] });
+    },
+  });
+};

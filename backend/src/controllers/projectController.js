@@ -1,27 +1,5 @@
 import { db } from "../lib/db.js";
 
-// Utilidad opcional para validación de permisos
-// const getUserPermissions = async (userId) => {
-//   const user = await db.user.findUnique({
-//     where: { id: userId },
-//     include: {
-//       role: {
-//         include: {
-//           permissions: {
-//             include: { permission: true },
-//           },
-//         },
-//       },
-//     },
-//   });
-
-//   if (!user) return [];
-//   return user.role.permissions.map((p) => p.permission.name);
-// };
-
-// 🔍 Buscar proyectos (nombre, código, proveedor, vertical, inventarios, OCs, facturas)
-// controllers/projectController.js
-
 export const searchProjects = async (req, res) => {
   const {
     searchTerm = "",

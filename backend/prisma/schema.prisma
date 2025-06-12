@@ -34,54 +34,56 @@ model Role {
 }
 
 model User {
-  id          String      @id @default(uuid())
-  firstName   String
-  lastName    String
-  email       String      @unique
-  userName    String      @unique
-  phone       String?
-  password    String
-  status      Boolean?
-  roleId      Int
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  enabled     Boolean     @default(true)
-  inventories Inventory[]
-  role        Role        @relation(fields: [roleId], references: [id])
-  photo       UserImage[] @relation("UserImages")
+  id                String         @id @default(uuid())
+  firstName         String
+  lastName          String
+  email             String         @unique
+  userName          String         @unique
+  phone             String?
+  password          String
+  status            Boolean?
+  roleId            Int
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  enabled           Boolean        @default(true)
+  inventories       Inventory[]
+  role              Role           @relation(fields: [roleId], references: [id])
+  photo             UserImage[]    @relation("UserImages")
+  assignedDeadlines Deadline[]     @relation("DeadlineUsers")
+  assignedTasks     DeadlineTask[] @relation("TaskUsers")
 
   @@index([roleId], map: "User_roleId_fkey")
 }
 
 model Inventory {
-  id            String                 @id @default(uuid())
-  status        Status
-  createdById   String
-  internalFolio String?                @unique
-  activeNumber  String?
-  serialNumber  String?
-  comments      String?                @db.Text
-  modelId       Int
-  projectId   String?
-  enabled       Boolean                @default(true)
-  receptionDate DateTime?
-  altaDate      DateTime?
-  bajaDate      DateTime?
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
-  details       Json? //este campo no se utiliza
-  files         File[]
-  images        Image[]                @relation("InventoryImages")
-  createdBy     User                   @relation(fields: [createdById], references: [id])
-  model         Model                  @relation(fields: [modelId], references: [id])
-  conditions    InventoryCondition[]
-  customField   InventoryCustomField[]
-  project     Project?     @relation("ProjectInventories", fields: [projectId], references: [id])
-
+  id                String                 @id @default(uuid())
+  status            Status
+  createdById       String
+  activeNumber      String?
+  serialNumber      String?
+  comments          String?                @db.Text
+  modelId           Int
+  enabled           Boolean                @default(true)
+  receptionDate     DateTime?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  details           Json?
+  altaDate          DateTime?
+  bajaDate          DateTime?
+  internalFolio     String?                @unique
+  projectId         String?
+  files             File[]
+  images            Image[]                @relation("InventoryImages")
+  createdBy         User                   @relation(fields: [createdById], references: [id])
+  model             Model                  @relation(fields: [modelId], references: [id])
+  project           Project?               @relation("ProjectInventories", fields: [projectId], references: [id])
+  conditions        InventoryCondition[]
+  customField       InventoryCustomField[]
+  InventoryDeadline InventoryDeadline[]
 
   @@index([createdById], map: "Inventory_createdById_fkey")
   @@index([modelId], map: "Inventory_modelId_fkey")
-  InventoryDeadline InventoryDeadline[]
+  @@index([projectId], map: "Inventory_projectId_fkey")
 }
 
 model InventoryType {
@@ -133,129 +135,146 @@ model InventoryCustomField {
 }
 
 model Project {
-  id            String           @id @default(uuid())
-  code          String           @unique // Ej: PROJ-001
-  name          String
-  description   String?
-  provider      String
-  status        String           // En progreso, Completado, Planificación
-  budgetTotal   Float
-  budgetUsed    Float            @default(0)
-  startDate     DateTime
-  endDate       DateTime
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  enabled       Boolean          @default(true)
-  createdById   String
-
-  deadlines       Deadline[]
-  purchaseOrders  PurchaseOrder[]
-  documents       ProjectDocument[]
-  inventories     Inventory[]      @relation("ProjectInventories")
-  teamMembers     ProjectMember[]
-  verticals     ProjectVertical[] @relation("ProjectVerticalsOnProjects")
+  id             String            @id @default(uuid())
+  code           String            @unique
+  name           String
+  description    String?
+  provider       String
+  status         ProjectStatus
+  budgetTotal    Float
+  budgetUsed     Float             @default(0)
+  startDate      DateTime
+  endDate        DateTime
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  enabled        Boolean           @default(true)
+  createdById    String
+  deadlines      Deadline[]
+  inventories    Inventory[]       @relation("ProjectInventories")
+  documents      ProjectDocument[]
+  teamMembers    ProjectMember[]
+  purchaseOrders PurchaseOrder[]
+  verticals      ProjectVertical[] @relation("ProjectVerticalsOnProjects")
 }
 
 model Deadline {
-  id         Int             @id @default(autoincrement())
-  name       String          // Ej: Suministro, Instalación
-  description String?
-  status     String          // Completado, En progreso, Pendiente
-  responsible String?
-  dueDate    DateTime
-  projectId  String
-  project    Project         @relation(fields: [projectId], references: [id])
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-  enabled    Boolean         @default(true)
-  createdById String
-
+  id                   String              @id @default(uuid())
+  name                 String
+  description          String?
+  status               DeadlineStatus
+  dueDate              DateTime
+  projectId            String
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  enabled              Boolean             @default(true)
+  createdById          String
+  order                Int
+  project              Project             @relation(fields: [projectId], references: [id])
+  tasks                DeadlineTask[]
   inventoryAssignments InventoryDeadline[]
-  tasks      DeadlineTask[]
+  users                User[]              @relation("DeadlineUsers")
+
+  @@index([projectId], map: "Deadline_projectId_fkey")
 }
 
 model DeadlineTask {
-  id         Int        @id @default(autoincrement())
-  name       String
-  date       DateTime
-  deadlineId Int
-  deadline   Deadline   @relation(fields: [deadlineId], references: [id])
-  enabled    Boolean    @default(true)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  id          String     @id @default(uuid())
+  name        String
+  date        DateTime
+  deadlineId  String
+  enabled     Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   createdById String
+  description String?
+  order       Int
+  status      TaskStatus @default(PENDIENTE)
+  deadline    Deadline   @relation(fields: [deadlineId], references: [id])
+  users       User[]     @relation("TaskUsers")
+
+  @@index([deadlineId], map: "DeadlineTask_deadlineId_fkey")
 }
 
 model InventoryDeadline {
-  id           Int        @id @default(autoincrement())
-  inventoryId  String
-  deadlineId   Int
-  inventory    Inventory  @relation(fields: [inventoryId], references: [id])
-  deadline     Deadline   @relation(fields: [deadlineId], references: [id])
+  id          String    @id @default(uuid())
+  inventoryId String
+  deadlineId  String
+  deadline    Deadline  @relation(fields: [deadlineId], references: [id])
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+
+  @@index([deadlineId], map: "InventoryDeadline_deadlineId_fkey")
+  @@index([inventoryId], map: "InventoryDeadline_inventoryId_fkey")
 }
 
 model PurchaseOrder {
-  id          Int       @id @default(autoincrement())
-  code        String    @unique // Ej: OC-2025-001
+  id          String    @id @default(uuid())
+  code        String    @unique
   supplier    String
   description String?
   amount      Float
-  status      String    // Aprobada, En proceso, Rechazada
+  status      String
   date        DateTime
   projectId   String
-  project     Project   @relation(fields: [projectId], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   enabled     Boolean   @default(true)
   createdById String
-
   invoices    Invoice[]
+  project     Project   @relation(fields: [projectId], references: [id])
+
+  @@index([projectId], map: "PurchaseOrder_projectId_fkey")
 }
 
 model Invoice {
-  id             Int       @id @default(autoincrement())
-  code           String    // Ej: INV-001
-  concept        String
-  amount         Float
-  status         String    // Pagada, Pendiente
-  date           DateTime
-  fileUrl        String?
-  purchaseOrderId Int
-  purchaseOrder  PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  enabled        Boolean   @default(true)
-  createdById    String
+  id              Int           @id @default(autoincrement())
+  code            String
+  concept         String
+  amount          Float
+  status          String
+  date            DateTime
+  fileUrl         String?
+  purchaseOrderId String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  enabled         Boolean       @default(true)
+  createdById     String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+
+  @@index([purchaseOrderId], map: "Invoice_purchaseOrderId_fkey")
 }
 
 model ProjectMember {
-  id         Int      @id @default(autoincrement())
-  role       String   // Project Manager, Instalador, etc
-  name       String
-  projectId  String
-  project    Project  @relation(fields: [projectId], references: [id])
+  id        String  @id @default(uuid())
+  role      String
+  name      String
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  @@index([projectId], map: "ProjectMember_projectId_fkey")
 }
 
 model ProjectDocument {
-  id         Int      @id @default(autoincrement())
-  name       String
-  fileUrl    String
+  id          String   @id @default(uuid())
+  name        String
+  fileUrl     String
   description String?
-  metadata   Json?
-  enabled    Boolean  @default(true)
-  uploadDate DateTime
-  projectId  String
-  project    Project  @relation(fields: [projectId], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  metadata    Json?
+  enabled     Boolean  @default(true)
+  uploadDate  DateTime
+  projectId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   createdById String
+  project     Project  @relation(fields: [projectId], references: [id])
+
+  @@index([projectId], map: "ProjectDocument_projectId_fkey")
 }
 
 model ProjectVertical {
-  id        Int     @id @default(autoincrement())
-  name      String  @unique
-  enabled   Boolean @default(true)
-  projects  Project[] @relation("ProjectVerticalsOnProjects")
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  enabled  Boolean   @default(true)
+  projects Project[] @relation("ProjectVerticalsOnProjects")
 }
 
 model File {
@@ -322,4 +341,29 @@ enum Status {
   ALTA
   BAJA
   PROPUESTA
+}
+
+enum DeadlineStatus {
+  PENDIENTE
+  EN_PROGRESO
+  EN_REVISION
+  COMPLETADO
+  CANCELADO
+  BLOQUEADO
+}
+
+enum ProjectStatus {
+  PLANIFICACION
+  EN_EJECUCION
+  EN_REVISION
+  FINALIZADO
+  CANCELADO
+  PAUSADO
+}
+
+enum TaskStatus {
+  PENDIENTE
+  EN_PROGRESO
+  COMPLETADO
+  CANCELADO
 }

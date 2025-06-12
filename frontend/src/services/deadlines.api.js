@@ -2,10 +2,10 @@ import api from './api';
 
 // 📅 Deadlines
 export const getDeadlinesByProjectId = (projectId) =>
-  api.get(`/projects/${projectId}`);
+  api.get(`/deadlines/projects/${projectId}`);
 
 export const createDeadline = (projectId, data) =>
-  api.post(`/projects/${projectId}`, data);
+  api.post(`/deadlines/projects/${projectId}`, data);
 
 export const updateDeadline = (id, data) => api.put(`/deadlines/${id}`, data);
 
@@ -20,3 +20,20 @@ export const unassignInventoryFromDeadline = (deadlineId, inventoryId) =>
 
 export const getInventoriesByDeadline = (deadlineId) =>
   api.get(`/deadlines/${deadlineId}/inventories`);
+
+// 📌 TASKS de deadline
+
+// Crear nueva tarea
+export const createTask = (deadlineId, taskData) =>
+  api.post(`/deadlines/${deadlineId}/task`, taskData);
+
+// Actualizar tarea
+export const updateTask = (taskId, taskData) =>
+  api.put(`/deadlines/task/${taskId}`, taskData);
+
+// Eliminar tarea
+export const deleteTask = (taskId) => api.delete(`/deadlines/task/${taskId}`);
+
+// Reordenar tareas
+export const reorderTasks = (taskList) =>
+  api.post(`/deadlines/task/reorder`, taskList);

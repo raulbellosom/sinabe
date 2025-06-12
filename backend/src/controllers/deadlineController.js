@@ -7,7 +7,7 @@ export const getDeadlinesByProjectId = async (req, res) => {
   try {
     const deadlines = await db.deadline.findMany({
       where: {
-        projectId: parseInt(projectId),
+        projectId: projectId,
         enabled: true,
       },
       include: {
@@ -37,24 +37,40 @@ export const getDeadlinesByProjectId = async (req, res) => {
 // ➕ Crear deadline
 export const createDeadline = async (req, res) => {
   const { projectId } = req.params;
-  const { name, description, dueDate, responsible, status } = req.body;
+  const {
+    name,
+    description,
+    dueDate,
+    status,
+    order = 0,
+    users = [],
+  } = req.body;
+  const createdById = req.user.id; // Asumiendo que el usuario está autenticado y su ID está en req.user
 
   try {
     const deadline = await db.deadline.create({
       data: {
         name,
         description,
-        responsible,
         status,
         dueDate: new Date(dueDate),
-        projectId: parseInt(projectId),
+        projectId,
+        order,
+        createdById,
         enabled: true,
+        users: {
+          connect: users.map((id) => ({ id })),
+        },
+      },
+      include: {
+        tasks: true,
+        users: true,
       },
     });
 
     res.status(201).json(deadline);
   } catch (error) {
-    console.error("Error creating deadline:", error.message);
+    console.error("Error creating deadline with tasks:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -62,17 +78,29 @@ export const createDeadline = async (req, res) => {
 // ✏️ Actualizar deadline
 export const updateDeadline = async (req, res) => {
   const { id } = req.params;
-  const { name, description, dueDate, responsible, status } = req.body;
+  const {
+    name,
+    description,
+    dueDate,
+    responsible,
+    status,
+    order,
+    users = [],
+  } = req.body;
 
   try {
     const updated = await db.deadline.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data: {
         name,
         description,
         responsible,
         status,
         dueDate: new Date(dueDate),
+        users: {
+          set: users.map((id) => ({ id })),
+        },
+        order,
       },
     });
 
@@ -89,7 +117,7 @@ export const deleteDeadline = async (req, res) => {
 
   try {
     await db.deadline.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data: { enabled: false },
     });
 
@@ -108,7 +136,7 @@ export const assignInventoryToDeadline = async (req, res) => {
   try {
     const existing = await db.inventoryDeadline.findFirst({
       where: {
-        deadlineId: parseInt(deadlineId),
+        deadlineId: deadlineId,
         inventoryId,
       },
     });
@@ -119,7 +147,7 @@ export const assignInventoryToDeadline = async (req, res) => {
 
     const assignment = await db.inventoryDeadline.create({
       data: {
-        deadlineId: parseInt(deadlineId),
+        deadlineId: deadlineId,
         inventoryId,
       },
     });
@@ -138,7 +166,7 @@ export const getInventoriesByDeadline = async (req, res) => {
   try {
     const inventories = await db.inventoryDeadline.findMany({
       where: {
-        deadlineId: parseInt(deadlineId),
+        deadlineId: deadlineId,
       },
       include: {
         inventory: {
@@ -165,7 +193,7 @@ export const unassignInventoryFromDeadline = async (req, res) => {
   try {
     const existing = await db.inventoryDeadline.findFirst({
       where: {
-        deadlineId: parseInt(deadlineId),
+        deadlineId: deadlineId,
         inventoryId,
       },
     });
@@ -181,6 +209,35 @@ export const unassignInventoryFromDeadline = async (req, res) => {
     res.status(204).end();
   } catch (error) {
     console.error("Error unassigning inventory:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const reorderDeadlines = async (req, res) => {
+  const deadlines = req.body;
+
+  if (!Array.isArray(deadlines)) {
+    return res.status(400).json({
+      error: "El cuerpo debe ser un array de deadlines con id y order.",
+    });
+  }
+
+  try {
+    const updates = await Promise.all(
+      deadlines.map(({ id, order }) =>
+        db.deadline.update({
+          where: { id },
+          data: { order },
+        })
+      )
+    );
+
+    res.status(200).json({
+      message: "Orden actualizado correctamente.",
+      updated: updates.length,
+    });
+  } catch (error) {
+    console.error("Error reordenando deadlines:", error.message);
     res.status(500).json({ error: error.message });
   }
 };

@@ -14,6 +14,7 @@ import {
   FaClipboardList,
   FaUsers,
 } from 'react-icons/fa';
+import ProjectDeadlines from '../../components/ProjectDetails/ProjectDeadlines';
 
 const ProjectDetailPage = () => {
   const { id } = useParams();
@@ -45,7 +46,7 @@ const ProjectDetailPage = () => {
     {
       title: 'Deadlines',
       icon: FaCalendarCheck,
-      content: <p>Próximamente: Gestión de deadlines del proyecto.</p>,
+      content: <ProjectDeadlines projectId={project.id} />,
     },
     {
       title: 'Inventario',

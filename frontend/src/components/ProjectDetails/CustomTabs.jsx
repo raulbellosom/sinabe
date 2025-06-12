@@ -22,7 +22,9 @@ const CustomTabs = ({ tabs }) => {
               },
             )}
           >
-            <tab.icon className="text-base" />
+            <span className="inline-block">
+              <tab.icon className="text-base" />
+            </span>
             {tab.title}
           </button>
         ))}

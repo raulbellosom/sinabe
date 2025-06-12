@@ -10,6 +10,13 @@ import {
   getInventoriesByDeadline,
 } from "../controllers/deadlineController.js";
 
+import {
+  createTask,
+  updateTask,
+  deleteTask,
+  reorderTasks,
+} from "../controllers/deadlineTaskController.js";
+
 const router = express.Router();
 
 // 🔄 Deadlines de un proyecto
@@ -33,5 +40,11 @@ router
 
 // 🔍 Obtener inventarios asignados
 router.route("/:deadlineId/inventories").get(protect, getInventoriesByDeadline);
+
+// Tareas
+router.post("/:deadlineId/task", createTask);
+router.put("/task/:id", updateTask);
+router.delete("/task/:id", deleteTask);
+router.post("/task/reorder", reorderTasks);
 
 export default router;
