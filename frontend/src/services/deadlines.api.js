@@ -4,8 +4,10 @@ import api from './api';
 export const getDeadlinesByProjectId = (projectId) =>
   api.get(`/deadlines/projects/${projectId}`);
 
-export const createDeadline = (projectId, data) =>
-  api.post(`/deadlines/projects/${projectId}`, data);
+export const createDeadline = async (projectId, data) => {
+  const response = await api.post(`/deadlines/projects/${projectId}`, data);
+  return response.data; // debe incluir al menos { id }
+};
 
 export const updateDeadline = (id, data) => api.put(`/deadlines/${id}`, data);
 

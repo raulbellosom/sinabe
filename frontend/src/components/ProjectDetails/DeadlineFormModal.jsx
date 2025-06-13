@@ -53,8 +53,8 @@ const DeadlineFormModal = ({
     id: null,
   });
   const [deletedTaskIds, setDeletedTaskIds] = useState([]);
-
   const [tasks, setTasks] = useState([]);
+  const [originalTasks, setOriginalTasks] = useState([]);
   const [newTask, setNewTask] = useState({
     name: '',
     date: '',
@@ -70,7 +70,10 @@ const DeadlineFormModal = ({
   useEffect(() => {
     if (isEditing && initialData) {
       setDeadline({ ...initialData });
-      setTasks(initialData.tasks || []);
+      setTasks(
+        (initialData.tasks || []).map((t) => ({ ...t, _isLocal: false })),
+      );
+      setOriginalTasks(initialData.tasks || []); // 👈 aquí
     } else {
       setDeadline({
         name: '',
@@ -82,13 +85,19 @@ const DeadlineFormModal = ({
         id: null,
       });
       setTasks([]);
+      setOriginalTasks([]);
     }
+    setNewTask({ name: '', date: '', description: '' });
+    setDeletedTaskIds([]);
   }, [initialData, isEditing]);
 
   const handleAddTask = () => {
     if (!newTask.name || !newTask.date) return;
     const id = uuidv4();
-    setTasks((prev) => [...prev, { id, ...newTask, order: prev.length }]);
+    setTasks((prev) => [
+      ...prev,
+      { id, ...newTask, order: prev.length, _isLocal: true },
+    ]);
     setNewTask({ name: '', date: '', description: '' });
   };
 
@@ -98,7 +107,6 @@ const DeadlineFormModal = ({
     if (isEditing) {
       await updateDeadline.mutateAsync({ id: deadline.id, data: payload });
 
-      // 🔁 Crear y actualizar tareas
       await Promise.all(
         tasks.map(async (task) => {
           const taskData = {
@@ -111,35 +119,43 @@ const DeadlineFormModal = ({
             createdById: task.createdById || 'admin',
           };
 
-          // 👇 Verifica si el ID es un UUID (nueva tarea local)
-          const isNew = task.id.length === 36;
-
-          if (!isNew && task.id) {
-            await updateTask.mutateAsync({ id: task.id, data: taskData });
-          } else {
-            await createTask.mutateAsync({
+          if (task._isLocal) {
+            // ✅ Crear tarea nueva
+            return createTask.mutateAsync({
               deadlineId: deadline.id,
               data: taskData,
             });
           }
+
+          // Solo actualizar si hay cambios
+          const original = originalTasks.find((t) => t.id === task.id);
+          const hasChanged =
+            !original ||
+            original.name !== task.name ||
+            original.description !== task.description ||
+            original.date?.slice(0, 10) !== task.date?.slice(0, 10) ||
+            original.status !== task.status;
+
+          if (hasChanged) {
+            return updateTask.mutateAsync({ id: task.id, data: taskData });
+          }
+
+          return Promise.resolve(); // No hacer nada
         }),
       );
-
-      // 🗑️ Eliminar tareas marcadas
+      console.log('Deleted Task IDs:', deletedTaskIds);
       await Promise.all(deletedTaskIds.map((id) => deleteTask.mutateAsync(id)));
 
       Notifies('success', 'Deadline actualizado');
     } else {
-      // Crear nuevo deadline
       const created = await createDeadline.mutateAsync(payload);
-      const deadlineId = created?.data?.id;
+      const deadlineId = created?.id;
 
       if (!deadlineId) {
         Notifies('error', 'Error al crear el deadline');
         return;
       }
 
-      // Crear tareas nuevas
       await Promise.all(
         tasks.map((task) =>
           createTask.mutateAsync({
@@ -151,7 +167,7 @@ const DeadlineFormModal = ({
               order: task.order,
               status: task.status || 'PENDIENTE',
               users: task.users || [],
-              createdById: created.data.createdById || 'admin',
+              createdById: created.createdById || 'admin',
             },
           }),
         ),
@@ -277,7 +293,7 @@ const DeadlineFormModal = ({
                 <div className="col-span-12 order-3 md:order-4 flex flex-col gap-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                     <span className="flex items-center gap-1">
-                      <MdOutlineDescription className="text-gray-500 dark:text-gray-400" />
+                      <MdTextFields className="text-gray-500 dark:text-gray-400" />
                       Descripción de la tarea (opcional)
                     </span>
                   </label>
@@ -381,10 +397,14 @@ const DeadlineFormModal = ({
                         <div className="md:col-span-2 flex items-start justify-end p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">
                           <button
                             onClick={() => {
-                              if (task.id && task.id.length !== 36) {
+                              if (!task._isLocal) {
                                 setDeletedTaskIds((prev) => [...prev, task.id]);
                               }
+
                               setTasks((prev) =>
+                                prev.filter((t) => t.id !== task.id),
+                              );
+                              setOriginalTasks((prev) =>
                                 prev.filter((t) => t.id !== task.id),
                               );
                             }}

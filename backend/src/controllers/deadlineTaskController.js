@@ -24,6 +24,7 @@ export const createTask = async (req, res) => {
         deadlineId,
         createdById,
         status,
+        enabled: true,
         users: {
           connect: users.map((id) => ({ id })),
         },
@@ -43,6 +44,16 @@ export const updateTask = async (req, res) => {
   const { name, description, date, users = [], status } = req.body;
 
   try {
+    const existing = await db.deadlineTask.findFirst({
+      where: { id, enabled: true },
+    });
+
+    if (!existing) {
+      return res
+        .status(404)
+        .json({ error: "Tarea no encontrada o deshabilitada" });
+    }
+
     const updated = await db.deadlineTask.update({
       where: { id },
       data: {
@@ -66,6 +77,7 @@ export const updateTask = async (req, res) => {
 // ❌ Eliminar tarea (lógica)
 export const deleteTask = async (req, res) => {
   const { id } = req.params;
+  console.log("Eliminando tarea con ID:", id);
 
   try {
     await db.deadlineTask.update({
@@ -73,7 +85,7 @@ export const deleteTask = async (req, res) => {
       data: { enabled: false },
     });
 
-    res.status(204).end();
+    res.status(200).json({ message: "Tarea eliminada correctamente." });
   } catch (error) {
     console.error("Error eliminando tarea:", error.message);
     res.status(500).json({ error: error.message });
@@ -92,17 +104,23 @@ export const reorderTasks = async (req, res) => {
 
   try {
     const updates = await Promise.all(
-      tasks.map(({ id, order }) =>
-        db.deadlineTask.update({
+      tasks.map(async ({ id, order }) => {
+        const existing = await db.deadlineTask.findFirst({
+          where: { id, enabled: true },
+        });
+        if (!existing) return null;
+
+        return db.deadlineTask.update({
           where: { id },
           data: { order },
-        })
-      )
+        });
+      })
     );
 
-    res
-      .status(200)
-      .json({ message: "Tareas reordenadas.", updated: updates.length });
+    res.status(200).json({
+      message: "Tareas reordenadas.",
+      updated: updates.filter(Boolean).length,
+    });
   } catch (error) {
     console.error("Error reordenando tareas:", error.message);
     res.status(500).json({ error: error.message });

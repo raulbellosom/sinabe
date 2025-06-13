@@ -16,9 +16,11 @@ import {
   FaClock,
   FaSpinner,
   FaTimesCircle,
+  FaTrashAlt,
 } from 'react-icons/fa';
-import { MdInfoOutline, MdOutlineTaskAlt } from 'react-icons/md';
+import { MdInfoOutline, MdOutlineTaskAlt, MdTextFields } from 'react-icons/md';
 import { parseToLocalDate } from '../../utils/formatValues';
+import ConfirmDeleteDeadlineModal from './ConfirmDeleteDeadlineModal.jsx';
 
 const statusBorderColor = {
   PENDIENTE: 'border-orange-500',
@@ -58,6 +60,7 @@ const ProjectDeadlines = ({ projectId }) => {
   const { data: deadlines, isLoading } = useDeadlinesByProject(projectId);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDeadline, setEditingDeadline] = useState(null);
+  const [deletingDeadline, setDeletingDeadline] = useState(null);
   const [openCards, setOpenCards] = useState({});
 
   const toggleCard = (id) => {
@@ -129,19 +132,28 @@ const ProjectDeadlines = ({ projectId }) => {
                     >
                       <FaEdit /> Editar
                     </button>
+                    <button
+                      onClick={() => setDeletingDeadline(deadline)}
+                      className="flex items-center gap-1 text-sm md:text-base text-red-600 bg-red-100 px-3 py-1 rounded-md hover:bg-red-200"
+                    >
+                      <FaTrashAlt /> Eliminar
+                    </button>
                   </div>
                 </div>
 
                 {/* Descripción */}
                 <div className="grid grid-cols-12 gap-2 mt-2">
-                  <div className="col-span-12 md:col-span-9">
+                  <div className="col-span-12 md:col-span-8 flex items-start gap-2">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      <MdTextFields className="inline-block mr-1" />
+                    </span>
                     {deadline.description && (
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         {deadline.description}
                       </p>
                     )}
                   </div>
-                  <div className="col-span-12 md:col-span-3 flex items-center md:justify-end gap-2 text-gray-800">
+                  <div className="col-span-12 md:col-span-4 flex items-center md:justify-end gap-2 text-gray-800">
                     <FaCalendarAlt className="text-gray-500" />
                     <span>
                       Fecha limite:{' '}
@@ -159,9 +171,9 @@ const ProjectDeadlines = ({ projectId }) => {
                     <span>{deadline.responsible || 'Sin asignar'}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <span className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-6">
                       <span
-                        className="bg-blue-500 h-2 rounded-full block"
+                        className="bg-blue-500 h-6 rounded-full block"
                         style={{ width: `${progress}%` }}
                       ></span>
                     </span>
@@ -175,7 +187,7 @@ const ProjectDeadlines = ({ projectId }) => {
                 {/* Tareas */}
                 <div className="mt-4">
                   <div
-                    className="flex justify-between items-center cursor-pointer"
+                    className="bg-gray-100 dark:bg-gray-800 py-2 px-4 rounded-md flex justify-between items-center cursor-pointer"
                     onClick={() => toggleCard(deadline.id)}
                   >
                     <h4 className="text-sm font-semibold text-gray-800 dark:text-white">
@@ -195,17 +207,22 @@ const ProjectDeadlines = ({ projectId }) => {
                           </p>
                         </div>
                       ) : (
-                        <ul className="flex flex-col gap-3 text-sm divide-y divide-gray-200 dark:divide-gray-700 mt-2">
+                        <ul className="flex flex-col gap-3 text-sm mt-2">
                           {deadline.tasks.map((task) => (
                             <li
                               key={task.id}
-                              className="flex justify-between items-center bg-gray-100 p-2 rounded-md"
+                              className="flex justify-between items-center bg-gray-50 p-2 rounded-md"
                             >
-                              <div className="flex items-center gap-2">
-                                <p className="inline-flex gap-2 items-center">
+                              <div className="flex flex-col gap-2">
+                                <p className="inline-flex gap-2 items-center font-semibold">
                                   <span>{statusIcons[task.status]}</span>
                                   {task.name}
                                 </p>
+                                {task.description && (
+                                  <span className="text-xs pl-7 text-gray-500 dark:text-gray-300">
+                                    {task.description}
+                                  </span>
+                                )}
                                 {task.users?.length > 0 && (
                                   <span className="text-xs text-gray-500 dark:text-gray-300">
                                     Asignada a: {task.users.join(', ')}
@@ -235,6 +252,15 @@ const ProjectDeadlines = ({ projectId }) => {
         onClose={() => setIsModalOpen(false)}
         projectId={projectId}
         initialData={editingDeadline}
+      />
+      <ConfirmDeleteDeadlineModal
+        isOpen={!!deletingDeadline}
+        deadline={deletingDeadline}
+        onClose={() => setDeletingDeadline(null)}
+        onSuccess={() => {
+          setDeletingDeadline(null);
+          refetch();
+        }}
       />
     </section>
   );

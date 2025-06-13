@@ -5,9 +5,9 @@ export const getDeadlinesByProjectId = async (req, res) => {
   const { projectId } = req.params;
 
   try {
-    const deadlines = await db.deadline.findMany({
+    const rawDeadlines = await db.deadline.findMany({
       where: {
-        projectId: projectId,
+        projectId,
         enabled: true,
       },
       include: {
@@ -16,16 +16,39 @@ export const getDeadlinesByProjectId = async (req, res) => {
             inventory: {
               include: {
                 model: {
-                  include: { brand: true, type: true },
+                  include: {
+                    brand: true,
+                    type: true,
+                  },
                 },
               },
             },
           },
         },
-        tasks: true,
+        tasks: {
+          include: {
+            users: true,
+          },
+          orderBy: { date: "asc" },
+        },
+        users: true,
       },
       orderBy: { dueDate: "asc" },
     });
+
+    // Filtrado manual en JS
+    const deadlines = rawDeadlines.map((deadline) => ({
+      ...deadline,
+      tasks: deadline.tasks.filter((task) => task.enabled),
+      inventoryAssignments: deadline.inventoryAssignments.filter(
+        (a) =>
+          a.inventory?.enabled &&
+          a.inventory.model?.enabled &&
+          a.inventory.model.brand?.enabled &&
+          a.inventory.model.type?.enabled
+      ),
+      users: deadline.users.filter((u) => u.enabled),
+    }));
 
     res.json(deadlines);
   } catch (error) {
@@ -45,7 +68,7 @@ export const createDeadline = async (req, res) => {
     order = 0,
     users = [],
   } = req.body;
-  const createdById = req.user.id; // Asumiendo que el usuario está autenticado y su ID está en req.user
+  const createdById = req.user.id;
 
   try {
     const deadline = await db.deadline.create({
@@ -63,14 +86,16 @@ export const createDeadline = async (req, res) => {
         },
       },
       include: {
-        tasks: true,
+        tasks: {
+          where: { enabled: true },
+        },
         users: true,
       },
     });
 
     res.status(201).json(deadline);
   } catch (error) {
-    console.error("Error creating deadline with tasks:", error.message);
+    console.error("Error creating deadline:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -90,7 +115,7 @@ export const updateDeadline = async (req, res) => {
 
   try {
     const updated = await db.deadline.update({
-      where: { id: id },
+      where: { id, enabled: true },
       data: {
         name,
         description,
@@ -111,19 +136,24 @@ export const updateDeadline = async (req, res) => {
   }
 };
 
-// ❌ Eliminación lógica
+// ❌ Eliminación lógica de deadline y sus tareas
 export const deleteDeadline = async (req, res) => {
   const { id } = req.params;
 
   try {
     await db.deadline.update({
-      where: { id: id },
+      where: { id },
       data: { enabled: false },
     });
 
-    res.status(204).end();
+    await db.deadlineTask.updateMany({
+      where: { deadlineId: id },
+      data: { enabled: false },
+    });
+
+    res.status(200).json({ success: true });
   } catch (error) {
-    console.error("Error deleting deadline:", error.message);
+    console.error("Error deleting deadline and its tasks:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -136,8 +166,9 @@ export const assignInventoryToDeadline = async (req, res) => {
   try {
     const existing = await db.inventoryDeadline.findFirst({
       where: {
-        deadlineId: deadlineId,
+        deadlineId,
         inventoryId,
+        enabled: true,
       },
     });
 
@@ -147,8 +178,9 @@ export const assignInventoryToDeadline = async (req, res) => {
 
     const assignment = await db.inventoryDeadline.create({
       data: {
-        deadlineId: deadlineId,
+        deadlineId,
         inventoryId,
+        enabled: true,
       },
     });
 
@@ -166,13 +198,19 @@ export const getInventoriesByDeadline = async (req, res) => {
   try {
     const inventories = await db.inventoryDeadline.findMany({
       where: {
-        deadlineId: deadlineId,
+        deadlineId,
+        enabled: true,
       },
       include: {
         inventory: {
+          where: { enabled: true },
           include: {
             model: {
-              include: { brand: true, type: true },
+              where: { enabled: true },
+              include: {
+                brand: true,
+                type: true,
+              },
             },
           },
         },
@@ -193,8 +231,9 @@ export const unassignInventoryFromDeadline = async (req, res) => {
   try {
     const existing = await db.inventoryDeadline.findFirst({
       where: {
-        deadlineId: deadlineId,
+        deadlineId,
         inventoryId,
+        enabled: true,
       },
     });
 
@@ -202,8 +241,9 @@ export const unassignInventoryFromDeadline = async (req, res) => {
       return res.status(404).json({ message: "Relación no encontrada." });
     }
 
-    await db.inventoryDeadline.delete({
+    await db.inventoryDeadline.update({
       where: { id: existing.id },
+      data: { enabled: false },
     });
 
     res.status(204).end();
@@ -213,6 +253,7 @@ export const unassignInventoryFromDeadline = async (req, res) => {
   }
 };
 
+// 🔀 Reordenar deadlines
 export const reorderDeadlines = async (req, res) => {
   const deadlines = req.body;
 
@@ -226,7 +267,7 @@ export const reorderDeadlines = async (req, res) => {
     const updates = await Promise.all(
       deadlines.map(({ id, order }) =>
         db.deadline.update({
-          where: { id },
+          where: { id, enabled: true },
           data: { order },
         })
       )
