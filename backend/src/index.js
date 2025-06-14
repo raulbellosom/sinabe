@@ -16,6 +16,7 @@ import deadlineRoutes from "./routes/deadlineRoutes.js";
 import purchaseOrderRoutes from "./routes/purchaseOrderRoutes.js";
 import projectDocumentRoutes from "./routes/projectDocumentRoutes.js";
 import projectVerticalRoutes from "./routes/projectVerticalRoutes.js";
+import projectTeamRoutes from "./routes/projectTeamRoutes.js";
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/deadlines", deadlineRoutes);
 app.use("/api/project-documents", projectDocumentRoutes);
 app.use("/api/purchase-orders", purchaseOrderRoutes);
+app.use("/api/project-team", projectTeamRoutes);
 app.use("/api/project-verticals", projectVerticalRoutes);
 app.use("/api/ping", pingRoutes);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));

@@ -8,7 +8,9 @@ import {
   useUpdateTask,
   useDeleteTask,
 } from '../../hooks/useDeadlines';
+import { useProjectTeam } from '../../hooks/useProjectTeam'; // Asegúrate de tener este hook
 import { v4 as uuidv4 } from 'uuid';
+import AsyncSelect from 'react-select/async';
 import {
   FaCalendarAlt,
   FaTasks,
@@ -19,6 +21,7 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaTrashAlt,
+  FaUser,
 } from 'react-icons/fa';
 import {
   MdInfoOutline,
@@ -27,7 +30,8 @@ import {
   MdOutlineTaskAlt,
   MdTextFields,
 } from 'react-icons/md';
-import Notifies from '../../components/Notifies/Notifies'; // Asegúrate de tener este módulo para notificaciones
+import Notifies from '../../components/Notifies/Notifies';
+import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 
 const statusIcons = {
   PENDIENTE: <FaClock className="text-orange-500 text-lg" />,
@@ -36,20 +40,59 @@ const statusIcons = {
   CANCELADO: <FaTimesCircle className="text-red-500 text-lg" />,
 };
 
+// Componente para renderizar las opciones de usuario en el select
+const CustomUserOption = ({ data, innerRef, innerProps }) => (
+  <div
+    ref={innerRef}
+    {...innerProps}
+    className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+  >
+    {data.thumbnail ? (
+      <img
+        src={data.thumbnail}
+        alt={data.label}
+        className="w-6 h-6 rounded-full object-cover mr-2"
+      />
+    ) : (
+      <div className="w-6 h-6 bg-gray-300 rounded-full text-white flex items-center justify-center mr-2 text-xs font-semibold">
+        {data.label
+          ?.split(' ')
+          .map((w) => w[0])
+          .join('')
+          .slice(0, 2)
+          .toUpperCase()}
+      </div>
+    )}
+    <div>
+      <p className="text-sm text-gray-800 dark:text-white">{data.label}</p>
+      <p className="text-xs text-gray-500">{data.email}</p>
+    </div>
+  </div>
+);
+
 const DeadlineFormModal = ({
   isOpen,
   onClose,
   initialData = null,
   projectId,
+  onSuccess = null,
 }) => {
   const isEditing = Boolean(initialData);
+  const { data: team = [] } = useProjectTeam(projectId);
+
+  const userOptions = team.map((u) => ({
+    label: u.name,
+    value: u.id, // ← id ya es el del usuario real
+    email: u.email,
+    thumbnail: FormattedUrlImage(u.thumbnail) || null,
+  }));
+
   const [deadline, setDeadline] = useState({
     name: '',
     description: '',
     dueDate: '',
     status: 'PENDIENTE',
     users: [],
-    order: 0,
     id: null,
   });
   const [deletedTaskIds, setDeletedTaskIds] = useState([]);
@@ -59,6 +102,8 @@ const DeadlineFormModal = ({
     name: '',
     date: '',
     description: '',
+    users: [],
+    status: 'PENDIENTE',
   });
 
   const createDeadline = useCreateDeadline(projectId);
@@ -69,11 +114,24 @@ const DeadlineFormModal = ({
 
   useEffect(() => {
     if (isEditing && initialData) {
-      setDeadline({ ...initialData });
+      setDeadline({
+        ...initialData,
+        users:
+          initialData.users?.map((u) => ({
+            label: `${u.firstName} ${u.lastName}`,
+            value: u.id,
+            email: u.email,
+            thumbnail: FormattedUrlImage(u.photo?.[0]?.thumbnail),
+          })) || [],
+      });
       setTasks(
-        (initialData.tasks || []).map((t) => ({ ...t, _isLocal: false })),
+        (initialData.tasks || []).map((t) => ({
+          ...t,
+          users: t.users || [],
+          _isLocal: false,
+        })),
       );
-      setOriginalTasks(initialData.tasks || []); // 👈 aquí
+      setOriginalTasks(initialData.tasks || []);
     } else {
       setDeadline({
         name: '',
@@ -81,13 +139,18 @@ const DeadlineFormModal = ({
         dueDate: '',
         status: 'PENDIENTE',
         users: [],
-        order: 0,
         id: null,
       });
       setTasks([]);
       setOriginalTasks([]);
     }
-    setNewTask({ name: '', date: '', description: '' });
+    setNewTask({
+      name: '',
+      date: '',
+      description: '',
+      users: [],
+      status: 'PENDIENTE',
+    });
     setDeletedTaskIds([]);
   }, [initialData, isEditing]);
 
@@ -96,69 +159,96 @@ const DeadlineFormModal = ({
     const id = uuidv4();
     setTasks((prev) => [
       ...prev,
-      { id, ...newTask, order: prev.length, _isLocal: true },
+      {
+        id,
+        ...newTask,
+        order: prev.length,
+        _isLocal: true,
+      },
     ]);
-    setNewTask({ name: '', date: '', description: '' });
+    setNewTask({
+      name: '',
+      date: '',
+      description: '',
+      users: [],
+      status: 'PENDIENTE',
+    });
   };
 
   const handleSubmit = async () => {
-    const payload = { ...deadline };
+    // 🔧 Normalizar usuarios del deadline
+    const deadlineUsers =
+      deadline.users
+        ?.map((u) => {
+          if (typeof u === 'string') return u;
+          if (u && typeof u === 'object') return u.value ?? u.id;
+          return null;
+        })
+        .filter(Boolean) || [];
+
+    const payload = { ...deadline, users: deadlineUsers };
 
     if (isEditing) {
       await updateDeadline.mutateAsync({ id: deadline.id, data: payload });
 
       await Promise.all(
         tasks.map(async (task) => {
+          const taskUsers =
+            task.users?.map((u) =>
+              typeof u === 'object' ? u.value || u.id : u,
+            ) || [];
+
           const taskData = {
             name: task.name,
             description: task.description,
             date: task.date,
             order: task.order,
             status: task.status || 'PENDIENTE',
-            users: task.users || [],
+            users: taskUsers,
             createdById: task.createdById || 'admin',
           };
 
           if (task._isLocal) {
-            // ✅ Crear tarea nueva
             return createTask.mutateAsync({
               deadlineId: deadline.id,
               data: taskData,
             });
           }
 
-          // Solo actualizar si hay cambios
           const original = originalTasks.find((t) => t.id === task.id);
           const hasChanged =
             !original ||
             original.name !== task.name ||
             original.description !== task.description ||
             original.date?.slice(0, 10) !== task.date?.slice(0, 10) ||
-            original.status !== task.status;
+            original.status !== task.status ||
+            JSON.stringify(original.users) !== JSON.stringify(taskUsers);
 
           if (hasChanged) {
             return updateTask.mutateAsync({ id: task.id, data: taskData });
           }
-
-          return Promise.resolve(); // No hacer nada
+          return Promise.resolve();
         }),
       );
-      console.log('Deleted Task IDs:', deletedTaskIds);
-      await Promise.all(deletedTaskIds.map((id) => deleteTask.mutateAsync(id)));
 
+      await Promise.all(deletedTaskIds.map((id) => deleteTask.mutateAsync(id)));
       Notifies('success', 'Deadline actualizado');
     } else {
       const created = await createDeadline.mutateAsync(payload);
       const deadlineId = created?.id;
 
       if (!deadlineId) {
-        Notifies('error', 'Error al crear el deadline');
-        return;
+        return Notifies('error', 'Error al crear el deadline');
       }
 
       await Promise.all(
-        tasks.map((task) =>
-          createTask.mutateAsync({
+        tasks.map((task) => {
+          const taskUsers =
+            task.users?.map((u) =>
+              typeof u === 'object' ? u.value || u.id : u,
+            ) || [];
+
+          return createTask.mutateAsync({
             deadlineId,
             data: {
               name: task.name,
@@ -166,17 +256,25 @@ const DeadlineFormModal = ({
               date: task.date,
               order: task.order,
               status: task.status || 'PENDIENTE',
-              users: task.users || [],
+              users: taskUsers,
               createdById: created.createdById || 'admin',
             },
-          }),
-        ),
+          });
+        }),
       );
 
       Notifies('success', 'Deadline creado con éxito');
     }
 
-    onClose();
+    onSuccess?.();
+  };
+
+  const loadUsers = (inputValue, callback) => {
+    const selectedValues = deadline.users?.map((u) => u.value) || [];
+    const filtered = userOptions
+      .filter((u) => u.label.toLowerCase().includes(inputValue.toLowerCase()))
+      .filter((u) => !selectedValues.includes(u.value));
+    callback(filtered);
   };
 
   return (
@@ -191,6 +289,7 @@ const DeadlineFormModal = ({
                 Deadline
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                {/* Nombre del Deadline */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                     <span className="flex items-center gap-1">
@@ -207,6 +306,7 @@ const DeadlineFormModal = ({
                     }
                   />
                 </div>
+                {/* Fecha de vencimiento */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                     <span className="flex items-center gap-1">
@@ -224,6 +324,7 @@ const DeadlineFormModal = ({
                   />
                 </div>
               </div>
+              {/* Descripción del Deadline */}
               <div className="mt-4">
                 <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                   <span className="flex items-center gap-1">
@@ -239,6 +340,55 @@ const DeadlineFormModal = ({
                   }
                 />
               </div>
+              {/* Estado y Usuarios del Deadline */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="flex items-center gap-1">
+                      <FaTasks className="text-gray-500 dark:text-gray-400" />
+                      Estado del Deadline
+                    </span>
+                  </label>
+                  <select
+                    className="w-full rounded-md border border-gray-300 p-2"
+                    value={deadline.status}
+                    onChange={(e) =>
+                      setDeadline({ ...deadline, status: e.target.value })
+                    }
+                  >
+                    <option value="PENDIENTE">Pendiente</option>
+                    <option value="EN_PROGRESO">En progreso</option>
+                    <option value="COMPLETADO">Completado</option>
+                    <option value="CANCELADO">Cancelado</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="flex items-center gap-1">
+                      <FaUser className="text-gray-500 dark:text-gray-400" />
+                      Asignar Usuarios
+                    </span>
+                  </label>
+                  <AsyncSelect
+                    isMulti
+                    cacheOptions
+                    closeMenuOnSelect={false}
+                    defaultOptions={userOptions}
+                    loadOptions={loadUsers}
+                    components={{ Option: CustomUserOption }}
+                    value={userOptions.filter((opt) =>
+                      deadline.users?.some((u) =>
+                        typeof u === 'object'
+                          ? u.value === opt.value || u.id === opt.value
+                          : u === opt.value,
+                      ),
+                    )}
+                    onChange={(selected) =>
+                      setDeadline({ ...deadline, users: selected })
+                    }
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow space-y-4">
@@ -246,59 +396,49 @@ const DeadlineFormModal = ({
                 <FaTasks className="text-sinabe-primary" /> Tareas del Deadline
               </h3>
 
+              {/* Formulario para nueva tarea */}
               <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div className="col-span-12 order-2 md:order-1 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
+                <div className="col-span-12 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-1">
-                      <MdOutlineTaskAlt className="text-gray-500 dark:text-gray-400" />
-                      Nombre de la tarea
-                    </span>
+                    <MdOutlineTaskAlt className="text-gray-500" /> Nombre de la
+                    tarea
                   </label>
                   <input
                     type="text"
-                    className="w-full rounded-md border border-gray-300 p-2"
+                    className="w-full rounded-md border-gray-300 p-2"
                     value={newTask.name}
                     onChange={(e) =>
                       setNewTask({ ...newTask, name: e.target.value })
                     }
                   />
                 </div>
-                <div className="col-span-12 order-3 md:order-2 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
+                <div className="col-span-12 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-1">
-                      <MdOutlineCalendarToday className="text-gray-500 dark:text-gray-400" />
-                      Fecha de entrega
-                    </span>
+                    <MdOutlineCalendarToday className="text-gray-500" /> Fecha
                   </label>
                   <input
                     type="date"
-                    className="w-full rounded-md border border-gray-300 p-2"
+                    className="w-full rounded-md border-gray-300 p-2"
                     value={newTask.date}
                     onChange={(e) =>
                       setNewTask({ ...newTask, date: e.target.value })
                     }
                   />
                 </div>
-                <div className="col-span-12 order-4 md:order-3 md:col-span-6 lg:col-span-2 flex justify-center items-end w-full">
+                <div className="col-span-12 md:col-span-6 lg:col-span-2 flex items-end">
                   <button
                     onClick={handleAddTask}
                     className="bg-purple-600 text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 w-full"
                   >
-                    <span className="flex items-center gap-1">
-                      <FaPlus />
-                      Agregar
-                    </span>
+                    <FaPlus /> Agregar
                   </button>
                 </div>
-                <div className="col-span-12 order-3 md:order-4 flex flex-col gap-2">
+                <div className="col-span-12">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-1">
-                      <MdTextFields className="text-gray-500 dark:text-gray-400" />
-                      Descripción de la tarea (opcional)
-                    </span>
+                    <MdTextFields className="text-gray-500" /> Descripción
                   </label>
                   <textarea
-                    className="w-full rounded-md border border-gray-300 p-2"
+                    className="w-full rounded-md border-gray-300 p-2"
                     value={newTask.description}
                     onChange={(e) =>
                       setNewTask({ ...newTask, description: e.target.value })
@@ -307,116 +447,153 @@ const DeadlineFormModal = ({
                 </div>
               </div>
 
+              {/* Lista de tareas */}
               {tasks.length === 0 ? (
                 <div className="text-center text-gray-400 py-6">
                   <MdOutlineTaskAlt className="text-4xl mx-auto mb-2" />
-                  <p className="font-medium">
-                    No hay tareas definidas para este deadline
-                  </p>
-                  <p className="text-sm">
-                    Agrega tareas específicas para organizar mejor el trabajo
-                  </p>
+                  <p>No hay tareas definidas</p>
                 </div>
               ) : (
                 <ul className="space-y-4">
                   {tasks.map((task, i) => (
                     <li
                       key={task.id}
-                      className="bg-white border border-gray-200 rounded-lg shadow-sm p-4"
+                      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                        {/* Nombre + icono */}
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                        {/* Nombre Tarea */}
                         <div className="md:col-span-4">
                           <label className="text-xs font-semibold text-gray-600 flex items-center gap-1 mb-1">
-                            {statusIcons[task.status || 'PENDIENTE']} Nombre de
-                            la tarea
+                            {statusIcons[task.status || 'PENDIENTE']} Nombre
                           </label>
                           <input
                             type="text"
                             value={task.name}
                             onChange={(e) =>
-                              setTasks((prev) =>
-                                prev.map((t) =>
+                              setTasks(
+                                tasks.map((t) =>
                                   t.id === task.id
                                     ? { ...t, name: e.target.value }
                                     : t,
                                 ),
                               )
                             }
-                            className="w-full text-sm border border-gray-300 rounded-md p-2"
+                            className="w-full text-sm p-2 border rounded-md"
                           />
                         </div>
 
-                        {/* Estado */}
-                        <div className="md:col-span-3">
+                        {/* Estado Tarea */}
+                        <div className="md:col-span-2">
                           <label className="text-xs font-semibold text-gray-600 mb-1 block">
                             Estado
                           </label>
                           <select
                             value={task.status || 'PENDIENTE'}
                             onChange={(e) =>
-                              setTasks((prev) =>
-                                prev.map((t) =>
+                              setTasks(
+                                tasks.map((t) =>
                                   t.id === task.id
                                     ? { ...t, status: e.target.value }
                                     : t,
                                 ),
                               )
                             }
-                            className="w-full text-sm border border-gray-300 rounded-md p-2"
+                            className="w-full text-sm p-2 border rounded-md"
                           >
                             <option value="PENDIENTE">Pendiente</option>
-                            <option value="EN_PROGRESO">En progreso</option>
+                            <option value="EN_PROGRESO">En Progreso</option>
                             <option value="COMPLETADO">Completado</option>
                             <option value="CANCELADO">Cancelado</option>
                           </select>
                         </div>
 
-                        {/* Fecha */}
+                        {/* Fecha Tarea */}
                         <div className="md:col-span-3">
                           <label className="text-xs font-semibold text-gray-600 mb-1 block">
-                            Fecha de entrega
+                            Fecha
                           </label>
                           <input
                             type="date"
                             value={task.date?.slice(0, 10) || ''}
                             onChange={(e) =>
-                              setTasks((prev) =>
-                                prev.map((t) =>
+                              setTasks(
+                                tasks.map((t) =>
                                   t.id === task.id
                                     ? { ...t, date: e.target.value }
                                     : t,
                                 ),
                               )
                             }
-                            className="w-full text-sm border border-gray-300 rounded-md p-2"
+                            className="w-full text-sm p-2 border rounded-md"
                           />
                         </div>
 
-                        {/* Eliminar */}
-                        <div className="md:col-span-2 flex items-start justify-end p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">
+                        {/* Botón Eliminar Tarea */}
+                        <div className="md:col-span-2 flex items-start justify-end pt-5">
                           <button
                             onClick={() => {
                               if (!task._isLocal) {
                                 setDeletedTaskIds((prev) => [...prev, task.id]);
                               }
-
-                              setTasks((prev) =>
-                                prev.filter((t) => t.id !== task.id),
-                              );
-                              setOriginalTasks((prev) =>
-                                prev.filter((t) => t.id !== task.id),
+                              setTasks(tasks.filter((t) => t.id !== task.id));
+                              setOriginalTasks(
+                                originalTasks.filter((t) => t.id !== task.id),
                               );
                             }}
                             title="Eliminar tarea"
-                            className="text-red-500 inline-flex items-center gap-2 text-sm font-medium"
-                            aria-label="Eliminar tarea"
+                            className="text-red-500 hover:text-red-700 flex items-center gap-1"
                           >
-                            <span>
-                              <FaTrashAlt className="text-lg" />
-                            </span>
-                            Eliminar tarea
+                            <FaTrashAlt /> Eliminar
                           </button>
+                        </div>
+
+                        {/* Descripción Tarea */}
+                        <div className="md:col-span-6">
+                          <label className="text-xs font-semibold text-gray-600 mb-1 block">
+                            Descripción
+                          </label>
+                          <textarea
+                            value={task.description}
+                            onChange={(e) =>
+                              setTasks(
+                                tasks.map((t) =>
+                                  t.id === task.id
+                                    ? { ...t, description: e.target.value }
+                                    : t,
+                                ),
+                              )
+                            }
+                            className="w-full text-sm p-2 border rounded-md"
+                          />
+                        </div>
+
+                        {/* Usuarios Tarea */}
+                        <div className="md:col-span-6">
+                          <label className="text-xs font-semibold text-gray-600 mb-1 block">
+                            Asignar Usuarios
+                          </label>
+                          <AsyncSelect
+                            isMulti
+                            cacheOptions
+                            defaultOptions={userOptions}
+                            loadOptions={loadUsers}
+                            components={{ Option: CustomUserOption }}
+                            value={userOptions.filter((opt) =>
+                              task.users?.some(
+                                (tu) =>
+                                  tu.value === opt.value || tu === opt.value,
+                              ),
+                            )}
+                            onChange={(selected) =>
+                              setTasks(
+                                tasks.map((t) =>
+                                  t.id === task.id
+                                    ? { ...t, users: selected }
+                                    : t,
+                                ),
+                              )
+                            }
+                          />
                         </div>
                       </div>
                     </li>

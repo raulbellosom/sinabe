@@ -13,7 +13,7 @@ const CustomTabs = ({ tabs }) => {
             key={index}
             onClick={() => setActiveIndex(index)}
             className={classNames(
-              'flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-bold rounded-lg transition-all whitespace-nowrap text-center',
+              'flex items-center justify-center gap-2 w-full px-4 py-2 text-xs xl:text-sm font-bold rounded-lg transition-all whitespace-nowrap text-center',
               {
                 'bg-white dark:bg-sinabe-blue-dark text-sinabe-primary shadow-sm':
                   index === activeIndex,

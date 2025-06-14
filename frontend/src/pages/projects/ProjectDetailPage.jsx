@@ -15,6 +15,7 @@ import {
   FaUsers,
 } from 'react-icons/fa';
 import ProjectDeadlines from '../../components/ProjectDetails/ProjectDeadlines';
+import ProjectTeamList from '../../components/ProjectDetails/Team/ProjectTeamList';
 
 const ProjectDetailPage = () => {
   const { id } = useParams();
@@ -61,7 +62,7 @@ const ProjectDetailPage = () => {
     {
       title: 'Equipo',
       icon: FaUsers,
-      content: <p>Próximamente: Miembros del equipo asignado al proyecto.</p>,
+      content: <ProjectTeamList projectId={project.id} />,
     },
     {
       title: 'Documentos',

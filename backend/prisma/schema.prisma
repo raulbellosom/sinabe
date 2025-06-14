@@ -51,7 +51,9 @@ model User {
   photo             UserImage[]    @relation("UserImages")
   assignedDeadlines Deadline[]     @relation("DeadlineUsers")
   assignedTasks     DeadlineTask[] @relation("TaskUsers")
+  ProjectMember     ProjectMember[] 
 
+  
   @@index([roleId], map: "User_roleId_fkey")
 }
 
@@ -244,13 +246,16 @@ model Invoice {
 }
 
 model ProjectMember {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
   role      String
   name      String
   projectId String
-  project   Project @relation(fields: [projectId], references: [id])
+  userId    String
+  project   Project  @relation(fields: [projectId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
-  @@index([projectId], map: "ProjectMember_projectId_fkey")
+  @@index([projectId])
+  @@index([userId])
 }
 
 model ProjectDocument {

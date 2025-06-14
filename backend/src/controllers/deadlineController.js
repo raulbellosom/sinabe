@@ -27,11 +27,40 @@ export const getDeadlinesByProjectId = async (req, res) => {
         },
         tasks: {
           include: {
-            users: true,
+            users: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                userName: true,
+                phone: true,
+                status: true,
+                role: true,
+                photo: {
+                  where: { enabled: true },
+                },
+              },
+            },
           },
           orderBy: { date: "asc" },
         },
-        users: true,
+        users: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            userName: true,
+            phone: true,
+            status: true,
+            enabled: true, // ← ESTA LÍNEA ES CLAVE
+            role: true,
+            photo: {
+              where: { enabled: true },
+            },
+          },
+        },
       },
       orderBy: { dueDate: "asc" },
     });
@@ -71,6 +100,26 @@ export const createDeadline = async (req, res) => {
   const createdById = req.user.id;
 
   try {
+    console.log("users", users);
+    const cleanedUserIds = users.map((u) =>
+      typeof u === "string" ? u.trim() : u.id
+    );
+    console.log("cleanedUserIds", cleanedUserIds);
+    const validUsers = await db.user.findMany({
+      where: {
+        id: { in: cleanedUserIds },
+        enabled: true,
+      },
+      select: { id: true },
+    });
+
+    if (validUsers.length !== cleanedUserIds.length) {
+      return res.status(400).json({
+        error: "Uno o más usuarios no son válidos o están deshabilitados",
+      });
+    }
+    console.log("validUsers", validUsers);
+    // Procede a crear la deadline
     const deadline = await db.deadline.create({
       data: {
         name,
@@ -82,21 +131,40 @@ export const createDeadline = async (req, res) => {
         createdById,
         enabled: true,
         users: {
-          connect: users.map((id) => ({ id })),
+          connect: validUsers.map((u) => ({ id: u.id })),
         },
       },
       include: {
         tasks: {
           where: { enabled: true },
         },
-        users: true,
+        users: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            userName: true,
+            phone: true,
+            status: true,
+            role: true,
+            photo: {
+              where: { enabled: true },
+            },
+          },
+        },
       },
     });
 
     res.status(201).json(deadline);
   } catch (error) {
-    console.error("Error creating deadline:", error.message);
-    res.status(500).json({ error: error.message });
+    console.error(
+      "Error catastrófico en el controlador createDeadline:",
+      error
+    );
+    res
+      .status(500)
+      .json({ error: "Error interno del servidor.", message: error.message });
   }
 };
 

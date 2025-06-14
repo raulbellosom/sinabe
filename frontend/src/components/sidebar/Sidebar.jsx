@@ -212,7 +212,7 @@ const Sidebar = ({ children }) => {
         onBreakPoint={setBroken}
         image={BgPattern}
         rtl={rtl}
-        breakPoint="md"
+        breakPoint="lg"
         backgroundColor={hexToRgba(
           themes[theme].sidebar.backgroundColor,
           hasImage ? 0.2 : 1,
