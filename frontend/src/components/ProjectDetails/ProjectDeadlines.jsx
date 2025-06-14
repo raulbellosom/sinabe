@@ -122,14 +122,16 @@ const ProjectDeadlines = ({ projectId }) => {
               } ${statusBgColor[deadline.status]} transition-all duration-300`}
             >
               <div className="flex justify-between items-start">
-                <div className="flex items-center gap-2">
-                  {statusIcons[deadline.status]}
-                  <h3 className="text-lg font-bold text-gray-800">
-                    {deadline.name}
-                  </h3>
+                <div className="flex flex-col-reverse  md:flex-row items-start md:items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-gray-800">
+                      {deadline.name}
+                    </h3>
+                  </div>
                   <span
-                    className={`text-xs px-2 py-[2px] rounded-full font-semibold ${statusBadge[deadline.status]}`}
+                    className={`text-xs px-2 py-[2px] rounded-full flex gap-2 items-center font-semibold ${statusBadge[deadline.status]}`}
                   >
+                    {statusIcons[deadline.status]}
                     {deadline.status.replace('_', ' ')}
                   </span>
                 </div>
