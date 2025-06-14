@@ -127,10 +127,17 @@ const DeadlineFormModal = ({
       setTasks(
         (initialData.tasks || []).map((t) => ({
           ...t,
-          users: t.users || [],
+          users:
+            t.users?.map((u) => ({
+              label: `${u.firstName} ${u.lastName}`,
+              value: u.id,
+              email: u.email,
+              thumbnail: FormattedUrlImage(u.photo?.[0]?.thumbnail),
+            })) || [],
           _isLocal: false,
         })),
       );
+
       setOriginalTasks(initialData.tasks || []);
     } else {
       setDeadline({
@@ -575,6 +582,7 @@ const DeadlineFormModal = ({
                           <AsyncSelect
                             isMulti
                             cacheOptions
+                            closeMenuOnSelect={false}
                             defaultOptions={userOptions}
                             loadOptions={loadUsers}
                             components={{ Option: CustomUserOption }}

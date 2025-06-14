@@ -14,6 +14,34 @@ export const createTask = async (req, res) => {
     status = "PENDIENTE",
   } = req.body;
 
+  // Obtener la deadline y su proyecto
+  const deadline = await db.deadline.findUnique({
+    where: { id: deadlineId },
+    select: { projectId: true },
+  });
+
+  if (!deadline) {
+    return res.status(404).json({ error: "Deadline no encontrada" });
+  }
+
+  // Validar usuarios del mismo proyecto y habilitados
+  const validUsers = await db.projectMember.findMany({
+    where: {
+      projectId: deadline.projectId,
+      user: { id: { in: users }, enabled: true },
+    },
+    select: { userId: true },
+  });
+
+  const validUserIds = validUsers.map((u) => u.userId);
+
+  if (validUserIds.length !== users.length) {
+    return res.status(400).json({
+      error:
+        "Uno o más usuarios no pertenecen al proyecto o están deshabilitados",
+    });
+  }
+
   try {
     const task = await db.deadlineTask.create({
       data: {
@@ -26,7 +54,7 @@ export const createTask = async (req, res) => {
         status,
         enabled: true,
         users: {
-          connect: users.map((id) => ({ id })),
+          connect: validUserIds.map((id) => ({ id })),
         },
       },
     });
@@ -46,12 +74,37 @@ export const updateTask = async (req, res) => {
   try {
     const existing = await db.deadlineTask.findFirst({
       where: { id, enabled: true },
+      include: {
+        deadline: {
+          select: { projectId: true },
+        },
+      },
     });
 
     if (!existing) {
       return res
         .status(404)
         .json({ error: "Tarea no encontrada o deshabilitada" });
+    }
+
+    const projectId = existing.deadline.projectId;
+
+    // Validar usuarios del mismo proyecto y habilitados
+    const validUsers = await db.projectMember.findMany({
+      where: {
+        projectId,
+        user: { id: { in: users }, enabled: true },
+      },
+      select: { userId: true },
+    });
+
+    const validUserIds = validUsers.map((u) => u.userId);
+
+    if (validUserIds.length !== users.length) {
+      return res.status(400).json({
+        error:
+          "Uno o más usuarios no pertenecen al proyecto o están deshabilitados",
+      });
     }
 
     const updated = await db.deadlineTask.update({
@@ -62,7 +115,7 @@ export const updateTask = async (req, res) => {
         date: new Date(date),
         status,
         users: {
-          set: users.map((id) => ({ id })),
+          set: validUserIds.map((id) => ({ id })),
         },
       },
     });

@@ -100,11 +100,9 @@ export const createDeadline = async (req, res) => {
   const createdById = req.user.id;
 
   try {
-    console.log("users", users);
     const cleanedUserIds = users.map((u) =>
       typeof u === "string" ? u.trim() : u.id
     );
-    console.log("cleanedUserIds", cleanedUserIds);
     const validUsers = await db.user.findMany({
       where: {
         id: { in: cleanedUserIds },
@@ -118,7 +116,6 @@ export const createDeadline = async (req, res) => {
         error: "Uno o más usuarios no son válidos o están deshabilitados",
       });
     }
-    console.log("validUsers", validUsers);
     // Procede a crear la deadline
     const deadline = await db.deadline.create({
       data: {
