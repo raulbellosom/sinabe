@@ -137,7 +137,10 @@ const ProjectDeadlines = ({ projectId }) => {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setEditingDeadline(deadline)}
+                    onClick={() => {
+                      setEditingDeadline(deadline);
+                      setIsModalOpen(true);
+                    }}
                     className="text-gray-600 hover:text-gray-900"
                   >
                     <FiEdit />
@@ -260,17 +263,30 @@ const ProjectDeadlines = ({ projectId }) => {
                                     ? parseToLocalDate(task.date)
                                     : 'Sin fecha'}
                                 </div>
-                                <div className="text-xs text-gray-400 mt-1">
+                                <div className="text-xs flex gap-1 items-center text-gray-400 mt-1">
                                   Asignado a:{' '}
                                   {task.users?.length > 0 ? (
-                                    task.users.map((user) => (
-                                      <span
-                                        key={user.id}
-                                        className="inline-block ml-1"
-                                      >
-                                        {user.firstName} {user.lastName}
-                                      </span>
-                                    ))
+                                    task.users.map((user) => {
+                                      const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`;
+                                      return (
+                                        <Tooltip
+                                          key={user.id}
+                                          content={`${user.firstName} ${user.lastName}`}
+                                        >
+                                          <div className="w-7 h-7 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold ml-1">
+                                            {user.photo?.[0]?.thumbnail ? (
+                                              <img
+                                                src={`/${user.photo[0].thumbnail}`}
+                                                alt="avatar"
+                                                className="w-full h-full object-cover rounded-full"
+                                              />
+                                            ) : (
+                                              initials
+                                            )}
+                                          </div>
+                                        </Tooltip>
+                                      );
+                                    })
                                   ) : (
                                     <span className="italic text-gray-400 ml-1">
                                       Aún no hay usuarios asignados
