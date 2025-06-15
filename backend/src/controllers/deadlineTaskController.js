@@ -130,7 +130,6 @@ export const updateTask = async (req, res) => {
 // ❌ Eliminar tarea (lógica)
 export const deleteTask = async (req, res) => {
   const { id } = req.params;
-  console.log("Eliminando tarea con ID:", id);
 
   try {
     await db.deadlineTask.update({

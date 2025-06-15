@@ -1,5 +1,5 @@
 import React from 'react';
-import ImageViewer from '../ImageViewer/ImageViewer';
+import ImageViewer from '../ImageViewer/ImageViewer2';
 import { Badge, Card as FlowbiteCard } from 'flowbite-react';
 import classNames from 'classnames';
 
@@ -9,7 +9,7 @@ const Card = ({ data = {}, showImage = false }) => {
       <FlowbiteCard
         theme={{
           root: {
-            base: 'border border-gray-200 rounded-md overflow-hidden',
+            base: 'rounded-md overflow-hidden',
             children: 'p-2',
           },
         }}
@@ -20,12 +20,12 @@ const Card = ({ data = {}, showImage = false }) => {
             {showImage &&
               data.image &&
               (data?.image?.value ? (
-                <div className="w-24 h-24">
-                  <ImageViewer
-                    containerClassNames={'h-24 w-24'}
-                    images={[data?.image?.value]}
-                  />
-                </div>
+                <ImageViewer
+                  containerClassNames="w-24 h-24 min-w-24 min-h-24"
+                  images={data?.image?.value}
+                  showOnlyFirstImage={true}
+                  imageStyles="w-24 h-24"
+                />
               ) : (
                 <div className="w-24 h-24 bg-gray-200 rounded-md flex items-center justify-center">
                   <p className="text-gray-500 text-sm">Sin imagen</p>

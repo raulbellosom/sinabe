@@ -24,7 +24,7 @@ export const getInventoryAssignmentsByDeadline = async (deadlineId) => {
 
 // Eliminar una asignación (soft delete)
 export const unassignInventoryFromDeadline = async (assignmentId) => {
-  const response = await api.put(
+  const response = await api.delete(
     `/inventory-assignments/unassign/${assignmentId}`,
   );
   return response.data;

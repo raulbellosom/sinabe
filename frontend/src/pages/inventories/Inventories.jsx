@@ -611,7 +611,7 @@ const Inventories = () => {
                       const data = {
                         image: {
                           key: 'Imagen',
-                          value: inventory?.images[0],
+                          value: inventory?.images,
                         },
                         title: {
                           key: 'Inventario',

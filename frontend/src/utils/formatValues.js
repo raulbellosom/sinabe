@@ -21,3 +21,24 @@ export const parseToCurrency = (value, currency) => {
     currency: currency || 'MXN',
   });
 };
+
+export const formatConditionColor = (conditionName) => {
+  const name = conditionName?.toLowerCase();
+
+  if (!name) return 'gray';
+
+  if (name.includes('nuevo')) return 'success';
+  if (name.includes('usado') || name.includes('descompuesto')) return 'warning';
+  if (name.includes('garantía') || name.includes('reparación'))
+    return 'failure';
+  if (
+    name.includes('renta') ||
+    name.includes('préstamo') ||
+    name.includes('prestado')
+  )
+    return 'info';
+  if (name.includes('venta')) return 'purple';
+  if (name.includes('desuso') || name.includes('sin usar')) return 'gray';
+
+  return 'gray';
+};

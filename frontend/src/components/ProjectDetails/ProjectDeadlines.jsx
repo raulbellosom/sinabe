@@ -11,7 +11,6 @@ import {
   FaTimesCircle,
   FaRegPauseCircle,
   FaRegTrashAlt,
-  FaClock,
   FaRegClock,
 } from 'react-icons/fa';
 import { MdInfoOutline, MdOutlineTaskAlt } from 'react-icons/md';
@@ -21,6 +20,7 @@ import { parseToLocalDate } from '../../utils/formatValues';
 import ConfirmDeleteDeadlineModal from './ConfirmDeleteDeadlineModal.jsx';
 import { Tooltip } from 'flowbite-react';
 import AssignInventoryModal from './Inventory/AssignInventoryModal.jsx';
+import DeadlineTasksList from './Deadline/DeadlineTasksList.jsx';
 
 const statusBorderColor = {
   PENDIENTE: 'border-yellow-500',
@@ -75,7 +75,7 @@ const ProjectDeadlines = ({ projectId }) => {
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-col md:flex-row gap-2 justify-between items-center mb-4">
+      <div className="flex flex-col sm:flex-row gap-2 justify-between items-center mb-4">
         <h2 className="text-base xl:text-lg font-bold text-gray-800 dark:text-white">
           Gestión Detallada de Deadlines
         </h2>
@@ -98,7 +98,7 @@ const ProjectDeadlines = ({ projectId }) => {
         </div>
       )}
 
-      <div className="space-y-6 flex flex-col gap-4">
+      <div className="space-y-2 flex flex-col gap-4">
         {deadlines?.map((deadline) => {
           const completedTasks =
             deadline.tasks?.filter((t) => t.status === 'COMPLETADO').length ||
@@ -120,52 +120,49 @@ const ProjectDeadlines = ({ projectId }) => {
           return (
             <div
               key={deadline.id}
-              className={`relative w-full border-l-4 rounded-lg shadow-md p-4 space-y-2 ${
+              className={`relative w-full border-l-4 rounded-lg shadow-md px-2 md:px-4 pb-2 pt-1 space-y-1 ${
                 statusBorderColor[deadline.status]
               } ${statusBgColor[deadline.status]} transition-all duration-300`}
             >
-              <div className="flex justify-between items-start">
-                <div className="flex flex-col-reverse  md:flex-row items-start md:items-center gap-2">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-gray-800">
-                      {deadline.name}
-                    </h3>
-                  </div>
-                  <span
-                    className={`text-xs px-2 py-[2px] rounded-full flex gap-2 items-center font-semibold ${statusBadge[deadline.status]}`}
-                  >
-                    {statusIcons[deadline.status]}
-                    {deadline.status.replace('_', ' ')}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedDeadlineId(deadline.id);
-                      setIsAssignModalOpen(true);
-                    }}
-                    className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-1 rounded-md"
-                  >
-                    <BsBoxSeam />
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditingDeadline(deadline);
-                      setIsModalOpen(true);
-                    }}
-                    className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-1 rounded-md"
-                  >
-                    <FiEdit />
-                  </button>
-                  <button
-                    onClick={() => setDeletingDeadline(deadline)}
-                    className="text-red-600 hover:text-red-800 hover:bg-gray-100 p-1 rounded-md"
-                  >
-                    <FaRegTrashAlt />
-                  </button>
-                </div>
+              <div className="flex items-center gap-2 absolute top-2 right-2">
+                <button
+                  onClick={() => {
+                    setSelectedDeadlineId(deadline.id);
+                    setIsAssignModalOpen(true);
+                  }}
+                  className="text-gray-600 hover:text-gray-900 hover:bg-indigo-100 p-1 rounded-md"
+                >
+                  <BsBoxSeam />
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingDeadline(deadline);
+                    setIsModalOpen(true);
+                  }}
+                  className="text-gray-600 hover:text-gray-900 hover:bg-indigo-100 p-1 rounded-md"
+                >
+                  <FiEdit />
+                </button>
+                <button
+                  onClick={() => setDeletingDeadline(deadline)}
+                  className="text-red-600 hover:text-red-800 hover:bg-indigo-100 p-1 rounded-md"
+                >
+                  <FaRegTrashAlt />
+                </button>
               </div>
-              <div className="text-sm text-gray-600 whitespace-pre-line">
+              <div className="flex flex-col md:flex-row justify-start md:items-center gap-2">
+                <span
+                  className={`text-xs px-2 py-[2px] rounded-full flex w-fit gap-2 items-center font-semibold border ${statusBorderColor[deadline.status]} ${statusBadge[deadline.status]}`}
+                >
+                  {statusIcons[deadline.status]}
+                  {deadline.status.replace('_', ' ')}
+                </span>
+                <h3 className="text-sm lg:text-lg font-bold text-gray-800">
+                  {deadline.name}
+                </h3>
+              </div>
+              <div className="text-xs md:text-sm text-gray-600 whitespace-pre-line mt-2">
+                <strong>Descripción del deadline:</strong>
                 <p>{deadline.description}</p>
               </div>
               <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
@@ -174,7 +171,7 @@ const ProjectDeadlines = ({ projectId }) => {
                     <FiCalendar /> <strong>Fecha límite:</strong>{' '}
                     {parseToLocalDate(deadline.dueDate)}
                   </div>
-                  <div className="text-xs font-semibold border border-gray-100 px-2 py-1 rounded-md">
+                  <div className="text-xs font-semibold border border-gray-400 px-2 py-1 rounded-md">
                     {daysRemaining !== null
                       ? `${daysRemaining} días`
                       : 'Sin fecha'}
@@ -237,82 +234,7 @@ const ProjectDeadlines = ({ projectId }) => {
                     <FaChevronDown className="text text-xs" />
                   )}
                 </div>
-                {isOpen && (
-                  <div className="mt-2 border-t pt-2">
-                    <div className="mt-2 space-y-2">
-                      {deadline.tasks?.length === 0 ? (
-                        <div className="text-center text-gray-400 py-4">
-                          <MdOutlineTaskAlt className="text-4xl mx-auto mb-2" />
-                          <p className="font-medium">No hay tareas definidas</p>
-                          <p className="text-sm">
-                            Agrega tareas para este deadline
-                          </p>
-                        </div>
-                      ) : (
-                        deadline.tasks.map((task) => (
-                          <div
-                            key={task.id}
-                            className="bg-white border rounded-lg p-3 flex justify-between w-full items-start"
-                          >
-                            <div className="w-full">
-                              <div className="flex flex-col-reverse md:flex-row w-full items-center gap-2 mb-1 justify-between">
-                                <p className="font-semibold text-sm md:text-base text-left w-full md:w-fit flex items-center gap-2">
-                                  {statusIcons[task.status]} {task.name}
-                                </p>
-                                <span
-                                  className={`text-xs px-2 py-[2px] rounded-full font-semibold ${statusBadge[task.status]}`}
-                                >
-                                  {task.status.replace('_', ' ')}
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-600 mt-1 whitespace-pre-line">
-                                {task.description}
-                              </p>
-                              <div className="mt-2 flex items-center gap-2">
-                                <div className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                                  <FaRegClock />{' '}
-                                  {task.date
-                                    ? parseToLocalDate(task.date)
-                                    : 'Sin fecha'}
-                                </div>
-                                <div className="text-xs flex gap-1 items-center text-gray-400 mt-1">
-                                  Asignado a:{' '}
-                                  {task.users?.length > 0 ? (
-                                    task.users.map((user) => {
-                                      const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`;
-                                      return (
-                                        <Tooltip
-                                          key={user.id}
-                                          content={`${user.firstName} ${user.lastName}`}
-                                        >
-                                          <div className="w-7 h-7 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold ml-1">
-                                            {user.photo?.[0]?.thumbnail ? (
-                                              <img
-                                                src={`/${user.photo[0].thumbnail}`}
-                                                alt="avatar"
-                                                className="w-full h-full object-cover rounded-full"
-                                              />
-                                            ) : (
-                                              initials
-                                            )}
-                                          </div>
-                                        </Tooltip>
-                                      );
-                                    })
-                                  ) : (
-                                    <span className="italic text-gray-400 ml-1">
-                                      Aún no hay usuarios asignados
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
+                <DeadlineTasksList tasks={deadline.tasks} isOpen={isOpen} />
               </div>
             </div>
           );
@@ -342,9 +264,8 @@ const ProjectDeadlines = ({ projectId }) => {
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
         deadlineId={selectedDeadlineId}
-        onSuccess={() => {
-          refetch();
-          setIsAssignModalOpen(false);
+        onUpdate={() => {
+          refetch(); // ❗ Solo recargar
         }}
       />
     </section>

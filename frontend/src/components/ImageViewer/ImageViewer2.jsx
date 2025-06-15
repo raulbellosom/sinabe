@@ -29,14 +29,15 @@ const ImageViewer = ({
   renderMenuOptions = [],
   containerClassNames,
   imageStyles,
+  showOnlyFirstImage = false,
 }) => {
-  // Manejo de memoria para URLs de tipo File
+  const visibleImages =
+    showOnlyFirstImage && images.length > 0 ? [images[0]] : images;
+
   useEffect(() => {
     const objectUrls = images
       .filter((img) => img instanceof File)
       .map(FormattedUrlImage);
-
-    // Función de limpieza para revocar las URLs y evitar memory leaks
     return () => {
       objectUrls.forEach((url) => URL.revokeObjectURL(url));
     };
@@ -76,7 +77,6 @@ const ImageViewer = ({
     >
       <div className="flex flex-wrap gap-4">
         {images.map((image, index) => {
-          // Usar una key única si es posible (ej: image.id o la URL)
           const key = image.id || getImageSrc(image) || index;
           const imageSrc = getImageSrc(image);
 
@@ -84,28 +84,39 @@ const ImageViewer = ({
             <PhotoView key={key} src={imageSrc}>
               <div
                 className={classNames(
-                  'relative w-24 h-24 xl:h-28 xl:w-28 2xl:h-32 2xl:w-32 group',
+                  'relative group',
                   containerClassNames,
+                  showOnlyFirstImage && index > 0 ? 'hidden' : '', // oculta todo excepto el primero
                 )}
               >
-                {onRemove && (
+                {onRemove && (!showOnlyFirstImage || index === 0) && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onRemove(image.id || index); // Devolver el ID o el índice
+                      onRemove(image.id || index);
                     }}
                     className="absolute top-1 right-1 z-10 p-1 bg-white rounded-full shadow-md text-gray-700 transition-all duration-300 transform scale-0 group-hover:scale-100 hover:bg-red-500 hover:text-white"
                   >
                     <IoClose size={18} />
                   </button>
                 )}
+
                 <LazyLoadImage
                   src={imageSrc}
                   alt={`Image ${index + 1}`}
                   effect="blur"
-                  className="w-full h-full object-cover cursor-pointer shadow-md rounded-lg"
-                  style={imageStyles}
+                  className={classNames(
+                    'w-full h-full object-cover cursor-pointer shadow-md rounded-md',
+                    imageStyles,
+                  )}
+                  wrapperClassName="w-full h-full"
                 />
+
+                {showOnlyFirstImage && index === 0 && images.length > 1 && (
+                  <span className="absolute bottom-1 right-1 text-xs bg-black bg-opacity-70 text-white rounded-full px-2 py-0.5">
+                    +{images.length - 1}
+                  </span>
+                )}
               </div>
             </PhotoView>
           );
@@ -115,5 +126,4 @@ const ImageViewer = ({
   );
 };
 
-// Envolver el componente en memo para evitar re-renderizados innecesarios
 export default memo(ImageViewer);

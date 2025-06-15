@@ -625,7 +625,7 @@ export const deleteInventory = async (req, res) => {
 
     res.json({ data: inventories, message: "Inventario eliminado." });
   } catch (error) {
-    console.log(error.message);
+    console.log("Error deleting inventory:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -981,9 +981,8 @@ export const searchInventories = async (req, res) => {
       deepSearch = "[]",
       status,
       advancedSearch = "true",
+      deadlineId,
     } = req.query;
-
-    console.log(advancedSearch);
 
     const parsedDeepSearch = JSON.parse(deepSearch);
     const isAdvanced = advancedSearch === "true";
@@ -1010,7 +1009,7 @@ export const searchInventories = async (req, res) => {
         },
       }),
       ...(conditionName && conditionName.includes("ALL")
-        ? {} // No filtrar por condición si es ALL
+        ? {}
         : conditionName && {
             conditions: {
               some: {
@@ -1024,6 +1023,11 @@ export const searchInventories = async (req, res) => {
               },
             },
           }),
+      ...(deadlineId && {
+        InventoryDeadline: {
+          none: {},
+        },
+      }),
     };
 
     const phraseSearch = searchTerm?.trim();
@@ -1038,6 +1042,7 @@ export const searchInventories = async (req, res) => {
       { model: { type: { name: { contains: term } } } },
       { activeNumber: { contains: term } },
       { serialNumber: { contains: term } },
+      { internalFolio: { contains: term } },
       {
         customField: {
           some: {
@@ -1068,8 +1073,24 @@ export const searchInventories = async (req, res) => {
           customField: true,
         },
       },
-      files: true,
-      images: true,
+      files: {
+        where: { enabled: true },
+      },
+      images: {
+        where: { enabled: true },
+        select: {
+          url: true,
+          type: true,
+          thumbnail: true,
+          metadata: true,
+        },
+      },
+      InventoryDeadline: deadlineId
+        ? {
+            where: { deadlineId },
+            select: { id: true, deadlineId: true },
+          }
+        : undefined,
     };
 
     let combined = [];

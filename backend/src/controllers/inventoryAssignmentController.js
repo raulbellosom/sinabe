@@ -45,9 +45,7 @@ export const getInventoryAssignmentsByDeadline = async (req, res) => {
 
   try {
     const rawAssignments = await db.inventoryDeadline.findMany({
-      where: {
-        deadlineId,
-      },
+      where: { deadlineId },
       include: {
         inventory: {
           include: {
@@ -57,8 +55,15 @@ export const getInventoryAssignmentsByDeadline = async (req, res) => {
                 type: true,
               },
             },
-            images: true,
-            conditions: true,
+            images: {
+              where: { enabled: true },
+            },
+            conditions: {
+              include: {
+                condition: true,
+              },
+            },
+            // puedes agregar más si usas customFields, files, etc.
           },
         },
       },
@@ -82,7 +87,6 @@ export const getInventoryAssignmentsByDeadline = async (req, res) => {
 };
 
 // ❌ Eliminar lógica (soft delete) — no aplica si no hay campo `enabled`
-// Alternativa: eliminación física
 export const unassignInventoryFromDeadline = async (req, res) => {
   const { assignmentId } = req.params;
 

@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fa';
 import ProjectDeadlines from '../../components/ProjectDetails/ProjectDeadlines';
 import ProjectTeamList from '../../components/ProjectDetails/Team/ProjectTeamList';
+import ProjectInventory from '../../components/ProjectDetails/ProjectInventory';
 
 const ProjectDetailPage = () => {
   const { id } = useParams();
@@ -52,7 +53,7 @@ const ProjectDetailPage = () => {
     {
       title: 'Inventario',
       icon: FaBox,
-      content: <p>Próximamente: Inventario asignado al proyecto.</p>,
+      content: <ProjectInventory projectId={project.id} />,
     },
     {
       title: 'Órdenes de Compra',

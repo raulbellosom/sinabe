@@ -21,6 +21,15 @@ export const getDeadlinesByProjectId = async (req, res) => {
                     type: true,
                   },
                 },
+                images: {
+                  where: { enabled: true },
+                },
+                conditions: {
+                  include: {
+                    condition: true,
+                  },
+                },
+                customField: { include: { customField: true } },
               },
             },
           },
@@ -54,7 +63,7 @@ export const getDeadlinesByProjectId = async (req, res) => {
             userName: true,
             phone: true,
             status: true,
-            enabled: true, // ← ESTA LÍNEA ES CLAVE
+            enabled: true,
             role: true,
             photo: {
               where: { enabled: true },
@@ -65,7 +74,7 @@ export const getDeadlinesByProjectId = async (req, res) => {
       orderBy: { dueDate: "asc" },
     });
 
-    // Filtrado manual en JS
+    // 🔍 Filtro manual por habilitados
     const deadlines = rawDeadlines.map((deadline) => ({
       ...deadline,
       tasks: deadline.tasks.filter((task) => task.enabled),
@@ -74,7 +83,8 @@ export const getDeadlinesByProjectId = async (req, res) => {
           a.inventory?.enabled &&
           a.inventory.model?.enabled &&
           a.inventory.model.brand?.enabled &&
-          a.inventory.model.type?.enabled
+          a.inventory.model.type?.enabled &&
+          (a.inventory.images || []).every((img) => img.enabled !== false)
       ),
       users: deadline.users.filter((u) => u.enabled),
     }));

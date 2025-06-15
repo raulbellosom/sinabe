@@ -14,6 +14,6 @@ router.post("/assign", assignInventoryToDeadline);
 router.get("/deadline/:deadlineId", getInventoryAssignmentsByDeadline);
 
 // Desasignar un inventario
-router.put("/unassign/:assignmentId", unassignInventoryFromDeadline);
+router.delete("/unassign/:assignmentId", unassignInventoryFromDeadline);
 
 export default router;

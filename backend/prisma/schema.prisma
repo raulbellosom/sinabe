@@ -140,7 +140,7 @@ model Project {
   id             String            @id @default(uuid())
   code           String            @unique
   name           String
-  description    String?
+  description    String? @db.Text
   provider       String
   status         ProjectStatus
   budgetTotal    Float
@@ -162,7 +162,7 @@ model Project {
 model Deadline {
   id                   String              @id @default(uuid())
   name                 String
-  description          String?
+  description          String?              @db.Text
   status               DeadlineStatus
   dueDate              DateTime
   projectId            String
@@ -188,7 +188,7 @@ model DeadlineTask {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   createdById String
-  description String?
+  description String?  @db.Text
   order       Int
   status      TaskStatus @default(PENDIENTE)
   deadline    Deadline   @relation(fields: [deadlineId], references: [id])
@@ -212,7 +212,7 @@ model PurchaseOrder {
   id          String    @id @default(uuid())
   code        String    @unique
   supplier    String
-  description String?
+  description String?   @db.Text
   amount      Float
   status      String
   date        DateTime
@@ -262,7 +262,7 @@ model ProjectDocument {
   id          String   @id @default(uuid())
   name        String
   fileUrl     String
-  description String?
+  description String?              @db.Text
   metadata    Json?
   enabled     Boolean  @default(true)
   uploadDate  DateTime

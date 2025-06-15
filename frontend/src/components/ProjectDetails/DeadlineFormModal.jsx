@@ -313,9 +313,9 @@ const DeadlineFormModal = ({
                 <FaInfoCircle className="text-sinabe-primary" /> Información del
                 Deadline
               </h2>
-              <div className="grid grid-cols-2 md:grid-cols-12 gap-4 pt-4">
+              <div className="grid grid-cols-12 gap-4 pt-4">
                 {/* Nombre del Deadline */}
-                <div className="col-span-2 md:col-span-12 lg:col-span-6">
+                <div className="col-span-12 md:col-span-6">
                   <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                     <span className="flex items-center gap-2">
                       <FaInfoCircle className="text-gray-500 dark:text-gray-400" />
@@ -332,8 +332,8 @@ const DeadlineFormModal = ({
                   />
                 </div>
                 {/* Fecha de vencimiento */}
-                <div className="col-span-2 md:col-span-6 lg:col-span-3">
-                  <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="col-span-6 md:col-span-3">
+                  <label className="block mb-2 text-sm font-medium truncate text-gray-700 dark:text-gray-300">
                     <span className="flex items-center gap-2">
                       <FaCalendarAlt className="text-gray-500 dark:text-gray-400" />
                       Fecha de vencimiento
@@ -348,8 +348,8 @@ const DeadlineFormModal = ({
                     }
                   />
                 </div>
-                <div className="col-span-2 md:col-span-6 lg:col-span-3">
-                  <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <div className="col-span-6 md:col-span-3">
+                  <label className="block mb-2 text-sm font-medium truncate text-gray-700 dark:text-gray-300">
                     <span className="flex items-center gap-2">
                       <FaTasks className="text-gray-500 dark:text-gray-400" />
                       Estado del Deadline
@@ -427,7 +427,7 @@ const DeadlineFormModal = ({
               </h3>
 
               {/* Formulario para nueva tarea */}
-              <div className=" grid grid-cols-1 md:grid-cols-12 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="grid grid-cols-12 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="col-span-12 text-sinabe-primary">
                   <h4 className="text-sm font-medium ">
                     <span className="flex items-center gap-2">
@@ -451,7 +451,7 @@ const DeadlineFormModal = ({
                     }
                   />
                 </div>
-                <div className="col-span-12 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
+                <div className="col-span-6 md:col-span-3 lg:col-span-5 flex flex-col gap-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                     <span className="flex items-center gap-2">
                       <MdOutlineCalendarToday className="text-gray-500" /> Fecha
@@ -466,7 +466,7 @@ const DeadlineFormModal = ({
                     }
                   />
                 </div>
-                <div className="col-span-12 md:col-span-6 lg:col-span-2 flex items-end">
+                <div className="col-span-6 md:col-span-3 lg:col-span-2 flex items-end">
                   <button
                     onClick={handleAddTask}
                     className="bg-sinabe-secondary text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 w-full"
@@ -534,7 +534,7 @@ const DeadlineFormModal = ({
                       key={task.id}
                       className={`bg-white border-l-4 border-y-gray-200 border-r border-r-gray-200 border-y ${borderColor[task.status || 'PENDIENTE']} rounded-lg p-4`}
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                      <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-12 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
                           <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                             <span className="flex items-center gap-2">
@@ -559,7 +559,7 @@ const DeadlineFormModal = ({
                         </div>
 
                         {/* Fecha Tarea */}
-                        <div className="col-span-6 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
+                        <div className="col-span-6 md:col-span-3 lg:col-span-5 flex flex-col gap-2">
                           <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                             <span className="flex items-center gap-2">
                               <MdOutlineCalendarToday className="text-gray-500" />{' '}
@@ -583,7 +583,7 @@ const DeadlineFormModal = ({
                         </div>
 
                         {/* Estado Tarea */}
-                        <div className="col-span-6 md:col-span-6 lg:col-span-2 flex flex-col gap-2">
+                        <div className="col-span-6 md:col-span-3 lg:col-span-2 flex flex-col gap-2">
                           <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
                             <span className="flex items-center gap-2">
                               <MdInfoOutline className="text-gray-500" /> Estado
