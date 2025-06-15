@@ -90,6 +90,11 @@ const ViewInventory = () => {
         icon: AiOutlineFieldNumber,
         label: 'Número de activo',
       },
+      internalFolio: {
+        name: inventory?.internalFolio,
+        icon: FaClipboardList,
+        label: 'Folio Interno',
+      },
       receptionDate: {
         name: inventory?.receptionDate
           ? parseToLocalDate(inventory?.receptionDate)

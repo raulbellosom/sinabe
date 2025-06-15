@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import { useInventoryContext } from '../../context/InventoryContext';
 import ModalRemove from '../../components/Modals/ModalRemove';
@@ -79,7 +73,6 @@ const Inventories = () => {
   const [inventoryPreview, setInventoryPreview] = useState(null);
   const [viewMode, setViewMode] = useState('table');
   const [searchInput, setSearchInput] = useState('');
-  const lastChange = useRef();
   const navigate = useNavigate();
 
   const {
@@ -619,7 +612,15 @@ const Inventories = () => {
                         },
                         subtitle: {
                           key: 'Marca y Tipo',
-                          value: `${inventory?.model?.brand?.name} ${inventory?.model?.type?.name}`,
+                          value: (
+                            <>
+                              {`${inventory?.model?.brand?.name} ${inventory?.model?.type?.name}`}
+                              <br />
+                              <span className="text-xs text-gray-500">
+                                {inventory?.internalFolio || '-'}
+                              </span>
+                            </>
+                          ),
                         },
                         status: {
                           key: 'Estado',

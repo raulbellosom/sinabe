@@ -45,6 +45,13 @@ export const inventoryColumns = [
     type: 'text',
   },
   {
+    id: 'internalFolio',
+    value: 'Folio Interno',
+    classes: 'w-auto',
+    order: 'asc',
+    type: 'text',
+  },
+  {
     id: 'comments',
     value: 'Comentarios',
     classes: 'w-24',

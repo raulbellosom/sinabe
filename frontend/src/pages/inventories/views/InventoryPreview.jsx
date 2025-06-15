@@ -61,6 +61,11 @@ const InventoryPreview = ({ inventory, onClose }) => {
         icon: AiOutlineFieldNumber,
         label: 'Número de activo',
       },
+      internalFolio: {
+        name: inventory?.internalFolio,
+        icon: AiOutlineFieldNumber,
+        label: 'Folio Interno',
+      },
       receptionDate: {
         name: inventory?.receptionDate
           ? parseToLocalDate(inventory?.receptionDate)
