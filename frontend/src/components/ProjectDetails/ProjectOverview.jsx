@@ -52,7 +52,7 @@ const ProjectOverview = ({ project }) => {
           <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
             Descripción del Proyecto
           </h2>
-          <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+          <p className="text-sm whitespace-pre-line text-gray-700 dark:text-gray-200 leading-relaxed">
             {project.description}
           </p>
         </div>

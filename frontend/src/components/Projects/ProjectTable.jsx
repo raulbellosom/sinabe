@@ -90,6 +90,7 @@ const ProjectTable = ({
                     <tr
                       key={p.id}
                       className="border-t hover:bg-gray-50 transition-opacity duration-500 animate-fade-in-up"
+                      onDoubleClick={() => navigate(`/projects/view/${p.id}`)}
                     >
                       <td className="px-4 py-3 font-mono text-sm text-nowrap">
                         {p.code}

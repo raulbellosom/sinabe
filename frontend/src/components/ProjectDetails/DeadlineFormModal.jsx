@@ -1,6 +1,6 @@
 // src/components/ProjectDetails/DeadlineFormModal.jsx
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogPanel } from '@headlessui/react';
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import {
   useCreateDeadline,
   useUpdateDeadline,
@@ -26,18 +26,25 @@ import {
 import {
   MdInfoOutline,
   MdOutlineCalendarToday,
-  MdOutlineDescription,
   MdOutlineTaskAlt,
   MdTextFields,
 } from 'react-icons/md';
+import { IoMdClose, IoMdCloseCircleOutline } from 'react-icons/io';
 import Notifies from '../../components/Notifies/Notifies';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 
 const statusIcons = {
-  PENDIENTE: <FaClock className="text-orange-500 text-lg" />,
+  PENDIENTE: <FaClock className="text-yellow-500 text-lg" />,
   EN_PROGRESO: <MdInfoOutline className="text-blue-500 text-lg" />,
   COMPLETADO: <FaCheckCircle className="text-green-500 text-lg" />,
   CANCELADO: <FaTimesCircle className="text-red-500 text-lg" />,
+};
+
+const borderColor = {
+  PENDIENTE: 'border-yellow-500',
+  EN_PROGRESO: 'border-blue-500',
+  COMPLETADO: 'border-green-500',
+  CANCELADO: 'border-red-500',
 };
 
 // Componente para renderizar las opciones de usuario en el select
@@ -288,18 +295,29 @@ const DeadlineFormModal = ({
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="bg-white dark:bg-gray-800 w-full max-w-6xl rounded-xl p-6 shadow-2xl overflow-y-auto max-h-[95vh]">
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow">
+        <DialogPanel className="bg-white dark:bg-gray-800 w-full max-w-6xl rounded-xl p-4 md:p-6 shadow-2xl overflow-y-auto max-h-[95vh]">
+          <div className="border-b pb-4 text-xl justify-between font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+            <DialogTitle>
+              {isEditing ? 'Editar Deadline' : 'Crear Deadline'}
+            </DialogTitle>
+            <span
+              onClick={onClose}
+              className="text-sm text-gray-500 dark:text-gray-400 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+            >
+              <IoMdClose className="inline-block text-2xl" />
+            </span>
+          </div>
+          <div className="space-y-4">
+            <div className=" dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
               <h2 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
                 <FaInfoCircle className="text-sinabe-primary" /> Información del
                 Deadline
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+              <div className="grid grid-cols-2 md:grid-cols-12 gap-4 pt-4">
                 {/* Nombre del Deadline */}
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-1">
+                <div className="col-span-2 md:col-span-12 lg:col-span-6">
+                  <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="flex items-center gap-2">
                       <FaInfoCircle className="text-gray-500 dark:text-gray-400" />
                       Nombre del Deadline
                     </span>
@@ -314,9 +332,9 @@ const DeadlineFormModal = ({
                   />
                 </div>
                 {/* Fecha de vencimiento */}
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-1">
+                <div className="col-span-2 md:col-span-6 lg:col-span-3">
+                  <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="flex items-center gap-2">
                       <FaCalendarAlt className="text-gray-500 dark:text-gray-400" />
                       Fecha de vencimiento
                     </span>
@@ -330,28 +348,9 @@ const DeadlineFormModal = ({
                     }
                   />
                 </div>
-              </div>
-              {/* Descripción del Deadline */}
-              <div className="mt-4">
-                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <span className="flex items-center gap-1">
-                    <MdTextFields className="text-gray-500 dark:text-gray-400" />
-                    Descripción
-                  </span>
-                </label>
-                <textarea
-                  className="w-full rounded-md border border-gray-300 p-2"
-                  value={deadline.description}
-                  onChange={(e) =>
-                    setDeadline({ ...deadline, description: e.target.value })
-                  }
-                />
-              </div>
-              {/* Estado y Usuarios del Deadline */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-1">
+                <div className="col-span-2 md:col-span-6 lg:col-span-3">
+                  <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="flex items-center gap-2">
                       <FaTasks className="text-gray-500 dark:text-gray-400" />
                       Estado del Deadline
                     </span>
@@ -369,46 +368,79 @@ const DeadlineFormModal = ({
                     <option value="CANCELADO">Cancelado</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-1">
-                      <FaUser className="text-gray-500 dark:text-gray-400" />
-                      Asignar Usuarios
-                    </span>
-                  </label>
-                  <AsyncSelect
-                    isMulti
-                    cacheOptions
-                    closeMenuOnSelect={false}
-                    defaultOptions={userOptions}
-                    loadOptions={loadUsers}
-                    components={{ Option: CustomUserOption }}
-                    value={userOptions.filter((opt) =>
-                      deadline.users?.some((u) =>
-                        typeof u === 'object'
-                          ? u.value === opt.value || u.id === opt.value
-                          : u === opt.value,
-                      ),
-                    )}
-                    onChange={(selected) =>
-                      setDeadline({ ...deadline, users: selected })
-                    }
-                  />
-                </div>
+              </div>
+              {/* Descripción del Deadline */}
+              <div className="mt-2">
+                <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="flex items-center gap-2">
+                    <MdTextFields className="text-gray-500 dark:text-gray-400" />
+                    Descripción
+                  </span>
+                </label>
+                <textarea
+                  className="w-full rounded-md border border-gray-300 p-2"
+                  value={deadline.description}
+                  onChange={(e) =>
+                    setDeadline({ ...deadline, description: e.target.value })
+                  }
+                />
+              </div>
+              {/* Estado y Usuarios del Deadline */}
+              <div className="mt-2">
+                <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="flex items-center gap-2">
+                    <FaUser className="text-gray-500 dark:text-gray-400" />
+                    Asignar Usuarios
+                  </span>
+                </label>
+                <AsyncSelect
+                  isMulti
+                  cacheOptions
+                  closeMenuOnSelect={false}
+                  defaultOptions={userOptions}
+                  loadOptions={loadUsers}
+                  components={{ Option: CustomUserOption }}
+                  value={userOptions.filter((opt) =>
+                    deadline.users?.some((u) =>
+                      typeof u === 'object'
+                        ? u.value === opt.value || u.id === opt.value
+                        : u === opt.value,
+                    ),
+                  )}
+                  onChange={(selected) =>
+                    setDeadline({ ...deadline, users: selected })
+                  }
+                  className="w-full text-sm border-white border-b-gray-200"
+                  styles={{
+                    multiValue: (base) => ({
+                      ...base,
+                      backgroundColor: '#E0E7FF',
+                    }),
+                  }}
+                />
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow space-y-4">
+            <div className=" dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col gap-4 md:gap-8">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
                 <FaTasks className="text-sinabe-primary" /> Tareas del Deadline
               </h3>
 
               {/* Formulario para nueva tarea */}
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md grid grid-cols-1 md:grid-cols-12 gap-4">
+              <div className=" grid grid-cols-1 md:grid-cols-12 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="col-span-12 text-sinabe-primary">
+                  <h4 className="text-sm font-medium ">
+                    <span className="flex items-center gap-2">
+                      <FaPlus className="" /> Agregar Nueva Tarea
+                    </span>
+                  </h4>
+                </div>
                 <div className="col-span-12 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <MdOutlineTaskAlt className="text-gray-500" /> Nombre de la
-                    tarea
+                    <span className="flex items-center gap-2">
+                      <MdOutlineTaskAlt className="text-gray-500" /> Nombre de
+                      la tarea
+                    </span>
                   </label>
                   <input
                     type="text"
@@ -421,7 +453,9 @@ const DeadlineFormModal = ({
                 </div>
                 <div className="col-span-12 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <MdOutlineCalendarToday className="text-gray-500" /> Fecha
+                    <span className="flex items-center gap-2">
+                      <MdOutlineCalendarToday className="text-gray-500" /> Fecha
+                    </span>
                   </label>
                   <input
                     type="date"
@@ -435,14 +469,17 @@ const DeadlineFormModal = ({
                 <div className="col-span-12 md:col-span-6 lg:col-span-2 flex items-end">
                   <button
                     onClick={handleAddTask}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 w-full"
+                    className="bg-sinabe-secondary text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 w-full"
                   >
                     <FaPlus /> Agregar
                   </button>
                 </div>
-                <div className="col-span-12">
+
+                <div className="col-span-12 flex flex-col gap-2">
                   <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <MdTextFields className="text-gray-500" /> Descripción
+                    <span className="flex items-center gap-2">
+                      <MdTextFields className="text-gray-500" /> Descripción
+                    </span>
                   </label>
                   <textarea
                     className="w-full rounded-md border-gray-300 p-2"
@@ -450,6 +487,36 @@ const DeadlineFormModal = ({
                     onChange={(e) =>
                       setNewTask({ ...newTask, description: e.target.value })
                     }
+                  />
+                </div>
+                <div className="col-span-12">
+                  <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <FaUser className="text-gray-500" /> Asignar Usuarios
+                  </label>
+                  <AsyncSelect
+                    isMulti
+                    cacheOptions
+                    closeMenuOnSelect={false}
+                    defaultOptions={userOptions}
+                    loadOptions={loadUsers}
+                    components={{ Option: CustomUserOption }}
+                    value={userOptions.filter((opt) =>
+                      newTask.users?.some((u) =>
+                        typeof u === 'object'
+                          ? u.value === opt.value || u.id === opt.value
+                          : u === opt.value,
+                      ),
+                    )}
+                    onChange={(selected) =>
+                      setNewTask({ ...newTask, users: selected })
+                    }
+                    className="w-full text-sm border-white border-b-gray-200"
+                    styles={{
+                      multiValue: (base) => ({
+                        ...base,
+                        backgroundColor: '#E0E7FF',
+                      }),
+                    }}
                   />
                 </div>
               </div>
@@ -461,17 +528,19 @@ const DeadlineFormModal = ({
                   <p>No hay tareas definidas</p>
                 </div>
               ) : (
-                <ul className="space-y-4">
+                <ul className="space-y-4 border-t pt-4">
                   {tasks.map((task, i) => (
                     <li
                       key={task.id}
-                      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                      className={`bg-white border-l-4 border-y-gray-200 border-r border-r-gray-200 border-y ${borderColor[task.status || 'PENDIENTE']} rounded-lg p-4`}
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-                        {/* Nombre Tarea */}
-                        <div className="md:col-span-4">
-                          <label className="text-xs font-semibold text-gray-600 flex items-center gap-1 mb-1">
-                            {statusIcons[task.status || 'PENDIENTE']} Nombre
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div className="col-span-12 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
+                          <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <span className="flex items-center gap-2">
+                              <MdOutlineTaskAlt className="text-gray-500" />{' '}
+                              Nombre de la tarea
+                            </span>
                           </label>
                           <input
                             type="text"
@@ -485,39 +554,17 @@ const DeadlineFormModal = ({
                                 ),
                               )
                             }
-                            className="w-full text-sm p-2 border rounded-md"
+                            className="w-full text-sm p-2 border-white border-b-gray-200"
                           />
                         </div>
 
-                        {/* Estado Tarea */}
-                        <div className="md:col-span-2">
-                          <label className="text-xs font-semibold text-gray-600 mb-1 block">
-                            Estado
-                          </label>
-                          <select
-                            value={task.status || 'PENDIENTE'}
-                            onChange={(e) =>
-                              setTasks(
-                                tasks.map((t) =>
-                                  t.id === task.id
-                                    ? { ...t, status: e.target.value }
-                                    : t,
-                                ),
-                              )
-                            }
-                            className="w-full text-sm p-2 border rounded-md"
-                          >
-                            <option value="PENDIENTE">Pendiente</option>
-                            <option value="EN_PROGRESO">En Progreso</option>
-                            <option value="COMPLETADO">Completado</option>
-                            <option value="CANCELADO">Cancelado</option>
-                          </select>
-                        </div>
-
                         {/* Fecha Tarea */}
-                        <div className="md:col-span-3">
-                          <label className="text-xs font-semibold text-gray-600 mb-1 block">
-                            Fecha
+                        <div className="col-span-6 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
+                          <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <span className="flex items-center gap-2">
+                              <MdOutlineCalendarToday className="text-gray-500" />{' '}
+                              Fecha
+                            </span>
                           </label>
                           <input
                             type="date"
@@ -531,33 +578,44 @@ const DeadlineFormModal = ({
                                 ),
                               )
                             }
-                            className="w-full text-sm p-2 border rounded-md"
+                            className="w-full text-sm p-2 border-white border-b-gray-200"
                           />
                         </div>
 
-                        {/* Botón Eliminar Tarea */}
-                        <div className="md:col-span-2 flex items-start justify-end pt-5">
-                          <button
-                            onClick={() => {
-                              if (!task._isLocal) {
-                                setDeletedTaskIds((prev) => [...prev, task.id]);
-                              }
-                              setTasks(tasks.filter((t) => t.id !== task.id));
-                              setOriginalTasks(
-                                originalTasks.filter((t) => t.id !== task.id),
-                              );
-                            }}
-                            title="Eliminar tarea"
-                            className="text-red-500 hover:text-red-700 flex items-center gap-1"
+                        {/* Estado Tarea */}
+                        <div className="col-span-6 md:col-span-6 lg:col-span-2 flex flex-col gap-2">
+                          <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <span className="flex items-center gap-2">
+                              <MdInfoOutline className="text-gray-500" /> Estado
+                            </span>
+                          </label>
+                          <select
+                            value={task.status || 'PENDIENTE'}
+                            onChange={(e) =>
+                              setTasks(
+                                tasks.map((t) =>
+                                  t.id === task.id
+                                    ? { ...t, status: e.target.value }
+                                    : t,
+                                ),
+                              )
+                            }
+                            className="w-full text-sm p-2 border-white border-b-gray-200"
                           >
-                            <FaTrashAlt /> Eliminar
-                          </button>
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="EN_PROGRESO">En Progreso</option>
+                            <option value="COMPLETADO">Completado</option>
+                            <option value="CANCELADO">Cancelado</option>
+                          </select>
                         </div>
 
                         {/* Descripción Tarea */}
-                        <div className="md:col-span-6">
-                          <label className="text-xs font-semibold text-gray-600 mb-1 block">
-                            Descripción
+                        <div className="col-span-12 flex flex-col gap-2">
+                          <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <span className="flex items-center gap-2">
+                              <MdTextFields className="text-gray-500" />{' '}
+                              Descripción
+                            </span>
                           </label>
                           <textarea
                             value={task.description}
@@ -570,12 +628,12 @@ const DeadlineFormModal = ({
                                 ),
                               )
                             }
-                            className="w-full text-sm p-2 border rounded-md"
+                            className="w-full text-sm p-2 border-white border-b-gray-200"
                           />
                         </div>
 
                         {/* Usuarios Tarea */}
-                        <div className="md:col-span-6">
+                        <div className="col-span-12 md:col-span-11">
                           <label className="text-xs font-semibold text-gray-600 mb-1 block">
                             Asignar Usuarios
                           </label>
@@ -601,7 +659,40 @@ const DeadlineFormModal = ({
                                 ),
                               )
                             }
+                            className="w-full text-sm border-white border-b-gray-200"
+                            styles={{
+                              control: (base) => ({
+                                ...base,
+                                borderColor: 'transparent',
+                                boxShadow: 'none',
+                                '&:hover': {
+                                  borderColor: 'transparent',
+                                },
+                              }),
+                              multiValue: (base) => ({
+                                ...base,
+                                backgroundColor: '#E0E7FF',
+                              }),
+                            }}
                           />
+                        </div>
+                        {/* Botón Eliminar Tarea */}
+                        <div className="col-span-12 md:col-span-1 flex items-start justify-end pt-5 ">
+                          <button
+                            onClick={() => {
+                              if (!task._isLocal) {
+                                setDeletedTaskIds((prev) => [...prev, task.id]);
+                              }
+                              setTasks(tasks.filter((t) => t.id !== task.id));
+                              setOriginalTasks(
+                                originalTasks.filter((t) => t.id !== task.id),
+                              );
+                            }}
+                            title="Eliminar tarea"
+                            className="flex w-full items-center justify-center gap-1 bg-red-500 text-white hover:bg-red-700 cursor-pointer dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 h-full rounded-md p-2 hover:text-white transition-colors duration-200"
+                          >
+                            <FaTrashAlt />
+                          </button>
                         </div>
                       </div>
                     </li>
@@ -619,7 +710,7 @@ const DeadlineFormModal = ({
               </button>
               <button
                 onClick={handleSubmit}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
               >
                 <FaSave /> Guardar
               </button>

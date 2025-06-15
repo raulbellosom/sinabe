@@ -78,6 +78,10 @@ const ProjectDetailPage = () => {
           {project.name}
         </h1>
         <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-gray-600 dark:text-gray-300">
+          <span className="text-xs uppercase tracking-widest">
+            {project.code}
+          </span>
+          <span className="text-gray-400">·</span>
           <span className="font-medium">{project.provider}</span>
           <span className="text-gray-400">·</span>
           {project.verticals?.map((v, i) => (
@@ -89,10 +93,7 @@ const ProjectDetailPage = () => {
             </span>
           ))}
           <span className="text-gray-400">·</span>
-          <span className="text-xs uppercase tracking-widest">
-            {project.code}
-          </span>
-          <span className="text-gray-400">·</span>
+
           <span className="inline-block bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-white text-xs px-2 py-0.5 rounded-full font-medium">
             {project.status}
           </span>

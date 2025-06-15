@@ -16,10 +16,11 @@ import {
 } from 'react-icons/fa';
 import { MdInfoOutline, MdOutlineTaskAlt } from 'react-icons/md';
 import { FiEdit, FiCalendar } from 'react-icons/fi';
-import { FaUser } from 'react-icons/fa';
+import { BsBoxSeam } from 'react-icons/bs';
 import { parseToLocalDate } from '../../utils/formatValues';
 import ConfirmDeleteDeadlineModal from './ConfirmDeleteDeadlineModal.jsx';
 import { Tooltip } from 'flowbite-react';
+import AssignInventoryModal from './Inventory/AssignInventoryModal.jsx';
 
 const statusBorderColor = {
   PENDIENTE: 'border-yellow-500',
@@ -65,6 +66,8 @@ const ProjectDeadlines = ({ projectId }) => {
   const [editingDeadline, setEditingDeadline] = useState(null);
   const [deletingDeadline, setDeletingDeadline] = useState(null);
   const [openCards, setOpenCards] = useState({});
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [selectedDeadlineId, setSelectedDeadlineId] = useState(null);
 
   const toggleCard = (id) => {
     setOpenCards((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -138,22 +141,31 @@ const ProjectDeadlines = ({ projectId }) => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
+                      setSelectedDeadlineId(deadline.id);
+                      setIsAssignModalOpen(true);
+                    }}
+                    className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-1 rounded-md"
+                  >
+                    <BsBoxSeam />
+                  </button>
+                  <button
+                    onClick={() => {
                       setEditingDeadline(deadline);
                       setIsModalOpen(true);
                     }}
-                    className="text-gray-600 hover:text-gray-900"
+                    className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 p-1 rounded-md"
                   >
                     <FiEdit />
                   </button>
                   <button
                     onClick={() => setDeletingDeadline(deadline)}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-red-600 hover:text-red-800 hover:bg-gray-100 p-1 rounded-md"
                   >
                     <FaRegTrashAlt />
                   </button>
                 </div>
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 whitespace-pre-line">
                 <p>{deadline.description}</p>
               </div>
               <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
@@ -253,7 +265,7 @@ const ProjectDeadlines = ({ projectId }) => {
                                   {task.status.replace('_', ' ')}
                                 </span>
                               </div>
-                              <p className="text-sm text-gray-600 mt-1">
+                              <p className="text-sm text-gray-600 mt-1 whitespace-pre-line">
                                 {task.description}
                               </p>
                               <div className="mt-2 flex items-center gap-2">
@@ -317,7 +329,6 @@ const ProjectDeadlines = ({ projectId }) => {
           setIsModalOpen(false);
         }}
       />
-
       <ConfirmDeleteDeadlineModal
         isOpen={!!deletingDeadline}
         deadline={deletingDeadline}
@@ -325,6 +336,15 @@ const ProjectDeadlines = ({ projectId }) => {
         onSuccess={() => {
           setDeletingDeadline(null);
           refetch();
+        }}
+      />
+      <AssignInventoryModal
+        isOpen={isAssignModalOpen}
+        onClose={() => setIsAssignModalOpen(false)}
+        deadlineId={selectedDeadlineId}
+        onSuccess={() => {
+          refetch();
+          setIsAssignModalOpen(false);
         }}
       />
     </section>
