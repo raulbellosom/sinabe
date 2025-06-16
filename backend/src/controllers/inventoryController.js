@@ -978,13 +978,13 @@ export const searchInventories = async (req, res) => {
       page = 1,
       pageSize = 10,
       conditionName,
-      deepSearch = "[]",
+      deepSearch = [],
       status,
       advancedSearch = "true",
       deadlineId,
     } = req.query;
 
-    const parsedDeepSearch = JSON.parse(deepSearch);
+    // const parsedDeepSearch = JSON.parse(deepSearch);
     const isAdvanced = advancedSearch === "true";
 
     const buildOrderBy = (sortBy, order) => {
