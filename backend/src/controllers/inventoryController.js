@@ -1187,7 +1187,9 @@ export const searchInventories = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error al buscar inventarios" });
+    res
+      .status(500)
+      .json({ message: "Error al buscar inventarios", error: error.message });
   }
 };
 
