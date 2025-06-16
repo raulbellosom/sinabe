@@ -108,7 +108,9 @@ const ProjectTable = ({
                       </td>
                       <td className="px-4 py-3">{p.provider}</td>
                       <td className="px-4 py-3">
-                        <ProjectStatusBadge status={p.status} />
+                        <ProjectStatusBadge
+                          status={p.status.replace('_', ' ')}
+                        />
                       </td>
                       <td className="px-4 py-3">
                         <ProjectProgressBar value={percentage} />

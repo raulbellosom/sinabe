@@ -1,7 +1,7 @@
 // src/pages/ProjectsPage.jsx
 import { useMemo, useState } from 'react';
 import { useProjectSearch } from '../../hooks/useProjectSearch';
-import { useProjects } from '../../hooks/useProjects';
+import { useCreateProject, useProjects } from '../../hooks/useProjects';
 import Skeleton from 'react-loading-skeleton';
 import ProjectSummaryCards from '../../components/Projects/ProjectSummaryCards';
 import ProjectTable from '../../components/Projects/ProjectTable';
@@ -11,6 +11,8 @@ import { useDebounce } from '../../hooks/useDebounce';
 import ProjectSearchBar from '../../components/Projects/ProjectSearchBar';
 import ProjectFilters from '../../components/Projects/ProjectFilters';
 import { useProjectVerticals } from '../../hooks/useProjectVerticals';
+import ProjectFormModal from '../../components/Projects/ProjectFormModal';
+import Notifies from '../../components/Notifies/Notifies';
 
 const ProjectsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,8 +27,11 @@ const ProjectsPage = () => {
 
   const debouncedSearch = useDebounce(searchTerm, 400);
 
-  const { verticals = [] } = useProjectVerticals();
+  const { verticals = [], createVertical } = useProjectVerticals();
   const { data: allProjects, isLoading: isLoadingAll } = useProjects();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { mutateAsync: createProject } = useCreateProject();
+
   const { data: projectsData, isLoading } = useProjectSearch({
     searchTerm: debouncedSearch,
     filters,
@@ -35,6 +40,23 @@ const ProjectsPage = () => {
   });
 
   const { projects = [], total = 0 } = projectsData || {};
+
+  const handleCreateSubmit = async (values, { setSubmitting, resetForm }) => {
+    try {
+      await createProject(values);
+      resetForm();
+      Notifies('success', 'Proyecto creado correctamente');
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error al crear proyecto', error);
+      Notifies(
+        'error',
+        error?.response?.data?.message || 'Error al crear proyecto',
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <section className="px-4 py-6 md:px-8 bg-white dark:bg-sinabe-blue-dark rounded-lg shadow-md">
@@ -47,7 +69,7 @@ const ProjectsPage = () => {
             extraActions={[
               {
                 label: 'Nuevo Proyecto',
-                href: '/projects/create',
+                action: () => setIsModalOpen(true),
                 color: 'indigo',
                 icon: FaPlus,
               },
@@ -101,6 +123,23 @@ const ProjectsPage = () => {
           }}
         />
       )}
+      <ProjectFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        initialValues={{
+          name: '',
+          provider: '',
+          budgetTotal: 0,
+          verticalIds: [],
+          startDate: '',
+          endDate: '',
+          description: '',
+          status: 'PLANIFICACION',
+        }}
+        onSubmit={handleCreateSubmit}
+        verticals={verticals || []}
+        createVertical={createVertical}
+      />
     </section>
   );
 };

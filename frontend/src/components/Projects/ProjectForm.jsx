@@ -20,7 +20,11 @@ const ProjectForm = ({
   const [selectedVerticals, setSelectedVerticals] = useState([]);
 
   useEffect(() => {
-    if (initialValues.verticalIds && verticals.length > 0) {
+    if (
+      selectedVerticals.length === 0 && // Solo setear una vez
+      initialValues.verticalIds &&
+      verticals.length > 0
+    ) {
       const foundVerticals = verticals.filter((v) =>
         initialValues.verticalIds.includes(v.id),
       );
@@ -40,21 +44,33 @@ const ProjectForm = ({
     description: Yup.string().optional(),
   });
 
+  const normalizeText = (text) =>
+    text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
   const loadVerticalOptions = (inputValue, callback) => {
+    const normalizedInput = normalizeText(inputValue);
     const filtered = verticals
-      .filter((v) => v.name.toLowerCase().includes(inputValue.toLowerCase()))
+      .filter((v) => normalizeText(v.name).includes(normalizedInput))
       .map((v) => ({ label: v.name, value: v.id }));
     callback(filtered);
   };
 
   const handleCreateVertical = async (inputValue, setFieldValue) => {
     const created = await createVertical(inputValue);
-    const option = { label: inputValue, value: created.data.id };
-    setSelectedVerticals((prev) => [...prev, option]);
-    setFieldValue('verticalIds', [
-      ...selectedVerticals.map((v) => v.value),
-      created.data.id,
-    ]);
+    const newOption = { label: inputValue, value: created.data.id };
+
+    // Actualiza el estado visual agregando la nueva opción
+    const updatedSelected = [...selectedVerticals, newOption];
+    setSelectedVerticals(updatedSelected);
+
+    // Actualiza el campo verticalIds en Formik
+    setFieldValue(
+      'verticalIds',
+      updatedSelected.map((v) => v.value),
+    );
   };
 
   const handleDiscardChanges = () => {
@@ -97,19 +113,44 @@ const ProjectForm = ({
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-1">
-                  Proveedor
-                </label>
-                <Field
-                  name="provider"
-                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
-                />
-                <ErrorMessage
-                  name="provider"
-                  component="div"
-                  className="text-sm text-sinabe-danger mt-1"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-1">
+                    Proveedor
+                  </label>
+                  <Field
+                    name="provider"
+                    className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                  />
+                  <ErrorMessage
+                    name="provider"
+                    component="div"
+                    className="text-sm text-sinabe-danger mt-1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">
+                    Estado
+                  </label>
+                  <Field
+                    as="select"
+                    name="status"
+                    className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                  >
+                    <option value="">Seleccionar estado...</option>
+                    <option value="PLANIFICACION">Planificación</option>
+                    <option value="EN_EJECUCION">En ejecución</option>
+                    <option value="EN_REVISION">En revisión</option>
+                    <option value="FINALIZADO">Finalizado</option>
+                    <option value="CANCELADO">Cancelado</option>
+                    <option value="PAUSADO">Pausado</option>
+                  </Field>
+                  <ErrorMessage
+                    name="status"
+                    component="div"
+                    className="text-sm text-sinabe-danger mt-1"
+                  />
+                </div>
               </div>
             </div>
 
@@ -139,6 +180,7 @@ const ProjectForm = ({
                   classNamePrefix="react-select"
                   cacheOptions
                   isMulti
+                  closeMenuOnSelect={false}
                   defaultOptions={verticals.map((v) => ({
                     label: v.name,
                     value: v.id,
