@@ -19,7 +19,7 @@ const getImageSrc = (image) => {
   if (image instanceof File) {
     return FormattedUrlImage(image);
   }
-  return FormattedUrlImage(image.url || image.thumbnail || image);
+  return FormattedUrlImage(image.thumbnail || image.url || image);
 };
 
 const ImageViewer = ({

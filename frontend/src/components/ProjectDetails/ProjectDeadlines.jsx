@@ -21,6 +21,7 @@ import ConfirmDeleteDeadlineModal from './ConfirmDeleteDeadlineModal.jsx';
 import { Tooltip } from 'flowbite-react';
 import AssignInventoryModal from './Inventory/AssignInventoryModal.jsx';
 import DeadlineTasksList from './Deadline/DeadlineTasksList.jsx';
+import ImageViewer2 from '../ImageViewer/ImageViewer2.jsx';
 
 const statusBorderColor = {
   PENDIENTE: 'border-yellow-500',
@@ -185,17 +186,17 @@ const ProjectDeadlines = ({ projectId }) => {
                         key={user.id}
                         content={`${user.firstName} ${user.lastName}`}
                       >
-                        <div className="w-7 h-7 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold">
-                          {user.photo?.[0]?.thumbnail ? (
-                            <img
-                              src={`/${user.photo[0].thumbnail}`}
-                              alt="avatar"
-                              className="w-full h-full object-cover rounded-full"
-                            />
-                          ) : (
-                            initials
-                          )}
-                        </div>
+                        {user.photo?.[0] ? (
+                          <ImageViewer2
+                            containerClassNames={
+                              'w-7 h-7 rounded-full overflow-hidden bg-gray-400 text-white flex items-center justify-center text-xs font-semibold'
+                            }
+                            images={user.photo}
+                            showOnlyFirstImage={true}
+                          />
+                        ) : (
+                          initials
+                        )}
                       </Tooltip>
                     );
                   })}
