@@ -158,7 +158,7 @@ export const updateUser = async (req, res) => {
       await db.userImage.create({
         data: {
           url: profileImage.url,
-          thumbnail: profileImage.thumbnailUrl,
+          thumbnail: profileImage.thumbnail,
           type: profileImage.type,
           metadata: profileImage.metadata,
           enabled: true,
