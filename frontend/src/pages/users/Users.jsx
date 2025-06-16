@@ -459,7 +459,7 @@ const Users = () => {
                 const formatedUser = {
                   image: {
                     key: 'Foto',
-                    value: user.photo[0] ?? [],
+                    value: user.photo ?? [],
                   },
                   title: {
                     key: 'Nombre',

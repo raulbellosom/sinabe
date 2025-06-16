@@ -31,17 +31,16 @@ const ImageViewer = ({
   imageStyles,
   showOnlyFirstImage = false,
 }) => {
-  const visibleImages =
-    showOnlyFirstImage && images.length > 0 ? [images[0]] : images;
+  const safeImages = Array.isArray(images) ? images : [];
 
   useEffect(() => {
-    const objectUrls = images
+    const objectUrls = safeImages
       .filter((img) => img instanceof File)
       .map(FormattedUrlImage);
     return () => {
       objectUrls.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [images]);
+  }, [safeImages]);
 
   const handleDownloadImage = useCallback((img) => {
     downloadFile(img);
@@ -51,7 +50,7 @@ const ImageViewer = ({
     <PhotoProvider
       maskOpacity={0.8}
       maskClosable={false}
-      loop={images.length > 1}
+      loop={safeImages.length > 1}
       speed={() => 300}
       easing={(type) =>
         type === 2
@@ -61,7 +60,7 @@ const ImageViewer = ({
       toolbarRender={(props) => (
         <CustomToolbar
           {...props}
-          images={images}
+          images={safeImages}
           isDownloadable={isDownloadable}
           onDownload={handleDownloadImage}
           customOptions={renderMenuOptions}
@@ -76,7 +75,7 @@ const ImageViewer = ({
       }
     >
       <div className="flex flex-wrap gap-4">
-        {images.map((image, index) => {
+        {safeImages.map((image, index) => {
           const key = image.id || getImageSrc(image) || index;
           const imageSrc = getImageSrc(image);
 
@@ -86,7 +85,7 @@ const ImageViewer = ({
                 className={classNames(
                   'relative group',
                   containerClassNames,
-                  showOnlyFirstImage && index > 0 ? 'hidden' : '', // oculta todo excepto el primero
+                  showOnlyFirstImage && index > 0 ? 'hidden' : '',
                 )}
               >
                 {onRemove && (!showOnlyFirstImage || index === 0) && (
@@ -112,9 +111,9 @@ const ImageViewer = ({
                   wrapperClassName="w-full h-full"
                 />
 
-                {showOnlyFirstImage && index === 0 && images.length > 1 && (
+                {showOnlyFirstImage && index === 0 && safeImages.length > 1 && (
                   <span className="absolute bottom-1 right-1 text-xs bg-black bg-opacity-70 text-white rounded-full px-2 py-0.5">
-                    +{images.length - 1}
+                    +{safeImages.length - 1}
                   </span>
                 )}
               </div>
