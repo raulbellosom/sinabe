@@ -1,4 +1,3 @@
-// src/components/ProjectDetails/CustomTabs.jsx
 import { useState } from 'react';
 import classNames from 'classnames';
 
@@ -31,7 +30,17 @@ const CustomTabs = ({ tabs }) => {
       </div>
 
       <div className="w-full mt-6 overflow-x-hidden">
-        {tabs[activeIndex].content}
+        {tabs.map((tab, index) => (
+          <div
+            key={index}
+            className={classNames({
+              'block w-full': index === activeIndex,
+              hidden: index !== activeIndex,
+            })}
+          >
+            {tab.content}
+          </div>
+        ))}
       </div>
     </div>
   );
