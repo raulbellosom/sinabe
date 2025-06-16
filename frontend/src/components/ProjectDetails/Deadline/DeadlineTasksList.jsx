@@ -9,6 +9,7 @@ import {
 import { MdInfoOutline, MdOutlineTaskAlt } from 'react-icons/md';
 import { Tooltip } from 'flowbite-react';
 import { parseToLocalDate } from '../../../utils/formatValues';
+import ImageViewer2 from '../../ImageViewer/ImageViewer2';
 
 const statusIcons = {
   PENDIENTE: <FaRegPauseCircle className="text-yellow-500 text-lg" />,
@@ -75,17 +76,17 @@ const DeadlineTasksList = ({ tasks = [], isOpen }) => {
                             key={user.id}
                             content={`${user.firstName} ${user.lastName}`}
                           >
-                            <div className="w-7 h-7 rounded-full bg-gray-400 text-white flex items-center justify-center text-xs font-semibold ml-1">
-                              {user.photo?.[0]?.thumbnail ? (
-                                <img
-                                  src={`/${user.photo[0].thumbnail}`}
-                                  alt="avatar"
-                                  className="w-full h-full object-cover rounded-full"
-                                />
-                              ) : (
-                                initials
-                              )}
-                            </div>
+                            {user.photo?.[0] ? (
+                              <ImageViewer2
+                                containerClassNames={
+                                  'w-7 h-7 rounded-full overflow-hidden bg-gray-400 text-white flex items-center justify-center text-xs font-semibold'
+                                }
+                                images={user.photo}
+                                showOnlyFirstImage={true}
+                              />
+                            ) : (
+                              initials
+                            )}
                           </Tooltip>
                         );
                       })
