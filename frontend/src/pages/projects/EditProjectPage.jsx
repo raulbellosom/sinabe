@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProject, useUpdateProject } from '../../hooks/useProjects';
-import { useProjectVerticals } from '../../hooks/useProjectVerticals';
 import ProjectForm from '../../components/Projects/ProjectForm';
 import Skeleton from 'react-loading-skeleton';
 import Notifies from '../../components/Notifies/Notifies';
@@ -10,11 +9,7 @@ const EditProjectPage = () => {
   const { id } = useParams();
 
   const { data: project, isLoading: isLoadingProject } = useProject(id);
-  const {
-    verticals,
-    isLoading: isLoadingVerticals,
-    createVertical,
-  } = useProjectVerticals();
+
   const { mutateAsync: updateProject } = useUpdateProject();
 
   const [formValues, setFormValues] = useState(null);
@@ -26,7 +21,6 @@ const EditProjectPage = () => {
       ...project,
       startDate: project.startDate.split('T')[0],
       endDate: project.endDate.split('T')[0],
-      verticalIds: project.verticals.map((v) => v.id),
     };
   }, [project]);
 
@@ -53,7 +47,7 @@ const EditProjectPage = () => {
     }
   };
 
-  if (isLoadingProject || isLoadingVerticals || !project || !initialValues) {
+  if (isLoadingProject || !project || !initialValues) {
     return (
       <section className="px-4 py-6 md:px-8 max-w-3xl mx-auto">
         <Skeleton height={40} width={200} className="mb-6" />
@@ -70,8 +64,6 @@ const EditProjectPage = () => {
       <ProjectForm
         initialValues={initialValues}
         onSubmit={handleSubmit}
-        verticals={verticals || []}
-        createVertical={createVertical}
         isEdit={true}
         isChanged={isChanged}
         setFormValues={setFormValues}

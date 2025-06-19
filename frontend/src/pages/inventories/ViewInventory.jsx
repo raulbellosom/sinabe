@@ -263,7 +263,7 @@ const ViewInventory = () => {
                   >
                     <InventoryProperty
                       onSearch={() => {
-                        navigate(`/inventories?field=${key}&value=${name}`);
+                        navigate(`/inventories?searchTerm=${name}`);
                       }}
                       label={label}
                       value={name}
@@ -306,9 +306,7 @@ const ViewInventory = () => {
                   value={field.value}
                   icon={RiInputField}
                   onSearch={() => {
-                    navigate(
-                      `/inventories?field=customField:${field.label}&value=${field.value}`,
-                    );
+                    navigate(`/inventories?searchTerm=${field.value}`);
                   }}
                   color={
                     inventory.status === 'PROPUESTA'

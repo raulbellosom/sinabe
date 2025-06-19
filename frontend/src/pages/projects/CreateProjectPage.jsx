@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useCreateProject } from '../../hooks/useProjects';
-import { useProjectVerticals } from '../../hooks/useProjectVerticals';
 import ProjectForm from '../../components/Projects/ProjectForm';
 import Notifies from '../../components/Notifies/Notifies';
 
@@ -8,7 +7,6 @@ const initialValues = {
   name: '',
   provider: '',
   budgetTotal: 0,
-  verticalId: '',
   startDate: '',
   endDate: '',
   description: '',
@@ -17,11 +15,6 @@ const initialValues = {
 const CreateProjectPage = () => {
   const navigate = useNavigate();
   const { mutateAsync: createProject } = useCreateProject();
-  const {
-    verticals,
-    isLoading: isLoadingVerticals,
-    createVertical,
-  } = useProjectVerticals();
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
@@ -46,16 +39,7 @@ const CreateProjectPage = () => {
         Crear nuevo proyecto
       </h2>
 
-      {isLoadingVerticals ? (
-        <p className="text-gray-500">Cargando verticales...</p>
-      ) : (
-        <ProjectForm
-          initialValues={initialValues}
-          onSubmit={handleSubmit}
-          verticals={verticals || []}
-          createVertical={createVertical}
-        />
-      )}
+      <ProjectForm initialValues={initialValues} onSubmit={handleSubmit} />
     </section>
   );
 };

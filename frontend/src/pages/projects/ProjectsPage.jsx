@@ -10,7 +10,6 @@ import { FaPlus } from 'react-icons/fa';
 import { useDebounce } from '../../hooks/useDebounce';
 import ProjectSearchBar from '../../components/Projects/ProjectSearchBar';
 import ProjectFilters from '../../components/Projects/ProjectFilters';
-import { useProjectVerticals } from '../../hooks/useProjectVerticals';
 import ProjectFormModal from '../../components/Projects/ProjectFormModal';
 import Notifies from '../../components/Notifies/Notifies';
 
@@ -18,7 +17,6 @@ const ProjectsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     statuses: [],
-    verticalIds: [],
   });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -27,7 +25,6 @@ const ProjectsPage = () => {
 
   const debouncedSearch = useDebounce(searchTerm, 400);
 
-  const { verticals = [], createVertical } = useProjectVerticals();
   const { data: allProjects, isLoading: isLoadingAll } = useProjects();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { mutateAsync: createProject } = useCreateProject();
@@ -84,11 +81,11 @@ const ProjectsPage = () => {
         <>
           <ProjectSummaryCards projects={allProjects || []} />
           <div className="flex items-center justify-start w-full gap-4 mb-6">
-            <ProjectFilters
+            {/* <ProjectFilters
               verticals={verticals || []}
               filters={filters}
               setFilters={setFilters}
-            />
+            /> */}
             <ProjectSearchBar
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
@@ -130,15 +127,12 @@ const ProjectsPage = () => {
           name: '',
           provider: '',
           budgetTotal: 0,
-          verticalIds: [],
           startDate: '',
           endDate: '',
           description: '',
           status: 'PLANIFICACION',
         }}
         onSubmit={handleCreateSubmit}
-        verticals={verticals || []}
-        createVertical={createVertical}
       />
     </section>
   );

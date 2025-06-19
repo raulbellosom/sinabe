@@ -11,36 +11,55 @@ const generateInternalFolio = async (model) => {
       .trim()
       .substring(0, 3)
       .toUpperCase();
+
   const typeCode = normalize(model.type.name);
   const brandCode = normalize(model.brand.name);
-  const baseCode = `INV-${typeCode}-${brandCode}`;
+  const modelCode = normalize(model.name);
+  const baseCode = `${typeCode}-${brandCode}-${modelCode}`;
 
-  // Busca TODOS los folios existentes para este modelo (sin filtrar por enabled)
+  console.log(`Base code for internal folio: ${baseCode}`);
+
   const inventories = await db.inventory.findMany({
     where: {
-      modelId: model.id,
       internalFolio: { startsWith: baseCode },
     },
     select: { internalFolio: true },
   });
 
-  // Extrae el número más alto
-  let max = 0;
+  console.log(
+    `Found ${inventories.length} inventories with base code ${baseCode}`
+  );
+
   const usedNumbers = new Set();
   for (const inv of inventories) {
     const match = inv.internalFolio.match(new RegExp(`^${baseCode}-(\\d+)$`));
     if (match) {
       const num = parseInt(match[1], 10);
-      usedNumbers.add(num);
-      if (num > max) max = num;
+      if (!isNaN(num)) {
+        usedNumbers.add(num);
+      }
     }
   }
 
-  // Busca el siguiente número libre
   let next = 1;
-  while (usedNumbers.has(next)) next++;
-  const consecutive = String(next).padStart(3, "0");
-  return `${baseCode}-${consecutive}`;
+  let finalFolio;
+
+  while (true) {
+    while (usedNumbers.has(next)) next++;
+    finalFolio = `${baseCode}-${String(next).padStart(3, "0")}`;
+
+    const exists = await db.inventory.findFirst({
+      where: { internalFolio: finalFolio },
+    });
+
+    if (!exists) break;
+
+    usedNumbers.add(next);
+    next++;
+  }
+
+  console.log(`Generating internal folio: ${finalFolio}`);
+  return finalFolio;
 };
 
 const getUserPermissions = async (userId) => {
@@ -1197,7 +1216,6 @@ export const assignMissingFolios = async (req, res) => {
   try {
     const inventories = await db.inventory.findMany({
       where: {
-        internalFolio: null,
         enabled: true,
       },
       include: {
@@ -1210,7 +1228,6 @@ export const assignMissingFolios = async (req, res) => {
       },
     });
 
-    // Agrupa inventarios por modelo
     const groupedByModel = {};
     for (const inventory of inventories) {
       const modelId = inventory.model.id;
@@ -1218,7 +1235,14 @@ export const assignMissingFolios = async (req, res) => {
       groupedByModel[modelId].push(inventory);
     }
 
-    const normalize = (str) => str.trim().substring(0, 3).toUpperCase();
+    const normalize = (str) =>
+      str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .trim()
+        .substring(0, 3)
+        .toUpperCase();
 
     for (const modelId in groupedByModel) {
       const modelInventories = groupedByModel[modelId];
@@ -1226,20 +1250,16 @@ export const assignMissingFolios = async (req, res) => {
 
       const typeCode = normalize(model.type.name);
       const brandCode = normalize(model.brand.name);
-      const baseCode = `INV-${typeCode}-${brandCode}`;
+      const modelCode = normalize(model.name);
+      const baseCode = `${typeCode}-${brandCode}-${modelCode}`; // 👈 cambio aquí
 
-      // Busca todos los folios existentes para este modelo (sin filtrar por enabled)
       const existing = await db.inventory.findMany({
         where: {
-          modelId: model.id,
-          internalFolio: {
-            startsWith: baseCode,
-          },
+          internalFolio: { startsWith: baseCode },
         },
         select: { internalFolio: true },
       });
 
-      // Extrae todos los números usados
       const usedNumbers = new Set();
       for (const inv of existing) {
         const match = inv.internalFolio.match(
@@ -1250,33 +1270,35 @@ export const assignMissingFolios = async (req, res) => {
         }
       }
 
-      // Asigna folios secuenciales saltando los ya usados y verificando existencia
       let next = 1;
       for (const inventory of modelInventories) {
         let folio;
         while (true) {
           while (usedNumbers.has(next)) next++;
           folio = `${baseCode}-${String(next).padStart(3, "0")}`;
-          // Verifica en la base de datos por si acaso
           const exists = await db.inventory.findFirst({
             where: { internalFolio: folio },
           });
           if (!exists) break;
           next++;
         }
+
         usedNumbers.add(next);
 
         await db.inventory.update({
           where: { id: inventory.id },
           data: { internalFolio: folio },
         });
+
         next++;
       }
     }
 
-    res.status(200).json({ message: "Folios generados correctamente." });
+    res
+      .status(200)
+      .json({ message: "Folios regenerados con la nueva nomenclatura." });
   } catch (error) {
-    console.log("Error generating internal folios:", error.message);
+    console.log("Error regenerando folios:", error.message);
     res.status(500).json({ error: error.message });
   }
 };

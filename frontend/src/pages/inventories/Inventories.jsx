@@ -97,9 +97,13 @@ const Inventories = () => {
   const debouncedSearch = useMemo(
     () =>
       debounce((value) => {
-        updateQuery({ searchTerm: value, page: 1 });
-      }, 500), // 500ms de retardo
-    [],
+        updateQuery({
+          searchTerm: value,
+          page: 1,
+          advancedSearch: query.advancedSearch ?? 'true', // 👈 importante
+        });
+      }, 500),
+    [query.advancedSearch],
   );
 
   const handleSearch = (e) => {

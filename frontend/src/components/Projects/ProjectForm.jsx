@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import AsyncCreatableSelect from 'react-select/async-creatable';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import classNames from 'classnames';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import { FaArrowLeft, FaPlus, FaSave } from 'react-icons/fa';
 
@@ -11,28 +9,10 @@ const ProjectForm = ({
   initialValues,
   onSubmit,
   isEdit = false,
-  verticals = [],
-  createVertical,
   setFormValues,
   isChanged = false,
 }) => {
   const navigate = useNavigate();
-  const [selectedVerticals, setSelectedVerticals] = useState([]);
-
-  useEffect(() => {
-    if (
-      selectedVerticals.length === 0 && // Solo setear una vez
-      initialValues.verticalIds &&
-      verticals.length > 0
-    ) {
-      const foundVerticals = verticals.filter((v) =>
-        initialValues.verticalIds.includes(v.id),
-      );
-      setSelectedVerticals(
-        foundVerticals.map((v) => ({ label: v.name, value: v.id })),
-      );
-    }
-  }, [initialValues.verticalIds, verticals]);
 
   const validationSchema = Yup.object({
     name: Yup.string().required('Nombre requerido'),
@@ -40,7 +20,6 @@ const ProjectForm = ({
     budgetTotal: Yup.number().min(0).required('Presupuesto requerido'),
     startDate: Yup.date().required('Fecha inicio requerida'),
     endDate: Yup.date().required('Fecha fin requerida'),
-    verticalIds: Yup.array().min(1, 'Vertical requerida'),
     description: Yup.string().optional(),
   });
 
@@ -49,29 +28,6 @@ const ProjectForm = ({
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase();
-
-  const loadVerticalOptions = (inputValue, callback) => {
-    const normalizedInput = normalizeText(inputValue);
-    const filtered = verticals
-      .filter((v) => normalizeText(v.name).includes(normalizedInput))
-      .map((v) => ({ label: v.name, value: v.id }));
-    callback(filtered);
-  };
-
-  const handleCreateVertical = async (inputValue, setFieldValue) => {
-    const created = await createVertical(inputValue);
-    const newOption = { label: inputValue, value: created.data.id };
-
-    // Actualiza el estado visual agregando la nueva opción
-    const updatedSelected = [...selectedVerticals, newOption];
-    setSelectedVerticals(updatedSelected);
-
-    // Actualiza el campo verticalIds en Formik
-    setFieldValue(
-      'verticalIds',
-      updatedSelected.map((v) => v.value),
-    );
-  };
 
   const handleDiscardChanges = () => {
     // check if there are unsaved changes and if so, confirm discard
@@ -166,55 +122,6 @@ const ProjectForm = ({
                 />
                 <ErrorMessage
                   name="budgetTotal"
-                  component="div"
-                  className="text-sm text-sinabe-danger mt-1"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-1">
-                  Vertical
-                </label>
-                <AsyncCreatableSelect
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  cacheOptions
-                  isMulti
-                  closeMenuOnSelect={false}
-                  defaultOptions={verticals.map((v) => ({
-                    label: v.name,
-                    value: v.id,
-                  }))}
-                  loadOptions={loadVerticalOptions}
-                  onChange={(option) => {
-                    setSelectedVerticals(option);
-                    setFieldValue(
-                      'verticalIds',
-                      option.map((o) => o.value),
-                    );
-                  }}
-                  onCreateOption={(inputValue) =>
-                    handleCreateVertical(inputValue, setFieldValue)
-                  }
-                  value={selectedVerticals}
-                  placeholder="Seleccionar o crear..."
-                  styles={{
-                    control: (base) => ({
-                      ...base,
-                      padding: '2px',
-                      borderRadius: '0.375rem',
-                      borderColor: '#d1d5db',
-                      boxShadow: 'none',
-                      '&:hover': { borderColor: '#7e3af2' },
-                    }),
-                    menu: (base) => ({
-                      ...base,
-                      zIndex: 20,
-                    }),
-                  }}
-                />
-                <ErrorMessage
-                  name="verticalId"
                   component="div"
                   className="text-sm text-sinabe-danger mt-1"
                 />

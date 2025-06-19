@@ -4,7 +4,6 @@ export const searchProjects = async (req, res) => {
   const {
     searchTerm = "",
     statuses = [],
-    verticalIds = [],
     sortBy = "createdAt",
     order = "desc",
     page = 1,
@@ -12,24 +11,12 @@ export const searchProjects = async (req, res) => {
   } = req.query;
   try {
     const baseInclude = {
-      verticals: true,
       deadlines: true,
       purchaseOrders: { include: { invoices: true } },
-      inventories: {
-        include: { model: { include: { brand: true, type: true } } },
-      },
+
       teamMembers: true,
       documents: true,
     };
-
-    const parsedVerticalIds = Array.isArray(verticalIds)
-      ? verticalIds.map((id) => parseInt(id)).filter((id) => !isNaN(id))
-      : typeof verticalIds === "string" && verticalIds.length > 0
-      ? verticalIds
-          .split(",")
-          .map((id) => parseInt(id))
-          .filter((id) => !isNaN(id))
-      : [];
 
     const parsedStatuses = Array.isArray(statuses)
       ? statuses.filter((s) => !!s)
@@ -40,27 +27,47 @@ export const searchProjects = async (req, res) => {
     const where = {
       enabled: true,
       ...(parsedStatuses.length > 0 && { status: { in: parsedStatuses } }),
-      ...(parsedVerticalIds.length > 0 && {
-        verticals: {
-          some: { id: { in: parsedVerticalIds } },
-        },
-      }),
       OR: [
         { name: { contains: searchTerm } },
         { code: { contains: searchTerm } },
         { description: { contains: searchTerm } },
         { provider: { contains: searchTerm } },
-        { verticals: { some: { name: { contains: searchTerm } } } },
         { purchaseOrders: { some: { description: { contains: searchTerm } } } },
         {
           purchaseOrders: {
             some: {
-              invoices: { some: { code: { contains: searchTerm } } },
+              invoices: {
+                some: {
+                  code: { contains: searchTerm },
+                  inventories: {
+                    some: {
+                      OR: [
+                        { serialNumber: { contains: searchTerm } },
+                        { internalFolio: { contains: searchTerm } },
+                      ],
+                    },
+                  },
+                },
+              },
             },
           },
         },
-        { inventories: { some: { serialNumber: { contains: searchTerm } } } },
-        { inventories: { some: { internalFolio: { contains: searchTerm } } } },
+        {
+          deadlines: {
+            some: {
+              inventoryAssignments: {
+                some: {
+                  inventory: {
+                    OR: [
+                      { serialNumber: { contains: searchTerm } },
+                      { internalFolio: { contains: searchTerm } },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
         { teamMembers: { some: { name: { contains: searchTerm } } } },
       ],
     };
@@ -92,12 +99,19 @@ export const getProjects = async (req, res) => {
     const projects = await db.project.findMany({
       where: { enabled: true },
       include: {
-        verticals: true,
         deadlines: true,
-        purchaseOrders: { include: { invoices: true } },
-        inventories: {
-          include: { model: { include: { brand: true, type: true } } },
+        purchaseOrders: {
+          include: {
+            invoices: {
+              include: {
+                inventories: {
+                  include: { model: { include: { brand: true, type: true } } },
+                },
+              },
+            },
+          },
         },
+
         teamMembers: true,
         documents: true,
       },
@@ -118,11 +132,17 @@ export const getProjectById = async (req, res) => {
     const project = await db.project.findUnique({
       where: { id }, // <-- ya no se hace parseInt
       include: {
-        verticals: true,
         deadlines: true,
-        purchaseOrders: { include: { invoices: true } },
-        inventories: {
-          include: { model: { include: { brand: true, type: true } } },
+        purchaseOrders: {
+          include: {
+            invoices: {
+              include: {
+                inventories: {
+                  include: { model: { include: { brand: true, type: true } } },
+                },
+              },
+            },
+          },
         },
         teamMembers: true,
         documents: true,
@@ -147,8 +167,7 @@ export const createProject = async (req, res) => {
       name,
       description,
       provider,
-      verticalIds,
-      status = "Planificación", // default value
+      status = "PLANIFICACION", // default value
       budgetTotal,
       startDate,
       endDate,
@@ -186,9 +205,7 @@ export const createProject = async (req, res) => {
         name,
         description,
         provider,
-        verticals: {
-          connect: verticalIds.map((id) => ({ id })),
-        },
+
         status,
         budgetTotal: parseFloat(budgetTotal),
         startDate: new Date(startDate),
@@ -214,7 +231,6 @@ export const updateProject = async (req, res) => {
       name,
       description,
       provider,
-      verticalIds,
       status,
       budgetTotal,
       startDate,
@@ -227,9 +243,7 @@ export const updateProject = async (req, res) => {
         name,
         description,
         provider,
-        verticals: {
-          set: verticalIds.map((id) => ({ id })),
-        },
+
         status,
         budgetTotal: parseFloat(budgetTotal),
         startDate: new Date(startDate),
@@ -268,7 +282,6 @@ export const getProjectSummary = async (req, res) => {
     const project = await db.project.findUnique({
       where: { id },
       include: {
-        verticals: true,
         deadlines: {
           include: {
             inventoryAssignments: {
@@ -283,11 +296,14 @@ export const getProjectSummary = async (req, res) => {
         },
         purchaseOrders: {
           include: {
-            invoices: true,
+            invoices: {
+              include: {
+                inventories: {
+                  include: { model: { include: { brand: true, type: true } } },
+                },
+              },
+            },
           },
-        },
-        inventories: {
-          include: { model: { include: { brand: true, type: true } } },
         },
         documents: true,
         teamMembers: true,

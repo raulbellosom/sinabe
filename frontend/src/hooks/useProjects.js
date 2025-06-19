@@ -6,7 +6,6 @@ import {
   createProject,
   updateProject,
   deleteProject,
-  getProjectVerticals,
 } from '../services/projects.api';
 
 // 🔄 Obtener todos los proyectos activos
@@ -70,10 +69,3 @@ export const useDeleteProject = () => {
     },
   });
 };
-
-// 📋 Obtener verticales disponibles (catálogo)
-export const useProjectVerticals = () =>
-  useQuery({
-    queryKey: ['project-verticals'],
-    queryFn: () => getProjectVerticals().then((res) => res.data),
-  });

@@ -17,7 +17,7 @@ const MainLayout = ({ children }) => {
     location.pathname === '/' || location.pathname === '/dashboard';
 
   return (
-    <div className="flex flex-col flex-1 h-full bg-sinabe-gray p-4 pb-2 overflow-y-auto overflow-x-hidden">
+    <div className="flex flex-col flex-1 h-full bg-gray-50 p-4 pb-2 overflow-y-auto overflow-x-hidden">
       {!hideBreadcrumb && <Breadcrumbs breadcrumbs={breadcrumb} />}
       <div className="flex-1">{children}</div>
     </div>

@@ -73,19 +73,18 @@ model Inventory {
   altaDate          DateTime?
   bajaDate          DateTime?
   internalFolio     String?                @unique
-  projectId         String?
+  invoiceId         Int?
   files             File[]
   images            Image[]                @relation("InventoryImages")
   createdBy         User                   @relation(fields: [createdById], references: [id])
   model             Model                  @relation(fields: [modelId], references: [id])
-  project           Project?               @relation("ProjectInventories", fields: [projectId], references: [id])
+  invoice           Invoice? @relation("InvoiceInventories", fields: [invoiceId], references: [id])
   conditions        InventoryCondition[]
   customField       InventoryCustomField[]
   InventoryDeadline InventoryDeadline[]
 
   @@index([createdById], map: "Inventory_createdById_fkey")
   @@index([modelId], map: "Inventory_modelId_fkey")
-  @@index([projectId], map: "Inventory_projectId_fkey")
 }
 
 model InventoryType {
@@ -103,14 +102,15 @@ model InventoryBrand {
 }
 
 model Model {
-  id          Int            @id @default(autoincrement())
-  name        String
-  typeId      Int
-  brandId     Int
-  enabled     Boolean        @default(true)
-  inventories Inventory[]
-  brand       InventoryBrand @relation(fields: [brandId], references: [id])
-  type        InventoryType  @relation(fields: [typeId], references: [id])
+  id                    Int            @id @default(autoincrement())
+  name                  String
+  typeId                Int
+  brandId               Int
+  enabled               Boolean        @default(true)
+  inventories           Inventory[]
+  brand                 InventoryBrand @relation(fields: [brandId], references: [id])
+  type                  InventoryType  @relation(fields: [typeId], references: [id])
+  ModelVertical         ModelVertical[]
 
   @@index([brandId], map: "Model_brandId_fkey")
   @@index([typeId], map: "Model_typeId_fkey")
@@ -152,11 +152,9 @@ model Project {
   enabled        Boolean           @default(true)
   createdById    String
   deadlines      Deadline[]
-  inventories    Inventory[]       @relation("ProjectInventories")
   documents      ProjectDocument[]
   teamMembers    ProjectMember[]
   purchaseOrders PurchaseOrder[]
-  verticals      ProjectVertical[] @relation("ProjectVerticalsOnProjects")
 }
 
 model Deadline {
@@ -240,6 +238,7 @@ model Invoice {
   updatedAt       DateTime      @updatedAt
   enabled         Boolean       @default(true)
   createdById     String
+  inventories     Inventory[]   @relation("InvoiceInventories")
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
 
   @@index([purchaseOrderId], map: "Invoice_purchaseOrderId_fkey")
@@ -275,12 +274,28 @@ model ProjectDocument {
   @@index([projectId], map: "ProjectDocument_projectId_fkey")
 }
 
-model ProjectVertical {
+model Vertical  {
   id       Int       @id @default(autoincrement())
   name     String    @unique
   enabled  Boolean   @default(true)
-  projects Project[] @relation("ProjectVerticalsOnProjects")
+  description String? @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ModelVertical ModelVertical[]
 }
+
+model ModelVertical {
+  id              Int             @id @default(autoincrement())
+  modelId         Int
+  verticalId      Int
+  model           Model           @relation(fields: [modelId], references: [id])
+  vertical        Vertical        @relation(fields: [verticalId], references: [id])
+
+  @@unique([modelId, verticalId])
+  @@index([modelId])
+  @@index([verticalId])
+}
+
 
 model File {
   id          String    @id @default(uuid())

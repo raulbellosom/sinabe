@@ -1,5 +1,6 @@
 import {
   FaClipboardList,
+  FaSitemap,
   FaUserCircle,
   FaUserCog,
   FaUserShield,
@@ -45,6 +46,11 @@ const BreadcrumbsBuilder = (path) => {
       label: 'Migrar Inventarios',
       href: '/inventories/migrate',
       icon: HiHome,
+    },
+    {
+      label: 'Verticales',
+      href: '/verticals',
+      icon: FaSitemap,
     },
     {
       label: 'Proyectos',

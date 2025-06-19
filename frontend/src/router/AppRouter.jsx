@@ -26,6 +26,7 @@ import ProjectsPage from '../pages/projects/ProjectsPage';
 import CreateProjectPage from '../pages/projects/CreateProjectPage';
 import EditProjectPage from '../pages/projects/EditProjectPage';
 import ProjectDetailPage from '../pages/projects/ProjectDetailPage';
+import VerticalPage from '../pages/vertical/VerticalPage';
 
 const AppRouter = () => {
   const { user } = useContext(AuthContext);
@@ -72,6 +73,7 @@ const AuthorizedRoute = ({ user }) => {
                     path="/inventories/view/:id"
                     element={<ViewInventory />}
                   />
+                  <Route path="/verticals" element={<VerticalPage />} />
                   <Route path="/projects" element={<ProjectsPage />} />
                   <Route
                     path="/projects/create"

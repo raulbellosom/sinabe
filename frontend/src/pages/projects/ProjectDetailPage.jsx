@@ -85,14 +85,14 @@ const ProjectDetailPage = () => {
           <span className="text-gray-400">·</span>
           <span className="font-medium">{project.provider}</span>
           <span className="text-gray-400">·</span>
-          {project.verticals?.map((v, i) => (
+          {/* {project.verticals?.map((v, i) => (
             <span
               key={i}
               className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-2 py-0.5 rounded-full text-xs"
             >
               {v.name}
             </span>
-          ))}
+          ))} */}
           <span className="text-gray-400">·</span>
 
           <span className="inline-block bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-white text-xs px-2 py-0.5 rounded-full font-medium">

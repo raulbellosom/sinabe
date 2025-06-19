@@ -25,7 +25,7 @@ import MainLayout from '../../Layout/MainLayout';
 import { BiCategory } from 'react-icons/bi';
 import { MdAddBox, MdAdminPanelSettings } from 'react-icons/md';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
-import { FaDiagramProject, FaListCheck } from 'react-icons/fa6';
+import { FaDiagramProject, FaListCheck, FaSitemap } from 'react-icons/fa6';
 import { LuArchiveRestore } from 'react-icons/lu';
 
 const themes = {
@@ -301,6 +301,16 @@ const Sidebar = ({ children }) => {
                   </MenuItem>
                 </SubMenu>
               )}
+              <MenuItem
+                icon={<FaSitemap size={23} />}
+                active={isActivePath('/verticals')}
+                component={<Link to={'/verticals'} />}
+                onClick={() => {
+                  setToggled(false);
+                }}
+              >
+                Verticales
+              </MenuItem>
               <MenuItem
                 icon={<FaDiagramProject size={23} />}
                 active={isActivePath('/projects')}

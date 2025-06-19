@@ -67,15 +67,17 @@ const TableActions = ({
                 }}
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Tooltip content="Búsqueda avanzada">
-                <ToggleSwitch
-                  color="indigo"
-                  checked={advancedSearch === 'true'}
-                  onChange={onToggleAdvancedSearch}
-                />
-              </Tooltip>
-            </div>
+            {advancedSearch && (
+              <div className="flex items-center gap-2">
+                <Tooltip content="Búsqueda avanzada">
+                  <ToggleSwitch
+                    color="indigo"
+                    checked={advancedSearch === 'true'}
+                    onChange={onToggleAdvancedSearch}
+                  />
+                </Tooltip>
+              </div>
+            )}
           </form>
         </div>
         <div className="flex justify-end gap-4 md:gap-2 h-full">
