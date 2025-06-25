@@ -15,7 +15,7 @@ const ProjectStatusBadge = ({ status }) => {
 
   return (
     <span
-      className={`inline-block text-xs font-semibold px-3 py-1 rounded-full border ${classes}`}
+      className={`inline-block text-nowrap text-xs font-semibold px-3 py-1 rounded-full border ${classes}`}
     >
       {status?.replace(/_/g, ' ') || 'Sin estado'}
     </span>

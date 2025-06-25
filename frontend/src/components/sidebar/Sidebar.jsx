@@ -23,7 +23,7 @@ import { Button } from 'flowbite-react';
 import Navbar from '../navbar/Navbar';
 import MainLayout from '../../Layout/MainLayout';
 import { BiCategory } from 'react-icons/bi';
-import { MdAddBox, MdAdminPanelSettings } from 'react-icons/md';
+import { MdAddBox, MdAdminPanelSettings, MdInventory } from 'react-icons/md';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
 import { FaDiagramProject, FaListCheck, FaSitemap } from 'react-icons/fa6';
 import { LuArchiveRestore } from 'react-icons/lu';
@@ -251,7 +251,7 @@ const Sidebar = ({ children }) => {
               {(isCatalogsPermission ||
                 isInventoriesPermission.hasPermission ||
                 isSelfInventoriesPermission.hasPermission) && (
-                <SubMenu label="Inventarios" icon={<FaListCheck size={23} />}>
+                <SubMenu label="Inventarios" icon={<MdInventory size={23} />}>
                   {isCreateInventoryPermission.hasPermission && (
                     <MenuItem
                       icon={<MdAddBox size={23} />}

@@ -13,24 +13,28 @@ const FilterDropdown = ({
   deselectAllLabel = 'Quitar todos',
   keyField = 'id',
   labelField = 'name',
+  titleDisplay = '',
+  icon = <TbFilter size={18} className="text-white" />,
 }) => {
   const toggleOption = (id) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
-    );
+    const newSelected = selected.includes(id)
+      ? selected.filter((v) => v !== id)
+      : [...selected, id];
+    setSelected(newSelected);
   };
 
   const toggleSelectAll = () => {
-    setSelected(
-      selected.length === options.length ? [] : options.map((o) => o[keyField]),
-    );
+    const newSelected =
+      selected.length === options.length ? [] : options.map((o) => o[keyField]);
+    setSelected(newSelected);
   };
 
-  const CustomDropdownItem = ({ name, onClick, checked }) => (
+  const CustomDropdownItem = ({ name, onClick, checked, itemKey }) => (
     <Dropdown.Item
       as="button"
       onClick={onClick}
-      className="flex justify-between items-center text-sm"
+      className="flex justify-between items-center text-sm text-nowrap"
+      key={itemKey}
     >
       <span>{name}</span>
       <input type="checkbox" readOnly checked={checked} className="ml-2" />
@@ -40,14 +44,19 @@ const FilterDropdown = ({
   return (
     <Dropdown
       renderTrigger={() => (
-        <button className="flex items-center px-4 py-2 text-white bg-sinabe-primary hover:bg-sinabe-primary/90 rounded shadow text-sm">
-          <TbFilter size={18} />
-          <span className="ml-2">Filtrar</span>
+        <button className="w-full md:w-fit text-xs xl:text-sm p-2 text-white bg-sinabe-primary hover:bg-sinabe-primary/90 shadow flex items-center justify-center rounded-md">
+          {icon && (
+            <span className={classNames('', { 'text-white': !titleDisplay })}>
+              {icon}
+            </span>
+          )}
+          <span className="ml-2">{titleDisplay || 'Filtrar'}</span>
         </button>
       )}
       placement="bottom-end"
-      className="w-64"
+      className="md:min-w-72 md:w-72"
       dismissOnClick={false}
+      arrowIcon={false}
     >
       <div className="px-4 py-2">
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">
@@ -58,6 +67,7 @@ const FilterDropdown = ({
 
       {showSelectAll && (
         <CustomDropdownItem
+          key="select-all-toggle" // Unique key for this specific item
           name={
             selected.length === options.length
               ? deselectAllLabel
@@ -72,7 +82,7 @@ const FilterDropdown = ({
 
       {options.map((opt) => (
         <CustomDropdownItem
-          key={opt[keyField]}
+          key={opt[keyField]} // Use the unique ID from the option as key
           name={opt[labelField]}
           onClick={() => toggleOption(opt[keyField])}
           checked={selected.includes(opt[keyField])}

@@ -1,11 +1,61 @@
 import { useQuery } from '@tanstack/react-query';
-import { searchInventories } from '../services/api';
+import { searchInventories } from '../services/searchInventories.api';
 
-export const useSearchInventories = ({ searchTerm, deadlineId }) => {
+export const useSearchInventories = ({
+  searchTerm,
+  deadlineId,
+  projectId,
+  purchaseOrderId,
+  invoiceId,
+  verticalId,
+  sortBy,
+  order,
+  page,
+  pageSize,
+  conditionName,
+  deepSearch,
+  status,
+  advancedSearch = 'true',
+  signal,
+}) => {
   return useQuery({
-    queryKey: ['search-inventories', searchTerm, deadlineId],
-    queryFn: () => searchInventories({ searchTerm, deadlineId }),
-    enabled: !!deadlineId, // solo si hay deadline activa
+    queryKey: [
+      'search-inventories',
+      searchTerm,
+      deadlineId,
+      projectId,
+      purchaseOrderId,
+      invoiceId,
+      verticalId,
+      sortBy,
+      order,
+      page,
+      pageSize,
+      conditionName,
+      deepSearch,
+      status,
+      advancedSearch,
+    ],
+    queryFn: () =>
+      searchInventories({
+        searchTerm,
+        deadlineId,
+        projectId,
+        purchaseOrderId,
+        invoiceId,
+        verticalId,
+        sortBy,
+        order,
+        page,
+        pageSize,
+        conditionName,
+        deepSearch,
+        status,
+        advancedSearch,
+        signal,
+      }),
+    enabled: true,
+    keepPreviousData: true,
     refetchOnWindowFocus: false,
   });
 };

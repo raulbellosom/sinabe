@@ -6,6 +6,7 @@ import {
   createProject,
   updateProject,
   deleteProject,
+  searchProjects,
 } from '../services/projects.api';
 
 // 🔄 Obtener todos los proyectos activos
@@ -53,7 +54,7 @@ export const useUpdateProject = () => {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries(['projects']);
       queryClient.invalidateQueries(['project-search']);
-      queryClient.invalidateQueries(['project', variables.id]); // 👈 clave
+      queryClient.invalidateQueries(['project', variables.id]);
     },
   });
 };
@@ -67,5 +68,43 @@ export const useDeleteProject = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
+  });
+};
+
+export const useProjectSearch = ({
+  searchTerm,
+  statuses,
+  verticalIds,
+  sortBy,
+  order,
+  page,
+  pageSize,
+  signal,
+}) => {
+  return useQuery({
+    queryKey: [
+      'search-projects',
+      searchTerm,
+      sortBy,
+      order,
+      page,
+      pageSize,
+      statuses,
+      verticalIds,
+    ],
+    queryFn: () =>
+      searchProjects({
+        searchTerm,
+        statuses,
+        verticalIds,
+        sortBy,
+        order,
+        page,
+        pageSize,
+        signal,
+      }),
+    enabled: true,
+    keepPreviousData: true,
+    refetchOnWindowFocus: false,
   });
 };

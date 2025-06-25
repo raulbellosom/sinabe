@@ -1,52 +1,91 @@
 import { db } from "../lib/db.js";
+import { ProjectStatus } from "@prisma/client";
 
 export const searchProjects = async (req, res) => {
-  const {
-    searchTerm = "",
-    statuses = [],
-    sortBy = "createdAt",
-    order = "desc",
-    page = 1,
-    pageSize = 10,
-  } = req.query;
   try {
-    const baseInclude = {
-      deadlines: true,
-      purchaseOrders: { include: { invoices: true } },
+    const {
+      searchTerm = "",
+      statuses = [],
+      verticalIds = [],
+      sortBy = "createdAt",
+      order = "desc",
+      page = 1,
+      pageSize = 10,
+    } = req.query;
 
-      teamMembers: true,
-      documents: true,
-    };
+    const parsedPage = parseInt(page, 10) || 1;
+    const parsedPageSize = parseInt(pageSize, 10) || 10;
+    const skip = (parsedPage - 1) * parsedPageSize;
+    const take = parsedPageSize;
 
     const parsedStatuses = Array.isArray(statuses)
-      ? statuses.filter((s) => !!s)
-      : typeof statuses === "string" && statuses.length > 0
-      ? statuses.split(",").filter((s) => !!s)
+      ? statuses.filter(Boolean)
+      : typeof statuses === "string"
+      ? statuses.split(",").filter(Boolean)
+      : [];
+
+    const parsedVerticalIds = Array.isArray(verticalIds)
+      ? verticalIds.filter(Boolean)
+      : typeof verticalIds === "string"
+      ? verticalIds.split(",").filter(Boolean)
       : [];
 
     const where = {
       enabled: true,
-      ...(parsedStatuses.length > 0 && { status: { in: parsedStatuses } }),
+      ...(parsedStatuses.length > 0 && {
+        status: {
+          in: parsedStatuses.map((s) => ProjectStatus[s]).filter(Boolean), // Filtra cualquier valor inválido
+        },
+      }),
+      ...(parsedVerticalIds.length > 0 && {
+        deadlines: {
+          some: {
+            inventoryAssignments: {
+              some: {
+                inventory: {
+                  model: {
+                    ModelVertical: {
+                      some: {
+                        verticalId: { in: parsedVerticalIds },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
       OR: [
         { name: { contains: searchTerm } },
         { code: { contains: searchTerm } },
         { description: { contains: searchTerm } },
         { provider: { contains: searchTerm } },
-        { purchaseOrders: { some: { description: { contains: searchTerm } } } },
+        {
+          purchaseOrders: {
+            some: {
+              description: { contains: searchTerm },
+            },
+          },
+        },
         {
           purchaseOrders: {
             some: {
               invoices: {
                 some: {
-                  code: { contains: searchTerm },
-                  inventories: {
-                    some: {
-                      OR: [
-                        { serialNumber: { contains: searchTerm } },
-                        { internalFolio: { contains: searchTerm } },
-                      ],
+                  OR: [
+                    { code: { contains: searchTerm } },
+                    {
+                      inventories: {
+                        some: {
+                          OR: [
+                            { serialNumber: { contains: searchTerm } },
+                            { internalFolio: { contains: searchTerm } },
+                          ],
+                        },
+                      },
                     },
-                  },
+                  ],
                 },
               },
             },
@@ -68,17 +107,53 @@ export const searchProjects = async (req, res) => {
             },
           },
         },
-        { teamMembers: { some: { name: { contains: searchTerm } } } },
+        {
+          teamMembers: {
+            some: {
+              name: { contains: searchTerm },
+            },
+          },
+        },
       ],
     };
 
-    const skip = (parseInt(page) - 1) * parseInt(pageSize);
-    const take = parseInt(pageSize);
+    const include = {
+      deadlines: {
+        include: {
+          inventoryAssignments: {
+            include: {
+              inventory: {
+                include: {
+                  model: {
+                    include: {
+                      ModelVertical: {
+                        include: { vertical: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      purchaseOrders: {
+        include: {
+          invoices: {
+            include: {
+              inventories: true,
+            },
+          },
+        },
+      },
+      teamMembers: true,
+      documents: true,
+    };
 
-    const [projects, total] = await Promise.all([
+    const [projects, totalRecords] = await Promise.all([
       db.project.findMany({
         where,
-        include: baseInclude,
+        include,
         skip,
         take,
         orderBy: { [sortBy]: order },
@@ -86,7 +161,19 @@ export const searchProjects = async (req, res) => {
       db.project.count({ where }),
     ]);
 
-    res.json({ projects, total });
+    const totalPages = parsedPageSize
+      ? Math.ceil(totalRecords / parsedPageSize)
+      : 1;
+
+    return res.json({
+      data: projects,
+      pagination: {
+        totalRecords,
+        totalPages,
+        currentPage: parsedPage,
+        pageSize: parsedPageSize,
+      },
+    });
   } catch (error) {
     console.error("Error searching projects:", error.message);
     res.status(500).json({ error: error.message });
@@ -236,6 +323,8 @@ export const updateProject = async (req, res) => {
       startDate,
       endDate,
     } = req.body;
+
+    console.log(req.body);
 
     const project = await db.project.update({
       where: { id },

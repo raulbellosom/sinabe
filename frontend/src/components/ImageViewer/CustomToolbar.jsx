@@ -13,14 +13,11 @@ export const CustomToolbar = ({
   scale,
   rotate,
   onRotate,
-  index,
-  images,
   isDownloadable,
   onDownload,
   customOptions = [],
+  imageIndex,
 }) => {
-  const currentImage = images[index];
-
   return (
     <>
       {/* Iconos de Zoom y Rotación ahora son componentes limpios */}
@@ -35,12 +32,12 @@ export const CustomToolbar = ({
           label={<BsThreeDotsVertical size={20} />}
           dismissOnClick={true} // Es mejor que el menú se cierre al hacer clic
           inline
-          arrowIcon={null}
+          arrowIcon={false}
           placement="top" // Posicionar mejor el dropdown
         >
           {isDownloadable && (
             <Dropdown.Item
-              onClick={() => onDownload(currentImage)}
+              onClick={() => onDownload(imageIndex)}
               icon={MdSaveAlt}
             >
               Descargar
@@ -49,7 +46,7 @@ export const CustomToolbar = ({
           {customOptions.map((option, idx) => (
             <Dropdown.Item
               key={idx}
-              onClick={() => option.onClick(currentImage)}
+              onClick={() => option.onClick(imageIndex)}
               icon={option.icon}
             >
               {option.label}

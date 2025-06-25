@@ -32,7 +32,7 @@ const ProjectSummaryCards = ({ projects }) => {
 
   const cards = [
     {
-      label: 'Total Proyectos',
+      label: 'Proyectos Totales',
       value: total,
       icon: <FaDiagramProject />,
       color: 'bg-sinabe-primary',
@@ -59,7 +59,7 @@ const ProjectSummaryCards = ({ projects }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
       {cards.map((card, i) => (
         <div
           key={i}

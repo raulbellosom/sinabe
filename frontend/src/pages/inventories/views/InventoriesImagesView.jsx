@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ImageViewer from '../../../components/ImageViewer/ImageViewer';
+import ImageViewer from '../../../components/ImageViewer/ImageViewer2';
 import { Link } from 'react-router-dom';
 import { Checkbox } from 'flowbite-react';
 import { FaCheckSquare, FaListUl, FaFileDownload } from 'react-icons/fa';
@@ -174,7 +174,7 @@ const InventoriesImagesView = ({
       </h2>
 
       {/* Botones para cambiar el modo de visualización */}
-      <div className="sticky -top-4 z-50 bg p-4 border-b bg-white left-0 flex flex-col md:flex-row items-center justify-between gap-2 mb-4">
+      <div className="sticky -top-4 z-10 bg p-4 border-b bg-white left-0 flex flex-col md:flex-row items-center justify-between gap-2 mb-4">
         <div className="flex gap-2">
           <ActionButtons
             extraActions={[
@@ -388,7 +388,7 @@ const InventoriesImagesView = ({
                       <div key={index} className="relative">
                         <ImageViewer
                           images={[image]}
-                          containerClassNames="w-full h-32 md:h-44 object-cover rounded"
+                          containerClassNames="w-28 h-28"
                         />
                         <div className="absolute top-2 right-2">
                           <Checkbox
@@ -422,7 +422,8 @@ const InventoriesImagesView = ({
                 >
                   <ImageViewer
                     images={[image]}
-                    containerClassNames="w-full h-[88px] md:h-44 object-cover rounded"
+                    containerClassNames="w-12 h-12 min-w-12 min-h-12"
+                    imageStyles="w-12 h-12"
                   />
                   <div className="absolute top-2 right-2">
                     <Checkbox

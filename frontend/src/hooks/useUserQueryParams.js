@@ -1,8 +1,7 @@
-// useInventoryQueryParams.js
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-export const useInventoryQueryParams = () => {
+export const useUserQueryParams = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -14,10 +13,8 @@ export const useInventoryQueryParams = () => {
       pageSize: parseInt(params.get('pageSize') || '10', 10),
       sortBy: params.get('sortBy') || null,
       order: params.get('order') || 'desc',
-      conditionName: params.getAll('conditionName'),
-      status: params.getAll('status'),
-      isDeepSearch: params.get('isDeepSearch') === 'true',
-      mainViewMode: params.get('mainViewMode') || 'table', // Added mainViewMode
+      status: params.getAll('status'), // Array
+      roles: params.getAll('roles'), // ✅ Array
     };
   }, [location.search]);
 
@@ -25,7 +22,6 @@ export const useInventoryQueryParams = () => {
 
   useEffect(() => {
     const newQuery = getQueryParams();
-    // Only update state if query params have actually changed to prevent unnecessary re-renders
     if (JSON.stringify(newQuery) !== JSON.stringify(query)) {
       setQuery(newQuery);
     }
@@ -36,21 +32,13 @@ export const useInventoryQueryParams = () => {
       const currentParams = new URLSearchParams(location.search);
       let updated = false;
 
-      // Update basic string/number parameters
-      [
-        'searchTerm',
-        'page',
-        'pageSize',
-        'sortBy',
-        'order',
-        'isDeepSearch',
-        'mainViewMode',
-      ].forEach((key) => {
+      // Parámetros simples
+      ['searchTerm', 'page', 'pageSize', 'sortBy', 'order'].forEach((key) => {
         const newValue =
           newParams[key] !== undefined
             ? String(newParams[key])
             : currentParams.get(key);
-        if (newValue !== null && newValue !== '' && newValue !== 'null') {
+        if (newValue && newValue !== 'null') {
           if (currentParams.get(key) !== newValue) {
             currentParams.set(key, newValue);
             updated = true;
@@ -61,36 +49,28 @@ export const useInventoryQueryParams = () => {
         }
       });
 
-      // Handle array parameters (conditions, status)
-      // Ensure that newParams.conditionName is an array before attempting to sort
-      const newConditions = Array.isArray(newParams.conditionName)
-        ? newParams.conditionName
-        : [];
-      const currentConditions = currentParams.getAll('conditionName');
-
-      // Compare sorted arrays to check if conditions have truly changed
-      if (
-        JSON.stringify(currentConditions.sort()) !==
-        JSON.stringify(newConditions.sort())
-      ) {
-        currentParams.delete('conditionName');
-        newConditions.forEach((cond) =>
-          currentParams.append('conditionName', cond),
-        );
-        updated = true;
-      }
-
-      // Ensure that newParams.status is an array before attempting to sort
+      // Arrays: status
       const newStatus = Array.isArray(newParams.status) ? newParams.status : [];
       const currentStatus = currentParams.getAll('status');
 
-      // Compare sorted arrays to check if status values have truly changed
       if (
         JSON.stringify(currentStatus.sort()) !==
         JSON.stringify(newStatus.sort())
       ) {
         currentParams.delete('status');
-        newStatus.forEach((stat) => currentParams.append('status', stat));
+        newStatus.forEach((s) => currentParams.append('status', s));
+        updated = true;
+      }
+
+      // ✅ Arrays: roles
+      const newRoles = Array.isArray(newParams.roles) ? newParams.roles : [];
+      const currentRoles = currentParams.getAll('roles');
+
+      if (
+        JSON.stringify(currentRoles.sort()) !== JSON.stringify(newRoles.sort())
+      ) {
+        currentParams.delete('roles');
+        newRoles.forEach((r) => currentParams.append('roles', r));
         updated = true;
       }
 

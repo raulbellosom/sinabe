@@ -1001,10 +1001,14 @@ export const searchInventories = async (req, res) => {
       status,
       advancedSearch = "true",
       deadlineId,
+      projectId,
+      purchaseOrderId,
+      invoiceId,
+      verticalId,
     } = req.query;
 
-    // const parsedDeepSearch = JSON.parse(deepSearch);
     const isAdvanced = advancedSearch === "true";
+    const parsedPageSize = pageSize == "0" ? null : parseInt(pageSize);
 
     const buildOrderBy = (sortBy, order) => {
       const parts = sortBy.split(".");
@@ -1044,8 +1048,41 @@ export const searchInventories = async (req, res) => {
           }),
       ...(deadlineId && {
         InventoryDeadline: {
-          none: {},
+          some: {
+            deadlineId,
+          },
         },
+      }),
+      ...(projectId && {
+        OR: [
+          {
+            InventoryDeadline: {
+              some: {
+                deadline: {
+                  projectId,
+                },
+              },
+            },
+          },
+          {
+            invoice: {
+              purchaseOrder: {
+                projectId,
+              },
+            },
+          },
+        ],
+      }),
+      ...(purchaseOrderId && {
+        invoice: {
+          purchaseOrderId,
+        },
+      }),
+      ...(invoiceId && {
+        invoiceId,
+      }),
+      ...(verticalId && {
+        verticalId,
       }),
     };
 
@@ -1080,6 +1117,30 @@ export const searchInventories = async (req, res) => {
         include: {
           brand: true,
           type: true,
+          ModelVertical: {
+            include: {
+              vertical: true,
+            },
+          },
+        },
+      },
+
+      invoice: {
+        include: {
+          purchaseOrder: {
+            include: {
+              project: true,
+            },
+          },
+        },
+      },
+      InventoryDeadline: {
+        include: {
+          deadline: {
+            include: {
+              project: true,
+            },
+          },
         },
       },
       conditions: {
@@ -1104,12 +1165,6 @@ export const searchInventories = async (req, res) => {
           metadata: true,
         },
       },
-      InventoryDeadline: deadlineId
-        ? {
-            where: { deadlineId },
-            select: { id: true, deadlineId: true },
-          }
-        : undefined,
     };
 
     let combined = [];
@@ -1119,8 +1174,8 @@ export const searchInventories = async (req, res) => {
       const results = await db.inventory.findMany({
         where: whereConditions,
         orderBy: buildOrderBy(sortBy, order),
-        skip: (page - 1) * pageSize,
-        take: parseInt(pageSize),
+        skip: parsedPageSize ? (page - 1) * parsedPageSize : undefined,
+        take: parsedPageSize ?? undefined,
         include,
       });
 
@@ -1128,9 +1183,11 @@ export const searchInventories = async (req, res) => {
         data: results,
         pagination: {
           totalRecords,
-          totalPages: Math.ceil(totalRecords / pageSize),
+          totalPages: parsedPageSize
+            ? Math.ceil(totalRecords / parsedPageSize)
+            : 1,
           currentPage: parseInt(page),
-          pageSize: parseInt(pageSize),
+          pageSize: parsedPageSize ?? "ALL",
         },
       });
     }
@@ -1142,8 +1199,8 @@ export const searchInventories = async (req, res) => {
           OR: buildSearchConditions(phraseSearch),
         },
         orderBy: buildOrderBy(sortBy, order),
-        skip: (page - 1) * pageSize,
-        take: parseInt(pageSize),
+        skip: parsedPageSize ? (page - 1) * parsedPageSize : undefined,
+        take: parsedPageSize ?? undefined,
         include,
       });
 
@@ -1158,9 +1215,11 @@ export const searchInventories = async (req, res) => {
         data: results,
         pagination: {
           totalRecords,
-          totalPages: Math.ceil(totalRecords / pageSize),
+          totalPages: parsedPageSize
+            ? Math.ceil(totalRecords / parsedPageSize)
+            : 1,
           currentPage: parseInt(page),
-          pageSize: parseInt(pageSize),
+          pageSize: parsedPageSize ?? "ALL",
         },
       });
     }
@@ -1192,16 +1251,20 @@ export const searchInventories = async (req, res) => {
       ),
     ];
 
-    const start = (page - 1) * pageSize;
-    const paginatedResults = combined.slice(start, start + parseInt(pageSize));
+    const start = (page - 1) * (parsedPageSize || combined.length);
+    const paginatedResults = parsedPageSize
+      ? combined.slice(start, start + parsedPageSize)
+      : combined;
 
     res.json({
       data: paginatedResults,
       pagination: {
         totalRecords: combined.length,
-        totalPages: Math.ceil(combined.length / pageSize),
+        totalPages: parsedPageSize
+          ? Math.ceil(combined.length / parsedPageSize)
+          : 1,
         currentPage: parseInt(page),
-        pageSize: parseInt(pageSize),
+        pageSize: parsedPageSize ?? "ALL",
       },
     });
   } catch (error) {

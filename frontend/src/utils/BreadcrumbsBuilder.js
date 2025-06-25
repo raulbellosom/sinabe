@@ -6,7 +6,7 @@ import {
   FaUserShield,
 } from 'react-icons/fa';
 import { HiHome } from 'react-icons/hi';
-import { MdChecklist } from 'react-icons/md';
+import { MdChecklist, MdInventory } from 'react-icons/md';
 import { PiStackPlusFill } from 'react-icons/pi';
 import { BiCategory } from 'react-icons/bi';
 import { AiOutlineProject } from 'react-icons/ai';
@@ -26,7 +26,7 @@ const BreadcrumbsBuilder = (path) => {
     {
       label: 'Inventarios',
       href: '/inventories',
-      icon: FaClipboardList,
+      icon: MdInventory,
     },
     {
       label: 'Crear Inventarios',

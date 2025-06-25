@@ -50,11 +50,10 @@ export const downloadImagesAsZip = async (
   // Inicializamos el zip y creamos una carpeta 'images'
   const zip = new JSZip();
   const folder = zip.folder('images');
-
   // Procesamos cada imagen seleccionada
   const promises = selectedImages?.map(async (imgObj, index) => {
     try {
-      const url = `${API_URL}/${imgObj.imageKey}`;
+      const url = `${API_URL}/${imgObj.url}`;
       const response = await fetch(url);
       let blob = await response.blob();
       if (isLowQuality) {
@@ -62,7 +61,7 @@ export const downloadImagesAsZip = async (
       }
       folder.file(`image_${index + 1}.jpg`, blob);
     } catch (error) {
-      console.error(`Error descargando la imagen ${imgObj.imageKey}:`, error);
+      console.error(`Error descargando la imagen ${imgObj.url}:`, error);
     }
   });
 

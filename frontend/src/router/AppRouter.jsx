@@ -12,14 +12,16 @@ import ProtectedRoute from './ProtectedRoute';
 
 import Login from '../pages/login/Login';
 import Dashboard from '../pages/dashboard/Dashboard';
-import Inventories from '../pages/inventories/Inventories';
+// import Inventories from '../pages/inventories/Inventories';
+import InventoriesPage from '../pages/inventories/InventoriesPage';
 import CreateInventory from '../pages/inventories/CreateInventory';
 import UpdateInventory from '../pages/inventories/UpdateInventory';
 import ViewInventory from '../pages/inventories/ViewInventory';
 import InventoryMigration from '../pages/inventories/InventoryMigration';
 import Catalogs from '../pages/inventories/catalogs/Catalogs';
 import Account from '../pages/account/Account';
-import Users from '../pages/users/Users';
+// import Users from '../pages/users/Users';
+import UsersPage from '../pages/users/UsersPage';
 import NotFound from '../pages/notFound/NotFound';
 import Roles from '../pages/roles/Roles';
 import ProjectsPage from '../pages/projects/ProjectsPage';
@@ -55,8 +57,9 @@ const AuthorizedRoute = ({ user }) => {
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/account-settings" element={<Account />} />
-                  <Route path="/users" element={<Users />} />
-                  <Route path="/inventories" element={<Inventories />} />
+                  <Route path="/users" element={<UsersPage />} />
+                  {/* <Route path="/inventories" element={<Inventories />} /> */}
+                  <Route path="/inventories" element={<InventoriesPage />} />
                   <Route
                     path="/inventories/create"
                     element={<CreateInventory />}

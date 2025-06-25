@@ -3,6 +3,7 @@ import api from './api';
 // CRUD de proyectos
 export const fetchProjects = () => api.get('/projects');
 export const getProject = (id) => api.get(`/projects/${id}`);
+// src/services/projects.api.js
 export const searchProjects = async ({
   searchTerm,
   statuses,
@@ -11,6 +12,7 @@ export const searchProjects = async ({
   order,
   page = 1,
   pageSize = 10,
+  signal,
 }) => {
   const response = await api.get('/projects/search', {
     params: {
@@ -22,6 +24,7 @@ export const searchProjects = async ({
       page,
       pageSize,
     },
+    signal,
   });
   return response.data;
 };
