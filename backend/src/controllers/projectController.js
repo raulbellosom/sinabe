@@ -324,8 +324,6 @@ export const updateProject = async (req, res) => {
       endDate,
     } = req.body;
 
-    console.log(req.body);
-
     const project = await db.project.update({
       where: { id },
       data: {
