@@ -1,22 +1,22 @@
+// services/purchaseOrders.api.js
 import api from './api';
 
-// 📦 Ordenes de compra
+// 📦 Órdenes de compra por proyecto
 export const getPurchaseOrdersByProjectId = (projectId) =>
-  api.get(`/projects/${projectId}`);
+  api.get(`/purchase-orders/projects/${projectId}`);
 
+// ➕ Crear orden de compra
 export const createPurchaseOrder = (projectId, data) =>
-  api.post(`/projects/${projectId}`, data);
+  api.post(`/purchase-orders/projects/${projectId}`, data);
 
+// ✏️ Actualizar orden de compra
 export const updatePurchaseOrder = (id, data) =>
   api.put(`/purchase-orders/${id}`, data);
 
+// ❌ Eliminar (lógico) orden de compra
 export const deletePurchaseOrder = (id) => api.delete(`/purchase-orders/${id}`);
 
-// 🧾 Facturas
-export const addInvoiceToOrder = (orderId, formData) =>
-  api.post(`/purchase-orders/${orderId}/invoices`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-
-export const getInvoicesByOrderId = (orderId) =>
-  api.get(`/purchase-orders/${orderId}/invoices`);
+// 🔎 Buscar órdenes de compra (incluye filtros y paginación)
+//    params: { searchTerm, statuses, sortBy, order, page, pageSize }
+export const searchPurchaseOrders = (projectId, params) =>
+  api.get(`/purchase-orders/projects/${projectId}/search`, { params });

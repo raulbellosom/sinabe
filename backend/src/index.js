@@ -18,6 +18,7 @@ import projectDocumentRoutes from "./routes/projectDocumentRoutes.js";
 import projectTeamRoutes from "./routes/projectTeamRoutes.js";
 import inventoryAssignmentRoutes from "./routes/inventoryAssignmentRoute.js";
 import verticalRoutes from "./routes/verticalRoutes.js";
+import invoiceRoutes from "./routes/invoiceRoutes.js";
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/deadlines", deadlineRoutes);
 app.use("/api/project-documents", projectDocumentRoutes);
 app.use("/api/purchase-orders", purchaseOrderRoutes);
+app.use("/api/invoices", invoiceRoutes);
 app.use("/api/project-team", projectTeamRoutes);
 app.use("/api/inventory-assignments", inventoryAssignmentRoutes);
 app.use("/api/verticals", verticalRoutes);

@@ -17,6 +17,7 @@ import {
 import ProjectDeadlines from '../../components/ProjectDetails/ProjectDeadlines';
 import ProjectTeamList from '../../components/ProjectDetails/Team/ProjectTeamList';
 import ProjectInventory from '../../components/ProjectDetails/ProjectInventory';
+import ProjectPurchaseOrders from '../../components/ProjectDetails/ProjectPurchaseOrders';
 
 const ProjectDetailPage = () => {
   const { id } = useParams();
@@ -58,7 +59,7 @@ const ProjectDetailPage = () => {
     {
       title: 'Órdenes de Compra',
       icon: FaClipboardList,
-      content: <p>Próximamente: Listado de órdenes de compra y facturas.</p>,
+      content: <ProjectPurchaseOrders projectId={project.id} />,
     },
     {
       title: 'Equipo',

@@ -34,26 +34,25 @@ model Role {
 }
 
 model User {
-  id                String         @id @default(uuid())
+  id                String          @id @default(uuid())
   firstName         String
   lastName          String
-  email             String         @unique
-  userName          String         @unique
+  email             String          @unique
+  userName          String          @unique
   phone             String?
   password          String
   status            Boolean?
   roleId            Int
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  enabled           Boolean        @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  enabled           Boolean         @default(true)
   inventories       Inventory[]
-  role              Role           @relation(fields: [roleId], references: [id])
-  photo             UserImage[]    @relation("UserImages")
-  assignedDeadlines Deadline[]     @relation("DeadlineUsers")
-  assignedTasks     DeadlineTask[] @relation("TaskUsers")
-  ProjectMember     ProjectMember[] 
+  ProjectMember     ProjectMember[]
+  role              Role            @relation(fields: [roleId], references: [id])
+  photo             UserImage[]     @relation("UserImages")
+  assignedDeadlines Deadline[]      @relation("DeadlineUsers")
+  assignedTasks     DeadlineTask[]  @relation("TaskUsers")
 
-  
   @@index([roleId], map: "User_roleId_fkey")
 }
 
@@ -73,18 +72,19 @@ model Inventory {
   altaDate          DateTime?
   bajaDate          DateTime?
   internalFolio     String?                @unique
-  invoiceId         Int?
+  invoiceId         String?
   files             File[]
   images            Image[]                @relation("InventoryImages")
   createdBy         User                   @relation(fields: [createdById], references: [id])
+  invoice           Invoice?               @relation("InvoiceInventories", fields: [invoiceId], references: [id])
   model             Model                  @relation(fields: [modelId], references: [id])
-  invoice           Invoice? @relation("InvoiceInventories", fields: [invoiceId], references: [id])
   conditions        InventoryCondition[]
   customField       InventoryCustomField[]
   InventoryDeadline InventoryDeadline[]
 
   @@index([createdById], map: "Inventory_createdById_fkey")
   @@index([modelId], map: "Inventory_modelId_fkey")
+  @@index([invoiceId], map: "Inventory_invoiceId_fkey")
 }
 
 model InventoryType {
@@ -102,15 +102,15 @@ model InventoryBrand {
 }
 
 model Model {
-  id                    Int            @id @default(autoincrement())
-  name                  String
-  typeId                Int
-  brandId               Int
-  enabled               Boolean        @default(true)
-  inventories           Inventory[]
-  brand                 InventoryBrand @relation(fields: [brandId], references: [id])
-  type                  InventoryType  @relation(fields: [typeId], references: [id])
-  ModelVertical         ModelVertical[]
+  id            Int             @id @default(autoincrement())
+  name          String
+  typeId        Int
+  brandId       Int
+  enabled       Boolean         @default(true)
+  inventories   Inventory[]
+  brand         InventoryBrand  @relation(fields: [brandId], references: [id])
+  type          InventoryType   @relation(fields: [typeId], references: [id])
+  ModelVertical ModelVertical[]
 
   @@index([brandId], map: "Model_brandId_fkey")
   @@index([typeId], map: "Model_typeId_fkey")
@@ -140,7 +140,7 @@ model Project {
   id             String            @id @default(uuid())
   code           String            @unique
   name           String
-  description    String? @db.Text
+  description    String?           @db.Text
   provider       String
   status         ProjectStatus
   budgetTotal    Float
@@ -160,7 +160,7 @@ model Project {
 model Deadline {
   id                   String              @id @default(uuid())
   name                 String
-  description          String?              @db.Text
+  description          String?             @db.Text
   status               DeadlineStatus
   dueDate              DateTime
   projectId            String
@@ -186,7 +186,7 @@ model DeadlineTask {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   createdById String
-  description String?  @db.Text
+  description String?    @db.Text
   order       Int
   status      TaskStatus @default(PENDIENTE)
   deadline    Deadline   @relation(fields: [deadlineId], references: [id])
@@ -226,18 +226,19 @@ model PurchaseOrder {
 }
 
 model Invoice {
-  id              Int           @id @default(autoincrement())
+  id              String    @id @default(uuid())
   code            String
   concept         String
   amount          Float
   status          String
   date            DateTime
-  fileUrl         String?
+  fileUrl         String?       @db.Text
   purchaseOrderId String
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   enabled         Boolean       @default(true)
   createdById     String
+  xmlUrl          String?       @db.Text
   inventories     Inventory[]   @relation("InvoiceInventories")
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
 
@@ -245,13 +246,13 @@ model Invoice {
 }
 
 model ProjectMember {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   role      String
   name      String
   projectId String
   userId    String
-  project   Project  @relation(fields: [projectId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
 
   @@index([projectId])
   @@index([userId])
@@ -261,7 +262,7 @@ model ProjectDocument {
   id          String   @id @default(uuid())
   name        String
   fileUrl     String
-  description String?              @db.Text
+  description String?  @db.Text
   metadata    Json?
   enabled     Boolean  @default(true)
   uploadDate  DateTime
@@ -274,28 +275,27 @@ model ProjectDocument {
   @@index([projectId], map: "ProjectDocument_projectId_fkey")
 }
 
-model Vertical  {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  enabled  Boolean   @default(true)
-  description String? @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Vertical {
+  id            Int             @id @default(autoincrement())
+  name          String          @unique
+  enabled       Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  description   String?         @db.Text
+  updatedAt     DateTime        @updatedAt
   ModelVertical ModelVertical[]
 }
 
 model ModelVertical {
-  id              Int             @id @default(autoincrement())
-  modelId         Int
-  verticalId      Int
-  model           Model           @relation(fields: [modelId], references: [id])
-  vertical        Vertical        @relation(fields: [verticalId], references: [id])
+  id         Int      @id @default(autoincrement())
+  modelId    Int
+  verticalId Int
+  model      Model    @relation(fields: [modelId], references: [id])
+  vertical   Vertical @relation(fields: [verticalId], references: [id])
 
   @@unique([modelId, verticalId])
   @@index([modelId])
   @@index([verticalId])
 }
-
 
 model File {
   id          String    @id @default(uuid())

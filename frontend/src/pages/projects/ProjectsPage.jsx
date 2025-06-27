@@ -253,16 +253,18 @@ const ProjectsPage = () => {
         <h1 className="text-lg md:text-xl font-bold text-sinabe-primary">
           Proyectos
         </h1>
-        <ActionButtons
-          extraActions={[
-            {
-              label: 'Nuevo Proyecto',
-              action: () => setIsModalOpen(true),
-              color: 'indigo',
-              icon: FaPlus,
-            },
-          ]}
-        />
+        <div>
+          <ActionButtons
+            extraActions={[
+              {
+                label: 'Nuevo Proyecto',
+                action: () => setIsModalOpen(true),
+                color: 'indigo',
+                icon: FaPlus,
+              },
+            ]}
+          />
+        </div>
       </div>
 
       <ProjectSummaryCards projects={projects} />

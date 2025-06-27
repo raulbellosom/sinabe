@@ -1,17 +1,19 @@
+// controllers/purchaseOrderController.js
 import { db } from "../lib/db.js";
 
-// 🔄 Obtener órdenes de compra de un proyecto
+// 🔄 Obtener órdenes de compra de un proyecto (con facturas e inventarios relacionados)
 export const getPurchaseOrdersByProjectId = async (req, res) => {
   const { projectId } = req.params;
-
   try {
     const orders = await db.purchaseOrder.findMany({
       where: {
-        projectId: parseInt(projectId),
+        projectId,
         enabled: true,
       },
       include: {
-        invoices: true,
+        invoices: {
+          include: { inventories: true },
+        },
       },
       orderBy: { date: "desc" },
     });
@@ -31,7 +33,7 @@ export const createPurchaseOrder = async (req, res) => {
   try {
     const order = await db.purchaseOrder.create({
       data: {
-        projectId: parseInt(projectId),
+        projectId,
         code,
         supplier,
         description,
@@ -49,14 +51,14 @@ export const createPurchaseOrder = async (req, res) => {
   }
 };
 
-// ✏️ Actualizar orden
+// ✏️ Actualizar orden de compra
 export const updatePurchaseOrder = async (req, res) => {
   const { id } = req.params;
   const { code, supplier, description, amount, status, date } = req.body;
 
   try {
     const order = await db.purchaseOrder.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: {
         code,
         supplier,
@@ -74,13 +76,13 @@ export const updatePurchaseOrder = async (req, res) => {
   }
 };
 
-// ❌ Eliminación lógica
+// ❌ Eliminación lógica de orden de compra
 export const deletePurchaseOrder = async (req, res) => {
   const { id } = req.params;
 
   try {
     await db.purchaseOrder.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: { enabled: false },
     });
 
@@ -91,49 +93,91 @@ export const deletePurchaseOrder = async (req, res) => {
   }
 };
 
-// 🧾 Agregar factura (PDF y XML) a una OC
-export const addInvoiceToOrder = async (req, res) => {
-  const { orderId } = req.params;
-  const { code, concept, amount, status, date } = req.body;
-  const { pdfUrl, xmlUrl } = req.invoiceData;
+// 🔎 Buscador de órdenes de compra (incluye facturas e inventarios relacionados)
+export const searchPurchaseOrders = async (req, res) => {
+  const { projectId } = req.params;
+  const {
+    searchTerm = "",
+    statuses = [],
+    sortBy = "date",
+    order = "desc",
+    page = 1,
+    pageSize = 10,
+  } = req.query;
+
+  const parsedPage = parseInt(page, 10) || 1;
+  const parsedPageSize = parseInt(pageSize, 10) || 10;
+  const skip = (parsedPage - 1) * parsedPageSize;
+  const take = parsedPageSize;
+
+  const parsedStatuses = Array.isArray(statuses)
+    ? statuses
+    : statuses.split?.(",") || [];
+
+  const where = {
+    projectId,
+    enabled: true,
+    ...(parsedStatuses.length > 0 && { status: { in: parsedStatuses } }),
+    OR: [
+      { code: { contains: searchTerm, mode: "insensitive" } },
+      { supplier: { contains: searchTerm, mode: "insensitive" } },
+      { description: { contains: searchTerm, mode: "insensitive" } },
+      {
+        invoices: {
+          some: {
+            OR: [
+              { code: { contains: searchTerm, mode: "insensitive" } },
+              { concept: { contains: searchTerm, mode: "insensitive" } },
+              {
+                inventories: {
+                  some: {
+                    OR: [
+                      {
+                        serialNumber: {
+                          contains: searchTerm,
+                          mode: "insensitive",
+                        },
+                      },
+                      {
+                        internalFolio: {
+                          contains: searchTerm,
+                          mode: "insensitive",
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    ],
+  };
 
   try {
-    const invoice = await db.invoice.create({
-      data: {
-        code,
-        concept,
-        amount: parseFloat(amount),
-        status,
-        date: new Date(date),
-        pdfUrl,
-        xmlUrl,
-        purchaseOrderId: parseInt(orderId),
-        enabled: true,
+    const [data, totalRecords] = await Promise.all([
+      db.purchaseOrder.findMany({
+        where,
+        include: { invoices: { include: { inventories: true } } },
+        skip,
+        take,
+        orderBy: { [sortBy]: order },
+      }),
+      db.purchaseOrder.count({ where }),
+    ]);
+
+    res.json({
+      data,
+      pagination: {
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / take),
+        currentPage: parsedPage,
+        pageSize: take,
       },
     });
-
-    res.status(201).json(invoice);
   } catch (error) {
-    console.error("Error creating invoice:", error.message);
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// 📄 Obtener facturas de una orden
-export const getInvoicesByOrderId = async (req, res) => {
-  const { orderId } = req.params;
-
-  try {
-    const invoices = await db.invoice.findMany({
-      where: {
-        purchaseOrderId: parseInt(orderId),
-        enabled: true,
-      },
-    });
-
-    res.json(invoices);
-  } catch (error) {
-    console.error("Error fetching invoices:", error.message);
+    console.error("Error searching purchase orders:", error.message);
     res.status(500).json({ error: error.message });
   }
 };

@@ -1,0 +1,176 @@
+// controllers/invoiceController.js
+import { db } from "../lib/db.js";
+
+// ➕ Crear nueva factura (con PDF y XML opcionales)
+export const createInvoice = async (req, res) => {
+  const { orderId } = req.params;
+  const { code, concept, amount, status, date } = req.body;
+  const { pdfUrl: fileUrl = null, xmlUrl = null } = req.invoiceData || {};
+
+  try {
+    const invoice = await db.invoice.create({
+      data: {
+        code,
+        concept,
+        amount: parseFloat(amount),
+        status,
+        date: new Date(date),
+        fileUrl,
+        xmlUrl,
+        purchaseOrderId: orderId,
+        createdById: req.user.id,
+        enabled: true,
+      },
+      include: {
+        inventories: true,
+        purchaseOrder: true,
+      },
+    });
+
+    res.status(201).json(invoice);
+  } catch (error) {
+    console.error("Error creating invoice:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 📄 Obtener facturas de una orden de compra
+export const getInvoicesByOrderId = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const invoices = await db.invoice.findMany({
+      where: {
+        purchaseOrderId: orderId,
+        enabled: true,
+      },
+      include: { inventories: true, purchaseOrder: true },
+    });
+    res.json(invoices);
+  } catch (error) {
+    console.error("Error fetching invoices by order ID:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔍 Obtener detalle de factura (incluye inventarios y orden)
+export const getInvoiceById = async (req, res) => {
+  const { invoiceId } = req.params;
+
+  try {
+    const invoice = await db.invoice.findUnique({
+      where: { id: invoiceId },
+      include: {
+        inventories: true,
+        purchaseOrder: true,
+      },
+    });
+
+    if (!invoice || !invoice.enabled) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+
+    res.json(invoice);
+  } catch (error) {
+    console.error("Error fetching invoice:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ✏️ Actualizar factura (campos y archivos)
+export const updateInvoice = async (req, res) => {
+  const { invoiceId } = req.params;
+  const { code, concept, amount, status, date } = req.body;
+  const { pdfUrl: fileUrl, xmlUrl } = req.invoiceData || {};
+
+  try {
+    const invoice = await db.invoice.update({
+      where: { id: invoiceId },
+      data: {
+        code,
+        concept,
+        amount: parseFloat(amount),
+        status,
+        date: new Date(date),
+        ...(fileUrl && { fileUrl }),
+        ...(xmlUrl && { xmlUrl }),
+      },
+      include: {
+        inventories: true,
+        purchaseOrder: true,
+      },
+    });
+
+    res.json(invoice);
+  } catch (error) {
+    console.error("Error updating invoice:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🗑️ Eliminación lógica de factura
+export const deleteInvoice = async (req, res) => {
+  const { invoiceId } = req.params;
+
+  try {
+    await db.invoice.update({
+      where: { id: invoiceId },
+      data: { enabled: false },
+    });
+    res.status(204).end();
+  } catch (error) {
+    console.error("Error deleting invoice:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 📄 Listar inventarios asociados a una factura
+export const getInventoriesByInvoice = async (req, res) => {
+  const { invoiceId } = req.params;
+
+  try {
+    const inventories = await db.inventory.findMany({
+      where: {
+        invoiceId,
+        enabled: true,
+      },
+    });
+    res.json(inventories);
+  } catch (error) {
+    console.error("Error fetching inventories for invoice:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ⚙️ Asignar inventarios a factura (bulk)
+export const assignInventoriesToInvoice = async (req, res) => {
+  const { invoiceId } = req.params;
+  const { inventoryIds } = req.body;
+
+  try {
+    const updated = await db.inventory.updateMany({
+      where: { id: { in: inventoryIds } },
+      data: { invoiceId },
+    });
+    res.json(updated);
+  } catch (error) {
+    console.error("Error assigning inventories:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🛠️ Desasignar un inventario de la factura
+export const removeInventoryFromInvoice = async (req, res) => {
+  const { inventoryId } = req.params;
+
+  try {
+    await db.inventory.update({
+      where: { id: inventoryId },
+      data: { invoiceId: null },
+    });
+    res.status(204).end();
+  } catch (error) {
+    console.error("Error removing inventory from invoice:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};

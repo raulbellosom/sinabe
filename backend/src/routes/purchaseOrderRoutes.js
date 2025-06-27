@@ -5,41 +5,28 @@ import {
   createPurchaseOrder,
   updatePurchaseOrder,
   deletePurchaseOrder,
-  addInvoiceToOrder,
-  getInvoicesByOrderId,
+  searchPurchaseOrders,
 } from "../controllers/purchaseOrderController.js";
-
-import {
-  uploadInvoiceFiles,
-  processInvoiceFiles,
-} from "../controllers/uploadInvoicesController.js";
+import invoiceRoutes from "./invoiceRoutes.js";
 
 const router = express.Router();
+
+// Todas las rutas de OC requieren auth
+router.use(protect);
 
 // 📦 Órdenes de compra por proyecto
 router
   .route("/projects/:projectId")
-  .get(protect, getPurchaseOrdersByProjectId)
-  .post(protect, createPurchaseOrder);
+  .get(getPurchaseOrdersByProjectId)
+  .post(createPurchaseOrder);
 
-// ✏️ Actualizar y eliminar OC
-router
-  .route("/:id")
-  .put(protect, updatePurchaseOrder)
-  .delete(protect, deletePurchaseOrder);
+// ✏️ Actualizar / ❌ Borrar OC
+router.route("/:id").put(updatePurchaseOrder).delete(deletePurchaseOrder);
 
-// 🧾 Facturas (crear y obtener)
-router
-  .route("/:orderId/invoices")
-  .post(
-    protect,
-    uploadInvoiceFiles.fields([
-      { name: "factura", maxCount: 1 },
-      { name: "xml", maxCount: 1 },
-    ]),
-    processInvoiceFiles,
-    addInvoiceToOrder
-  )
-  .get(protect, getInvoicesByOrderId);
+// 🔎 Buscador avanzado
+router.get("/projects/:projectId/search", searchPurchaseOrders);
+
+// 🎫 Sub‐rutas de facturas anidadas
+router.use("/:orderId/invoices", invoiceRoutes);
 
 export default router;
