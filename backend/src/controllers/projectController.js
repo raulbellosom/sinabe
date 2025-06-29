@@ -25,9 +25,9 @@ export const searchProjects = async (req, res) => {
       : [];
 
     const parsedVerticalIds = Array.isArray(verticalIds)
-      ? verticalIds.filter(Boolean)
+      ? verticalIds.filter(Boolean).map(id => parseInt(id, 10)).filter(id => !isNaN(id))
       : typeof verticalIds === "string"
-      ? verticalIds.split(",").filter(Boolean)
+      ? verticalIds.split(",").filter(Boolean).map(id => parseInt(id, 10)).filter(id => !isNaN(id))
       : [];
 
     const where = {
@@ -374,7 +374,19 @@ export const getProjectSummary = async (req, res) => {
             inventoryAssignments: {
               include: {
                 inventory: {
-                  include: { model: { include: { brand: true, type: true } } },
+                  include: { 
+                    model: { 
+                      include: { 
+                        brand: true, 
+                        type: true,
+                        ModelVertical: {
+                          include: {
+                            vertical: true
+                          }
+                        }
+                      } 
+                    } 
+                  },
                 },
               },
             },
@@ -401,14 +413,18 @@ export const getProjectSummary = async (req, res) => {
       return res.status(404).json({ message: "Proyecto no encontrado" });
     }
 
+    // Recopilar todas las verticales de los inventarios asignados
     const verticalMap = new Map();
 
     project.deadlines.forEach((deadline) => {
       deadline.inventoryAssignments.forEach((assignment) => {
-        const vertical = assignment.inventory?.model?.vertical;
-        if (vertical && vertical.enabled) {
-          verticalMap.set(vertical.id, vertical);
-        }
+        const modelVerticals = assignment.inventory?.model?.ModelVertical || [];
+        modelVerticals.forEach((modelVertical) => {
+          const vertical = modelVertical.vertical;
+          if (vertical && vertical.enabled) {
+            verticalMap.set(vertical.id, vertical);
+          }
+        });
       });
     });
 

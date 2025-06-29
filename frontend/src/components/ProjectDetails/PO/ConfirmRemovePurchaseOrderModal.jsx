@@ -40,13 +40,13 @@ const ConfirmRemovePurchaseOrderModal = ({
         <DialogPanel className="bg-white w-full max-w-lg rounded-xl p-6 shadow-2xl">
           <div className="flex items-center gap-2 mb-4 text-red-600">
             <FaTrashAlt className="w-6 h-6" />
-            <h2 className="text-xl font-semibold">Confirmar eliminación</h2>
+            <h2 className="text-xl font-semibold">Confirmar remoción</h2>
           </div>
 
           <p className="text-sm text-gray-700 mb-4">
-            Estás por eliminar la orden de compra{' '}
-            <strong className="font-medium">{order.code}</strong>. Esto
-            eliminará también las siguientes facturas:
+            Estás por remover la orden de compra{' '}
+            <strong className="font-medium">{order.code}</strong> del proyecto
+            actual. Esto removerá también las siguientes facturas:
           </p>
 
           <ul className="mb-4 max-h-40 overflow-y-auto border border-gray-200 rounded-md p-3">
@@ -96,7 +96,7 @@ const ConfirmRemovePurchaseOrderModal = ({
                   : 'bg-red-300 cursor-not-allowed'
               }`}
             >
-              Eliminar OC
+              Remover OC del proyecto
             </button>
           </div>
         </DialogPanel>

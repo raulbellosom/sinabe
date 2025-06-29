@@ -29,6 +29,8 @@ import CreateProjectPage from '../pages/projects/CreateProjectPage';
 import EditProjectPage from '../pages/projects/EditProjectPage';
 import ProjectDetailPage from '../pages/projects/ProjectDetailPage';
 import VerticalPage from '../pages/vertical/VerticalPage';
+import PurchaseOrdersPage from '../pages/purchaseOrders/PurchaseOrdersPage';
+import InvoicesPage from '../pages/purchaseOrders/InvoicesPage';
 
 const AppRouter = () => {
   const { user } = useContext(AuthContext);
@@ -89,6 +91,14 @@ const AuthorizedRoute = ({ user }) => {
                   <Route
                     path="/projects/view/:id"
                     element={<ProjectDetailPage />}
+                  />
+                  <Route
+                    path="/purchase-orders"
+                    element={<PurchaseOrdersPage />}
+                  />
+                  <Route
+                    path="/purchase-orders/:orderId/invoices"
+                    element={<InvoicesPage />}
                   />
                   <Route path="/catalogs" element={<Catalogs />} />
                   <Route path="/roles" element={<Roles />} />

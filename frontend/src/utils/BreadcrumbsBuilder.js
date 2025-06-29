@@ -1,5 +1,6 @@
 import {
   FaClipboardList,
+  FaFileInvoice,
   FaSitemap,
   FaUserCircle,
   FaUserCog,
@@ -17,12 +18,28 @@ const BreadcrumbsBuilder = (path) => {
     return [];
   }
 
+  // Extraemos solo la parte base de la ruta para los breadcrumbs
+  // Ejemplo: '/purchase-orders/3d9439b5-9511-48ed-89c8-854cdf165897/invoices' => '/purchase-orders/invoices'
+  const getBasePath = (fullPath) => {
+    // UUID regex más preciso para capturar UUIDs completos
+    const uuidRegex =
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    const parts = fullPath.split('/').filter(Boolean);
+    let baseParts = [];
+
+    for (let i = 0; i < parts.length; i++) {
+      // Si es un UUID, lo saltamos
+      if (uuidRegex.test(parts[i])) {
+        continue;
+      }
+      baseParts.push(parts[i]);
+    }
+
+    return '/' + baseParts.join('/');
+  };
+
+  // Lista de rutas y sus datos para los breadcrumbs
   const breadcrumbs = [
-    // {
-    //   label: 'Home',
-    //   href: '/',
-    //   icon: HiHome,
-    // },
     {
       label: 'Inventarios',
       href: '/inventories',
@@ -70,6 +87,26 @@ const BreadcrumbsBuilder = (path) => {
     {
       label: 'Editar Proyecto',
       href: '/projects/edit',
+      icon: null,
+    },
+    {
+      label: 'Órdenes de Compra',
+      href: '/purchase-orders',
+      icon: FaClipboardList,
+    },
+    {
+      label: 'Facturas',
+      href: '/purchase-orders/invoices',
+      icon: FaFileInvoice,
+    },
+    {
+      label: 'Crear Orden de Compra',
+      href: '/purchase-orders/create',
+      icon: PiStackPlusFill,
+    },
+    {
+      label: 'Editar Orden de Compra',
+      href: '/purchase-orders/edit',
       icon: null,
     },
     {
@@ -121,18 +158,38 @@ const BreadcrumbsBuilder = (path) => {
 
   const pathArray = path.split('/').filter((item) => item);
 
-  const newPathArray = pathArray.map((item, index) => {
-    return pathArray.slice(0, index + 1).join('/');
+  // Crear un array de rutas progresivas, pero excluyendo UUIDs para matching
+  const uuidRegex =
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+  const newPathArray = [];
+  let currentPath = '';
+  let actualPath = '';
+
+  pathArray.forEach((segment) => {
+    actualPath += `/${segment}`;
+
+    if (!uuidRegex.test(segment)) {
+      currentPath += `/${segment}`;
+      newPathArray.push({
+        matchPath: currentPath,
+        actualPath: actualPath,
+      });
+    }
   });
 
   let breadcrumb = [];
 
-  newPathArray.forEach((item) => {
+  newPathArray.forEach((pathInfo) => {
     const found = breadcrumbs.find(
-      (breadcrumb) => breadcrumb.href === `/${item}`,
+      (breadcrumb) => breadcrumb.href === pathInfo.matchPath,
     );
     if (found) {
-      breadcrumb.push(found);
+      // Usar la ruta actual (con UUID) en lugar de la ruta de matching
+      breadcrumb.push({
+        ...found,
+        href: pathInfo.actualPath,
+      });
     }
   });
 

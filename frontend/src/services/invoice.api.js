@@ -40,3 +40,7 @@ export const removeInventoryFromInvoice = (orderId, invoiceId, inventoryId) =>
   api.delete(
     `/purchase-orders/${orderId}/invoices/${invoiceId}/inventories/${inventoryId}`,
   );
+
+// 🔍 Buscar facturas por orden de compra (incluye filtros y paginación)
+export const searchInvoicesByOrderId = (orderId, params) =>
+  api.get(`/purchase-orders/${orderId}/invoices/search`, { params });

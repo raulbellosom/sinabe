@@ -14,7 +14,7 @@ export const useProjectQueryParams = () => {
       sortBy: params.get('sortBy') || 'updatedAt',
       order: params.get('order') || 'desc',
       statuses: params.getAll('statuses'),
-      verticalIds: params.getAll('verticalIds'),
+      verticalIds: params.getAll('verticalIds'), // Mantener como strings para que coincidan con FilterDropdown
     };
   }, [location.search]);
 

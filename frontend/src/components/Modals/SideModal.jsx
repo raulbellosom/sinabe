@@ -28,7 +28,10 @@ const SideModal = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex justify-end">
+        <div
+          style={{ margin: 0 }}
+          className="fixed inset-0 bg-black/50 z-50 flex justify-end"
+        >
           <motion.div
             key="side-modal"
             initial="hidden"

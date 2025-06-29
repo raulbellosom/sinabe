@@ -9,6 +9,7 @@ import {
   getInventoriesByInvoice,
   assignInventoriesToInvoice,
   removeInventoryFromInvoice,
+  searchInvoicesByOrderId,
 } from '../services/invoice.api';
 
 // 🧾 Obtener todas las facturas de una orden de compra
@@ -33,10 +34,15 @@ export const useCreateInvoice = (orderId, projectId) => {
   return useMutation({
     mutationFn: (formData) => createInvoice(orderId, formData),
     onSuccess: () => {
-      // invalidamos la lista de invoices de esta orden
       qc.invalidateQueries({ queryKey: ['invoices', orderId] });
-      // **y** la lista de órdenes de compra de este proyecto
       qc.invalidateQueries({ queryKey: ['purchase-orders', projectId] });
+
+      // 👇 Agregado
+      qc.invalidateQueries({ queryKey: ['projects'] });
+      qc.invalidateQueries({ queryKey: ['project-search'] });
+      qc.invalidateQueries({ queryKey: ['search-projects'] });
+      qc.invalidateQueries({ queryKey: ['project', projectId] });
+      qc.invalidateQueries({ queryKey: ['project-summary', projectId] });
     },
   });
 };
@@ -53,6 +59,11 @@ export const useUpdateInvoice = (orderId, projectId) => {
         queryKey: ['invoice', orderId, vars.invoiceId],
       });
       qc.invalidateQueries({ queryKey: ['purchase-orders', projectId] });
+      qc.invalidateQueries({ queryKey: ['projects'] });
+      qc.invalidateQueries({ queryKey: ['project-search'] });
+      qc.invalidateQueries({ queryKey: ['search-projects'] });
+      qc.invalidateQueries({ queryKey: ['project', projectId] });
+      qc.invalidateQueries({ queryKey: ['project-summary', projectId] });
     },
   });
 };
@@ -65,6 +76,11 @@ export const useDeleteInvoice = (orderId, projectId) => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['invoices', orderId] });
       qc.invalidateQueries({ queryKey: ['purchase-orders', projectId] });
+      qc.invalidateQueries({ queryKey: ['projects'] });
+      qc.invalidateQueries({ queryKey: ['project-search'] });
+      qc.invalidateQueries({ queryKey: ['search-projects'] });
+      qc.invalidateQueries({ queryKey: ['project', projectId] });
+      qc.invalidateQueries({ queryKey: ['project-summary', projectId] });
     },
   });
 };
@@ -111,5 +127,14 @@ export const useRemoveInventoryFromInvoice = (orderId, invoiceId) => {
         queryKey: ['invoice', orderId, invoiceId],
       });
     },
+  });
+};
+
+export const useSearchInvoices = (orderId, params) => {
+  return useQuery({
+    queryKey: ['invoices', orderId, 'search', params],
+    queryFn: () =>
+      searchInvoicesByOrderId(orderId, params).then((res) => res.data),
+    enabled: !!orderId,
   });
 };

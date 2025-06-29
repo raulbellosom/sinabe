@@ -1,13 +1,15 @@
+// File: frontend/src/components/purchaseOrders/invoices/InvoiceInventoryManager.jsx
 import React, { useState } from 'react';
 import { FaSearch, FaEye } from 'react-icons/fa';
 import ReusableTable from '../../Table/ReusableTable';
 import {
   useInvoiceInventories,
   useAssignInventoriesToInvoice,
+  useRemoveInventoryFromInvoice,
 } from '../../../hooks/useInvoices';
-import { searchInventories } from '../../../services/api.js'; // Asegúrate de tener esta función
 import Notifies from '../../Notifies/Notifies';
 import InventorySearchInput from '../../InventoryComponents/InventorySearchInput';
+import { MdRemoveCircle } from 'react-icons/md';
 
 const InvoiceInventoryManager = ({ orderId, invoiceId }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,6 +20,7 @@ const InvoiceInventoryManager = ({ orderId, invoiceId }) => {
     invoiceId,
   );
   const assignMutation = useAssignInventoriesToInvoice(orderId, invoiceId);
+  const removeMutation = useRemoveInventoryFromInvoice(orderId, invoiceId);
 
   const columns = [
     {
@@ -80,6 +83,19 @@ const InvoiceInventoryManager = ({ orderId, invoiceId }) => {
             label: 'Ver',
             action: () =>
               (window.location.href = `/inventories/view/${inv.id}`),
+          },
+          {
+            key: 'remove',
+            icon: MdRemoveCircle,
+            label: 'Remover de factura',
+            action: async () => {
+              try {
+                await removeMutation.mutateAsync(inv.id);
+                Notifies('success', 'Inventario removido correctamente');
+              } catch {
+                Notifies('error', 'No se pudo eliminar el inventario');
+              }
+            },
           },
         ]}
         rowKey="id"

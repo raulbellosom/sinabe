@@ -14,6 +14,7 @@ import {
   getInventoriesByInvoice,
   assignInventoriesToInvoice,
   removeInventoryFromInvoice,
+  searchInvoicesByOrderId,
 } from "../controllers/invoiceController.js";
 
 const router = Router({ mergeParams: true });
@@ -35,6 +36,8 @@ router
     createInvoice
   )
   .get(getInvoicesByOrderId);
+
+router.get("/search", searchInvoicesByOrderId);
 
 // 📄 Operaciones sobre factura específica
 // GET    /purchase-orders/:orderId/invoices/:invoiceId

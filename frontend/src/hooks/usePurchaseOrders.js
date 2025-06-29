@@ -6,6 +6,11 @@ import {
   updatePurchaseOrder,
   deletePurchaseOrder,
   searchPurchaseOrders,
+  assignPurchaseOrderToProject,
+  removePurchaseOrderFromProject,
+  createPurchaseOrderWithoutProject,
+  getUnassignedPurchaseOrders,
+  searchUnassignedPurchaseOrders,
 } from '../services/purchaseOrders.api';
 
 // 📦 Obtener órdenes de compra de un proyecto
@@ -23,7 +28,7 @@ export const useSearchPurchaseOrders = (projectId, params) =>
     queryKey: ['purchase-orders', projectId, 'search', params],
     queryFn: () =>
       searchPurchaseOrders(projectId, params).then((res) => res.data),
-    enabled: !!projectId,
+    enabled: true, // ahora siempre se ejecuta, aunque projectId sea null
   });
 
 // ➕ Crear orden de compra
@@ -48,6 +53,13 @@ export const useUpdatePurchaseOrder = (projectId) => {
       queryClient.invalidateQueries({
         queryKey: ['purchase-orders', projectId],
       });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project-search'] });
+      queryClient.invalidateQueries({ queryKey: ['search-projects'] });
+      queryClient.invalidateQueries({
+        queryKey: ['project-summary', projectId],
+      });
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
     },
   });
 };
@@ -61,6 +73,92 @@ export const useDeletePurchaseOrder = (projectId) => {
       queryClient.invalidateQueries({
         queryKey: ['purchase-orders', projectId],
       });
+    },
+  });
+};
+
+// 🔗 Asignar orden de compra a un proyecto
+export const useAssignPurchaseOrderToProject = (projectId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (orderId) => assignPurchaseOrderToProject(projectId, orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['purchase-orders', projectId],
+      });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project-search'] });
+      queryClient.invalidateQueries({ queryKey: ['search-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+      queryClient.invalidateQueries({
+        queryKey: ['project-summary', projectId],
+      });
+    },
+  });
+};
+
+// 🔗 Remover orden de compra de un proyecto
+export const useRemovePurchaseOrderFromProject = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ projectId, purchaseOrderId }) =>
+      removePurchaseOrderFromProject(projectId, purchaseOrderId),
+    onSuccess: (data, variables) => {
+      const { projectId } = variables;
+
+      // Invalidar el listado general (sin proyecto)
+      queryClient.invalidateQueries({
+        queryKey: ['purchase-orders', null, 'search'],
+        exact: false,
+      });
+
+      // Invalidar por proyecto específico
+      if (projectId) {
+        queryClient.invalidateQueries({
+          queryKey: ['purchase-orders', projectId],
+        });
+        queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+        queryClient.invalidateQueries({
+          queryKey: ['project-summary', projectId],
+        });
+      }
+
+      // Opcional: invalidar lista de proyectos en general
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project-search'] });
+      queryClient.invalidateQueries({ queryKey: ['search-projects'] });
+    },
+  });
+};
+
+// ➕ Crear orden de compra sin proyecto asignado
+export const useCreatePurchaseOrderWithoutProject = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => createPurchaseOrderWithoutProject(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+    },
+  });
+};
+
+// 🔍 Obtener órdenes de compra sin asignar a ningún proyecto
+export const useGetUnassignedPurchaseOrders = () => {
+  return useQuery({
+    queryKey: ['purchase-orders', 'without-project'],
+    queryFn: async () => {
+      const { data } = await getUnassignedPurchaseOrders(); // <-- aquí
+      return data; // ⬅️ porque api.get devuelve { data: [...] }
+    },
+  });
+};
+
+// hooks/usePurchaseOrders.js
+export const useSearchUnassignedPurchaseOrders = () => {
+  return useMutation({
+    mutationFn: async (query) => {
+      const { data } = await searchUnassignedPurchaseOrders(query);
+      return data;
     },
   });
 };

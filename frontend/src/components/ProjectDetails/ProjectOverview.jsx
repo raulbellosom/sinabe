@@ -39,12 +39,12 @@ const ProjectOverview = ({ project }) => {
               project.verticals?.map((v, i) => (
                 <span
                   key={i}
-                  className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-2 py-0.5 rounded-full text-xs"
+                  className="bg-sinabe-primary/10 text-sinabe-primary text-xs font-medium px-2 py-0.5 rounded-md"
                 >
                   {v.name}
                 </span>
               ))) || (
-              <span className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-2 py-0.5 rounded-full text-xs">
+              <span className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-2 py-0.5 rounded-full text-xs">
                 Sin verticales
               </span>
             )}

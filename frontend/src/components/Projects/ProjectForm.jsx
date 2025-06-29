@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { useNavigate } from 'react-router-dom';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import { FaArrowLeft, FaPlus, FaSave } from 'react-icons/fa';
 
@@ -11,9 +10,8 @@ const ProjectForm = ({
   isEdit = false,
   setFormValues,
   isChanged = false,
+  onClose,
 }) => {
-  const navigate = useNavigate();
-
   const validationSchema = Yup.object({
     name: Yup.string().required('Nombre requerido'),
     provider: Yup.string().required('Proveedor requerido'),
@@ -22,23 +20,6 @@ const ProjectForm = ({
     endDate: Yup.date().required('Fecha fin requerida'),
     description: Yup.string().optional(),
   });
-
-  const normalizeText = (text) =>
-    text
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
-
-  const handleDiscardChanges = () => {
-    // check if there are unsaved changes and if so, confirm discard
-    if (isChanged) {
-      if (window.confirm('¿Deseas descartar los cambios?')) {
-        navigate('/projects');
-      }
-    } else {
-      navigate('/projects');
-    }
-  };
 
   return (
     <Formik
@@ -182,10 +163,11 @@ const ProjectForm = ({
                 extraActions={[
                   {
                     label: isEdit ? 'Cancelar' : 'Volver',
-                    action: handleDiscardChanges,
+                    action: onClose,
                     icon: FaArrowLeft,
                     color: 'stone',
                     filled: true,
+                    disabled: isSubmitting,
                   },
                   {
                     label: isEdit ? 'Actualizar' : 'Guardar',
@@ -194,6 +176,7 @@ const ProjectForm = ({
                     icon: isEdit ? FaSave : FaPlus,
                     disabled: (isEdit ? !isChanged : false) || isSubmitting,
                     action: submitForm,
+                    type: 'submit',
                   },
                 ]}
               />

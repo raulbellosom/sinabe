@@ -125,7 +125,7 @@ const ProjectsPage = () => {
 
           return verticalNames.length > 0 ? (
             <div className="flex flex-wrap gap-1">
-              {verticalNames.map((name, idx) => (
+              {verticalNames?.slice(0, 3).map((name, idx) => (
                 <span
                   key={idx}
                   className="bg-sinabe-primary/10 text-sinabe-primary text-xs font-medium px-2 py-0.5 rounded-md"
@@ -158,10 +158,14 @@ const ProjectsPage = () => {
         render: (_, item) => {
           if (!item || !Array.isArray(item.purchaseOrders)) return null;
 
-          const used = item.purchaseOrders
-            .flatMap((oc) => oc.invoices || [])
-            .reduce((acc, f) => acc + (f.amount || 0), 0);
+          const validOrders = item.purchaseOrders.filter((oc) =>
+            ['EN_EJECUCION', 'FINALIZADO'].includes(oc.status),
+          );
 
+          const used = validOrders.reduce(
+            (acc, oc) => acc + (oc.amount || 0),
+            0,
+          );
           const total = item.budgetTotal || 0;
           const percentage = total > 0 ? (used / total) * 100 : 0;
 
@@ -179,10 +183,10 @@ const ProjectsPage = () => {
             ['EN_EJECUCION', 'FINALIZADO'].includes(oc.status),
           );
 
-          const used = validOrders
-            .flatMap((oc) => oc.invoices || [])
-            .reduce((acc, f) => acc + (f.amount || 0), 0);
-
+          const used = validOrders.reduce(
+            (acc, oc) => acc + (oc.amount || 0),
+            0,
+          );
           const overBudget = used > (item.budgetTotal || 0);
 
           return (
@@ -318,7 +322,7 @@ const ProjectsPage = () => {
             setSelected={(newVerticals) =>
               updateParams({ ...query, verticalIds: newVerticals, page: 1 })
             }
-            options={verticals}
+            options={verticals.map((v) => ({ ...v, id: String(v.id) }))} // Convertir IDs a strings
             keyField="id"
             labelField="name"
           />

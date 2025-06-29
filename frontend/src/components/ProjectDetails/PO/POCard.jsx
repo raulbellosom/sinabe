@@ -12,14 +12,14 @@ import { Badge, Dropdown } from 'flowbite-react';
 import ActionButtons from '../../ActionButtons/ActionButtons';
 import InvoiceModal from './InvoiceModal';
 import ConfirmRemovePurchaseOrderModal from './ConfirmRemovePurchaseOrderModal';
-import { useDeletePurchaseOrder } from '../../../hooks/usePurchaseOrders';
+import { useRemovePurchaseOrderFromProject } from '../../../hooks/usePurchaseOrders';
 import ReusableTable from '../../Table/ReusableTable';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { parseToCurrency, parseToLocalDate } from '../../../utils/formatValues';
 import { useDeleteInvoice } from '../../../hooks/useInvoices';
 import { API_URL } from '../../../services/api';
 import { useInvoices } from '../../../hooks/useInvoices';
-import { MdInventory } from 'react-icons/md';
+import { MdInventory, MdRemoveCircle } from 'react-icons/md';
 import SideModal from '../../Modals/SideModal';
 import InvoiceInventoryManager from '../../purchaseOrders/invoices/InvoiceInventoryManager';
 
@@ -45,7 +45,7 @@ const POCard = ({ order, onEdit }) => {
   const { data: invoices = [], isLoading: invoicesLoading } = useInvoices(
     order.id,
   );
-  const deletePO = useDeletePurchaseOrder(order.projectId);
+  const deletePO = useRemovePurchaseOrderFromProject();
   const deleteInvoice = useDeleteInvoice(order.id, order.projectId);
 
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -55,13 +55,10 @@ const POCard = ({ order, onEdit }) => {
   const [invoiceToManageInventory, setInvoiceToManageInventory] =
     useState(null);
 
-  // acciones OC
-  const handleView = () =>
-    (window.location.href = `/purchase-orders/${order.id}`);
   const handleDownload = () =>
     window.open(`/api/purchase-orders/${order.id}/pdf`, '_blank');
   const handleEditPO = () => onEdit(order);
-  const handleDeletePO = () => setShowRemoveModal(true);
+  const handleRemoveOCFromProject = () => setShowRemoveModal(true);
 
   // datos tabla facturas
 
@@ -79,7 +76,11 @@ const POCard = ({ order, onEdit }) => {
   // collapsed menu OC
   const collapsedActions = [
     { label: 'Editar OC', icon: FaEdit, action: handleEditPO },
-    { label: 'Eliminar OC', icon: FaTrashAlt, action: handleDeletePO },
+    {
+      label: 'Remover OC del proyecto',
+      icon: MdRemoveCircle,
+      action: handleRemoveOCFromProject,
+    },
     { label: 'Descargar PDF', icon: FaDownload, action: handleDownload },
   ];
 
@@ -262,7 +263,9 @@ const POCard = ({ order, onEdit }) => {
         order={order}
         isOpen={showRemoveModal}
         onClose={() => setShowRemoveModal(false)}
-        onConfirm={(id) => deletePO.mutate(id)}
+        onConfirm={(id) =>
+          deletePO.mutate({ projectId: order.projectId, purchaseOrderId: id })
+        }
       />
       <SideModal
         isOpen={showInventoryModal}

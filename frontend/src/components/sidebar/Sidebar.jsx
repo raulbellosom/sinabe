@@ -312,6 +312,16 @@ const Sidebar = ({ children }) => {
                 Verticales
               </MenuItem>
               <MenuItem
+                icon={<FaClipboardList size={23} />}
+                active={isActivePath('/purchase-orders')}
+                component={<Link to={'/purchase-orders'} />}
+                onClick={() => {
+                  setToggled(false);
+                }}
+              >
+                OC
+              </MenuItem>
+              <MenuItem
                 icon={<FaDiagramProject size={23} />}
                 active={isActivePath('/projects')}
                 component={<Link to={'/projects'} />}

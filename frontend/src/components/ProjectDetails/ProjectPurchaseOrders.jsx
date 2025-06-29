@@ -2,19 +2,20 @@
 import React, { useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import { FaPlus, FaClipboardList } from 'react-icons/fa';
+import { FaPlus, FaClipboardList, FaSearch } from 'react-icons/fa';
 import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import POList from './PO/POList';
 import { PurchaseOrderFormModal } from './PO/PurchaseOrderModals';
+import SearchPurchaseOrdersModal from './PO/SearchPurchaseOrdersModal';
 
 const ProjectPurchaseOrders = ({ projectId }) => {
   const { data: orders, isLoading, error } = usePurchaseOrders(projectId);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   if (isLoading) {
-    // Skeleton responsivo
     return (
       <section className="space-y-4">
         <div className="flex justify-between items-center">
@@ -49,9 +50,15 @@ const ProjectPurchaseOrders = ({ projectId }) => {
         <h2 className="text-base md:text-lg font-semibold">
           Órdenes de Compra
         </h2>
-        <div>
+        <div className="flex items-center space-x-2">
           <ActionButtons
             extraActions={[
+              {
+                label: 'Buscar Órdenes',
+                icon: FaSearch,
+                color: 'blue',
+                action: () => setIsSearchOpen(true),
+              },
               {
                 label: 'Agregar Orden',
                 icon: FaPlus,
@@ -93,6 +100,11 @@ const ProjectPurchaseOrders = ({ projectId }) => {
         order={selectedOrder} // null => creación, objeto => edición
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
+      />
+      <SearchPurchaseOrdersModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        projectId={projectId}
       />
     </section>
   );

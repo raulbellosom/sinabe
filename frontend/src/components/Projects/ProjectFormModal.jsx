@@ -34,6 +34,7 @@ const ProjectFormModal = ({
             isEdit={isEdit}
             verticals={verticals}
             createVertical={createVertical}
+            onClose={onClose}
           />
         </DialogPanel>
       </div>

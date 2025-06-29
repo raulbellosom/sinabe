@@ -93,13 +93,13 @@ const GroupedInventoryView = ({
                     />
                     <div className="flex flex-col">
                       <span className="font-medium text-gray-800 dark:text-white">
-                        {inv.internalFolio || '-'}
+                        {inv.serialNumber || '-'}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {inv.model?.name} - {inv.model?.brand?.name}
+                        {inv.model?.name} - {inv.internalFolio}
                       </span>
                       <span className="text-xs text-gray-500 italic">
-                        {inv.model?.type?.name}
+                        {inv.model?.type?.name} - {inv.model?.brand?.name}
                       </span>
                     </div>
                   </div>

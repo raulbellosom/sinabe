@@ -8,6 +8,7 @@ import Notifies from '../../Notifies/Notifies';
 import { Button } from 'flowbite-react';
 import {
   useCreatePurchaseOrder,
+  useCreatePurchaseOrderWithoutProject,
   useUpdatePurchaseOrder,
 } from '../../../hooks/usePurchaseOrders';
 import ActionButtons from '../../ActionButtons/ActionButtons';
@@ -35,6 +36,7 @@ export const PurchaseOrderFormModal = ({
   const isEditing = Boolean(order);
   const createPO = useCreatePurchaseOrder(projectId);
   const updatePO = useUpdatePurchaseOrder(projectId);
+  const createPOWithoutProject = useCreatePurchaseOrderWithoutProject();
 
   const initialValues = {
     code: order?.code || '',
@@ -50,7 +52,11 @@ export const PurchaseOrderFormModal = ({
         await updatePO.mutateAsync({ id: order.id, data: values });
         Notifies('success', 'Orden de compra actualizada');
       } else {
-        await createPO.mutateAsync(values);
+        if (projectId) {
+          await createPO.mutateAsync(values);
+        } else {
+          await createPOWithoutProject.mutateAsync(values);
+        }
         Notifies('success', 'Orden de compra creada');
       }
       resetForm();
@@ -211,67 +217,67 @@ export const PurchaseOrderFormModal = ({
  * Modal de confirmación para eliminar orden de compra.
  * Requiere escribir 'acepto'.
  */
-export const ConfirmRemovePurchaseOrderModal = ({
-  order,
-  isOpen,
-  onClose,
-  onConfirm,
-}) => {
-  const [confirmation, setConfirmation] = useState('');
-  if (!order) return null;
+// export const ConfirmRemovePurchaseOrderModal = ({
+//   order,
+//   isOpen,
+//   onClose,
+//   onConfirm,
+// }) => {
+//   const [confirmation, setConfirmation] = useState('');
+//   if (!order) return null;
 
-  return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onConfirm(order.id);
-          setConfirmation('');
-          onClose();
-        }}
-        className="fixed inset-0 flex items-center justify-center p-4"
-      >
-        <DialogPanel className="bg-white w-full max-w-lg rounded-xl p-6 shadow-2xl">
-          <div className="flex items-center gap-2 mb-4 text-red-600">
-            <FaTrashAlt className="w-6 h-6" />
-            <h2 className="text-xl font-semibold">Eliminar Orden de Compra</h2>
-          </div>
-          <p className="text-sm text-gray-700 mb-4">
-            Vas a eliminar la orden <strong>{order.code}</strong>. Esto
-            eliminará sus facturas.
-          </p>
-          <p className="text-sm text-gray-700 mb-4">
-            Para confirmar escribe{' '}
-            <span className="font-semibold text-red-500">acepto</span>:
-          </p>
-          <input
-            type="text"
-            value={confirmation}
-            onChange={(e) => setConfirmation(e.target.value)}
-            placeholder='Escribe "acepto" para confirmar'
-            className="w-full mb-4 border border-gray-300 p-2 rounded-md focus:outline-none focus:ring focus:border-red-500"
-          />
-          <div className="flex justify-end gap-2">
-            <Button
-              color="light"
-              onClick={() => {
-                setConfirmation('');
-                onClose();
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              color="failure"
-              type="submit"
-              disabled={confirmation.trim().toLowerCase() !== 'acepto'}
-            >
-              Eliminar
-            </Button>
-          </div>
-        </DialogPanel>
-      </form>
-    </Dialog>
-  );
-};
+//   return (
+//     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+//       <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+//       <form
+//         onSubmit={(e) => {
+//           e.preventDefault();
+//           onConfirm(order.id);
+//           setConfirmation('');
+//           onClose();
+//         }}
+//         className="fixed inset-0 flex items-center justify-center p-4"
+//       >
+//         <DialogPanel className="bg-white w-full max-w-lg rounded-xl p-6 shadow-2xl">
+//           <div className="flex items-center gap-2 mb-4 text-red-600">
+//             <FaTrashAlt className="w-6 h-6" />
+//             <h2 className="text-xl font-semibold">Eliminar Orden de Compra</h2>
+//           </div>
+//           <p className="text-sm text-gray-700 mb-4">
+//             Vas a eliminar la orden <strong>{order.code}</strong>. Esto
+//             eliminará sus facturas.
+//           </p>
+//           <p className="text-sm text-gray-700 mb-4">
+//             Para confirmar escribe{' '}
+//             <span className="font-semibold text-red-500">acepto</span>:
+//           </p>
+//           <input
+//             type="text"
+//             value={confirmation}
+//             onChange={(e) => setConfirmation(e.target.value)}
+//             placeholder='Escribe "acepto" para confirmar'
+//             className="w-full mb-4 border border-gray-300 p-2 rounded-md focus:outline-none focus:ring focus:border-red-500"
+//           />
+//           <div className="flex justify-end gap-2">
+//             <Button
+//               color="light"
+//               onClick={() => {
+//                 setConfirmation('');
+//                 onClose();
+//               }}
+//             >
+//               Cancelar
+//             </Button>
+//             <Button
+//               color="failure"
+//               type="submit"
+//               disabled={confirmation.trim().toLowerCase() !== 'acepto'}
+//             >
+//               Eliminar
+//             </Button>
+//           </div>
+//         </DialogPanel>
+//       </form>
+//     </Dialog>
+//   );
+// };

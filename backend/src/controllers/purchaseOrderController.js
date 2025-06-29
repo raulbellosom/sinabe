@@ -52,6 +52,35 @@ export const createPurchaseOrder = async (req, res) => {
   }
 };
 
+// ➕ Crear orden de compra sin proyecto asignado
+export const createPurchaseOrderWithoutProject = async (req, res) => {
+  const { code, supplier, description, status, date } = req.body;
+
+  try {
+    const order = await db.purchaseOrder.create({
+      data: {
+        projectId: null, // Sin proyecto asignado
+        code,
+        supplier,
+        description,
+        amount: 0,
+        status,
+        date: new Date(date),
+        enabled: true,
+        createdById: req.user.id,
+      },
+    });
+
+    res.status(201).json(order);
+  } catch (error) {
+    console.error(
+      "Error creating purchase order without project:",
+      error.message
+    );
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // ✏️ Actualizar orden de compra
 export const updatePurchaseOrder = async (req, res) => {
   const { id } = req.params;
@@ -115,35 +144,25 @@ export const searchPurchaseOrders = async (req, res) => {
     : statuses.split?.(",") || [];
 
   const where = {
-    projectId,
     enabled: true,
+    ...(projectId && { projectId }),
     ...(parsedStatuses.length > 0 && { status: { in: parsedStatuses } }),
     OR: [
-      { code: { contains: searchTerm, mode: "insensitive" } },
-      { supplier: { contains: searchTerm, mode: "insensitive" } },
-      { description: { contains: searchTerm, mode: "insensitive" } },
+      { code: { contains: searchTerm } },
+      { supplier: { contains: searchTerm } },
+      { description: { contains: searchTerm } },
       {
         invoices: {
           some: {
             OR: [
-              { code: { contains: searchTerm, mode: "insensitive" } },
-              { concept: { contains: searchTerm, mode: "insensitive" } },
+              { code: { contains: searchTerm } },
+              { concept: { contains: searchTerm } },
               {
                 inventories: {
                   some: {
                     OR: [
-                      {
-                        serialNumber: {
-                          contains: searchTerm,
-                          mode: "insensitive",
-                        },
-                      },
-                      {
-                        internalFolio: {
-                          contains: searchTerm,
-                          mode: "insensitive",
-                        },
-                      },
+                      { serialNumber: { contains: searchTerm } },
+                      { internalFolio: { contains: searchTerm } },
                     ],
                   },
                 },
@@ -159,7 +178,14 @@ export const searchPurchaseOrders = async (req, res) => {
     const [data, totalRecords] = await Promise.all([
       db.purchaseOrder.findMany({
         where,
-        include: { invoices: { include: { inventories: true } } },
+        include: {
+          project: true, // 👈 esto es lo nuevo
+          invoices: {
+            include: {
+              inventories: true,
+            },
+          },
+        },
         skip,
         take,
         orderBy: { [sortBy]: order },
@@ -178,6 +204,206 @@ export const searchPurchaseOrders = async (req, res) => {
     });
   } catch (error) {
     console.error("Error searching purchase orders:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔗 Asignar una orden de compra existente a un proyecto
+export const assignPurchaseOrderToProject = async (req, res) => {
+  const { projectId, orderId } = req.params;
+
+  try {
+    // Verificar que el proyecto existe y está habilitado
+    const project = await db.project.findUnique({
+      where: { id: projectId, enabled: true },
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: "Proyecto no encontrado" });
+    }
+
+    // Verificar que la orden de compra existe y está habilitada
+    const order = await db.purchaseOrder.findUnique({
+      where: { id: orderId, enabled: true },
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Orden de compra no encontrada" });
+    }
+
+    // Verificar que la orden no esté ya asignada a otro proyecto
+    if (order.projectId && order.projectId !== projectId) {
+      return res.status(400).json({
+        message: "La orden de compra ya está asignada a otro proyecto",
+      });
+    }
+
+    // Asignar la orden al proyecto
+    const updatedOrder = await db.purchaseOrder.update({
+      where: { id: orderId },
+      data: { projectId },
+      include: {
+        invoices: {
+          include: { inventories: true },
+        },
+      },
+    });
+
+    res.json(updatedOrder);
+  } catch (error) {
+    console.error("Error assigning purchase order to project:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔓 Remover una orden de compra de un proyecto
+export const removePurchaseOrderFromProject = async (req, res) => {
+  const { projectId, orderId } = req.params;
+
+  try {
+    // Verificar que la orden existe y pertenece al proyecto
+    const order = await db.purchaseOrder.findUnique({
+      where: {
+        id: orderId,
+        projectId: projectId,
+        enabled: true,
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        message: "Orden de compra no encontrada en este proyecto",
+      });
+    }
+
+    // Remover la asignación del proyecto (setear projectId a null)
+    const updatedOrder = await db.purchaseOrder.update({
+      where: { id: orderId },
+      data: { projectId: null },
+    });
+
+    res.json({
+      message: "Orden de compra removida del proyecto correctamente",
+      order: updatedOrder,
+    });
+  } catch (error) {
+    console.error("Error removing purchase order from project:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔄 Obtener órdenes de compra sin proyecto asignado
+export const getUnassignedPurchaseOrders = async (req, res) => {
+  try {
+    const orders = await db.purchaseOrder.findMany({
+      where: {
+        projectId: null,
+        enabled: true,
+      },
+      include: {
+        invoices: {
+          include: { inventories: true },
+        },
+      },
+      orderBy: { date: "desc" },
+    });
+
+    res.json(orders);
+  } catch (error) {
+    console.error("Error getting unassigned purchase orders:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// controllers/purchaseOrderController.js
+export const searchUnassignedPurchaseOrders = async (req, res) => {
+  const { query } = req.query;
+
+  try {
+    if (!query || query.trim() === "") {
+      return res
+        .status(400)
+        .json({ message: "Parámetro de búsqueda requerido" });
+    }
+
+    const orders = await db.purchaseOrder.findMany({
+      where: {
+        enabled: true,
+        projectId: null,
+        OR: [
+          {
+            code: {
+              contains: query,
+            },
+          },
+          {
+            invoices: {
+              some: {
+                OR: [
+                  {
+                    code: {
+                      contains: query,
+                    },
+                  },
+                  {
+                    concept: {
+                      contains: query,
+                    },
+                  },
+                  {
+                    inventories: {
+                      some: {
+                        OR: [
+                          { serialNumber: { contains: query } },
+                          { internalFolio: { contains: query } },
+                          { comments: { contains: query } },
+                          {
+                            model: {
+                              name: {
+                                contains: query,
+                              },
+                            },
+                          },
+                          {
+                            model: {
+                              brand: {
+                                name: {
+                                  contains: query,
+                                },
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        invoices: {
+          include: {
+            inventories: {
+              include: {
+                model: {
+                  include: {
+                    brand: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { date: "desc" },
+    });
+
+    res.json(orders);
+  } catch (error) {
+    console.error("Error searching unassigned purchase orders:", error.message);
     res.status(500).json({ error: error.message });
   }
 };

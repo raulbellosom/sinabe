@@ -212,3 +212,70 @@ export const removeInventoryFromInvoice = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const searchInvoicesByOrderId = async (req, res) => {
+  const { orderId } = req.params;
+  const { searchTerm = "", page = 1, pageSize = 10 } = req.query;
+
+  const parsedPage = parseInt(page, 10) || 1;
+  const parsedPageSize = parseInt(pageSize, 10) || 10;
+  const skip = (parsedPage - 1) * parsedPageSize;
+  const take = parsedPageSize;
+
+  const where = {
+    purchaseOrderId: orderId,
+    enabled: true,
+    OR: [
+      { code: { contains: searchTerm } },
+      { concept: { contains: searchTerm } },
+      {
+        inventories: {
+          some: {
+            OR: [
+              { serialNumber: { contains: searchTerm } },
+              { internalFolio: { contains: searchTerm } },
+              { activeNumber: { contains: searchTerm } },
+              { model: { name: { contains: searchTerm } } },
+              { model: { brand: { name: { contains: searchTerm } } } },
+              { model: { type: { name: { contains: searchTerm } } } },
+            ],
+          },
+        },
+      },
+    ],
+  };
+
+  try {
+    const [data, totalRecords] = await Promise.all([
+      db.invoice.findMany({
+        where,
+        include: {
+          inventories: {
+            include: {
+              model: {
+                include: { brand: true, type: true },
+              },
+            },
+          },
+        },
+        skip,
+        take,
+        orderBy: { date: "desc" },
+      }),
+      db.invoice.count({ where }),
+    ]);
+
+    res.json({
+      data,
+      pagination: {
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / take),
+        currentPage: parsedPage,
+        pageSize: take,
+      },
+    });
+  } catch (error) {
+    console.error("Error searching invoices:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};

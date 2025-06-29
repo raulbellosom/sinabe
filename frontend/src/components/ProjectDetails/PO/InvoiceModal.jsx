@@ -46,8 +46,8 @@ const InvoiceModal = ({
   const [xmlFile, setXmlFile] = useState(null);
 
   useEffect(() => {
-    setPdfUrl(invoice?.pdf || null);
-    setXmlUrl(invoice?.xml || null);
+    setPdfUrl(invoice?.fileUrl || invoice?.pdf || null);
+    setXmlUrl(invoice?.xmlUrl || invoice?.xml || null);
     setPdfFile(null);
     setXmlFile(null);
   }, [invoice, isOpen]);

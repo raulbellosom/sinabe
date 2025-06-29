@@ -3,8 +3,18 @@ const ProjectProgressBar = ({ value }) => {
 
   if (value > 100) {
     barColor = 'bg-red-600';
-  } else if (value >= 90) {
-    barColor = 'bg-yellow-400';
+  } else if (value >= 95) {
+    barColor = 'bg-orange-500';
+  } else if (value >= 85) {
+    barColor = 'bg-yellow-500';
+  } else if (value >= 50) {
+    barColor = 'bg-green-500';
+  } else if (value >= 25) {
+    barColor = 'bg-blue-500';
+  } else if (value >= 10) {
+    barColor = 'bg-cyan-500';
+  } else {
+    barColor = 'bg-gray-400';
   }
 
   return (
