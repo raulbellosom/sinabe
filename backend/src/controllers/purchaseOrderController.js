@@ -28,7 +28,7 @@ export const getPurchaseOrdersByProjectId = async (req, res) => {
 // ➕ Crear orden de compra
 export const createPurchaseOrder = async (req, res) => {
   const { projectId } = req.params;
-  const { code, supplier, description, amount, status, date } = req.body;
+  const { code, supplier, description, status, date } = req.body;
 
   try {
     const order = await db.purchaseOrder.create({
@@ -37,10 +37,11 @@ export const createPurchaseOrder = async (req, res) => {
         code,
         supplier,
         description,
-        amount: parseFloat(amount),
+        amount: 0,
         status,
         date: new Date(date),
         enabled: true,
+        createdById: req.user.id,
       },
     });
 
@@ -54,7 +55,7 @@ export const createPurchaseOrder = async (req, res) => {
 // ✏️ Actualizar orden de compra
 export const updatePurchaseOrder = async (req, res) => {
   const { id } = req.params;
-  const { code, supplier, description, amount, status, date } = req.body;
+  const { code, supplier, description, status, date } = req.body;
 
   try {
     const order = await db.purchaseOrder.update({
@@ -63,7 +64,6 @@ export const updatePurchaseOrder = async (req, res) => {
         code,
         supplier,
         description,
-        amount: parseFloat(amount),
         status,
         date: new Date(date),
       },

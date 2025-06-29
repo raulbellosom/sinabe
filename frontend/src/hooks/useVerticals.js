@@ -8,6 +8,7 @@ import {
   assignVerticalsToModel,
   removeVerticalFromModel,
 } from '../services/verticals.api';
+import { searchModels as apiSearchModels } from '../services/api';
 
 // 🔍 Obtener todas las verticales activas con modelos, marcas, inventarios
 export const useVerticals = () =>
@@ -84,4 +85,23 @@ export const useRemoveVerticalFromModel = () => {
       queryClient.invalidateQueries(['model-verticals', modelId]);
     },
   });
+};
+
+// 🔍 Hook para buscar modelos y devolverlos en { value, label }
+export const useSearchModels = () => {
+  return async (searchTerm, excludeVerticalId) => {
+    const { data } = await apiSearchModels({
+      searchTerm,
+      sortBy: 'name',
+      order: 'asc',
+      page: 1,
+      pageSize: 10,
+      // sólo añades el filtro si viene definido
+      ...(excludeVerticalId != null && { excludeVerticalId }),
+    });
+    return data.map((m) => ({
+      value: m.id,
+      label: `${m.name} (${m.brand.name} - ${m.type.name})`,
+    }));
+  };
 };

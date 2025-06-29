@@ -9,25 +9,22 @@ import { Button } from 'flowbite-react';
 import {
   useCreatePurchaseOrder,
   useUpdatePurchaseOrder,
-  useDeletePurchaseOrder,
 } from '../../../hooks/usePurchaseOrders';
+import ActionButtons from '../../ActionButtons/ActionButtons';
 
 // Validación de formulario de Orden de Compra
 const PurchaseOrderSchema = Yup.object({
   code: Yup.string().required('Orden de compra es requerido'),
   supplier: Yup.string().required('Proveedor es requerido'),
   description: Yup.string(),
-  amount: Yup.number()
-    .typeError('Debe ser un número')
-    .positive('Debe ser positivo')
-    .required('Monto es requerido'),
+
   status: Yup.string().required('Estado es requerido'),
   date: Yup.date().typeError('Fecha inválida').required('Fecha es requerida'),
 });
 
 /**
  * Modal unificado para crear o editar Orden de Compra.
- * Si recibe prop `order`, funciona en modo edición, sino en creación.
+ * Si recibe prop `order`, funciona en modo edición, de lo contrario en creación.
  */
 export const PurchaseOrderFormModal = ({
   projectId,
@@ -43,7 +40,6 @@ export const PurchaseOrderFormModal = ({
     code: order?.code || '',
     supplier: order?.supplier || '',
     description: order?.description || '',
-    amount: order?.amount || '',
     status: order?.status || 'PLANIFICACION',
     date: order ? order.date.slice(0, 10) : '',
   };
@@ -72,7 +68,7 @@ export const PurchaseOrderFormModal = ({
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold flex items-center gap-2">
               <FaClipboardList className="text-purple-600" />
               {isEditing ? 'Editar Orden de Compra' : 'Nueva Orden de Compra'}
@@ -91,72 +87,116 @@ export const PurchaseOrderFormModal = ({
             onSubmit={handleSubmit}
           >
             {({ isSubmitting }) => (
-              <Form className="space-y-4">
-                {[
-                  'code',
-                  'supplier',
-                  'description',
-                  'amount',
-                  'status',
-                  'date',
-                ].map((name) => (
-                  <div key={name} className="flex flex-col">
+              <Form className="space-y-6">
+                {/* Primera fila: Orden de compra y Proveedor */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col col-span-2">
                     <label className="mb-1 text-sm font-medium">
-                      {name === 'code'
-                        ? 'Orden de compra'
-                        : name.charAt(0).toUpperCase() + name.slice(1)}
+                      Orden de compra
                     </label>
-                    {name === 'status' ? (
-                      <Field
-                        as="select"
-                        name={name}
-                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
-                      >
-                        <option value="PLANIFICACION">Planificación</option>
-                        <option value="EN_EJECUCION">En Ejecución</option>
-                        <option value="EN_REVISION">En Revisión</option>
-                        <option value="FINALIZADO">Finalizado</option>
-                        <option value="CANCELADO">Cancelado</option>
-                      </Field>
-                    ) : (
-                      <Field
-                        name={name}
-                        type={
-                          name === 'amount'
-                            ? 'number'
-                            : name === 'date'
-                              ? 'date'
-                              : 'text'
-                        }
-                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
-                      />
-                    )}
+                    <Field
+                      name="code"
+                      type="text"
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+                    />
                     <ErrorMessage
-                      name={name}
+                      name="code"
                       component="div"
                       className="text-red-600 text-sm mt-1"
                     />
                   </div>
-                ))}
+                  <div className="flex flex-col col-span-1">
+                    <label className="mb-1 text-sm font-medium">
+                      Proveedor
+                    </label>
+                    <Field
+                      name="supplier"
+                      type="text"
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+                    />
+                    <ErrorMessage
+                      name="supplier"
+                      component="div"
+                      className="text-red-600 text-sm mt-1"
+                    />
+                  </div>
+                  <div className="flex flex-col">
+                    <label className="mb-1 text-sm font-medium">Estado</label>
+                    <Field
+                      as="select"
+                      name="status"
+                      className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+                    >
+                      <option value="PLANIFICACION">Planificación</option>
+                      <option value="EN_REVISION">En Revisión</option>
+                      <option value="EN_EJECUCION">En Ejecución</option>
+                      <option value="FINALIZADO">Finalizado</option>
+                      <option value="CANCELADO">Cancelado</option>
+                    </Field>
+                    <ErrorMessage
+                      name="status"
+                      component="div"
+                      className="text-red-600 text-sm mt-1"
+                    />
+                  </div>
+                </div>
+
+                {/* Tercera fila: Fecha */}
+                <div className="flex flex-col">
+                  <label className="mb-1 text-sm font-medium">Fecha</label>
+                  <Field
+                    name="date"
+                    type="date"
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+                  />
+                  <ErrorMessage
+                    name="date"
+                    component="div"
+                    className="text-red-600 text-sm mt-1"
+                  />
+                </div>
+
+                {/* Cuarta fila: Descripción */}
+                <div className="flex flex-col">
+                  <label className="mb-1 text-sm font-medium">
+                    Descripción
+                  </label>
+                  <Field
+                    as="textarea"
+                    name="description"
+                    rows={3}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+                  />
+                  <ErrorMessage
+                    name="description"
+                    component="div"
+                    className="text-red-600 text-sm mt-1"
+                  />
+                </div>
+
+                {/* Botones */}
                 <div className="flex justify-end gap-2 pt-4">
-                  <Button
-                    color="light"
-                    onClick={() => {
-                      onClose();
-                    }}
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2"
-                  >
-                    <FaTimes /> Cancelar
-                  </Button>
-                  <Button
-                    color="primary"
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2"
-                  >
-                    <FaSave /> {isEditing ? 'Actualizar' : 'Crear'}
-                  </Button>
+                  <ActionButtons
+                    extraActions={[
+                      {
+                        label: 'Cancelar',
+                        color: 'stone',
+                        action: onClose,
+                        icon: FaTimes,
+                      },
+                      {
+                        label: isEditing ? 'Actualizar' : 'Crear',
+                        color: 'teal',
+                        type: 'submit',
+                        disabled: isSubmitting,
+                        filled: true,
+                        icon: FaSave,
+                        action: () => {
+                          if (isSubmitting) return;
+                        },
+                      },
+                    ]}
+                  />
                 </div>
               </Form>
             )}

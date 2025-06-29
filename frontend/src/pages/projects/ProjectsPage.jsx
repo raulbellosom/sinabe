@@ -175,16 +175,26 @@ const ProjectsPage = () => {
         render: (_, item) => {
           if (!item || !Array.isArray(item.purchaseOrders)) return null;
 
-          const used = item.purchaseOrders
+          const validOrders = item.purchaseOrders.filter((oc) =>
+            ['EN_EJECUCION', 'FINALIZADO'].includes(oc.status),
+          );
+
+          const used = validOrders
             .flatMap((oc) => oc.invoices || [])
             .reduce((acc, f) => acc + (f.amount || 0), 0);
+
+          const overBudget = used > (item.budgetTotal || 0);
 
           return (
             <div>
               <div className="font-semibold text-sm">
                 ${item.budgetTotal?.toLocaleString() || '0'}
               </div>
-              <div className="text-xs text-gray-500">
+              <div
+                className={`text-xs ${
+                  overBudget ? 'text-red-600 font-semibold' : 'text-gray-500'
+                }`}
+              >
                 Usado: ${used.toLocaleString()}
               </div>
             </div>
@@ -215,6 +225,12 @@ const ProjectsPage = () => {
         render: (_, item) => (
           <span className="text-xs font-medium">
             {item?.purchaseOrders?.length || 0} OC
+            <br />
+            <span className="text-gray-500">
+              {item?.purchaseOrders?.flatMap((oc) => oc.invoices || [])
+                .length || 0}{' '}
+              Facturas
+            </span>
           </span>
         ),
       },
@@ -226,7 +242,7 @@ const ProjectsPage = () => {
   const rowActions = (row) => [
     {
       key: 'main',
-      label: 'Ver',
+      label: 'Abrir',
       icon: FaEye,
       action: () => navigate(`/projects/view/${row.id}`),
       color: 'blue',

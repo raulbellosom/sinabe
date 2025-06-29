@@ -493,20 +493,28 @@ export const searchModels = async ({
   page,
   pageSize,
   signal,
+  excludeVerticalId, // ← nuevo parámetro opcional
 }) => {
   try {
+    const params = {
+      searchTerm,
+      sortBy,
+      order,
+      page,
+      pageSize,
+    };
+
+    // Si recibimos excludeVerticalId, lo añadimos a los params
+    if (excludeVerticalId != null) {
+      params.excludeVerticalId = excludeVerticalId;
+    }
+
     const response = await api.get('/inventories/inventoryModels/search', {
-      params: {
-        searchTerm,
-        sortBy,
-        order,
-        page,
-        pageSize,
-      },
-      signal: signal,
+      params,
+      signal,
     });
     if (response.status !== 200) {
-      throw new Error(response.message || 'Hubo un error al hacer la busqueda');
+      throw new Error(response.message || 'Hubo un error al hacer la búsqueda');
     }
     return response.data;
   } catch (error) {

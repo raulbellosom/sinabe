@@ -1,37 +1,26 @@
 // controllers/invoiceController.js
 import { db } from "../lib/db.js";
 
-// ➕ Crear nueva factura (con PDF y XML opcionales)
-export const createInvoice = async (req, res) => {
-  const { orderId } = req.params;
-  const { code, concept, amount, status, date } = req.body;
-  const { pdfUrl: fileUrl = null, xmlUrl = null } = req.invoiceData || {};
-
-  try {
-    const invoice = await db.invoice.create({
-      data: {
-        code,
-        concept,
-        amount: parseFloat(amount),
-        status,
-        date: new Date(date),
-        fileUrl,
-        xmlUrl,
-        purchaseOrderId: orderId,
-        createdById: req.user.id,
-        enabled: true,
+const updatePurchaseOrderAmount = async (purchaseOrderId) => {
+  const total = await db.invoice.aggregate({
+    where: {
+      purchaseOrderId,
+      enabled: true,
+      status: {
+        in: ["PAGADA", "PENDIENTE"], // solo estas suman
       },
-      include: {
-        inventories: true,
-        purchaseOrder: true,
-      },
-    });
+    },
+    _sum: {
+      amount: true,
+    },
+  });
 
-    res.status(201).json(invoice);
-  } catch (error) {
-    console.error("Error creating invoice:", error.message);
-    res.status(500).json({ error: error.message });
-  }
+  await db.purchaseOrder.update({
+    where: { id: purchaseOrderId },
+    data: {
+      amount: total._sum.amount || 0,
+    },
+  });
 };
 
 // 📄 Obtener facturas de una orden de compra
@@ -77,6 +66,41 @@ export const getInvoiceById = async (req, res) => {
   }
 };
 
+// ➕ Crear nueva factura (con PDF y XML opcionales)
+export const createInvoice = async (req, res) => {
+  const { orderId } = req.params;
+  const { code, concept, amount, status, date } = req.body;
+  const { pdfUrl: fileUrl = null, xmlUrl = null } = req.invoiceData || {};
+
+  try {
+    const invoice = await db.invoice.create({
+      data: {
+        code,
+        concept,
+        amount: parseFloat(amount),
+        status,
+        date: new Date(date),
+        fileUrl,
+        xmlUrl,
+        purchaseOrderId: orderId,
+        createdById: req.user.id,
+        enabled: true,
+      },
+      include: {
+        inventories: true,
+        purchaseOrder: true,
+      },
+    });
+
+    await updatePurchaseOrderAmount(orderId);
+
+    res.status(201).json(invoice);
+  } catch (error) {
+    console.error("Error creating invoice:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // ✏️ Actualizar factura (campos y archivos)
 export const updateInvoice = async (req, res) => {
   const { invoiceId } = req.params;
@@ -101,6 +125,8 @@ export const updateInvoice = async (req, res) => {
       },
     });
 
+    await updatePurchaseOrderAmount(invoice.purchaseOrderId);
+
     res.json(invoice);
   } catch (error) {
     console.error("Error updating invoice:", error.message);
@@ -113,10 +139,13 @@ export const deleteInvoice = async (req, res) => {
   const { invoiceId } = req.params;
 
   try {
-    await db.invoice.update({
+    const invoice = await db.invoice.update({
       where: { id: invoiceId },
       data: { enabled: false },
     });
+
+    await updatePurchaseOrderAmount(invoice.purchaseOrderId);
+
     res.status(204).end();
   } catch (error) {
     console.error("Error deleting invoice:", error.message);
@@ -134,7 +163,16 @@ export const getInventoriesByInvoice = async (req, res) => {
         invoiceId,
         enabled: true,
       },
+      include: {
+        model: {
+          include: {
+            brand: true,
+            type: true,
+          },
+        },
+      },
     });
+
     res.json(inventories);
   } catch (error) {
     console.error("Error fetching inventories for invoice:", error.message);

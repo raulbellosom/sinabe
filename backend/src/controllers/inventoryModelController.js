@@ -680,37 +680,23 @@ export const searchModels = async (req, res) => {
     order = "asc",
     page = 1,
     pageSize = 10,
+    excludeVerticalId, // ← nuevo parámetro opcional
   } = req.query;
 
   try {
     const validSortFields = ["name", "brand.name", "type.name"];
-
     const orderField = validSortFields.includes(sortBy) ? sortBy : "name";
     const orderDirection = order === "desc" ? "desc" : "asc";
 
     const formSortBy = (value, order) => {
-      let arr = value.split(".");
-      let obj = {};
+      const arr = value.split(".");
       if (arr.length === 3) {
-        obj = {
-          [arr[0]]: {
-            [arr[1]]: {
-              [arr[2]]: order,
-            },
-          },
-        };
+        return { [arr[0]]: { [arr[1]]: { [arr[2]]: order } } };
       } else if (arr.length === 2) {
-        obj = {
-          [arr[0]]: {
-            [arr[1]]: order,
-          },
-        };
+        return { [arr[0]]: { [arr[1]]: order } };
       } else {
-        obj = {
-          [arr[0]]: order,
-        };
+        return { [arr[0]]: order };
       }
-      return obj;
     };
 
     const textSearchConditions = searchTerm
@@ -723,13 +709,22 @@ export const searchModels = async (req, res) => {
         }
       : {};
 
-    const skip = (page - 1) * pageSize;
-    const take = parseInt(pageSize);
-
+    // base de where
     const whereConditions = {
       enabled: true,
       ...textSearchConditions,
+      // si recibimos excludeVerticalId, filtramos los que tengan alguna relación con esa vertical
+      ...(excludeVerticalId
+        ? {
+            ModelVertical: {
+              none: { verticalId: parseInt(excludeVerticalId, 10) },
+            },
+          }
+        : {}),
     };
+
+    const skip = (page - 1) * pageSize;
+    const take = parseInt(pageSize, 10);
 
     const models = await db.model.findMany({
       where: whereConditions,
@@ -742,7 +737,7 @@ export const searchModels = async (req, res) => {
           select: { id: true },
         },
       },
-      skip: skip,
+      skip,
       take: take === 0 ? undefined : take,
     });
 
@@ -751,10 +746,7 @@ export const searchModels = async (req, res) => {
       inventoryCount: model.inventories.length,
     }));
 
-    const totalRecords = await db.model.count({
-      where: whereConditions,
-    });
-
+    const totalRecords = await db.model.count({ where: whereConditions });
     const totalPages = Math.ceil(totalRecords / pageSize);
 
     res.json({
@@ -762,12 +754,12 @@ export const searchModels = async (req, res) => {
       pagination: {
         totalRecords,
         totalPages,
-        currentPage: parseInt(page),
-        pageSize: parseInt(pageSize),
+        currentPage: +page,
+        pageSize: +pageSize,
       },
     });
   } catch (error) {
-    console.log(error.message);
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };

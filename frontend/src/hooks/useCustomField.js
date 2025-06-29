@@ -21,8 +21,11 @@ const useCustomField = (dispatch) => {
   } = useQuery({
     queryKey: ['customFields'],
     queryFn: getCustomFields,
-    staleTime: 1000 * 60 * 5, // 5 minutos (ajusta según lo necesario)
-    cacheTime: 1000 * 60 * 10, // 10 minutos (ajusta según lo necesario)
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 10,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   // Crear un nuevo custom field

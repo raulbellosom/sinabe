@@ -3,7 +3,8 @@ import { Dialog, DialogPanel } from '@headlessui/react';
 import AsyncSelect from 'react-select/async';
 import { Formik, Form } from 'formik';
 import Notifies from '../Notifies/Notifies';
-import { FaPlus, FaSave, FaTimes, FaMicrochip } from 'react-icons/fa';
+import { FaPlus, FaSave, FaTimes } from 'react-icons/fa';
+import { HiCubeTransparent } from 'react-icons/hi';
 
 const ModalAssignModel = ({
   isOpen,
@@ -51,7 +52,8 @@ const ModalAssignModel = ({
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     <span className="flex items-center gap-2">
-                      <FaMicrochip className="text-gray-500" /> Modelo
+                      <HiCubeTransparent size={20} className="text-gray-500" />{' '}
+                      Modelo
                     </span>
                   </label>
                   <AsyncSelect

@@ -69,62 +69,60 @@ const ProjectForm = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-1">
-                    Proveedor
-                  </label>
-                  <Field
-                    name="provider"
-                    className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
-                  />
-                  <ErrorMessage
-                    name="provider"
-                    component="div"
-                    className="text-sm text-sinabe-danger mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-1">
-                    Estado
-                  </label>
-                  <Field
-                    as="select"
-                    name="status"
-                    className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
-                  >
-                    <option value="">Seleccionar estado...</option>
-                    <option value="PLANIFICACION">Planificación</option>
-                    <option value="EN_EJECUCION">En ejecución</option>
-                    <option value="EN_REVISION">En revisión</option>
-                    <option value="FINALIZADO">Finalizado</option>
-                    <option value="CANCELADO">Cancelado</option>
-                    <option value="PAUSADO">Pausado</option>
-                  </Field>
-                  <ErrorMessage
-                    name="status"
-                    component="div"
-                    className="text-sm text-sinabe-danger mt-1"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold mb-1">
-                  Presupuesto Total
+                  Proveedor
                 </label>
                 <Field
-                  name="budgetTotal"
-                  type="number"
+                  name="provider"
                   className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
                 />
                 <ErrorMessage
-                  name="budgetTotal"
+                  name="provider"
                   component="div"
                   className="text-sm text-sinabe-danger mt-1"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-1">
+                  Estado
+                </label>
+                <Field
+                  as="select"
+                  name="status"
+                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                >
+                  <option value="">Seleccionar estado...</option>
+                  <option value="PLANIFICACION">Planificación</option>
+                  <option value="EN_EJECUCION">En ejecución</option>
+                  <option value="EN_REVISION">En revisión</option>
+                  <option value="FINALIZADO">Finalizado</option>
+                  <option value="CANCELADO">Cancelado</option>
+                  <option value="PAUSADO">Pausado</option>
+                </Field>
+                <ErrorMessage
+                  name="status"
+                  component="div"
+                  className="text-sm text-sinabe-danger mt-1"
+                />
+              </div>
+
+              <div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">
+                    Presupuesto Total
+                  </label>
+                  <Field
+                    name="budgetTotal"
+                    type="number"
+                    className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                  />
+                  <ErrorMessage
+                    name="budgetTotal"
+                    component="div"
+                    className="text-sm text-sinabe-danger mt-1"
+                  />
+                </div>
               </div>
             </div>
 

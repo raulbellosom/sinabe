@@ -401,7 +401,20 @@ export const getProjectSummary = async (req, res) => {
       return res.status(404).json({ message: "Proyecto no encontrado" });
     }
 
-    res.json(project);
+    const verticalMap = new Map();
+
+    project.deadlines.forEach((deadline) => {
+      deadline.inventoryAssignments.forEach((assignment) => {
+        const vertical = assignment.inventory?.model?.vertical;
+        if (vertical && vertical.enabled) {
+          verticalMap.set(vertical.id, vertical);
+        }
+      });
+    });
+
+    const verticals = Array.from(verticalMap.values());
+
+    res.json({ ...project, verticals });
   } catch (error) {
     console.error("Error fetching project summary:", error.message);
     res.status(500).json({ error: error.message });

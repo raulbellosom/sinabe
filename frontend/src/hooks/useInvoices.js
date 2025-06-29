@@ -28,38 +28,43 @@ export const useInvoice = (orderId, invoiceId) =>
   });
 
 // ➕ Crear factura (PDF/XML)
-export const useCreateInvoice = (orderId) => {
-  const queryClient = useQueryClient();
+export const useCreateInvoice = (orderId, projectId) => {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (formData) => createInvoice(orderId, formData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoices', orderId] });
+      // invalidamos la lista de invoices de esta orden
+      qc.invalidateQueries({ queryKey: ['invoices', orderId] });
+      // **y** la lista de órdenes de compra de este proyecto
+      qc.invalidateQueries({ queryKey: ['purchase-orders', projectId] });
     },
   });
 };
 
 // ✏️ Actualizar factura (PDF/XML)
-export const useUpdateInvoice = (orderId) => {
-  const queryClient = useQueryClient();
+export const useUpdateInvoice = (orderId, projectId) => {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ invoiceId, formData }) =>
       updateInvoice(orderId, invoiceId, formData),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['invoices', orderId] });
-      queryClient.invalidateQueries({
-        queryKey: ['invoice', orderId, variables.invoiceId],
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['invoices', orderId] });
+      qc.invalidateQueries({
+        queryKey: ['invoice', orderId, vars.invoiceId],
       });
+      qc.invalidateQueries({ queryKey: ['purchase-orders', projectId] });
     },
   });
 };
 
 // 🗑️ Eliminar factura
-export const useDeleteInvoice = (orderId) => {
-  const queryClient = useQueryClient();
+export const useDeleteInvoice = (orderId, projectId) => {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (invoiceId) => deleteInvoice(orderId, invoiceId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoices', orderId] });
+      qc.invalidateQueries({ queryKey: ['invoices', orderId] });
+      qc.invalidateQueries({ queryKey: ['purchase-orders', projectId] });
     },
   });
 };

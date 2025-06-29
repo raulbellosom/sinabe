@@ -11,6 +11,7 @@ import { PurchaseOrderFormModal } from './PO/PurchaseOrderModals';
 const ProjectPurchaseOrders = ({ projectId }) => {
   const { data: orders, isLoading, error } = usePurchaseOrders(projectId);
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   if (isLoading) {
     // Skeleton responsivo
@@ -42,37 +43,54 @@ const ProjectPurchaseOrders = ({ projectId }) => {
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 h-full">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Órdenes de Compra</h2>
-        <ActionButtons
-          extraActions={[
-            {
-              label: 'Agregar Orden',
-              icon: FaPlus,
-              action: () => setIsOpen(true),
-            },
-          ]}
-        />
+        <h2 className="text-base md:text-lg font-semibold">
+          Órdenes de Compra
+        </h2>
+        <div>
+          <ActionButtons
+            extraActions={[
+              {
+                label: 'Agregar Orden',
+                icon: FaPlus,
+                color: 'indigo',
+                action: () => {
+                  setSelectedOrder(null); // modo creación
+                  setIsOpen(true);
+                },
+              },
+            ]}
+          />
+        </div>
       </div>
 
-      {/* Lista o mensaje personalizado */}
-      {orders && orders.length > 0 ? (
-        <POList purchaseOrders={orders} />
-      ) : (
-        <div className="py-16 text-center text-gray-500 space-y-2">
-          <FaClipboardList className="mx-auto text-4xl text-gray-300" />
-          <p className="text-lg font-medium">
-            Aún no tienes órdenes de compra creadas
-          </p>
-          <p className="text-sm">Haz click en “Agregar Orden” para empezar</p>
-        </div>
-      )}
+      {/* Lista o mensaje */}
+      <div className="">
+        {orders && orders.length > 0 ? (
+          <POList
+            purchaseOrders={orders}
+            onEdit={(order) => {
+              setSelectedOrder(order); // modo edición
+              setIsOpen(true);
+            }}
+          />
+        ) : (
+          <div className="py-16 text-center text-gray-500 space-y-2">
+            <FaClipboardList className="mx-auto text-4xl text-gray-300" />
+            <p className="text-lg font-medium">
+              Aún no tienes órdenes de compra creadas
+            </p>
+            <p className="text-sm">Haz click en “Agregar Orden” para empezar</p>
+          </div>
+        )}
+      </div>
 
       {/* Modal crear/editar */}
       <PurchaseOrderFormModal
         projectId={projectId}
+        order={selectedOrder} // null => creación, objeto => edición
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
       />

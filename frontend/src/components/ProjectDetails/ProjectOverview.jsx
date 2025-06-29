@@ -1,3 +1,5 @@
+import ProjectStatusBadge from '../Projects/ProjectStatusBadge';
+
 // src/components/ProjectDetails/ProjectOverview.jsx
 const ProjectOverview = ({ project }) => {
   return (
@@ -25,9 +27,7 @@ const ProjectOverview = ({ project }) => {
           <div className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">
             Estado
           </div>
-          <div className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-3 py-1 rounded-full text-xs font-semibold">
-            {project.status}
-          </div>
+          <ProjectStatusBadge status={project.status} />
         </div>
 
         <div className="space-y-1 text-sm text-gray-700 dark:text-gray-200">
@@ -35,14 +35,19 @@ const ProjectOverview = ({ project }) => {
             Verticales
           </div>
           <div className="flex flex-wrap gap-1">
-            {project.verticals?.map((v, i) => (
-              <span
-                key={i}
-                className="inline-block bg-sinabe-primary text-white px-3 py-1 rounded-full text-xs"
-              >
-                {v.name}
+            {(project.verticals?.length > 0 &&
+              project.verticals?.map((v, i) => (
+                <span
+                  key={i}
+                  className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-2 py-0.5 rounded-full text-xs"
+                >
+                  {v.name}
+                </span>
+              ))) || (
+              <span className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-2 py-0.5 rounded-full text-xs">
+                Sin verticales
               </span>
-            ))}
+            )}
           </div>
         </div>
       </div>

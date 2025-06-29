@@ -23,6 +23,18 @@ const MetricCard = ({ icon: Icon, label, value }) => (
 );
 
 const ProjectMetrics = ({ project }) => {
+  if (!project) {
+    return (
+      <div className="text-center text-gray-500">
+        No hay métricas disponibles para este proyecto.
+      </div>
+    );
+  }
+
+  // para sacar el inventario asignado se debe sacar de project.deadlines y cada deadline tiene un campo inventoryAssigned
+  const inventoryAssigned =
+    project.deadlines?.flatMap((d) => d.inventoryAssigned) || [];
+
   return (
     <>
       <MetricCard
@@ -38,12 +50,12 @@ const ProjectMetrics = ({ project }) => {
       <MetricCard
         icon={FaBoxOpen}
         label="Inventario Asignado"
-        value={`Próximamente`}
+        value={`${inventoryAssigned.length} artículos`}
       />
       <MetricCard
         icon={FaUsers}
         label="Miembros del Equipo"
-        value={`Próximamente`}
+        value={`${project.teamMembers.length} miembros`}
       />
     </>
   );

@@ -1,8 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import classNames from 'classnames';
 
-const CustomTabs = ({ tabs }) => {
-  const [activeIndex, setActiveIndex] = useState(0);
+const CustomTabs = ({ tabs, initialIndex = 0, onTabChange }) => {
+  const [activeIndex, setActiveIndex] = useState(initialIndex);
+
+  // Sincronizar cambios desde el exterior si cambia el initialIndex
+  useEffect(() => {
+    setActiveIndex(initialIndex);
+  }, [initialIndex]);
+
+  const handleTabClick = (index) => {
+    setActiveIndex(index);
+    onTabChange?.(index); // notifica al padre si lo desea
+  };
 
   return (
     <div className="w-full">
@@ -10,7 +20,7 @@ const CustomTabs = ({ tabs }) => {
         {tabs.map((tab, index) => (
           <button
             key={index}
-            onClick={() => setActiveIndex(index)}
+            onClick={() => handleTabClick(index)}
             className={classNames(
               'flex items-center justify-center gap-2 w-full px-4 py-2 text-xs xl:text-sm font-bold rounded-lg transition-all whitespace-nowrap text-center',
               {
@@ -29,7 +39,7 @@ const CustomTabs = ({ tabs }) => {
         ))}
       </div>
 
-      <div className="w-full mt-6 overflow-x-hidden">
+      <div className="w-full mt-4 overflow-x-hidden">
         {tabs.map((tab, index) => (
           <div
             key={index}
