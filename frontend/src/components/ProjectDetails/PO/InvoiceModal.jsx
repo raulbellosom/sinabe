@@ -119,16 +119,33 @@ const InvoiceModal = ({
             onSubmit={handleSubmit}
           >
             {({ isSubmitting }) => (
-              <Form className="space-y-4">
-                {/* Text & Date Fields */}
-                <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4">
+              <Form className="space-y-3">
+                <div className="grid grid-cols-2 gap-2">
                   {[
-                    { name: 'code', label: 'Factura', type: 'text' },
-                    { name: 'concept', label: 'Concepto', type: 'text' },
-                    { name: 'amount', label: 'Monto', type: 'number' },
-                    { name: 'date', label: 'Fecha', type: 'date' },
+                    {
+                      name: 'code',
+                      label: 'Factura',
+                      type: 'text',
+                      colSpan: 2,
+                    },
+                    {
+                      name: 'concept',
+                      label: 'Concepto',
+                      type: 'text',
+                      colSpan: 2,
+                    },
+                    {
+                      name: 'amount',
+                      label: 'Monto',
+                      type: 'number',
+                      colSpan: 1,
+                    },
+                    { name: 'date', label: 'Fecha', type: 'date', colSpan: 1 },
                   ].map((field) => (
-                    <div key={field.name} className="flex flex-col">
+                    <div
+                      key={field.name}
+                      className={`flex flex-col${field.colSpan === 2 ? ' col-span-2' : ''}`}
+                    >
                       <label className="mb-1 text-sm font-medium">
                         {field.label}
                       </label>
@@ -145,8 +162,6 @@ const InvoiceModal = ({
                     </div>
                   ))}
                 </div>
-
-                {/* Select Estado */}
                 <div className="flex flex-col">
                   <label className="mb-1 text-sm font-medium">Estado</label>
                   <Field
@@ -164,7 +179,6 @@ const InvoiceModal = ({
                     className="text-red-600 text-sm mt-1"
                   />
                 </div>
-
                 {/* PDF File */}
                 <div className="flex flex-col">
                   <label className="mb-1 text-sm font-medium flex items-center gap-2">
@@ -205,7 +219,6 @@ const InvoiceModal = ({
                     />
                   )}
                 </div>
-
                 {/* XML File */}
                 <div className="flex flex-col">
                   <label className="mb-1 text-sm font-medium flex items-center gap-2">
@@ -246,7 +259,6 @@ const InvoiceModal = ({
                     />
                   )}
                 </div>
-
                 {/* Footer: Delete + Actions */}
                 <div className="pt-4 border-t flex flex-col space-y-4">
                   {isEditing && (

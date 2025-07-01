@@ -17,18 +17,12 @@ const generateInternalFolio = async (model) => {
   const modelCode = normalize(model.name);
   const baseCode = `${typeCode}-${brandCode}-${modelCode}`;
 
-  console.log(`Base code for internal folio: ${baseCode}`);
-
   const inventories = await db.inventory.findMany({
     where: {
       internalFolio: { startsWith: baseCode },
     },
     select: { internalFolio: true },
   });
-
-  console.log(
-    `Found ${inventories.length} inventories with base code ${baseCode}`
-  );
 
   const usedNumbers = new Set();
   for (const inv of inventories) {
@@ -58,7 +52,6 @@ const generateInternalFolio = async (model) => {
     next++;
   }
 
-  console.log(`Generating internal folio: ${finalFolio}`);
   return finalFolio;
 };
 
