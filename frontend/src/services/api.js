@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { saveAs } from 'file-saver';
 
-export const API_URL =
-  import.meta.env.VITE_API_URL + '/api' || 'http://localhost:4000/api';
+const raw = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+export const API_URL = raw.endsWith('/api') ? raw : `${raw}/api`;
 
 const api = axios.create({
   baseURL: API_URL,

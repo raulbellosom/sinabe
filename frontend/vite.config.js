@@ -30,8 +30,14 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // sigue incluyendo tus assets habituales
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
         cleanupOutdatedCaches: true,
+
+        // para navegación SPA:
+        navigateFallback: '/index.html',
+        // ¡nunca hagas fallback en rutas /api/!
+        navigateFallbackDenylist: [/^\/api\//],
       },
     }),
   ],
