@@ -1,11 +1,11 @@
 {
   "apps": [
     {
-      "appId": "5333f1e9",
+      "appId": "TU_APP_ID_REAL",
       "root": "frontend",
       "androidPath": "android",
-      "dependencyInstallCommand": "cd frontend && npm install",
-      "webBuildCommand": "cd frontend && npm run build"
+      "dependencyInstallCommand": "npm install",
+      "webBuildCommand": "npm run build"
     }
   ]
 }
