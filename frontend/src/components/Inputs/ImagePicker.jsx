@@ -6,6 +6,9 @@ import classNames from 'classnames';
 import imageCompression from 'browser-image-compression';
 import Notifies from '../Notifies/Notifies';
 import { IoMdCloudUpload } from 'react-icons/io';
+import { useNativeCamera } from '../../hooks/useNativeCamera';
+import { useMediaQuery } from 'react-responsive';
+import { FaCamera } from 'react-icons/fa';
 
 const ImagePicker = ({
   className,
@@ -13,6 +16,9 @@ const ImagePicker = ({
   form: { setFieldValue, touched, errors },
   ...props
 }) => {
+  const isMobile = useMediaQuery({ maxWidth: 768 });
+  const { openCamera } = useNativeCamera();
+
   const allowedTypes = [
     'image/jpeg',
     'image/png',
@@ -39,10 +45,8 @@ const ImagePicker = ({
     const processedFiles = [];
 
     for (const file of files) {
-      const ext = file.name
-        ? file.name.toLowerCase().slice(file.name.lastIndexOf('.'))
-        : '';
-
+      const ext =
+        file.name?.toLowerCase().slice(file.name.lastIndexOf('.')) || '';
       if (
         allowedTypes.includes(file.type) ||
         (file.type === '' && allowedExtensions.includes(ext))
@@ -69,15 +73,11 @@ const ImagePicker = ({
           Notifies('error', `Error al comprimir la imagen "${file.name}"`);
         }
       } else {
-        Notifies(
-          'error',
-          `Tipo de archivo no permitido: ${file.name}. Solo se aceptan imágenes.`,
-        );
+        Notifies('error', `Tipo de archivo no permitido: ${file.name}`);
       }
     }
 
-    const combinedFiles = [...currentFiles, ...processedFiles];
-    setFieldValue(field.name, combinedFiles);
+    setFieldValue(field.name, [...(field.value || []), ...processedFiles]);
   };
 
   const handleRemoveImage = (idOrIndex) => {
@@ -90,8 +90,19 @@ const ImagePicker = ({
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const newFiles = Array.from(e.dataTransfer.files);
-    handleFileChange({ target: { files: newFiles } });
+    handleFileChange({ target: { files: Array.from(e.dataTransfer.files) } });
+  };
+
+  const handleOpenCamera = async () => {
+    const uri = await openCamera();
+    if (uri) {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const file = new File([blob], `photo_${Date.now()}.jpg`, {
+        type: blob.type,
+      });
+      setFieldValue(field.name, [...(field.value || []), file]);
+    }
   };
 
   const hasImages = field.value && field.value.length > 0;
@@ -105,24 +116,20 @@ const ImagePicker = ({
         value={props.label}
       />
 
-      {/* Vista con imágenes (grid + dropzone dentro) */}
       {hasImages ? (
         <div
           className={classNames(
             'mt-1 gap-2 grid grid-cols-[repeat(auto-fill,_minmax(100px,_1fr))] md:grid-cols-[repeat(auto-fill,_minmax(100px,_1fr))]',
           )}
         >
-          {/* Dropzone como una imagen más */}
+          {/* Dropzone */}
           <div
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
             onClick={() =>
               document.getElementById(props.id || props.name).click()
             }
-            className={classNames(
-              'relative group flex items-center justify-center rounded-md overflow-hidden shadow-md transition-all duration-200 cursor-pointer border-2 border-dashed border-muted-foreground hover:bg-neutral-50',
-              'aspect-square w-full h-full min-w-[100px] min-h-[100px]',
-            )}
+            className="relative group flex items-center justify-center rounded-md overflow-hidden shadow-md transition-all duration-200 cursor-pointer border-2 border-dashed border-muted-foreground hover:bg-neutral-50 aspect-square w-full h-full min-w-[100px] min-h-[100px]"
           >
             <IoMdCloudUpload
               size={28}
@@ -130,12 +137,26 @@ const ImagePicker = ({
             />
           </div>
 
-          <FileInput
+          {/* Botón de cámara como una imagen más */}
+          {isMobile && (
+            <div
+              onClick={handleOpenCamera}
+              className="relative group flex items-center justify-center rounded-md overflow-hidden shadow-md transition-all duration-200 cursor-pointer border-2 border-dashed border-sinabe-primary hover:bg-sinabe-primary/10 aspect-square w-full h-full min-w-[100px] min-h-[100px]"
+            >
+              <span className="text-sinabe-primary font-semibold text-sm text-center flex flex-col items-center justify-center gap-2">
+                <FaCamera size={24} />
+                Usar cámara
+              </span>
+            </div>
+          )}
+
+          {/* Input real */}
+          <input
             id={props.id || props.name}
             multiple={props.multiple}
             accept={allowedTypes.join(',')}
+            type="file"
             className="hidden"
-            hidden
             onChange={handleFileChange}
           />
 
@@ -147,36 +168,50 @@ const ImagePicker = ({
           />
         </div>
       ) : (
-        // Vista vacía (dropzone ocupa todo el espacio con info)
-        <div
-          onDrop={handleDrop}
-          onDragOver={(e) => e.preventDefault()}
-          onClick={() =>
-            document.getElementById(props.id || props.name).click()
-          }
-          className={classNames(
-            'mt-1 flex flex-col items-center justify-center text-center border-2 border-dashed border-muted-foreground min-h-[30dvh] w-full cursor-pointer hover:bg-neutral-50 p-6 rounded-md',
+        <div className="mt-1 flex flex-col md:flex-row items-center justify-center gap-2 text-center">
+          {/* Dropzone ocupa la mitad */}
+          <div
+            onDrop={handleDrop}
+            onDragOver={(e) => e.preventDefault()}
+            onClick={() =>
+              document.getElementById(props.id || props.name).click()
+            }
+            className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground cursor-pointer hover:bg-neutral-50 p-6 rounded-md min-h-[30dvh]"
+          >
+            <IoMdCloudUpload
+              size={32}
+              className="text-gray-500 dark:text-gray-400 mb-2"
+            />
+            <p className="text-sm text-muted-foreground dark:text-gray-400">
+              <span className="font-semibold">Haz clic aquí</span> o arrastra y
+              suelta tus imágenes
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              SVG, PNG, JPG o GIF
+            </p>
+            <input
+              id={props.id || props.name}
+              multiple={props.multiple}
+              accept={allowedTypes.join(',')}
+              type="file"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+
+          {/* Botón de cámara ocupa la mitad */}
+          {isMobile && (
+            <button
+              onClick={handleOpenCamera}
+              type="button"
+              className="flex-1 min-h-[30dvh] w-full border-2 border-dashed border-sinabe-primary hover:bg-sinabe-primary/10 text-sinabe-primary rounded-md flex flex-col items-center justify-center px-4 py-2 text-sm font-semibold"
+            >
+              <span>
+                <FaCamera size={24} />
+              </span>
+              Usar cámara
+            </button>
           )}
-        >
-          <IoMdCloudUpload
-            size={32}
-            className="text-gray-500 dark:text-gray-400 mb-2"
-          />
-          <p className="text-sm text-muted-foreground dark:text-gray-400">
-            <span className="font-semibold">Haz clic aquí</span> o arrastra y
-            suelta tus imágenes
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            SVG, PNG, JPG o GIF
-          </p>
-          <FileInput
-            id={props.id || props.name}
-            multiple={props.multiple}
-            accept={allowedTypes.join(',')}
-            className="hidden"
-            hidden
-            onChange={handleFileChange}
-          />
         </div>
       )}
 
