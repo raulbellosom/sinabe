@@ -8,6 +8,7 @@ import Notifies from '../Notifies/Notifies';
 import { IoMdCloudUpload } from 'react-icons/io';
 import { useNativeCamera } from '../../hooks/useNativeCamera';
 import { useMediaQuery } from 'react-responsive';
+import { FaCamera } from 'react-icons/fa';
 
 const ImagePicker = ({
   className,
@@ -93,10 +94,11 @@ const ImagePicker = ({
   };
 
   const handleOpenCamera = async () => {
-    const uri = await openCamera();
-    if (uri) {
-      const response = await fetch(uri);
-      const blob = await response.blob();
+    const photo = await openCamera();
+    if (photo?.base64String) {
+      const blob = await fetch(
+        `data:image/jpeg;base64,${photo.base64String}`,
+      ).then((res) => res.blob());
       const file = new File([blob], `photo_${Date.now()}.jpg`, {
         type: blob.type,
       });
@@ -142,7 +144,8 @@ const ImagePicker = ({
               onClick={handleOpenCamera}
               className="relative group flex items-center justify-center rounded-md overflow-hidden shadow-md transition-all duration-200 cursor-pointer border-2 border-dashed border-sinabe-primary hover:bg-sinabe-primary/10 aspect-square w-full h-full min-w-[100px] min-h-[100px]"
             >
-              <span className="text-sinabe-primary font-semibold text-sm text-center">
+              <span className="text-sinabe-primary font-semibold text-sm text-center flex flex-col items-center justify-center gap-2">
+                <FaCamera size={24} />
                 Usar cámara
               </span>
             </div>
@@ -202,8 +205,11 @@ const ImagePicker = ({
             <button
               onClick={handleOpenCamera}
               type="button"
-              className="flex-1 min-h-[30dvh] border-2 border-dashed border-sinabe-primary hover:bg-sinabe-primary/10 text-sinabe-primary rounded-md flex items-center justify-center px-4 py-2 text-sm font-semibold"
+              className="flex-1 min-h-[30dvh] w-full border-2 border-dashed border-sinabe-primary hover:bg-sinabe-primary/10 text-sinabe-primary rounded-md flex flex-col items-center justify-center px-4 py-2 text-sm font-semibold"
             >
+              <span>
+                <FaCamera size={24} />
+              </span>
               Usar cámara
             </button>
           )}
