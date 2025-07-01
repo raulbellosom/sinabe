@@ -44,7 +44,6 @@ const ResponsiveTable = ({
   onRowControlClick,
   rowActions = [],
   pageSizeOptions = [10, 20, 30, 50, 100, 0],
-  showResourcesMode = false,
   viewMode = 'table',
 }) => {
   const isMobile = useMediaQuery({ maxWidth: 768 });

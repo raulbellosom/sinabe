@@ -57,7 +57,7 @@ const InvoiceInventoryManager = ({ orderId, invoiceId }) => {
       {/* Buscador de inventarios */}
       <div className="space-y-2">
         <label className="block text-sm font-medium mb-1">
-          Buscar inventarios
+          Buscar inventarios para asignar a la factura:
         </label>
         <InventorySearchInput
           onSelect={async (inv) => {

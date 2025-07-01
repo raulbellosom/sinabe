@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { FaBoxOpen } from 'react-icons/fa';
 import { MdTrendingUp, MdTrendingFlat, MdTrendingDown } from 'react-icons/md';
+import { useMediaQuery } from 'react-responsive';
 
 const statusConfig = {
   ALTA: {
@@ -26,11 +27,6 @@ const statusConfig = {
   },
 };
 
-const getStatusUrl = (status) =>
-  status
-    ? `/inventories?searchTerm=&pageSize=10&page=1&sortBy=updatedAt&order=desc&deepSearch=%5B%5D&status=${status}`
-    : '/inventories';
-
 const InventoryStatusCards = ({ total, byStatus }) => {
   const navigate = useNavigate();
   const totalCount = total || 0;
@@ -38,23 +34,16 @@ const InventoryStatusCards = ({ total, byStatus }) => {
   const propuesta = byStatus.PROPUESTA || 0;
   const baja = byStatus.BAJA || 0;
 
-  // Navegación con doble click o ctrl+click
-  const handleCardNav = (status) => (e) => {
-    const url = getStatusUrl(status);
-    if (e.ctrlKey || e.metaKey) {
-      window.open(url, '_blank');
-    } else {
-      navigate(url);
-    }
-  };
+  const isMobile = useMediaQuery({ maxWidth: 768 });
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
       {/* Total */}
       <div
         className="rounded-xl border-l-4 border-blue-500 bg-blue-50 p-5 shadow flex flex-col justify-between min-h-[120px] cursor-pointer"
-        onDoubleClick={handleCardNav(null)}
+        onDoubleClick={() => navigate('/inventories')}
         title="Ver todos los inventarios"
+        onClick={isMobile ? () => navigate('/inventories') : undefined}
       >
         <div className="flex justify-between items-center">
           <span className="text-blue-700 font-medium">Total Inventarios</span>
@@ -63,12 +52,16 @@ const InventoryStatusCards = ({ total, byStatus }) => {
         <div className="mt-2 text-3xl font-bold text-blue-900">
           {totalCount.toLocaleString()}
         </div>
+        <span className="text-blue-700 text-sm">&nbsp;</span>
       </div>
       {/* ALTA */}
       <div
         className={`rounded-xl border-l-4 ${statusConfig.ALTA.border} ${statusConfig.ALTA.bg} p-5 shadow flex flex-col justify-between min-h-[120px] cursor-pointer`}
-        onDoubleClick={handleCardNav('ALTA')}
+        onDoubleClick={() => navigate('/inventories?status=ALTA')}
         title="Ver inventarios en Alta"
+        onClick={
+          isMobile ? () => navigate('/inventories?status=ALTA') : undefined
+        }
       >
         <div className="flex justify-between items-center">
           <span className={statusConfig.ALTA.text + ' font-medium'}>
@@ -86,8 +79,11 @@ const InventoryStatusCards = ({ total, byStatus }) => {
       {/* PROPUESTA */}
       <div
         className={`rounded-xl border-l-4 ${statusConfig.PROPUESTA.border} ${statusConfig.PROPUESTA.bg} p-5 shadow flex flex-col justify-between min-h-[120px] cursor-pointer`}
-        onDoubleClick={handleCardNav('PROPUESTA')}
+        onDoubleClick={() => navigate('/inventories?status=PROPUESTA')}
         title="Ver inventarios en Propuesta"
+        onClick={
+          isMobile ? () => navigate('/inventories?status=PROPUESTA') : undefined
+        }
       >
         <div className="flex justify-between items-center">
           <span className={statusConfig.PROPUESTA.text + ' font-medium'}>
@@ -106,8 +102,11 @@ const InventoryStatusCards = ({ total, byStatus }) => {
       {/* BAJA */}
       <div
         className={`rounded-xl border-l-4 ${statusConfig.BAJA.border} ${statusConfig.BAJA.bg} p-5 shadow flex flex-col justify-between min-h-[120px] cursor-pointer`}
-        onDoubleClick={handleCardNav('BAJA')}
+        onDoubleClick={() => navigate('/inventories?status=BAJA')}
         title="Ver inventarios en Baja"
+        onClick={
+          isMobile ? () => navigate('/inventories?status=BAJA') : undefined
+        }
       >
         <div className="flex justify-between items-center">
           <span className={statusConfig.BAJA.text + ' font-medium'}>

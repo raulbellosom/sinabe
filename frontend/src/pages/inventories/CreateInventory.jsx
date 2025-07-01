@@ -123,7 +123,7 @@ const CreateInventory = () => {
   };
 
   return (
-    <div className="h-full bg-white p-4 rounded-md">
+    <div className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
       <div className="flex flex-col-reverse md:flex-row items-center gap-4 w-full pb-1">
         <div className="w-full h-full rounded-md flex items-center text-purple-500">
           <FaClipboardList size={24} className="mr-4" />

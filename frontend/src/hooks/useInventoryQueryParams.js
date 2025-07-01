@@ -1,4 +1,4 @@
-// useInventoryQueryParams.js
+// hooks/useInventoryQueryParams.js
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -16,8 +16,9 @@ export const useInventoryQueryParams = () => {
       order: params.get('order') || 'desc',
       conditionName: params.getAll('conditionName'),
       status: params.getAll('status'),
-      isDeepSearch: params.get('isDeepSearch') === 'true',
-      mainViewMode: params.get('mainViewMode') || 'table', // Added mainViewMode
+      advancedSearch: params.get('advancedSearch') === 'true',
+      mainViewMode: params.get('mainViewMode') || 'table',
+      verticalId: params.getAll('verticalId'),
     };
   }, [location.search]);
 
@@ -43,7 +44,7 @@ export const useInventoryQueryParams = () => {
         'pageSize',
         'sortBy',
         'order',
-        'isDeepSearch',
+        'advancedSearch',
         'mainViewMode',
       ].forEach((key) => {
         const newValue =
@@ -61,14 +62,11 @@ export const useInventoryQueryParams = () => {
         }
       });
 
-      // Handle array parameters (conditions, status)
-      // Ensure that newParams.conditionName is an array before attempting to sort
+      // Handle array parameters (conditionName)
       const newConditions = Array.isArray(newParams.conditionName)
         ? newParams.conditionName
         : [];
       const currentConditions = currentParams.getAll('conditionName');
-
-      // Compare sorted arrays to check if conditions have truly changed
       if (
         JSON.stringify(currentConditions.sort()) !==
         JSON.stringify(newConditions.sort())
@@ -80,17 +78,29 @@ export const useInventoryQueryParams = () => {
         updated = true;
       }
 
-      // Ensure that newParams.status is an array before attempting to sort
+      // Handle array parameters (status)
       const newStatus = Array.isArray(newParams.status) ? newParams.status : [];
       const currentStatus = currentParams.getAll('status');
-
-      // Compare sorted arrays to check if status values have truly changed
       if (
         JSON.stringify(currentStatus.sort()) !==
         JSON.stringify(newStatus.sort())
       ) {
         currentParams.delete('status');
         newStatus.forEach((stat) => currentParams.append('status', stat));
+        updated = true;
+      }
+
+      // Handle array parameters (verticalId)
+      const newVerticals = Array.isArray(newParams.verticalId)
+        ? newParams.verticalId
+        : [];
+      const currentVerticals = currentParams.getAll('verticalId');
+      if (
+        JSON.stringify(currentVerticals.sort()) !==
+        JSON.stringify(newVerticals.sort())
+      ) {
+        currentParams.delete('verticalId');
+        newVerticals.forEach((v) => currentParams.append('verticalId', v));
         updated = true;
       }
 

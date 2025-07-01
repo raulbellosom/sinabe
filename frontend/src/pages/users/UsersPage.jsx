@@ -229,6 +229,7 @@ const UsersPage = () => {
         pagination={pagination}
         loading={isLoading}
         error={error}
+        striped={true}
         sortConfig={{ key: query.sortBy, direction: query.order }}
         onSort={(key) => {
           const direction =

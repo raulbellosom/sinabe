@@ -268,7 +268,7 @@ const ProjectsPage = () => {
   ];
 
   return (
-    <section className="px-4 py-6 md:px-8 bg-white dark:bg-sinabe-blue-dark rounded-lg shadow-md">
+    <section className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-lg md:text-xl font-bold text-sinabe-primary">
           Proyectos
@@ -337,6 +337,7 @@ const ProjectsPage = () => {
           data={projects}
           pagination={pagination}
           loading={isLoading}
+          striped={true}
           error={error}
           sortConfig={{ key: query.sortBy, direction: query.order }}
           onSort={(key) => {

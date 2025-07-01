@@ -131,8 +131,9 @@ const ProjectDeadlines = ({ projectId }) => {
                     setSelectedDeadlineId(deadline.id);
                     setIsAssignModalOpen(true);
                   }}
-                  className="text-gray-600 hover:text-gray-900 hover:bg-indigo-100 p-1 rounded-md"
+                  className="text-gray-600 hover:text-gray-900 hover:bg-indigo-100 p-1 px-2 inline-flex items-center gap-2 border rounded-full"
                 >
+                  {deadline.inventoryAssignments?.length || 0}
                   <BsBoxSeam />
                 </button>
                 <button

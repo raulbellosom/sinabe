@@ -22,7 +22,7 @@ const ReusableTable = ({
   pagination = { currentPage: 1, totalPages: 1, totalRecords: 0, pageSize: 10 },
   onPageChange = () => {},
   onPageSizeChange = () => {},
-  pageSizeOptions = [10, 20, 50, 100],
+  pageSizeOptions = [10, 20, 30, 50, 100, 0],
   showPagination = true,
 
   selectable = false,
@@ -42,6 +42,7 @@ const ReusableTable = ({
   },
 
   rowClassName = () => '',
+  striped = false,
 }) => {
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const getNestedValue = (obj, path) => {
@@ -259,8 +260,12 @@ const ReusableTable = ({
               <tr
                 key={getNestedValue(row, rowKey)}
                 className={classNames(
-                  'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600',
+                  ' border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600',
                   rowClassName(row),
+                  {
+                    'bg-gray-50 dark:bg-gray-700':
+                      striped && data.indexOf(row) % 2 === 0,
+                  },
                 )}
                 onClick={() => onRowClick(row)}
                 onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
@@ -374,11 +379,11 @@ const ReusableTable = ({
             <select
               value={pagination.pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="px-2 py-1 border rounded-md text-sm dark:bg-gray-700 dark:text-white"
+              className="px-2 py-1 border-gray-100 rounded-md text-sm dark:bg-gray-700 dark:text-white"
             >
               {pageSizeOptions.map((size) => (
                 <option key={size} value={size}>
-                  {size === 0 ? 'Todos' : size}
+                  {size == 0 ? 'Todos' : size}
                 </option>
               ))}
             </select>

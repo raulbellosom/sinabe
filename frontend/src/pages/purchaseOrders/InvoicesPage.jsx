@@ -21,6 +21,7 @@ import { parseToLocalDate } from '../../utils/formatValues';
 import { Badge } from 'flowbite-react';
 import { useDebounce } from '../../hooks/useDebounce';
 import { getFileUrl } from '../../utils/getFileUrl';
+import { useMediaQuery } from 'react-responsive';
 
 const statusColors = {
   PENDIENTE: 'yellow',
@@ -31,11 +32,14 @@ const statusColors = {
 const InvoicesPage = () => {
   const { orderId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const isMobile = useMediaQuery({ maxWidth: 768 });
 
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
   const searchTerm = searchParams.get('searchTerm') || '';
   const modalId = searchParams.get('modalId') || null;
+  const sortBy = searchParams.get('sortBy') || 'date'; // o 'code'
+  const order = searchParams.get('order') || 'desc';
 
   const debouncedSearchTerm = useDebounce(searchTerm);
 
@@ -43,6 +47,8 @@ const InvoicesPage = () => {
     searchTerm: debouncedSearchTerm,
     page,
     pageSize,
+    sortBy,
+    order,
   });
 
   const invoices = data.data || [];
@@ -107,16 +113,19 @@ const InvoicesPage = () => {
         render: (code) => (
           <span className="text-nowrap font-semibold">{code}</span>
         ),
+        sortable: true,
       },
-      { key: 'concept', title: 'Concepto' },
+      { key: 'concept', title: 'Concepto', sortable: true },
       {
         key: 'amount',
         title: 'Monto',
         render: (amt) => `$${amt.toLocaleString('es-MX')}`,
+        sortable: true,
       },
       {
         key: 'status',
         title: 'Estado',
+        sortable: true,
         render: (status) => (
           <Badge
             color={statusColors[status] || 'gray'}
@@ -129,6 +138,7 @@ const InvoicesPage = () => {
       {
         key: 'date',
         title: 'Fecha',
+        sortable: true,
         render: (d) => parseToLocalDate(d, 'es-MX'),
       },
       {
@@ -181,20 +191,25 @@ const InvoicesPage = () => {
     <section className="space-y-4 bg-white p-4 rounded-lg shadow-md">
       <div className="flex justify-between items-center">
         <h1 className="text-lg font-bold text-sinabe-primary flex items-center gap-2">
-          <FaFileInvoice /> Facturas de la Orden
+          <span>
+            <FaFileInvoice />
+          </span>
+          {isMobile ? 'Facturas de la OC' : 'Facturas de la Orden de Compra'}
         </h1>
-        <ActionButtons
-          extraActions={[
-            {
-              label: 'Nueva factura',
-              icon: FaPlus,
-              action: () => {
-                setSelectedInvoice(null);
-                setShowInvoiceModal(true);
+        <div className="text-nowrap">
+          <ActionButtons
+            extraActions={[
+              {
+                label: 'Nueva factura',
+                icon: FaPlus,
+                action: () => {
+                  setSelectedInvoice(null);
+                  setShowInvoiceModal(true);
+                },
               },
-            },
-          ]}
-        />
+            ]}
+          />
+        </div>
       </div>
 
       {/* 🔎 Input de búsqueda */}
@@ -220,6 +235,8 @@ const InvoicesPage = () => {
         columns={columns}
         data={invoices}
         loading={isLoading}
+        striped={true}
+        enableCardView={false}
         pagination={pagination}
         onPageChange={(newPage) =>
           setSearchParams((prev) => {
@@ -236,11 +253,21 @@ const InvoicesPage = () => {
             return copy;
           })
         }
+        sortConfig={{ key: sortBy, direction: order }}
+        onSort={(key) =>
+          setSearchParams((prev) => {
+            const copy = new URLSearchParams(prev);
+            copy.set('sortBy', key);
+            copy.set('order', order === 'asc' ? 'desc' : 'asc');
+            return copy;
+          })
+        }
         rowActions={(inv) => [
           {
             key: 'main',
             icon: MdInventory,
             label: 'Inventarios',
+            color: 'purple',
             action: () => handleOpenInventoryModal(inv),
           },
           {
@@ -275,6 +302,7 @@ const InvoicesPage = () => {
         title={`Inventario de ${invoiceToManageInventory?.code || ''}`}
         icon={MdInventory}
         size="xl"
+        className="mt-4 ml-4"
       >
         {invoiceToManageInventory && (
           <InvoiceInventoryManager

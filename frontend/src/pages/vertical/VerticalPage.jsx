@@ -1,18 +1,16 @@
+// src/pages/VerticalPage.jsx
 import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   FaSitemap,
   FaPlus,
   FaTrash,
-  FaBriefcase,
-  FaFolder,
+  FaEye,
   FaChevronDown,
   FaChevronUp,
-  FaXmark,
-  FaBoxOpen,
-  FaEye,
 } from 'react-icons/fa6';
 import { BsThreeDots } from 'react-icons/bs';
-import { FaEdit, FaRegTrashAlt } from 'react-icons/fa';
+import { FaBriefcase, FaEdit, FaFolder } from 'react-icons/fa';
 import {
   useVerticals,
   useCreateVertical,
@@ -23,18 +21,11 @@ import {
   useSearchModels,
 } from '../../hooks/useVerticals';
 import ModalVerticalForm from '../../components/Verticals/ModalVerticalForm';
-import ModalAssignModel from '../../components/Verticals/ModalAssignModel';
+import VerticalModelsDetail from '../../components/Verticals/VerticalModelsDetail';
+import SideModal from '../../components/Modals/SideModal';
 import Skeleton from 'react-loading-skeleton';
-import { Badge, Dropdown } from 'flowbite-react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Dropdown } from 'flowbite-react';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import Notifies from '../../components/Notifies/Notifies';
-
-const slideVariants = {
-  hidden: { x: '100%' },
-  visible: { x: 0, transition: { duration: 0.3 } },
-  exit: { x: '100%', transition: { duration: 0.2 } },
-};
 
 const VerticalPage = () => {
   const {
@@ -42,7 +33,6 @@ const VerticalPage = () => {
     isLoading,
     refetch: refetchVerticals,
   } = useVerticals();
-
   const createVertical = useCreateVertical();
   const updateVertical = useUpdateVertical();
   const deleteVertical = useDeleteVertical();
@@ -50,23 +40,51 @@ const VerticalPage = () => {
   const removeModel = useRemoveVerticalFromModel();
   const searchModels = useSearchModels();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const modalId = searchParams.get('modalId');
+
   const [selected, setSelected] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [showAssign, setShowAssign] = useState(false);
   const [editData, setEditData] = useState(null);
   const [expanded, setExpanded] = useState(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [modelDetailsOpen, setModelDetailsOpen] = useState(null);
 
-  // 🔄 Cada vez que cambian las verticales, re-sincroniza el 'selected'
+  // Abrir detalle de vertical si viene en URL
   useEffect(() => {
-    if (selected?.id) {
-      const updated = verticales?.find((v) => v.id === selected.id);
-      if (updated) {
-        setSelected(updated);
-      }
+    if (modalId && verticales?.length) {
+      // comparas string contra string
+      const found = verticales.find((v) => v.id.toString() === modalId);
+      if (found) setSelected(found);
+    }
+  }, [modalId, verticales]);
+
+  // Mantener selected sincronizado si cambian datos
+  useEffect(() => {
+    if (selected?.id && verticales?.length) {
+      const updated = verticales.find((v) => v.id === selected.id);
+      if (updated) setSelected(updated);
     }
   }, [verticales]);
+
+  const openDetailModal = (vertical) => {
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.set('modalId', vertical.id);
+      return params;
+    });
+    setSelected(vertical);
+  };
+
+  const closeDetailModal = () => {
+    setSelected(null);
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.delete('modalId');
+      return params;
+    });
+    setShowFullDescription(false);
+  };
 
   const handleEdit = (vertical) => {
     setEditData(vertical);
@@ -75,7 +93,9 @@ const VerticalPage = () => {
 
   const handleDelete = (id) => {
     if (confirm('¿Estás seguro de eliminar esta vertical?')) {
-      deleteVertical.mutate(id);
+      deleteVertical.mutate(id, {
+        onSuccess: () => refetchVerticals(),
+      });
     }
   };
 
@@ -93,19 +113,6 @@ const VerticalPage = () => {
   const shouldCollapse = (text) =>
     text?.split('\n').length > 3 || text?.length > 200;
   const shouldExpandInModal = (text) => text?.split('\n').length > 5;
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'ALTA':
-        return 'bg-green-100 text-green-800';
-      case 'BAJA':
-        return 'bg-red-100 text-red-800';
-      case 'PROPUESTA':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-600';
-    }
-  };
 
   return (
     <div className="p-4 space-y-6 bg-white dark:bg-gray-900 rounded-lg shadow-md h-full">
@@ -133,26 +140,27 @@ const VerticalPage = () => {
       </div>
 
       {/* RESUMEN GLOBAL */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <span className="bg-sinabe-primary/10 text-sinabe-primary px-3 py-1 rounded-full text-sm flex items-center gap-2">
-          <FaBriefcase /> {resumenGlobal.modelos} Modelos asignados
+      <div className="flex gap-4">
+        <span className="bg-sinabe-primary/10 text-sinabe-primary px-3 py-3 rounded-full text-sm flex items-center gap-2">
+          <FaBriefcase size={20} /> {resumenGlobal.modelos} Modelos asignados
         </span>
         <span className="bg-sinabe-info/10 text-sinabe-info px-3 py-1 rounded-full text-sm flex items-center gap-2">
-          <FaFolder /> {resumenGlobal.inventarios} Inventarios relacionados
+          <FaFolder size={20} /> {resumenGlobal.inventarios} Inventarios
+          relacionados
         </span>
       </div>
 
       {/* LISTADO DE VERTICALES */}
       {isLoading ? (
         <Skeleton count={6} height={80} />
-      ) : verticales?.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      ) : verticales?.length ? (
+        <div className="grid grid-cols-1 gap-4">
           {verticales.map((v) => (
             <div
               key={v.id}
-              className="bg-white dark:bg-gray-800 border rounded-xl shadow-sm p-5 relative text-nowrap"
+              className="bg-white dark:bg-gray-800 border rounded-xl shadow-sm p-5 relative"
             >
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-4 right-4 text-nowrap">
                 <Dropdown
                   inline
                   renderTrigger={() => (
@@ -161,8 +169,11 @@ const VerticalPage = () => {
                     </button>
                   )}
                 >
-                  <Dropdown.Item icon={FaEye} onClick={() => setSelected(v)}>
-                    Administrar inventarios
+                  <Dropdown.Item
+                    icon={FaEye}
+                    onClick={() => openDetailModal(v)}
+                  >
+                    Ver detalles
                   </Dropdown.Item>
                   <Dropdown.Item icon={FaEdit} onClick={() => handleEdit(v)}>
                     Editar
@@ -177,7 +188,7 @@ const VerticalPage = () => {
                 </Dropdown>
               </div>
 
-              <h2 className="font-semibold text-sm lg:text-base text-sinabe-blue-dark mb-1">
+              <h2 className="font-semibold text-base text-sinabe-blue-dark mb-1">
                 {v.name}
               </h2>
               <div className="text-xs lg:text-sm text-gray-600 mb-3 whitespace-pre-line">
@@ -229,169 +240,32 @@ const VerticalPage = () => {
         </div>
       )}
 
-      {/* MODAL DE DETALLES */}
-      <AnimatePresence>
+      {/* DETALLE DE VERTICAL */}
+      <SideModal
+        isOpen={!!selected}
+        onClose={closeDetailModal}
+        title={selected?.name}
+        icon={FaSitemap}
+        size="xl"
+        className="mt-4 ml-4"
+      >
         {selected && (
-          <div
-            style={{
-              margin: 0,
-              paddingTop: '10px',
-              paddingLeft: '10px',
-            }}
-            className="fixed inset-0 bg-black/50 z-50 flex justify-end m-0"
-          >
-            <motion.div
-              key="modal"
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              variants={slideVariants}
-              className="w-full max-w-[95%] md:max-w-2xl 2xl:max-w-3xl h-full bg-white dark:bg-gray-900 shadow-lg py-6 px-4 overflow-y-auto rounded-tl-3xl relative"
-            >
-              <button
-                onClick={() => setSelected(null)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-red-500"
-              >
-                <FaXmark />
-              </button>
-
-              <h2 className="text-xl font-bold mb-2 text-sinabe-primary flex items-center gap-2">
-                <FaSitemap /> {selected.name}
-              </h2>
-              <p className="text-sm text-gray-600 whitespace-pre-line mb-2">
-                {showFullDescription ||
-                !shouldExpandInModal(selected.description)
-                  ? selected.description
-                  : selected.description.split('\n').slice(0, 5).join('\n') +
-                    '...'}
-              </p>
-              {shouldExpandInModal(selected.description) && (
-                <button
-                  onClick={() => setShowFullDescription(!showFullDescription)}
-                  className="text-xs text-sinabe-primary hover:underline mb-4"
-                >
-                  {showFullDescription ? 'Ver menos' : 'Ver más'}
-                </button>
-              )}
-
-              <hr className="my-4" />
-
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold">Modelos asignados</h3>
-                <div>
-                  <ActionButtons
-                    extraActions={[
-                      {
-                        label: 'Asignar modelo',
-                        icon: FaPlus,
-                        color: 'indigo',
-                        filled: true,
-                        action: () => setShowAssign(true),
-                      },
-                    ]}
-                  />
-                </div>
-              </div>
-
-              {selected.models.length === 0 ? (
-                <div className="text-center text-gray-500 mb-6 text-sm">
-                  <FaBoxOpen className="mx-auto text-2xl mb-2" />
-                  No hay modelos asignados.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {selected.models.map((model) => (
-                    <div key={model.id} className="border rounded-md p-3">
-                      <div
-                        className="flex justify-between items-start cursor-pointer"
-                        onClick={() =>
-                          setModelDetailsOpen(
-                            modelDetailsOpen === model.id ? null : model.id,
-                          )
-                        }
-                      >
-                        <div className="flex items-center w-full">
-                          <div className="flex flex-col items-start gap-2 font-medium text-sm">
-                            <div className="flex items-center gap-2 w-full">
-                              <span className="text-gray-500 hover:text-sinabe-primary cursor-pointer p-2 hover:bg-gray-100 rounded">
-                                {modelDetailsOpen === model.id ? (
-                                  <FaChevronUp className="text-xs" />
-                                ) : (
-                                  <FaChevronDown className="text-xs" />
-                                )}
-                              </span>
-                              <p className="text-sinabe-primary font-semibold">
-                                {model.name} ({model.brand?.name || '-'} -{' '}
-                                {model.type?.name || '-'})
-                              </p>
-                            </div>
-                            <Badge size="sm" color="indigo" className="text-xs">
-                              {model.inventories?.length || 0} inventarios
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <ActionButtons
-                              extraActions={[
-                                {
-                                  label: 'Desasignar',
-                                  icon: FaRegTrashAlt,
-                                  color: 'red',
-                                  action: async (e) => {
-                                    e.stopPropagation();
-                                    await removeModel.mutateAsync({
-                                      modelId: model.id,
-                                      verticalId: selected.id,
-                                    });
-                                    await refetchVerticals();
-                                    Notifies(
-                                      'success',
-                                      'Modelo desasignado correctamente',
-                                    );
-                                  },
-                                },
-                              ]}
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {modelDetailsOpen === model.id && (
-                        <div className="mt-2 max-h-96 overflow-y-auto space-y-2">
-                          {model.inventories.map((inv) => (
-                            <div
-                              key={inv.id}
-                              className="flex justify-between bg-sinabe-gray/10 border rounded-md p-2 text-sm"
-                            >
-                              <div>
-                                <div className="font-semibold">
-                                  SN: {inv.serialNumber || 'Inventario'}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  Tipo: {model.type?.name || '-'} | Marca:{' '}
-                                  {model.brand?.name || '-'} | # Activo:{' '}
-                                  {inv.activeNumber || '-'} | Folio:{' '}
-                                  {inv.internalFolio || '-'}
-                                </div>
-                              </div>
-                              <div
-                                className={`flex items-center h-fit text-xs px-2 py-0.5 rounded-full ${getStatusColor(inv.status)}`}
-                              >
-                                {inv.status || 'Sin estado'}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          </div>
+          <VerticalModelsDetail
+            models={selected.models}
+            verticalId={selected.id}
+            removeModel={removeModel}
+            refetchVerticals={refetchVerticals}
+            showFullDescription={showFullDescription}
+            setShowFullDescription={setShowFullDescription}
+            shouldExpandInModal={shouldExpandInModal}
+            selectedDescription={selected.description}
+            showAssign={showAssign}
+            setShowAssign={setShowAssign}
+            assignModel={assignModel}
+            searchModels={searchModels}
+          />
         )}
-      </AnimatePresence>
+      </SideModal>
 
       {/* MODALES DE CREAR / ASIGNAR */}
       {showForm && (
@@ -406,27 +280,8 @@ const VerticalPage = () => {
               await createVertical.mutateAsync(data);
             }
             setShowForm(false);
+            refetchVerticals();
           }}
-        />
-      )}
-
-      {showAssign && selected && (
-        <ModalAssignModel
-          isOpen={showAssign}
-          onClose={() => setShowAssign(false)}
-          verticalId={selected.id}
-          onAssign={({ modelId, verticalId }) => {
-            assignModel.mutate(
-              { modelId, verticalIds: [verticalId] },
-              {
-                onSuccess: async () => {
-                  await refetchVerticals();
-                  setShowAssign(false);
-                },
-              },
-            );
-          }}
-          loadModels={(term) => searchModels(term, selected?.id)}
         />
       )}
     </div>

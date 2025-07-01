@@ -71,6 +71,7 @@ const POCard = ({ order, onEdit }) => {
     date: inv.date,
     pdf: inv.fileUrl ? getFileUrl({ url: inv.fileUrl }) : null,
     xml: inv.xmlUrl ? getFileUrl({ url: inv.xmlUrl }) : null,
+    inventories: inv.inventories || [],
   }));
 
   // collapsed menu OC
@@ -162,6 +163,19 @@ const POCard = ({ order, onEdit }) => {
                 title: 'Fecha',
                 render: (d) => parseToLocalDate(d, 'es-MX'),
               },
+              {
+                key: 'inventories',
+                title: 'Inventarios',
+                render: (_, row) => (
+                  <Badge
+                    size="sm"
+                    color="purple"
+                    className="text-center flex justify-center items-center"
+                  >
+                    {row.inventories?.length || 0}
+                  </Badge>
+                ),
+              },
               { key: 'actions', title: 'Acciones' },
             ]}
             data={invoiceData}
@@ -218,7 +232,7 @@ const POCard = ({ order, onEdit }) => {
                 {
                   label: 'Ver OC completa',
                   icon: FaEye,
-                  href: '/purchase-orders/' + order.id,
+                  href: `/purchase-orders/${order.id}/invoices`,
                 },
                 {
                   label: 'Agregar Factura',
@@ -276,6 +290,7 @@ const POCard = ({ order, onEdit }) => {
         title={`Inventario de ${invoiceToManageInventory?.code || ''}`}
         icon={MdInventory}
         size="xl"
+        className="mt-4 ml-4"
       >
         {invoiceToManageInventory && (
           <InvoiceInventoryManager

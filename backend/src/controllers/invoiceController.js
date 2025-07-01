@@ -215,7 +215,13 @@ export const removeInventoryFromInvoice = async (req, res) => {
 
 export const searchInvoicesByOrderId = async (req, res) => {
   const { orderId } = req.params;
-  const { searchTerm = "", page = 1, pageSize = 10 } = req.query;
+  const {
+    searchTerm = "",
+    page = 1,
+    pageSize = 10,
+    sortBy = "date", // 👈 nuevo
+    order = "desc", // 👈 nuevo
+  } = req.query;
 
   const parsedPage = parseInt(page, 10) || 1;
   const parsedPageSize = parseInt(pageSize, 10) || 10;
@@ -245,6 +251,15 @@ export const searchInvoicesByOrderId = async (req, res) => {
     ],
   };
 
+  // Validar sortBy y order por seguridad
+  const validSortFields = ["date", "amount", "code", "concept"];
+  const validOrders = ["asc", "desc"];
+
+  const sortField = validSortFields.includes(sortBy) ? sortBy : "date";
+  const sortOrder = validOrders.includes(order.toLowerCase())
+    ? order.toLowerCase()
+    : "desc";
+
   try {
     const [data, totalRecords] = await Promise.all([
       db.invoice.findMany({
@@ -260,7 +275,9 @@ export const searchInvoicesByOrderId = async (req, res) => {
         },
         skip,
         take,
-        orderBy: { date: "desc" },
+        orderBy: {
+          [sortField]: sortOrder,
+        },
       }),
       db.invoice.count({ where }),
     ]);

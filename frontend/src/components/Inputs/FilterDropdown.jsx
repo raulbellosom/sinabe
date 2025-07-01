@@ -15,6 +15,7 @@ const FilterDropdown = ({
   labelField = 'name',
   titleDisplay = '',
   icon = <TbFilter size={18} className="text-white" />,
+  filterClassNames = '',
 }) => {
   const toggleOption = (id) => {
     const newSelected = selected.includes(id)
@@ -44,12 +45,17 @@ const FilterDropdown = ({
   return (
     <Dropdown
       renderTrigger={() => (
-        <button className="w-full md:w-fit text-xs xl:text-sm p-2 text-white bg-sinabe-primary hover:bg-sinabe-primary/90 shadow flex items-center justify-center rounded-md">
-          {icon && (
-            <span className={classNames('', { 'text-white': !titleDisplay })}>
-              {icon}
-            </span>
+        <button
+          className={classNames(
+            'w-full md:w-fit text-xs xl:text-sm p-2  shadow flex items-center justify-center rounded-md',
+            {
+              'text-white bg-sinabe-primary hover:bg-sinabe-primary/90':
+                !filterClassNames,
+            },
+            filterClassNames,
           )}
+        >
+          {icon && <span>{icon}</span>}
           <span className="ml-2">{titleDisplay || 'Filtrar'}</span>
         </button>
       )}

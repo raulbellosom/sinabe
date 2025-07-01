@@ -1,5 +1,5 @@
 // InventoriesPage.jsx
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useSearchInventories } from '../../hooks/useSearchInventories';
 import { useInventoryQueryParams } from '../../hooks/useInventoryQueryParams';
 import { useCatalogContext } from '../../context/CatalogContext';
@@ -22,7 +22,8 @@ import {
   FaRegFile,
   FaTable, // Import FaTable for table view icon
   FaImages,
-  FaSearch, // Import FaImages for resources view icon (representing resources)
+  FaSearch,
+  FaSitemap, // Import FaImages for resources view icon (representing resources)
 } from 'react-icons/fa';
 import {
   TbLayoutSidebarLeftCollapseFilled,
@@ -32,12 +33,12 @@ import { BsThreeDotsVertical } from 'react-icons/bs';
 import ImageViewer from '../../components/ImageViewer/ImageViewer2';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
-import { MdInventory } from 'react-icons/md';
+import { MdInfo, MdInventory } from 'react-icons/md';
 import { useInventoryContext } from '../../context/InventoryContext';
 import classNames from 'classnames';
 // Import InventoriesImagesView to support the 'resources' view mode
-import InventoriesImagesView from './views/InventoriesImagesView';
 import FilterDropdown from '../../components/Inputs/FilterDropdown'; // Make sure this import is present
+import { useVerticals } from '../../hooks/useVerticals';
 
 const InventoriesPage = () => {
   const [selectedInventory, setSelectedInventory] = useState(null);
@@ -47,6 +48,7 @@ const InventoriesPage = () => {
 
   // Use mainViewMode from query params as the source of truth for view mode
   const { query, updateQuery } = useInventoryQueryParams();
+  const { data: verticals } = useVerticals();
   const viewMode = query.mainViewMode || 'table'; // Default to 'table'
 
   const { inventoryConditions } = useCatalogContext();
@@ -83,6 +85,15 @@ const InventoriesPage = () => {
       return newSelected;
     });
   };
+
+  const verticalOptions = useMemo(
+    () =>
+      (verticals ?? []).map((v) => ({
+        id: String(v.id), // ← conviertes el número a string
+        name: v.name,
+      })),
+    [verticals],
+  );
 
   const onSelectAllTableRows = () => {
     const allSelected =
@@ -233,6 +244,38 @@ const InventoriesPage = () => {
         cellClassName: 'w-28',
       },
       {
+        // vertical
+        key: 'vertical',
+        title: 'Vertical',
+        sortable: false,
+        render: (_, row) => {
+          const verticals = row.model?.ModelVertical || [];
+          if (verticals.length === 0) return '';
+
+          const maxVisible = 3;
+          const visibleVerticals = verticals.slice(0, maxVisible);
+          const remainingCount = verticals.length - maxVisible;
+
+          return (
+            <div className="flex flex-wrap gap-1">
+              {visibleVerticals.map((modelVertical) => (
+                <span
+                  key={modelVertical.id}
+                  className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                >
+                  {modelVertical.vertical?.name}
+                </span>
+              ))}
+              {remainingCount > 0 && (
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                  +{remainingCount}
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
         key: 'conditions',
         title: 'Condiciones',
         sortable: false,
@@ -251,6 +294,7 @@ const InventoriesPage = () => {
         headerClassName: 'w-40',
         cellClassName: 'w-40',
       },
+
       {
         key: 'comments',
         title: 'Comentarios',
@@ -361,7 +405,7 @@ const InventoriesPage = () => {
   const handleDeepSearchToggle = (isChecked) => {
     updateQuery({
       ...query,
-      isDeepSearch: isChecked,
+      advancedSearch: isChecked,
       page: 1,
     });
   };
@@ -456,7 +500,7 @@ const InventoriesPage = () => {
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-nowrap">
             <Tooltip content="Activar búsqueda avanzada">
               <ToggleSwitch
-                checked={query.isDeepSearch}
+                checked={query.advancedSearch}
                 onChange={handleDeepSearchToggle}
                 label=""
                 className="scale-75"
@@ -467,7 +511,6 @@ const InventoriesPage = () => {
         <div className="flex items-center gap-2">
           {inventoryConditions.length > 0 && (
             <FilterDropdown
-              buttonText="Condición"
               options={inventoryConditions.map((c) => ({
                 id: c.name,
                 name: c.name,
@@ -483,7 +526,6 @@ const InventoriesPage = () => {
 
           {/* Corrected: use the hardcoded array directly */}
           <FilterDropdown
-            buttonText="Estatus"
             options={['ALTA', 'BAJA', 'PROPUESTA'].map((s) => ({
               id: s,
               name: s,
@@ -494,6 +536,19 @@ const InventoriesPage = () => {
             }
             titleDisplay="Estatus"
             label="Filtrar por Estatus"
+            icon={<MdInfo size={18} />}
+          />
+
+          {/* Filter by vertical */}
+          <FilterDropdown
+            options={verticalOptions}
+            selected={query.verticalId}
+            setSelected={(verticalIds) =>
+              updateQuery({ ...query, verticalId: verticalIds, page: 1 })
+            }
+            titleDisplay="Vertical"
+            label="Filtrar por Vertical"
+            icon={<FaSitemap className="h-4 w-4" />}
           />
 
           {/* View Mode Toggle */}

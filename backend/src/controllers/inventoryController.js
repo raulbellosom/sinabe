@@ -135,9 +135,21 @@ export const getInventoryById = async (req, res) => {
         createdBy: {
           select: { id: true, firstName: true, lastName: true, email: true },
         },
-        model: { include: { brand: true, type: true } },
-        conditions: { include: { condition: true } },
-        customField: { include: { customField: true } },
+        model: {
+          include: {
+            brand: true,
+            type: true,
+            ModelVertical: {
+              include: { vertical: true },
+            },
+          },
+        },
+        conditions: {
+          include: { condition: true },
+        },
+        customField: {
+          include: { customField: true },
+        },
         files: {
           where: { enabled: true },
           select: { id: true, url: true, type: true, metadata: true },
@@ -150,6 +162,20 @@ export const getInventoryById = async (req, res) => {
             type: true,
             thumbnail: true,
             metadata: true,
+          },
+        },
+        invoice: {
+          include: {
+            purchaseOrder: {
+              include: { project: true },
+            },
+          },
+        },
+        InventoryDeadline: {
+          include: {
+            deadline: {
+              include: { project: true },
+            },
           },
         },
       },
@@ -165,11 +191,13 @@ export const getInventoryById = async (req, res) => {
         .json({ message: "No tienes permisos para ver este inventario." });
     }
 
+    // Formateo de fecha
     inventory.receptionDate =
       inventory.receptionDate?.toISOString().split("T")[0] || null;
+
     res.json(inventory);
   } catch (error) {
-    console.log("Error fetching inventory:", error.message);
+    console.log("Error fetching inventory:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -671,21 +699,6 @@ export const checkSerialNumber = async (req, res) => {
 
 // export const searchInventories = async (req, res) => {
 //   try {
-//     const userId = req.user?.id; // Asegurarse de que el usuario esté autenticado
-//     if (!userId) {
-//       return res.status(401).json({ error: "Unauthorized" });
-//     }
-//     const permissions = await getUserPermissions(userId);
-//     // const permissions = user.role.permissions.map((p) => p.permission.name);
-//     const canViewAll = permissions.includes("view_inventories");
-//     const canViewSelf = permissions.includes("view_self_inventories");
-//     // Si el usuario no tiene ninguno de los permisos necesarios, se le niega el acceso.
-//     if (!canViewAll && !canViewSelf) {
-//       return res.status(403).json({
-//         error: "Forbidden: No tienes permisos para acceder a los inventarios",
-//       });
-//     }
-
 //     const {
 //       searchTerm,
 //       sortBy = "updatedAt",
@@ -693,221 +706,43 @@ export const checkSerialNumber = async (req, res) => {
 //       page = 1,
 //       pageSize = 10,
 //       conditionName,
-//       deepSearch = [],
 //       status,
+//       advancedSearch = "false",
+//       deadlineId,
+//       projectId,
+//       purchaseOrderId,
+//       invoiceId,
+//       verticalId,
 //     } = req.query;
+//     console.log("searchTerm", searchTerm);
+//     console.log("advancedSearch", advancedSearch);
+//     const isAdvanced = advancedSearch === "true";
+//     console.log("Is advanced search:", isAdvanced);
+//     const parsedPageSize = pageSize == "0" ? null : parseInt(pageSize);
 
-//     const validSortFields = [
-//       "createdAt",
-//       "status",
-//       "model.name",
-//       "model.brand.name",
-//       "model.type.name",
-//       "activeNumber",
-//       "serialNumber",
-//       "updatedAt",
-//       "receptionDate",
-//       "comments",
-//     ];
+//     const buildOrderBy = (sortBy, order) => {
+//       const parts = sortBy.split(".");
+//       let current = {};
+//       let nested = current;
 
-//     const mapSearchHeaderToColumn = (searchHeader, customFieldName) => {
-//       const columnsMap = {
-//         "model.name": "model.name",
-//         "model.type.name": "model.type.name",
-//         "model.brand.name": "model.brand.name",
-//         activeNumber: "activeNumber",
-//         serialNumber: "serialNumber",
-//         comments: "comments",
-//         customField: `customField.${customFieldName}`,
-//       };
-//       return columnsMap[searchHeader] || null;
-//     };
-
-//     const buildDeepSearchConditions = (deepSearchArray) => {
-//       const conditions = [];
-
-//       deepSearchArray.forEach(
-//         ({ searchHeader, searchTerm, searchCriteria, customFieldName }) => {
-//           const column = mapSearchHeaderToColumn(searchHeader, customFieldName);
-
-//           if (!column || typeof column !== "string") return;
-
-//           if (searchHeader === "customField" && customFieldName) {
-//             // Crear condiciones específicas para customFields
-//             const condition = {
-//               customField: {
-//                 some: {
-//                   customField: {
-//                     name: customFieldName, // Nombre del campo personalizado
-//                   },
-//                   value: { [searchCriteria]: searchTerm }, // Valor buscado
-//                 },
-//               },
-//             };
-//             conditions.push(condition);
-//           } else {
-//             const path = column.split(".");
-//             let condition = {};
-
-//             switch (searchCriteria) {
-//               case "equals":
-//                 condition = { [path[path.length - 1]]: { equals: searchTerm } };
-//                 break;
-//               case "startsWith":
-//                 condition = {
-//                   [path[path.length - 1]]: { startsWith: searchTerm },
-//                 };
-//                 break;
-//               case "endsWith":
-//                 condition = {
-//                   [path[path.length - 1]]: { endsWith: searchTerm },
-//                 };
-//                 break;
-//               case "contains":
-//                 condition = {
-//                   [path[path.length - 1]]: { contains: searchTerm },
-//                 };
-//                 break;
-//               case "different":
-//                 condition = { [path[path.length - 1]]: { not: searchTerm } };
-//                 break;
-//               case "contains":
-//                 condition = {
-//                   [path[path.length - 1]]: { contains: searchTerm },
-//                 };
-//                 break;
-//               default:
-//                 break;
-//             }
-
-//             let nestedCondition = condition;
-//             for (let i = path.length - 2; i >= 0; i--) {
-//               nestedCondition = { [path[i]]: nestedCondition };
-//             }
-
-//             conditions.push(nestedCondition);
-//           }
-//         }
-//       );
-
-//       return conditions.length > 0 ? { AND: conditions } : {};
-//     };
-
-//     // Ampliamos la búsqueda por texto para incluir archivos y customFields
-//     // const textSearchConditions = searchTerm
-//     //   ? {
-//     //       OR: [
-//     //         { model: { name: { contains: searchTerm } } },
-//     //         { model: { brand: { name: { contains: searchTerm } } } },
-//     //         { model: { type: { name: { contains: searchTerm } } } },
-//     //         { activeNumber: { contains: searchTerm } },
-//     //         { serialNumber: { contains: searchTerm } },
-//     //         { comments: { contains: searchTerm } },
-//     //         {
-//     //           customField: {
-//     //             some: {
-//     //               OR: [
-//     //                 { value: { contains: searchTerm } },
-//     //                 { customField: { name: { contains: searchTerm } } },
-//     //               ],
-//     //             },
-//     //           },
-//     //         },
-//     //       ],
-//     //     }
-//     //   : {};
-//     const terms = searchTerm?.split(/\s+/).filter(Boolean) || [];
-//     const generateSearchConditions = (terms) => {
-//       const fields = [
-//         { model: { name: true } },
-//         { model: { brand: { name: true } } },
-//         { model: { type: { name: true } } },
-//         { activeNumber: true },
-//         { serialNumber: true },
-//         { comments: true },
-//         {
-//           customField: {
-//             some: {
-//               OR: [{ value: true }, { customField: { name: true } }],
-//             },
-//           },
-//         },
-//       ];
-
-//       const conditions = [];
-
-//       for (const term of terms) {
-//         for (const field of fields) {
-//           const condition = JSON.parse(JSON.stringify(field));
-//           applyContainsCondition(condition, term);
-//           conditions.push(condition);
-//         }
+//       for (let i = 0; i < parts.length - 1; i++) {
+//         nested[parts[i]] = {};
+//         nested = nested[parts[i]];
 //       }
 
-//       return { OR: conditions };
+//       nested[parts[parts.length - 1]] = order;
+//       return current;
 //     };
-
-//     const applyContainsCondition = (obj, term) => {
-//       for (const key in obj) {
-//         if (typeof obj[key] === "object") {
-//           applyContainsCondition(obj[key], term);
-//         } else if (obj[key] === true) {
-//           obj[key] = { contains: term };
-//         }
-//       }
-//     };
-
-//     const textSearchConditions = searchTerm
-//       ? generateSearchConditions(terms)
-//       : {};
-
-//     const deepSearchConditions = buildDeepSearchConditions(
-//       JSON?.parse(deepSearch)
-//     );
-
-//     const orderField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
-//     const orderDirection = order === "desc" ? "desc" : "asc";
-
-//     const formSortBy = (value, order) => {
-//       let arr = value.split(".");
-//       let obj = {};
-//       if (arr.length === 3) {
-//         obj = {
-//           [arr[0]]: {
-//             [arr[1]]: {
-//               [arr[2]]: order,
-//             },
-//           },
-//         };
-//       } else if (arr.length === 2) {
-//         obj = {
-//           [arr[0]]: {
-//             [arr[1]]: order,
-//           },
-//         };
-//       } else {
-//         obj = {
-//           [arr[0]]: order,
-//         };
-//       }
-//       return obj;
-//     };
-
-//     const skip = (page - 1) * pageSize;
-//     const take = parseInt(pageSize);
-
-//     const statusFilter = Array.isArray(status)
-//       ? status
-//       : status
-//       ? [status]
-//       : [];
 
 //     const whereConditions = {
-//       ...textSearchConditions,
-//       ...deepSearchConditions,
 //       enabled: true,
+//       ...(status && {
+//         status: {
+//           in: Array.isArray(status) ? status : [status],
+//         },
+//       }),
 //       ...(conditionName && conditionName.includes("ALL")
-//         ? {} // Si viene ALL, no filtramos por condiciones
+//         ? {}
 //         : conditionName && {
 //             conditions: {
 //               some: {
@@ -921,70 +756,325 @@ export const checkSerialNumber = async (req, res) => {
 //               },
 //             },
 //           }),
-
-//       ...(statusFilter.length > 0 ? { status: { in: statusFilter } } : {}),
+//       ...(deadlineId && {
+//         InventoryDeadline: {
+//           some: {
+//             deadlineId,
+//           },
+//         },
+//       }),
+//       ...(projectId && {
+//         OR: [
+//           {
+//             InventoryDeadline: {
+//               some: {
+//                 deadline: {
+//                   projectId,
+//                 },
+//               },
+//             },
+//           },
+//           {
+//             invoice: {
+//               purchaseOrder: {
+//                 projectId,
+//               },
+//             },
+//           },
+//         ],
+//       }),
+//       ...(purchaseOrderId && {
+//         invoice: {
+//           purchaseOrderId,
+//         },
+//       }),
+//       ...(invoiceId && {
+//         invoiceId,
+//       }),
+//       ...(verticalId && {
+//         verticalId,
+//       }),
 //     };
 
-//     if (!canViewAll && canViewSelf) {
-//       whereConditions.createdById = userId;
-//     }
+//     const phraseSearch = searchTerm?.trim();
+//     const individualTerms = phraseSearch
+//       ? phraseSearch.split(/\s+/).filter(Boolean)
+//       : [];
 
-//     const inventories = await db.inventory.findMany({
-//       where: whereConditions,
-//       include: {
-//         model: {
-//           include: {
-//             brand: true,
-//             type: true,
+//     const buildExactSearchConditions = (term) => {
+//       const conditions = [
+//         // — INVENTARIO —
+//         { comments: { contains: term } },
+//         { activeNumber: { contains: term } },
+//         { serialNumber: { contains: term } },
+//         { internalFolio: { contains: term } },
+
+//         // — MODELO / MARCA / TIPO / VERTICAL —
+//         { model: { name: { contains: term } } },
+//         { model: { brand: { name: { contains: term } } } },
+//         { model: { type: { name: { contains: term } } } },
+//         {
+//           model: {
+//             ModelVertical: {
+//               some: { vertical: { name: { contains: term } } },
+//             },
 //           },
 //         },
-//         conditions: {
-//           include: {
-//             condition: true,
+
+//         // — CAMPOS CUSTOM —
+//         {
+//           customField: {
+//             some: {
+//               OR: [
+//                 { value: { contains: term } },
+//                 { customField: { name: { contains: term } } },
+//               ],
+//             },
 //           },
 //         },
-//         images: {
-//           where: { enabled: true },
-//         },
-//         files: {
-//           where: { enabled: true },
-//         },
-//         customField: {
-//           include: {
-//             customField: true,
+
+//         // — FACTURAS —
+//         { invoice: { code: { contains: term } } },
+//         { invoice: { concept: { contains: term } } },
+
+//         // — ÓRDENES DE COMPRA —
+//         {
+//           invoice: {
+//             purchaseOrder: {
+//               code: { contains: term },
+//               supplier: { contains: term },
+//             },
 //           },
 //         },
-//         createdBy: {
-//           select: {
-//             id: true,
-//             firstName: true,
-//             lastName: true,
-//             email: true,
+
+//         // — PROYECTOS (desde orden) —
+//         {
+//           invoice: {
+//             purchaseOrder: {
+//               project: {
+//                 OR: [
+//                   { code: { contains: term } },
+//                   { name: { contains: term } },
+//                 ],
+//               },
+//             },
+//           },
+//         },
+
+//         // — DEADLINES (y proyectos desde deadline) —
+//         {
+//           InventoryDeadline: {
+//             some: {
+//               deadline: {
+//                 OR: [
+//                   { name: { contains: term } },
+//                   { project: { code: { contains: term } } },
+//                   { project: { name: { contains: term } } },
+//                 ],
+//               },
+//             },
+//           },
+//         },
+//       ];
+
+//       // — detección de FECHAS (igual que antes) —
+//       let parsed;
+//       let isDate = false;
+
+//       const dmy = term.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+//       if (dmy) {
+//         const [, D, M, Y] = dmy.map(Number);
+//         parsed = Date.UTC(Y, M - 1, D);
+//         isDate = true;
+//       } else if (/^\d{4}-\d{2}-\d{2}$/.test(term)) {
+//         const [Y, M, D] = term.split("-").map(Number);
+//         parsed = Date.UTC(Y, M - 1, D);
+//         isDate = true;
+//       } else {
+//         const p = Date.parse(term);
+//         if (!isNaN(p)) {
+//           parsed = p;
+//           isDate = true;
+//         }
+//       }
+
+//       if (isDate) {
+//         const start = new Date(parsed);
+//         start.setUTCHours(0, 0, 0, 0);
+//         const end = new Date(parsed);
+//         end.setUTCHours(23, 59, 59, 999);
+
+//         conditions.push(
+//           { receptionDate: { gte: start, lte: end } },
+//           { createdAt: { gte: start, lte: end } },
+//           { updatedAt: { gte: start, lte: end } }
+//         );
+//       }
+
+//       return conditions;
+//     };
+
+//     const include = {
+//       createdBy: true,
+//       model: {
+//         include: {
+//           brand: true,
+//           type: true,
+//           ModelVertical: {
+//             include: {
+//               vertical: true,
+//             },
 //           },
 //         },
 //       },
-//       orderBy: formSortBy(orderField, orderDirection),
-//       skip,
-//       take: take === 0 ? undefined : take, // If take is 0, fetch all inventories
+
+//       invoice: {
+//         include: {
+//           purchaseOrder: {
+//             include: {
+//               project: true,
+//             },
+//           },
+//         },
+//       },
+//       InventoryDeadline: {
+//         include: {
+//           deadline: {
+//             include: {
+//               project: true,
+//             },
+//           },
+//         },
+//       },
+//       conditions: {
+//         include: {
+//           condition: true,
+//         },
+//       },
+//       customField: {
+//         include: {
+//           customField: true,
+//         },
+//       },
+//       files: {
+//         where: { enabled: true },
+//       },
+//       images: {
+//         where: { enabled: true },
+//         select: {
+//           url: true,
+//           type: true,
+//           thumbnail: true,
+//           metadata: true,
+//         },
+//       },
+//     };
+
+//     let combined = [];
+
+//     if (!phraseSearch) {
+//       const totalRecords = await db.inventory.count({ where: whereConditions });
+//       const results = await db.inventory.findMany({
+//         where: whereConditions,
+//         orderBy: buildOrderBy(sortBy, order),
+//         skip: parsedPageSize ? (page - 1) * parsedPageSize : undefined,
+//         take: parsedPageSize ?? undefined,
+//         include,
+//       });
+
+//       return res.json({
+//         data: results,
+//         pagination: {
+//           totalRecords,
+//           totalPages: parsedPageSize
+//             ? Math.ceil(totalRecords / parsedPageSize)
+//             : 1,
+//           currentPage: parseInt(page),
+//           pageSize: parsedPageSize ?? "ALL",
+//         },
+//       });
+//     }
+
+//     if (!isAdvanced) {
+//       const results = await db.inventory.findMany({
+//         where: {
+//           ...whereConditions,
+//           OR: buildSearchConditions(phraseSearch),
+//         },
+//         orderBy: buildOrderBy(sortBy, order),
+//         skip: parsedPageSize ? (page - 1) * parsedPageSize : undefined,
+//         take: parsedPageSize ?? undefined,
+//         include,
+//       });
+
+//       const totalRecords = await db.inventory.count({
+//         where: {
+//           ...whereConditions,
+//           OR: buildSearchConditions(phraseSearch),
+//         },
+//       });
+
+//       return res.json({
+//         data: results,
+//         pagination: {
+//           totalRecords,
+//           totalPages: parsedPageSize
+//             ? Math.ceil(totalRecords / parsedPageSize)
+//             : 1,
+//           currentPage: parseInt(page),
+//           pageSize: parsedPageSize ?? "ALL",
+//         },
+//       });
+//     }
+
+//     const exactMatchWhere = {
+//       ...whereConditions,
+//       OR: buildSearchConditions(phraseSearch),
+//     };
+
+//     const wordMatchWhere = {
+//       ...whereConditions,
+//       OR: individualTerms.flatMap((term) => buildSearchConditions(term)),
+//     };
+
+//     const exactResults = await db.inventory.findMany({
+//       where: exactMatchWhere,
+//       include,
 //     });
 
-//     const totalRecords = await db.inventory.count({
-//       where: whereConditions,
+//     const wordResults = await db.inventory.findMany({
+//       where: wordMatchWhere,
+//       include,
 //     });
 
-//     const totalPages = Math.ceil(totalRecords / pageSize);
+//     combined = [
+//       ...exactResults,
+//       ...wordResults.filter(
+//         (item) => !exactResults.some((ex) => ex.id === item.id)
+//       ),
+//     ];
+
+//     const start = (page - 1) * (parsedPageSize || combined.length);
+//     const paginatedResults = parsedPageSize
+//       ? combined.slice(start, start + parsedPageSize)
+//       : combined;
+
 //     res.json({
-//       data: inventories,
+//       data: paginatedResults,
 //       pagination: {
-//         totalRecords,
-//         totalPages,
+//         totalRecords: combined.length,
+//         totalPages: parsedPageSize
+//           ? Math.ceil(combined.length / parsedPageSize)
+//           : 1,
 //         currentPage: parseInt(page),
-//         pageSize: parseInt(pageSize),
+//         pageSize: parsedPageSize ?? "ALL",
 //       },
 //     });
 //   } catch (error) {
-//     console.error("Error fetching inventories:", error);
-//     res.status(500).json({ error: "Internal server error" });
+//     console.error(error);
+//     res
+//       .status(500)
+//       .json({ message: "Error al buscar inventarios", error: error.message });
 //   }
 // };
 
@@ -997,9 +1087,8 @@ export const searchInventories = async (req, res) => {
       page = 1,
       pageSize = 10,
       conditionName,
-      deepSearch = [],
       status,
-      advancedSearch = "true",
+      advancedSearch = "false",
       deadlineId,
       projectId,
       purchaseOrderId,
@@ -1008,28 +1097,37 @@ export const searchInventories = async (req, res) => {
     } = req.query;
 
     const isAdvanced = advancedSearch === "true";
-    const parsedPageSize = pageSize == "0" ? null : parseInt(pageSize);
 
+    const parsedPageSize = pageSize == "0" ? null : parseInt(pageSize, 10);
+    const phraseSearch = searchTerm?.trim();
+    const individualTerms = phraseSearch
+      ? phraseSearch.split(/\s+/).filter(Boolean)
+      : [];
+
+    let verticalIdsInt = [];
+    if (verticalId) {
+      const arr = Array.isArray(verticalId) ? verticalId : [verticalId];
+      verticalIdsInt = arr.map((v) => parseInt(v, 10)).filter((n) => !isNaN(n));
+    }
+
+    // --- Función para ordenar por campos anidados ---
     const buildOrderBy = (sortBy, order) => {
       const parts = sortBy.split(".");
       let current = {};
       let nested = current;
-
       for (let i = 0; i < parts.length - 1; i++) {
         nested[parts[i]] = {};
         nested = nested[parts[i]];
       }
-
       nested[parts[parts.length - 1]] = order;
       return current;
     };
 
+    // --- Where fijo ---
     const whereConditions = {
       enabled: true,
       ...(status && {
-        status: {
-          in: Array.isArray(status) ? status : [status],
-        },
+        status: { in: Array.isArray(status) ? status : [status] },
       }),
       ...(conditionName && conditionName.includes("ALL")
         ? {}
@@ -1047,229 +1145,242 @@ export const searchInventories = async (req, res) => {
             },
           }),
       ...(deadlineId && {
-        InventoryDeadline: {
-          some: {
-            deadlineId,
-          },
-        },
+        InventoryDeadline: { some: { deadlineId } },
       }),
       ...(projectId && {
         OR: [
-          {
-            InventoryDeadline: {
-              some: {
-                deadline: {
-                  projectId,
+          { InventoryDeadline: { some: { deadline: { projectId } } } },
+          { invoice: { purchaseOrder: { projectId } } },
+        ],
+      }),
+      ...(purchaseOrderId && { invoice: { purchaseOrderId } }),
+      ...(invoiceId && { invoiceId }),
+      ...(verticalIdsInt.length > 0 && {
+        model: {
+          ModelVertical: {
+            some: {
+              verticalId: {
+                in: verticalIdsInt,
+              },
+            },
+          },
+        },
+      }),
+    };
+
+    // --- Condiciones de búsqueda ---
+    const buildExactSearchConditions = (term) => {
+      const conditions = [
+        // INVENTARIO
+        { comments: { contains: term } },
+        { activeNumber: { contains: term } },
+        { serialNumber: { contains: term } },
+        { internalFolio: { contains: term } },
+
+        // MODELO / MARCA / TIPO / VERTICAL
+        { model: { name: { contains: term } } },
+        { model: { brand: { name: { contains: term } } } },
+        { model: { type: { name: { contains: term } } } },
+        {
+          model: {
+            ModelVertical: {
+              some: { vertical: { name: { contains: term } } },
+            },
+          },
+        },
+
+        // CAMPOS CUSTOM
+        {
+          customField: {
+            some: {
+              OR: [
+                { value: { contains: term } },
+                { customField: { name: { contains: term } } },
+              ],
+            },
+          },
+        },
+
+        // FACTURAS
+        {
+          invoice: {
+            is: { code: { contains: term } },
+          },
+        },
+        { invoice: { is: { concept: { contains: term } } } },
+
+        // ÓRDENES DE COMPRA (ahora con `is` en la relación)
+        {
+          invoice: {
+            is: {
+              purchaseOrder: {
+                is: { code: { contains: term } },
+              },
+            },
+          },
+        },
+        {
+          invoice: {
+            is: {
+              purchaseOrder: {
+                is: { supplier: { contains: term } },
+              },
+            },
+          },
+        },
+
+        // PROYECTOS (desde orden)
+        {
+          invoice: {
+            is: {
+              purchaseOrder: {
+                is: {
+                  project: {
+                    OR: [
+                      { code: { contains: term } },
+                      { name: { contains: term } },
+                    ],
+                  },
                 },
               },
             },
           },
-          {
-            invoice: {
-              purchaseOrder: {
-                projectId,
+        },
+
+        // DEADLINES y proyectos desde deadline
+        {
+          InventoryDeadline: {
+            some: {
+              deadline: {
+                OR: [
+                  { name: { contains: term } },
+                  { project: { code: { contains: term } } },
+                  { project: { name: { contains: term } } },
+                ],
               },
             },
           },
-        ],
-      }),
-      ...(purchaseOrderId && {
-        invoice: {
-          purchaseOrderId,
         },
-      }),
-      ...(invoiceId && {
-        invoiceId,
-      }),
-      ...(verticalId && {
-        verticalId,
-      }),
+      ];
+
+      // Detección de FECHA
+      let parsed,
+        isDate = false;
+      const dmy = term.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+      if (dmy) {
+        const [, D, M, Y] = dmy.map(Number);
+        parsed = Date.UTC(Y, M - 1, D);
+        isDate = true;
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(term)) {
+        const [Y, M, D] = term.split("-").map(Number);
+        parsed = Date.UTC(Y, M - 1, D);
+        isDate = true;
+      } else {
+        const p = Date.parse(term);
+        if (!isNaN(p)) {
+          parsed = p;
+          isDate = true;
+        }
+      }
+
+      if (isDate) {
+        const start = new Date(parsed);
+        start.setUTCHours(0, 0, 0, 0);
+        const end = new Date(parsed);
+        end.setUTCHours(23, 59, 59, 999);
+        conditions.push(
+          { receptionDate: { gte: start, lte: end } },
+          { createdAt: { gte: start, lte: end } },
+          { updatedAt: { gte: start, lte: end } }
+        );
+      }
+
+      return conditions;
     };
 
-    const phraseSearch = searchTerm?.trim();
-    const individualTerms = phraseSearch
-      ? phraseSearch.split(/\s+/).filter(Boolean)
-      : [];
+    // Para advanced=true repetimos por cada palabra
+    const buildWordSearchConditions = buildExactSearchConditions;
 
-    const buildSearchConditions = (term) => [
-      { comments: { contains: term } },
-      { model: { name: { contains: term } } },
-      { model: { brand: { name: { contains: term } } } },
-      { model: { type: { name: { contains: term } } } },
-      { activeNumber: { contains: term } },
-      { serialNumber: { contains: term } },
-      { internalFolio: { contains: term } },
-      {
-        customField: {
-          some: {
-            OR: [
-              { value: { contains: term } },
-              { customField: { name: { contains: term } } },
-            ],
-          },
-        },
-      },
-    ];
-
+    // --- INCLUDE: verticales, proyecto, orden de compra y factura ---
     const include = {
       createdBy: true,
       model: {
         include: {
           brand: true,
           type: true,
-          ModelVertical: {
-            include: {
-              vertical: true,
-            },
-          },
+          ModelVertical: { include: { vertical: true } },
         },
       },
-
       invoice: {
         include: {
-          purchaseOrder: {
-            include: {
-              project: true,
-            },
-          },
+          purchaseOrder: { include: { project: true } },
         },
       },
       InventoryDeadline: {
-        include: {
-          deadline: {
-            include: {
-              project: true,
-            },
-          },
-        },
+        include: { deadline: { include: { project: true } } },
       },
-      conditions: {
-        include: {
-          condition: true,
-        },
-      },
-      customField: {
-        include: {
-          customField: true,
-        },
-      },
-      files: {
-        where: { enabled: true },
-      },
+      conditions: { include: { condition: true } },
+      customField: { include: { customField: true } },
+      files: { where: { enabled: true } },
       images: {
         where: { enabled: true },
-        select: {
-          url: true,
-          type: true,
-          thumbnail: true,
-          metadata: true,
-        },
+        select: { url: true, type: true, thumbnail: true, metadata: true },
       },
+      // vertiales
     };
 
-    let combined = [];
+    // --- Ejecución de la consulta ---
+    let results, totalRecords;
 
     if (!phraseSearch) {
-      const totalRecords = await db.inventory.count({ where: whereConditions });
-      const results = await db.inventory.findMany({
+      totalRecords = await db.inventory.count({ where: whereConditions });
+      results = await db.inventory.findMany({
         where: whereConditions,
         orderBy: buildOrderBy(sortBy, order),
         skip: parsedPageSize ? (page - 1) * parsedPageSize : undefined,
         take: parsedPageSize ?? undefined,
         include,
       });
-
-      return res.json({
-        data: results,
-        pagination: {
-          totalRecords,
-          totalPages: parsedPageSize
-            ? Math.ceil(totalRecords / parsedPageSize)
-            : 1,
-          currentPage: parseInt(page),
-          pageSize: parsedPageSize ?? "ALL",
-        },
-      });
-    }
-
-    if (!isAdvanced) {
-      const results = await db.inventory.findMany({
-        where: {
-          ...whereConditions,
-          OR: buildSearchConditions(phraseSearch),
-        },
+    } else if (!isAdvanced) {
+      const exactWhere = {
+        ...whereConditions,
+        OR: buildExactSearchConditions(phraseSearch),
+      };
+      totalRecords = await db.inventory.count({ where: exactWhere });
+      results = await db.inventory.findMany({
+        where: exactWhere,
         orderBy: buildOrderBy(sortBy, order),
         skip: parsedPageSize ? (page - 1) * parsedPageSize : undefined,
         take: parsedPageSize ?? undefined,
         include,
       });
-
-      const totalRecords = await db.inventory.count({
-        where: {
-          ...whereConditions,
-          OR: buildSearchConditions(phraseSearch),
-        },
-      });
-
-      return res.json({
-        data: results,
-        pagination: {
-          totalRecords,
-          totalPages: parsedPageSize
-            ? Math.ceil(totalRecords / parsedPageSize)
-            : 1,
-          currentPage: parseInt(page),
-          pageSize: parsedPageSize ?? "ALL",
-        },
+    } else {
+      const clauses = individualTerms.flatMap(buildWordSearchConditions);
+      const advWhere = { ...whereConditions, OR: clauses };
+      totalRecords = await db.inventory.count({ where: advWhere });
+      results = await db.inventory.findMany({
+        where: advWhere,
+        orderBy: buildOrderBy(sortBy, order),
+        skip: parsedPageSize ? (page - 1) * parsedPageSize : undefined,
+        take: parsedPageSize ?? undefined,
+        include,
       });
     }
 
-    const exactMatchWhere = {
-      ...whereConditions,
-      OR: buildSearchConditions(phraseSearch),
-    };
-
-    const wordMatchWhere = {
-      ...whereConditions,
-      OR: individualTerms.flatMap((term) => buildSearchConditions(term)),
-    };
-
-    const exactResults = await db.inventory.findMany({
-      where: exactMatchWhere,
-      include,
-    });
-
-    const wordResults = await db.inventory.findMany({
-      where: wordMatchWhere,
-      include,
-    });
-
-    combined = [
-      ...exactResults,
-      ...wordResults.filter(
-        (item) => !exactResults.some((ex) => ex.id === item.id)
-      ),
-    ];
-
-    const start = (page - 1) * (parsedPageSize || combined.length);
-    const paginatedResults = parsedPageSize
-      ? combined.slice(start, start + parsedPageSize)
-      : combined;
-
-    res.json({
-      data: paginatedResults,
+    return res.json({
+      data: results,
       pagination: {
-        totalRecords: combined.length,
+        totalRecords,
         totalPages: parsedPageSize
-          ? Math.ceil(combined.length / parsedPageSize)
+          ? Math.ceil(totalRecords / parsedPageSize)
           : 1,
-        currentPage: parseInt(page),
+        currentPage: parseInt(page, 10),
         pageSize: parsedPageSize ?? "ALL",
       },
     });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(500)
       .json({ message: "Error al buscar inventarios", error: error.message });
   }

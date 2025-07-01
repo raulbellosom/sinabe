@@ -13,7 +13,6 @@ import ReusableTable from '../../components/Table/ReusableTable';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import {
   useSearchPurchaseOrders,
-  useDeletePurchaseOrder,
   useRemovePurchaseOrderFromProject,
 } from '../../hooks/usePurchaseOrders';
 import { PurchaseOrderFormModal } from '../../components/ProjectDetails/PO/PurchaseOrderModals';
@@ -41,12 +40,11 @@ const PurchaseOrdersPage = () => {
   const orders = data?.data || [];
   const pagination = data?.pagination || {
     currentPage: 1,
-    pageSize: 10,
+    pageSize: query.pageSize,
     totalPages: 1,
     totalRecords: 0,
   };
 
-  const deletePO = useDeletePurchaseOrder();
   const removePOFromProject = useRemovePurchaseOrderFromProject();
 
   // Función para manejar la remoción de OC del proyecto
@@ -97,11 +95,13 @@ const PurchaseOrdersPage = () => {
       {
         key: 'date',
         title: 'Fecha',
+        sortable: true,
         render: (date) => parseToLocalDate(date, 'es-MX'),
       },
       {
         key: 'amount',
         title: 'Monto',
+        sortable: true,
         render: (amt) => `$${amt.toLocaleString('es-MX')}`,
       },
       {
@@ -138,7 +138,7 @@ const PurchaseOrdersPage = () => {
   );
 
   return (
-    <section className="space-y-4 bg-white p-4 rounded-lg shadow-md">
+    <section className="space-y-4 bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
       <div className="flex justify-between items-center">
         <h1 className="text-lg font-bold text-sinabe-primary flex items-center gap-2">
           <span>
@@ -146,18 +146,20 @@ const PurchaseOrdersPage = () => {
           </span>
           Órdenes de Compra
         </h1>
-        <ActionButtons
-          extraActions={[
-            {
-              label: 'Nueva OC',
-              icon: FaFileInvoice,
-              action: () => {
-                setSelectedOrder(null);
-                setIsModalOpen(true);
+        <div>
+          <ActionButtons
+            extraActions={[
+              {
+                label: 'Nueva OC',
+                icon: FaFileInvoice,
+                action: () => {
+                  setSelectedOrder(null);
+                  setIsModalOpen(true);
+                },
               },
-            },
-          ]}
-        />
+            ]}
+          />
+        </div>
       </div>
 
       {/* 🔎 Input de búsqueda */}
@@ -178,6 +180,8 @@ const PurchaseOrdersPage = () => {
         columns={columns}
         data={orders}
         loading={isLoading}
+        enableCardView={false}
+        striped={true}
         sortConfig={{ key: query.sortBy, direction: query.order }}
         onSort={(key) =>
           updateParams({
@@ -198,6 +202,7 @@ const PurchaseOrdersPage = () => {
             key: 'main',
             icon: FaFileInvoice,
             label: 'Facturas',
+            color: 'purple',
             action: () => navigate(`/purchase-orders/${order.id}/invoices`),
           },
           {

@@ -226,7 +226,7 @@ const Models = () => {
   const isCreatePermission = useCheckPermissions('create_inventories_models');
   const isDeletePermission = useCheckPermissions('delete_inventories_models');
   return (
-    <div className="flex h-full flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
+    <div className="flex h-full flex-col gap-3 bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
       <TableHeader
         icon={HiCubeTransparent}
         title={'Modelos'}

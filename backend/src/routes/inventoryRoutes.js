@@ -51,7 +51,7 @@ import {
 import { processFiles } from "../controllers/uploadFilesController.js";
 
 const router = express.Router();
-router.route("/assignMissingFolios").get(assignMissingFolios);
+// router.route("/assignMissingFolios").get(assignMissingFolios);
 
 router
   .route("/")
