@@ -172,7 +172,7 @@ const InventoriesPage = () => {
               images={row.images || []}
             />
           ) : (
-            <div className="w-20 h-20 bg-gray-200 rounded-md" />
+            <div className="w-20 h-20 md:w-12 md:h-12 bg-gray-200 rounded-md" />
           ),
         sortable: false,
         headerClassName: 'w-16',
