@@ -12,7 +12,7 @@ export default defineConfig({
         name: 'Sinabe',
         short_name: 'Sinabe',
         description: 'Gestión de proyectos e inventarios',
-        theme_color: '#3b82f6',
+        theme_color: '#7e3af2',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '.',
