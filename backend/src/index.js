@@ -37,7 +37,9 @@ const __dirname = path.dirname(__filename);
 const allowedOrigins = [
   process.env.APP_URL || "http://localhost:5173",
   "capacitor://localhost",
-  "http://localhost", // para Android local
+  "http://localhost",
+  "https://localhost", // para APK en algunos dispositivos
+  undefined, // algunas peticiones nativas no envían origin
 ];
 
 // app.use(cors([APP_URL]));
