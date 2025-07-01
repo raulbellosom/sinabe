@@ -81,12 +81,12 @@ const ImageViewer = ({
   return (
     <PhotoProvider
       maskOpacity={0.8}
-      pullClosable={false}
+      pullClosable={true}
       maskClosable={false}
       loop={safeImages.length > 1}
       speed={() => 500}
       easing={(type) =>
-        type === 3
+        type === 2
           ? 'cubic-bezier(0.36, 0, 0.66, -0.56)'
           : 'cubic-bezier(0.34, 1.56, 0.64, 1)'
       }

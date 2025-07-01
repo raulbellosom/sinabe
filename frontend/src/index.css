@@ -6,6 +6,10 @@ html {
   scroll-behavior: auto;
 }
 
+body {
+  padding-top: env(safe-area-inset-top);
+}
+
 .force-small-font {
   font-size: 0.75rem !important;
 }

@@ -26,10 +26,10 @@ const app = express();
 const APP_URL = process.env.APP_URL || "http://localhost:5173";
 
 console.log("APP_URL", APP_URL);
-app.use((req, res, next) => {
-  console.log("CORS Origin recibido:", req.headers.origin);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log("CORS Origin recibido:", req.headers.origin);
+//   next();
+// });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
