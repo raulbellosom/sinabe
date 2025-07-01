@@ -30,7 +30,24 @@ console.log("APP_URL", APP_URL);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(cors([APP_URL]));
+const allowedOrigins = [
+  process.env.APP_URL || "http://localhost:5173",
+  "capacitor://localhost",
+  "http://localhost", // para Android local
+];
+
+// app.use(cors([APP_URL]));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);

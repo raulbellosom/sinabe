@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">sinabe</string>
+    <string name="title_activity_main">sinabe</string>
+    <string name="package_name">com.giize.sinabe</string>
+    <string name="custom_url_scheme">com.giize.sinabe</string>
+</resources>
