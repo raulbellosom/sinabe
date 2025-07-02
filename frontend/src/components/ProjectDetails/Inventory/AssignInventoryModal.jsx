@@ -1,387 +1,240 @@
-// AssignInventoryModal.jsx
-
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
-import { useEffect, useState, memo } from 'react';
-import { IoMdClose } from 'react-icons/io';
-import { FaSearch, FaPlus } from 'react-icons/fa';
-import { MdRemove } from 'react-icons/md';
-import { BsBoxSeam } from 'react-icons/bs';
-import { useInventoryAssignments } from '../../../hooks/useInventoryAssignments';
-import { parseToLocalDate } from '../../../utils/formatValues';
-import { useSearchInventories } from '../../../hooks/useSearchInventories';
+// File: src/components/ProjectDetails/Inventory/AssignInventoryModal.jsx
+import React, { useState } from 'react';
+import { FaEye } from 'react-icons/fa';
+import { MdInventory, MdRemoveCircle } from 'react-icons/md';
+import ReusableTable from '../../Table/ReusableTable';
+import InventorySearchInput from '../../InventoryComponents/InventorySearchInput';
+import {
+  useInventoryAssignments,
+  useAssignInventoryToDeadline,
+  useRemoveInventoryFromDeadline,
+} from '../../../hooks/useInventoryAssignments';
+import Notifies from '../../Notifies/Notifies';
+import SideModal from '../../Modals/SideModal';
+import ConfirmRemoveInventoryModal from './ConfirmRemoveInventoryModal';
+import { Link, useNavigate } from 'react-router-dom';
+import { useMediaQuery } from 'react-responsive';
 import Card from '../../Card/Card';
-import CustomTabs from '../CustomTabs';
 
-const SearchAndAssignTab = ({
-  data,
-  deadlineId,
-  pendingId,
-  isLoading,
-  isAssigning,
-  isUnassigning,
-  onAssign,
-  onUnassign,
-  searchTerm,
-  setSearchTerm,
-  refetch,
-}) => {
-  const groupByType = (inventories) => {
-    const grouped = {};
-    for (const inv of inventories) {
-      const type = inv.model?.type?.name || 'Sin tipo';
-      if (!grouped[type]) grouped[type] = [];
-      grouped[type].push(inv);
+const AssignInventoryModal = ({ isOpen, onClose, deadlineId, onUpdate }) => {
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [inventoryToRemove, setInventoryToRemove] = useState(null);
+  const navigate = useNavigate();
+  const isMobile = useMediaQuery({ maxWidth: 768 });
+
+  const { data = [], isLoading } = useInventoryAssignments(deadlineId);
+  const assignMutation = useAssignInventoryToDeadline(deadlineId);
+  const removeMutation = useRemoveInventoryFromDeadline(deadlineId);
+
+  const tableData = data.map((a) => ({
+    ...a.inventory,
+    assignmentId: a.id, // necesario para eliminar
+  }));
+
+  const handleAssign = async (inventoryId) => {
+    try {
+      await assignMutation.mutateAsync({ inventoryId });
+      Notifies('success', 'Inventario asignado correctamente');
+      onUpdate?.();
+    } catch {
+      Notifies('error', 'No se pudo asignar el inventario');
     }
-    return grouped;
   };
 
-  const groupedInventories = groupByType(data?.data || []);
+  const handleRemove = async () => {
+    try {
+      await removeMutation.mutateAsync({ assignmentId: inventoryToRemove });
+
+      Notifies('success', 'Inventario removido correctamente');
+      onUpdate?.();
+    } catch {
+      Notifies('error', 'No se pudo eliminar el inventario');
+    } finally {
+      setInventoryToRemove(null);
+      setShowConfirmModal(false);
+    }
+  };
+
+  const columns = [
+    {
+      key: 'image',
+      title: 'Imagen',
+      render: (_, row) =>
+        row.images?.[0] ? (
+          <img
+            src={`/${row.images[0].thumbnail}`}
+            alt="thumbnail"
+            className="w-12 h-12 rounded object-cover"
+          />
+        ) : (
+          '—'
+        ),
+    },
+    {
+      key: 'model.name',
+      title: 'Modelo',
+      render: (_, row) => row.model?.name || '—',
+    },
+    {
+      key: 'model.brand.name',
+      title: 'Marca',
+      render: (_, row) => row.model?.brand?.name || '—',
+    },
+    {
+      key: 'model.type.name',
+      title: 'Tipo',
+      render: (_, row) => row.model?.type?.name || '—',
+    },
+    {
+      key: 'serialNumber',
+      title: 'N° Serie',
+    },
+    {
+      key: 'activeNumber',
+      title: 'N° Activo',
+    },
+    {
+      key: 'internalFolio',
+      title: 'Folio Interno',
+    },
+    {
+      key: 'status',
+      title: 'Estado',
+    },
+    {
+      key: 'actions',
+      title: 'Acciones',
+    },
+  ];
 
   return (
     <>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          refetch();
-        }}
-        className="mb-4 flex gap-2"
+      <SideModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Inventarios asignados a la deadline"
+        icon={MdInventory}
+        size="xl"
+        className="mt-4 ml-4"
       >
-        <div className="relative w-full">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Buscar inventarios..."
-            className="w-full pl-10 pr-4 py-2 border rounded-md"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <button
-          type="submit"
-          className="bg-sinabe-primary hover:bg-sinabe-secondary text-white px-4 py-2 rounded-md"
-        >
-          Buscar
-        </button>
-      </form>
+        <div className="space-y-6 text-nowrap">
+          {/* Buscador de inventarios */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium mb-1">
+              Buscar inventarios para asignar:
+            </label>
+            <InventorySearchInput onSelect={(inv) => handleAssign(inv.id)} />
+          </div>
 
-      {isLoading ? (
-        <div className="text-center text-gray-500 py-6">
-          Cargando resultados...
-        </div>
-      ) : Object.keys(groupedInventories).length === 0 ? (
-        <div className="text-center text-gray-400 py-4">
-          <BsBoxSeam className="text-4xl mx-auto mb-2" />
-          <p className="font-medium">Sin resultados</p>
-          <p className="text-sm">
-            Prueba con otra búsqueda, recuerda que puedes buscar entre modelo,
-            tipo, marca y más.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {Object.entries(groupedInventories).map(([type, items]) => (
-            <div className="bg-gray-100 p-2 rounded-md" key={type}>
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                {type}
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {items.map((inventory) => {
-                  const isAssigned = inventory.InventoryDeadline?.some(
-                    (a) => a.deadlineId === deadlineId,
-                  );
-                  const assignmentId = inventory.InventoryDeadline?.find(
-                    (a) => a.deadlineId === deadlineId,
-                  )?.id;
-                  const isPending = pendingId === inventory.id;
+          {/* Tabla de asignados */}
+          {isMobile ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {tableData.map((inventory) => {
+                const data = {
+                  image: { key: 'Imagen', value: inventory?.images },
+                  title: { key: 'Inventario', value: inventory?.model?.name },
+                  subtitle: {
+                    key: 'Marca y Tipo',
+                    value: `${inventory?.model?.brand?.name} ${inventory?.model?.type?.name}`,
+                  },
+                  status: { key: 'Estado', value: inventory.status },
+                  internalFolio: {
+                    key: 'Folio interno',
+                    value: inventory?.internalFolio || 'Sin folio',
+                  },
+                  tags: {
+                    key: 'Condiciones',
+                    value: inventory?.conditions?.map((c) => (
+                      <span key={c.id}>{c?.condition?.name}</span>
+                    )),
+                  },
+                  serialNumber: {
+                    key: 'Número de serie',
+                    value: inventory?.serialNumber,
+                  },
+                  activeNumber: {
+                    key: 'Número de activo',
+                    value: inventory?.activeNumber,
+                  },
+                  createdAt: {
+                    key: 'Creado',
+                    value: inventory?.createdAt,
+                  },
+                };
 
-                  const data = {
-                    image: { key: 'Imagen', value: inventory?.images },
-                    title: { key: 'Inventario', value: inventory?.model?.name },
-                    subtitle: {
-                      key: 'Marca y Tipo',
-                      value: `${inventory?.model?.brand?.name} ${inventory?.model?.type?.name}`,
-                    },
-                    status: { key: 'Estado', value: inventory.status },
-                    internalFolio: {
-                      key: 'Folio interno',
-                      value: inventory?.internalFolio || 'Sin folio',
-                    },
-                    tags: {
-                      key: 'Condiciones',
-                      value: inventory?.conditions?.map((c) => (
-                        <span key={c.id}>{c?.condition?.name}</span>
-                      )),
-                    },
-                    serialNumber: {
-                      key: 'Número de serie',
-                      value: inventory?.serialNumber,
-                    },
-                    activeNumber: {
-                      key: 'Número de activo',
-                      value: inventory?.activeNumber,
-                    },
-                    receptionDate: {
-                      key: 'F. de recepción',
-                      value: inventory?.receptionDate
-                        ? parseToLocalDate(inventory?.receptionDate)
-                        : '',
-                    },
-                    createdAt: {
-                      key: 'Creacion / Modificación',
-                      value: `${parseToLocalDate(inventory?.createdAt)} / ${parseToLocalDate(inventory?.updatedAt)}`,
-                    },
-                  };
-
-                  return (
-                    <div
-                      key={inventory.id}
-                      className="bg-white rounded-lg shadow-md hover:shadow-lg p-4 flex flex-col justify-between relative"
-                    >
-                      <Card data={data} showImage />
-                      <div className="flex items-center justify-end">
-                        <button
-                          onClick={() =>
-                            isAssigned
-                              ? onUnassign(assignmentId, inventory.id)
-                              : onAssign(inventory.id)
-                          }
-                          disabled={isAssigning || isUnassigning || isPending}
-                          className={`text-sm px-4 py-1 rounded-md text-white flex gap-2 items-center w-fit ${
-                            isAssigned
-                              ? 'bg-red-600 hover:bg-red-700'
-                              : 'bg-purple-600 hover:bg-purple-700'
-                          }`}
-                        >
-                          {isPending ? (
-                            <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                          ) : (
-                            <span>
-                              {isAssigned ? (
-                                <MdRemove size={16} />
-                              ) : (
-                                <FaPlus size={16} />
-                              )}
-                            </span>
-                          )}
-                          {isAssigned ? 'Remover' : 'Añadir'}
-                        </button>
-                      </div>
+                return (
+                  <div
+                    key={inventory.id}
+                    className="bg-white rounded-lg shadow-md hover:shadow-lg p-4 flex flex-col justify-between relative"
+                  >
+                    <Card data={data} showImage />
+                    <div className="flex items-center justify-end mt-4">
+                      <Link
+                        to={`/inventories/view/${inventory.id}`}
+                        className="text-sm px-4 py-1 rounded-md text-white bg-blue-600 hover:bg-blue-700 flex gap-2 items-center"
+                      >
+                        <FaEye size={16} />
+                        Ver
+                      </Link>
+                      <span className="mx-2 text-gray-400">|</span>
+                      <button
+                        onClick={() => {
+                          setInventoryToRemove(inventory.assignmentId);
+                          setShowConfirmModal(true);
+                        }}
+                        className="text-sm px-4 py-1 rounded-md text-white bg-red-600 hover:bg-red-700 flex gap-2 items-center"
+                      >
+                        <MdRemoveCircle size={16} />
+                        Remover
+                      </button>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
+          ) : (
+            <ReusableTable
+              columns={columns}
+              data={tableData}
+              loading={isLoading}
+              rowKey="id"
+              enableCardView={false}
+              showPagination={false}
+              rowActions={(row) => [
+                {
+                  key: 'main',
+                  icon: FaEye,
+                  label: 'Ver',
+                  action: () => navigate(`/inventories/view/${row.id}`),
+                },
+                {
+                  key: 'remove',
+                  icon: MdRemoveCircle,
+                  label: 'Remover',
+                  color: 'red',
+                  action: () => {
+                    setInventoryToRemove(row.assignmentId);
+                    setShowConfirmModal(true);
+                  },
+                },
+              ]}
+            />
+          )}
         </div>
-      )}
+      </SideModal>
+
+      {/* Modal de confirmación para remover */}
+      <ConfirmRemoveInventoryModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleRemove}
+        title="Remover Inventario"
+        message="¿Estás seguro de que deseas remover este inventario de la fecha límite? Esta acción no se puede deshacer."
+        confirmText="Remover"
+        confirmColor="red"
+      />
     </>
   );
 };
 
-const AssignedInventoriesTab = ({
-  assignments,
-  pendingId,
-  isUnassigning,
-  onUnassign,
-  deadlineId,
-}) => {
-  if (!assignments || assignments.length === 0) {
-    return (
-      <div className="text-center text-gray-400 py-4">
-        <BsBoxSeam className="text-4xl mx-auto mb-2" />
-        <p className="font-medium">No hay inventarios asignados</p>
-        <p className="text-sm">
-          Usa la pestaña de búsqueda para añadir inventarios
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {assignments.map(({ inventory, id: assignmentId }) => {
-        const isPending = pendingId === inventory.id;
-
-        const data = {
-          image: { key: 'Imagen', value: inventory?.images },
-          title: { key: 'Inventario', value: inventory?.model?.name },
-          subtitle: {
-            key: 'Marca y Tipo',
-            value: `${inventory?.model?.brand?.name} ${inventory?.model?.type?.name}`,
-          },
-          status: { key: 'Estado', value: inventory.status },
-          internalFolio: {
-            key: 'Folio interno',
-            value: inventory?.internalFolio || 'Sin folio',
-          },
-          tags: {
-            key: 'Condiciones',
-            value: inventory?.conditions?.map((c) => (
-              <span key={c.id}>{c?.condition?.name}</span>
-            )),
-          },
-          serialNumber: {
-            key: 'Número de serie',
-            value: inventory?.serialNumber,
-          },
-          activeNumber: {
-            key: 'Número de activo',
-            value: inventory?.activeNumber,
-          },
-          receptionDate: {
-            key: 'F. de recepción',
-            value: inventory?.receptionDate
-              ? parseToLocalDate(inventory?.receptionDate)
-              : '',
-          },
-          createdAt: {
-            key: 'Creacion / Modificación',
-            value: `${parseToLocalDate(inventory?.createdAt)} / ${parseToLocalDate(inventory?.updatedAt)}`,
-          },
-        };
-
-        return (
-          <div
-            key={inventory.id}
-            className="bg-white rounded-lg shadow-md hover:shadow-lg p-4 flex flex-col justify-between relative"
-          >
-            <Card data={data} showImage />
-            <div className="flex items-center justify-end mt-2">
-              <button
-                onClick={() => onUnassign(assignmentId, inventory.id)}
-                disabled={isUnassigning || isPending}
-                className="text-sm px-4 py-1 rounded-md text-white bg-red-600 hover:bg-red-700 flex gap-2 items-center w-fit"
-              >
-                {isPending ? (
-                  <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                ) : (
-                  <MdRemove size={16} />
-                )}
-                Remover
-              </button>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const AssignInventoryModal = ({ isOpen, onClose, deadlineId, onUpdate }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [pendingId, setPendingId] = useState(null);
-
-  const {
-    assignments,
-    assignInventory,
-    unassignInventory,
-    isAssigning,
-    isUnassigning,
-  } = useInventoryAssignments(deadlineId);
-
-  const { data, isLoading, refetch } = useSearchInventories({
-    searchTerm,
-    deadlineId,
-  });
-
-  useEffect(() => {
-    if (isOpen) {
-      setSearchTerm('');
-      setPendingId(null);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      refetch();
-    }, 300);
-    return () => clearTimeout(delayDebounce);
-  }, [searchTerm]);
-
-  const handleAssign = (inventoryId) => {
-    setPendingId(inventoryId);
-    assignInventory(
-      { deadlineId, inventoryId },
-      {
-        onSuccess: () => {
-          refetch();
-          onUpdate?.();
-          setPendingId(null);
-        },
-        onError: () => setPendingId(null),
-      },
-    );
-  };
-
-  const handleUnassign = (assignmentId, inventoryId) => {
-    setPendingId(inventoryId);
-    unassignInventory(assignmentId, {
-      onSuccess: () => {
-        refetch();
-        onUpdate?.();
-        setPendingId(null);
-      },
-      onError: () => setPendingId(null),
-    });
-  };
-
-  return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4 h-[98dvh] overflow-y-auto">
-        <DialogPanel className="bg-white w-full max-w-6xl rounded-xl p-6 shadow-2xl h-full overflow-y-auto">
-          <div className="flex items-center justify-between border-b pb-4 mb-4">
-            <DialogTitle className="text-xl font-bold text-gray-800">
-              Inventarios del Deadline
-            </DialogTitle>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-red-500"
-            >
-              <IoMdClose size={24} />
-            </button>
-          </div>
-
-          <CustomTabs
-            tabs={[
-              {
-                title: 'Asignados',
-                icon: BsBoxSeam,
-                content: (
-                  <AssignedInventoriesTab
-                    assignments={assignments}
-                    deadlineId={deadlineId}
-                    pendingId={pendingId}
-                    isUnassigning={isUnassigning}
-                    onUnassign={handleUnassign}
-                  />
-                ),
-              },
-              {
-                title: 'Buscar y Asignar',
-                icon: FaPlus,
-                content: (
-                  <SearchAndAssignTab
-                    data={data}
-                    deadlineId={deadlineId}
-                    pendingId={pendingId}
-                    isLoading={isLoading}
-                    isAssigning={isAssigning}
-                    isUnassigning={isUnassigning}
-                    onAssign={handleAssign}
-                    onUnassign={handleUnassign}
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    refetch={refetch}
-                  />
-                ),
-              },
-            ]}
-          />
-        </DialogPanel>
-      </div>
-    </Dialog>
-  );
-};
-
-export default memo(AssignInventoryModal);
+export default AssignInventoryModal;

@@ -302,7 +302,7 @@ export const getInventoriesByDeadline = async (req, res) => {
 // 🔓 Remover inventario de un deadline
 export const unassignInventoryFromDeadline = async (req, res) => {
   const { deadlineId, inventoryId } = req.params;
-
+  console.log(req.params);
   try {
     const existing = await db.inventoryDeadline.findFirst({
       where: {

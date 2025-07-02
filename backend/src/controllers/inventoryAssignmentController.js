@@ -89,7 +89,6 @@ export const getInventoryAssignmentsByDeadline = async (req, res) => {
 // ❌ Eliminar lógica (soft delete) — no aplica si no hay campo `enabled`
 export const unassignInventoryFromDeadline = async (req, res) => {
   const { assignmentId } = req.params;
-
   try {
     await db.inventoryDeadline.delete({
       where: { id: assignmentId },

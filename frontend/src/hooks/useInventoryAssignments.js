@@ -1,3 +1,5 @@
+// hooks/useInventoryAssignments.js
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   assignInventoryToDeadline,
@@ -5,37 +7,40 @@ import {
   unassignInventoryFromDeadline,
 } from '../services/inventoryAssignments.api';
 
-export const useInventoryAssignments = (deadlineId) => {
-  const queryClient = useQueryClient();
-
-  const queryKey = ['inventory-assignments', deadlineId];
-
-  // 📦 Obtener inventarios asignados
-  const { data, isLoading, error } = useQuery({
-    queryKey,
-    queryFn: () => getInventoryAssignmentsByDeadline(deadlineId),
+// 📦 Obtener inventarios asignados a una deadline
+export const useInventoryAssignments = (deadlineId) =>
+  useQuery({
+    queryKey: ['inventory-assignments', deadlineId],
+    queryFn: async () => {
+      const data = await getInventoryAssignmentsByDeadline(deadlineId);
+      console.log(data);
+      return data ?? []; // 👈 previene undefined
+    },
     enabled: !!deadlineId,
   });
 
-  // ➕ Asignar inventario
-  const assignMutation = useMutation({
-    mutationFn: assignInventoryToDeadline,
-    onSuccess: () => queryClient.invalidateQueries(queryKey),
+// ➕ Asignar inventario a una deadline
+export const useAssignInventoryToDeadline = (deadlineId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ inventoryId, quantity }) =>
+      assignInventoryToDeadline({ deadlineId, inventoryId, quantity }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ['inventory-assignments', deadlineId],
+      }),
   });
+};
 
-  // ❌ Eliminar asignación
-  const unassignMutation = useMutation({
-    mutationFn: unassignInventoryFromDeadline,
-    onSuccess: () => queryClient.invalidateQueries(queryKey),
+// ❌ Remover inventario de una deadline
+export const useRemoveInventoryFromDeadline = (deadlineId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ assignmentId }) =>
+      unassignInventoryFromDeadline(assignmentId),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ['inventory-assignments', deadlineId],
+      }),
   });
-
-  return {
-    assignments: data,
-    isLoading,
-    error,
-    assignInventory: assignMutation.mutate,
-    isAssigning: assignMutation.isLoading,
-    unassignInventory: unassignMutation.mutate,
-    isUnassigning: unassignMutation.isLoading,
-  };
 };
