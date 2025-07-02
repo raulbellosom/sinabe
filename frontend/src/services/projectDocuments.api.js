@@ -1,14 +1,25 @@
 import api from './api';
 
-// 📤 Subir documento a un proyecto
+// Obtener documentos del proyecto
+export const getProjectDocuments = (projectId) =>
+  api.get(`/project-documents/${projectId}/documents`);
+
+// Subir un nuevo documento al proyecto
 export const uploadProjectDocument = (projectId, formData) =>
-  api.post(`/projects/${projectId}/documents`, formData, {
+  api.post(`/project-documents/${projectId}/documents`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 
-// 📄 Obtener documentos de un proyecto
-export const getProjectDocuments = (projectId) =>
-  api.get(`/projects/${projectId}/documents`);
+// Actualizar documento (nombre, descripción o archivo)
+export const updateProjectDocument = (id, formData) => {
+  const isFormData = formData instanceof FormData;
+  return api.put(`/project-documents/documents/${id}`, formData, {
+    headers: {
+      'Content-Type': isFormData ? 'multipart/form-data' : 'application/json',
+    },
+  });
+};
 
-// ❌ Eliminar documento (lógica)
-export const deleteProjectDocument = (id) => api.delete(`/documents/${id}`);
+// Eliminar documento lógicamente
+export const deleteProjectDocument = (id) =>
+  api.delete(`/project-documents/documents/${id}`);

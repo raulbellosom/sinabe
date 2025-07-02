@@ -19,6 +19,7 @@ import ProjectTeamList from '../../components/ProjectDetails/Team/ProjectTeamLis
 import ProjectInventory from '../../components/ProjectDetails/ProjectInventory';
 import ProjectPurchaseOrders from '../../components/ProjectDetails/ProjectPurchaseOrders';
 import ProjectStatusBadge from '../../components/Projects/ProjectStatusBadge';
+import ProjectDocuments from '../../components/ProjectDetails/ProjectDocuments';
 
 const ProjectDetailPage = () => {
   const { id } = useParams();
@@ -72,7 +73,7 @@ const ProjectDetailPage = () => {
     {
       title: 'Documentos',
       icon: FaFileAlt,
-      content: <p>Próximamente: Documentos y archivos del proyecto.</p>,
+      content: <ProjectDocuments projectId={project.id} />,
     },
   ];
 

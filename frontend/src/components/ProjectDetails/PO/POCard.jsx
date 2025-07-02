@@ -7,6 +7,8 @@ import {
   FaDownload,
   FaTrashAlt,
   FaEdit,
+  FaFilePdf,
+  FaFileCode,
 } from 'react-icons/fa';
 import { Badge, Dropdown } from 'flowbite-react';
 import ActionButtons from '../../ActionButtons/ActionButtons';
@@ -176,7 +178,38 @@ const POCard = ({ order, onEdit }) => {
                   </Badge>
                 ),
               },
-              { key: 'actions', title: 'Acciones' },
+              {
+                key: 'fileUrl',
+                title: 'Archivos',
+                render: (_, row) => (
+                  <div className="flex gap-2">
+                    {row.pdf && (
+                      <a
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={row.pdf ? getFileUrl({ url: row.pdf }) : '#'}
+                        className="text-red-500"
+                      >
+                        <FaFilePdf size={20} />
+                      </a>
+                    )}
+                    {row.xml && (
+                      <a
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={row.xml ? getFileUrl({ url: row.xml }) : '#'}
+                        className="text-blue-500"
+                      >
+                        <FaFileCode size={20} />
+                      </a>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                key: 'actions',
+                title: 'Acciones',
+              },
             ]}
             data={invoiceData}
             rowKey="id"
@@ -200,18 +233,6 @@ const POCard = ({ order, onEdit }) => {
                   setInvoiceToEdit(inv);
                   setShowInvoiceModal(true);
                 },
-              },
-              {
-                key: 'download',
-                icon: FaDownload,
-                label: 'Descargar PDF',
-                action: () => window.open(inv.pdf, '_blank'),
-              },
-              {
-                key: 'downloadXml',
-                icon: FaDownload,
-                label: 'Descargar XML',
-                action: () => window.open(inv.xml, '_blank'),
               },
               {
                 key: 'delete',

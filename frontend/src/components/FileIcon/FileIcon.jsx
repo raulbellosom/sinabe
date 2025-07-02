@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import ModalViewer from '../Modals/ModalViewer';
-const PDFReader = React.lazy(() => import('../PDFReader/PDFReader'));
 import ActionButtons from '../ActionButtons/ActionButtons';
 import DownloadFileImage from '../../assets/images/download_file.webp';
 import { API_URL, downloadFile } from '../../services/api';
@@ -21,9 +20,7 @@ import classNames from 'classnames';
 import { FallingLines } from 'react-loader-spinner';
 
 const FileIcon = ({ file, className, size, onRemove }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalDownloadOpen, setIsModalDownloadOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
   const [isDownloadingError, setIsDownloadingError] = useState(false);
@@ -54,14 +51,8 @@ const FileIcon = ({ file, className, size, onRemove }) => {
 
   const handleOpenPdf = () => {
     if (file && file.type?.includes('pdf')) {
-      setSelectedFile(file);
-      setIsModalOpen(true);
+      window.open(getFileUrl(file), '_blank');
     }
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedFile(null);
   };
 
   const handleDownload = () => {
@@ -133,27 +124,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
           )}
         </div>
       </div>
-      {isModalOpen && (
-        <ModalViewer
-          title={selectedFile.name}
-          isOpenModal={isModalOpen}
-          onCloseModal={handleCloseModal}
-          dismissible={true}
-          size="7xl"
-        >
-          {window.innerWidth < 768 ? (
-            <PDFReader file={getFileUrl(file)} />
-          ) : (
-            <embed
-              src={getFileUrl(file)}
-              type="application/pdf"
-              width="100%"
-              height="100%"
-              className="min-h-[80vh]"
-            />
-          )}
-        </ModalViewer>
-      )}
+
       {isModalDownloadOpen && (
         <ModalViewer
           title="Descargar Archivo"

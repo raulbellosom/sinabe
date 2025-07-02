@@ -1,4 +1,5 @@
-// controllers/uploadProjectDocumentsController.js
+// File: controllers/uploadProjectDocumentsController.js
+
 import multer, { diskStorage } from "multer";
 import fs from "fs";
 import path from "path";
@@ -20,6 +21,10 @@ const storage = diskStorage({
   },
 });
 
-const uploadProjectDocument = multer({ storage });
+const upload = multer({ storage });
 
-export { uploadProjectDocument };
+// ⬇️ Exportas dos middlewares distintos
+const uploadProjectDocument = upload.single("documento"); // 👈 Para subir uno
+const uploadMultipleProjectDocuments = upload.array("documentos", 10); // 👈 Para subir varios
+
+export { uploadProjectDocument, uploadMultipleProjectDocuments };

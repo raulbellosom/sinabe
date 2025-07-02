@@ -177,7 +177,7 @@ const ImagePicker = ({
             onClick={() =>
               document.getElementById(props.id || props.name).click()
             }
-            className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground cursor-pointer hover:bg-neutral-50 p-6 rounded-md min-h-[30dvh]"
+            className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground cursor-pointer hover:bg-neutral-50 p-6 rounded-md w-full min-h-[30dvh]"
           >
             <IoMdCloudUpload
               size={32}

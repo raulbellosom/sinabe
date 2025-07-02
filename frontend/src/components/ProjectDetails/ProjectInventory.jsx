@@ -35,7 +35,7 @@ const ProjectInventory = ({ projectId }) => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-3 items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+        <h2 className="text-base md:text-lg font-semibold">
           Inventario Detallado del Proyecto
         </h2>
         <div className="flex flex-wrap gap-2">
