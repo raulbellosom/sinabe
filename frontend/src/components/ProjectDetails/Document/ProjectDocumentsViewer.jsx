@@ -4,13 +4,8 @@ import React, { useState, useCallback } from 'react';
 import ActionButtons from '../../ActionButtons/ActionButtons';
 import { RiFolderZipLine } from 'react-icons/ri';
 import { BsBadgeHdFill } from 'react-icons/bs';
-import { FaCheckSquare, FaFileAlt, FaPlus } from 'react-icons/fa';
-import {
-  MdInsertDriveFile,
-  MdGridView,
-  MdPhotoLibrary,
-  MdFolderCopy,
-} from 'react-icons/md';
+import { FaCheckSquare, FaFileAlt, FaTrash } from 'react-icons/fa';
+import { MdFolderCopy } from 'react-icons/md';
 import ImageViewer from '../../ImageViewer/ImageViewer2';
 import FileIcon from '../../FileIcon/FileIcon';
 import Notifies from '../../Notifies/Notifies';
@@ -22,8 +17,11 @@ import ProjectDocumentFormModal from './ProjectDocumentFormModal';
 import ConfirmDeleteProjectDocumentModal from './ConfirmDeleteProjectDocumentModal';
 import ProjectBulkUploadModal from './ProjectBulkUploadModal';
 import { Tooltip } from 'flowbite-react';
-import { FaTable, FaImages } from 'react-icons/fa';
+import { FaImages } from 'react-icons/fa';
 import classNames from 'classnames';
+import { FaFileArrowUp } from 'react-icons/fa6';
+import { useMediaQuery } from 'react-responsive';
+import { useDeleteProjectDocument } from '../../../hooks/useProjectDocuments';
 
 const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
   const [viewMode, setViewMode] = useState('images');
@@ -32,7 +30,11 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+
+  const deleteMutation = useDeleteProjectDocument(projectId);
 
   const images = documents.filter((doc) =>
     doc.metadata?.mimetype?.startsWith('image/'),
@@ -56,11 +58,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
   const handleDownloadImages = (isCompressed = false) => {
     const selected = images
       .filter((img) => selectedImages.includes(img.id))
-      .map((img) => ({
-        ...img,
-        url: img.fileUrl, // 👈 aquí lo normalizamos
-      }));
-
+      .map((img) => ({ ...img, url: img.fileUrl }));
     if (selected.length === 0)
       return Notifies('error', 'Selecciona al menos una imagen');
     downloadImagesAsZip(selected, isCompressed);
@@ -69,22 +67,25 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
   const handleDownloadFiles = () => {
     const selected = files
       .filter((f) => selectedFiles.includes(f.id))
-      .map((file) => ({
-        ...file,
-        url: file.fileUrl, // 👈 normalizamos
-      }));
-
+      .map((file) => ({ ...file, url: file.fileUrl }));
     if (selected.length === 0)
       return Notifies('error', 'Selecciona al menos un archivo');
-
     downloadFilesAsZip(selected);
   };
 
+  const handleBulkDelete = (ids) => {
+    if (ids.length === 0) {
+      return Notifies('error', 'Selecciona al menos un ítem');
+    }
+    // Solo abrimos el modal; la mutación la disparará el modal
+    setShowDeleteModal(true);
+  };
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
+      <div className="flex flex-col justify-between items-start md:items-center gap-6">
+        <div className="flex flex-col justify-start w-full">
           <h2 className="text-base md:text-lg font-semibold">
             <FaFileAlt className="inline mr-2 text-sinabe-primary" />
             Documentos del Proyecto
@@ -124,13 +125,12 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
               </button>
             </Tooltip>
           </div>
-
           <div className="flex items-center gap-2 text-nowrap">
             <ActionButtons
               extraActions={[
                 {
-                  label: 'Agregar Archivo',
-                  icon: FaPlus,
+                  label: isMobile ? 'Documentos' : 'Agregar Doc',
+                  icon: FaFileArrowUp,
                   color: 'indigo',
                   filled: true,
                   action: () => {
@@ -139,8 +139,8 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
                   },
                 },
                 {
-                  label: 'Cargar múltiples',
-                  icon: MdGridView,
+                  label: isMobile ? 'Imágenes' : 'Subir Imágenes',
+                  icon: FaImages,
                   color: 'indigo',
                   action: () => setShowBulkUploadModal(true),
                 },
@@ -151,56 +151,86 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-4 items-center justify-end">
+      <div className="grid grid-cols-2 md:flex gap-4 items-center justify-end">
         {viewMode === 'images' ? (
-          <>
-            <ActionButtons
-              extraActions={[
-                {
-                  label: 'Comprimir',
-                  icon: RiFolderZipLine,
-                  color: 'teal',
-                  action: () => handleDownloadImages(true),
-                  disabled: selectedImages.length === 0,
-                },
-                {
-                  label: 'HD',
-                  icon: BsBadgeHdFill,
-                  color: 'blue',
-                  action: () => handleDownloadImages(false),
-                  disabled: selectedImages.length === 0,
-                },
-                {
-                  label: 'Seleccionar todas',
-                  icon: FaCheckSquare,
-                  color: 'gray',
-                  action: () => setSelectedImages(images.map((img) => img.id)),
-                  disabled: images.length === 0,
-                },
-              ]}
-            />
-          </>
+          <ActionButtons
+            extraActions={[
+              {
+                label: 'Comprimir',
+                icon: RiFolderZipLine,
+                color: 'teal',
+                action: () => handleDownloadImages(true),
+                disabled: selectedImages.length === 0,
+              },
+              {
+                label: 'HD',
+                icon: BsBadgeHdFill,
+                color: 'blue',
+                action: () => handleDownloadImages(false),
+                disabled: selectedImages.length === 0,
+              },
+              {
+                label:
+                  selectedImages.length === images.length && images.length > 0
+                    ? isMobile
+                      ? 'Deseleccionar'
+                      : 'Deseleccionar todas'
+                    : isMobile
+                      ? 'Todas'
+                      : 'Seleccionar todas',
+                icon: FaCheckSquare,
+                color: 'gray',
+                action: () =>
+                  selectedImages.length === images.length
+                    ? setSelectedImages([])
+                    : setSelectedImages(images.map((img) => img.id)),
+                disabled: images.length === 0,
+              },
+              {
+                label: isMobile ? 'Eliminar' : 'Eliminar seleccionados',
+                icon: FaTrash,
+                color: 'red',
+                action: () => handleBulkDelete(selectedImages),
+                disabled: selectedImages.length === 0,
+              },
+            ]}
+          />
         ) : (
-          <>
-            <ActionButtons
-              extraActions={[
-                {
-                  label: 'Descargar archivos',
-                  icon: RiFolderZipLine,
-                  color: 'teal',
-                  action: handleDownloadFiles,
-                  disabled: selectedFiles.length === 0,
-                },
-                {
-                  label: 'Seleccionar todos',
-                  icon: FaCheckSquare,
-                  color: 'gray',
-                  action: () => setSelectedFiles(files.map((f) => f.id)),
-                  disabled: files.length === 0,
-                },
-              ]}
-            />
-          </>
+          <ActionButtons
+            extraActions={[
+              {
+                label: isMobile ? 'Descargar' : 'Descargar archivos',
+                icon: RiFolderZipLine,
+                color: 'teal',
+                action: handleDownloadFiles,
+                disabled: selectedFiles.length === 0,
+              },
+              {
+                label:
+                  selectedFiles.length === files.length && files.length > 0
+                    ? isMobile
+                      ? 'Deseleccionar'
+                      : 'Deseleccionar todos'
+                    : isMobile
+                      ? 'Todos'
+                      : 'Seleccionar todos',
+                icon: FaCheckSquare,
+                color: 'gray',
+                action: () =>
+                  selectedFiles.length === files.length
+                    ? setSelectedFiles([])
+                    : setSelectedFiles(files.map((f) => f.id)),
+                disabled: files.length === 0,
+              },
+              {
+                label: isMobile ? 'Eliminar' : 'Eliminar seleccionados',
+                icon: FaTrash,
+                color: 'red',
+                action: () => handleBulkDelete(selectedFiles),
+                disabled: selectedFiles.length === 0,
+              },
+            ]}
+          />
         )}
       </div>
 
@@ -219,7 +249,6 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
             ))}
           </div>
         )}
-
         {viewMode === 'files' && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {files.map((file) => (
@@ -227,7 +256,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
                 key={file.id}
                 className={`p-2 rounded-md border transition cursor-pointer ${
                   selectedFiles.includes(file.id)
-                    ? 'border-purple-500 ring-2 ring-purple-300'
+                    ? 'border-purple-500 ring-2 ring-purple-300 m-2'
                     : 'border-gray-200'
                 }`}
                 onClick={() => toggleFileSelection(file.id)}
@@ -265,13 +294,19 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
           onRefresh?.();
         }}
       />
-
       <ConfirmDeleteProjectDocumentModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        document={selectedDoc}
+        documents={
+          viewMode === 'images'
+            ? images.filter((img) => selectedImages.includes(img.id))
+            : files.filter((f) => selectedFiles.includes(f.id))
+        }
+        projectId={projectId}
         onSuccess={() => {
           setShowDeleteModal(false);
+          if (viewMode === 'images') setSelectedImages([]);
+          else setSelectedFiles([]);
           onRefresh?.();
         }}
       />

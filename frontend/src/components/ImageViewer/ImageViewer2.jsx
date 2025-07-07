@@ -136,11 +136,12 @@ const ImageViewer = ({
                 )}
                 {onRemove && (!showOnlyFirstImage || index === 0) && (
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       onRemove(image.id !== undefined ? image.id : index);
                     }}
-                    className="absolute top-1 right-1 z-10 p-1 bg-white rounded-full shadow-md text-gray-700 transition-all duration-300 transform scale-0 group-hover:scale-100 hover:bg-red-500 hover:text-white"
+                    className="absolute top-1 right-1 z-10 p-1 bg-white rounded-full shadow-md text-gray-700 transition-all duration-300 transform scale-100 sm:scale-0 sm:group-hover:scale-100 hover:bg-red-500 hover:text-white"
                   >
                     <IoClose size={18} />
                   </button>

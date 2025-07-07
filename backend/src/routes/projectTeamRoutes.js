@@ -21,7 +21,7 @@ router.put("/projects/:projectId/team/:memberId", protect, updateProjectMember);
 
 // ❌ Eliminar usuario del proyecto
 router.delete(
-  "/projects/:projectId/team/:userId",
+  "/projects/:projectId/team/:memberId",
   protect,
   removeUserFromProject
 );

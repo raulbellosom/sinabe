@@ -13,7 +13,6 @@ export const useInventoryAssignments = (deadlineId) =>
     queryKey: ['inventory-assignments', deadlineId],
     queryFn: async () => {
       const data = await getInventoryAssignmentsByDeadline(deadlineId);
-      console.log(data);
       return data ?? []; // 👈 previene undefined
     },
     enabled: !!deadlineId,

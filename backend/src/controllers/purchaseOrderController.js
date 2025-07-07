@@ -12,6 +12,7 @@ export const getPurchaseOrdersByProjectId = async (req, res) => {
       },
       include: {
         invoices: {
+          where: { enabled: true },
           include: { inventories: true },
         },
       },

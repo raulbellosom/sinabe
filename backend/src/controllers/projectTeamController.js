@@ -178,18 +178,28 @@ export const updateProjectMember = async (req, res) => {
 // ❌ Eliminar miembro del proyecto
 export const removeUserFromProject = async (req, res) => {
   const { projectId, memberId } = req.params;
+  console.log(`Removing member ${memberId} from project ${projectId}`);
 
   try {
-    await db.projectMember.deleteMany({
-      where: {
-        id: memberId,
-        projectId,
-      },
+    // 1) Obtengo el registro
+    const member = await db.projectMember.findFirst({
+      where: { userId: memberId, projectId },
+    });
+
+    if (!member) {
+      return res
+        .status(404)
+        .json({ error: "Miembro no encontrado en el proyecto" });
+    }
+
+    // 2) Borro usando el id (clave única)
+    await db.projectMember.delete({
+      where: { id: member.id },
     });
 
     res.status(200).json({ message: "Miembro eliminado del proyecto" });
   } catch (error) {
-    console.error("Error removing project member:", error.message);
+    console.error("Error removing project member:", error);
     res.status(500).json({ error: error.message });
   }
 };

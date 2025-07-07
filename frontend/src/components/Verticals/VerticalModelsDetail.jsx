@@ -214,25 +214,23 @@ const VerticalModelsDetail = ({
         onConfirm={handleConfirmUnassign}
         onCancel={() => setConfirmUnassignModel(false)}
       />
-      {showAssign && (
-        <ModalAssignModel
-          isOpen={showAssign}
-          onClose={() => setShowAssign(false)}
-          verticalId={verticalId}
-          onAssign={({ modelId, verticalId }) => {
-            assignModel.mutate(
-              { modelId, verticalIds: [verticalId] },
-              {
-                onSuccess: async () => {
-                  await refetchVerticals();
-                  setShowAssign(false);
-                },
+      <ModalAssignModel
+        isOpen={showAssign}
+        onClose={() => setShowAssign(false)}
+        verticalId={verticalId}
+        onAssign={({ modelId, verticalId }) => {
+          assignModel.mutate(
+            { modelId, verticalIds: [verticalId] },
+            {
+              onSuccess: async () => {
+                await refetchVerticals();
+                setShowAssign(false);
               },
-            );
-          }}
-          loadModels={(term) => searchModels(term, verticalId)}
-        />
-      )}
+            },
+          );
+        }}
+        loadModels={(term) => searchModels(term, verticalId)}
+      />
     </>
   );
 };

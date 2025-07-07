@@ -46,11 +46,11 @@ const ProjectPurchaseOrders = ({ projectId }) => {
   return (
     <section className="space-y-4 h-full">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-center">
         <h2 className="text-base md:text-lg font-semibold">
           Órdenes de Compra
         </h2>
-        <div className="flex items-center space-x-2">
+        <div className="flex w-full md:w-fit items-center space-x-2">
           <ActionButtons
             extraActions={[
               {

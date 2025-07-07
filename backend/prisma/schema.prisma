@@ -209,11 +209,11 @@ model InventoryDeadline {
 model PurchaseOrder {
   id          String    @id @default(uuid())
   code        String    @unique
-  supplier    String
+  supplier    String?
   description String?   @db.Text
-  amount      Float
+  amount      Float?
   status      String
-  date        DateTime
+  date        DateTime?
   projectId   String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

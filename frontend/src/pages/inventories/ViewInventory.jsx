@@ -181,11 +181,12 @@ const ViewInventory = () => {
       });
     });
     inventory?.InventoryDeadline?.forEach((dl) => {
+      console.log(dl);
       rels.push({
         label: 'Deadline',
         value: dl?.deadline.name || parseToLocalDate(dl?.deadline.date),
         icon: BiSolidCalendarCheck,
-        route: `/deadlines/${dl.id}`,
+        route: `/projects/view/${dl?.deadline.projectId}?tab=1`,
       });
     });
     setRelations(rels);
@@ -290,7 +291,7 @@ const ViewInventory = () => {
 
       <div className="h-fit flex flex-col gap-2">
         {/* Datos generales */}
-        <div className="h-full flex flex-col gap-2">
+        <div className="h-full flex flex-col gap-4">
           <div className="grid grid-cols-12 gap-4 w-full h-full">
             {isFetching && !inventoryData
               ? Array.from({ length: 8 }).map((_, i) => (
@@ -302,7 +303,7 @@ const ViewInventory = () => {
                   ([key, { name, icon, label }]) => (
                     <div
                       key={key}
-                      className="col-span-12 md:col-span-4 lg:col-span-3 last:col-span-12"
+                      className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3 last:col-span-12"
                     >
                       <InventoryProperty
                         onSearch={() =>
@@ -325,8 +326,8 @@ const ViewInventory = () => {
           </div>
 
           {/* Campos Personalizados */}
-          <div className="my-4">
-            <p
+          <div className="">
+            {/* <p
               style={{
                 width: '100%',
                 borderBottom: '1px solid #e2e8f0',
@@ -338,12 +339,12 @@ const ViewInventory = () => {
               <span style={{ background: '#fff', padding: '0 10px' }}>
                 Campos Personalizados
               </span>
-            </p>
-            <div className="grid grid-cols-12 gap-2 w-full h-full">
+            </p> */}
+            <div className="grid grid-cols-12 gap-4 w-full h-full">
               {customFields.map((field, i) => (
                 <div
                   key={i}
-                  className="col-span-12 md:col-span-4 lg:col-span-3"
+                  className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3 "
                 >
                   <InventoryProperty
                     label={field.label}
@@ -367,25 +368,25 @@ const ViewInventory = () => {
 
           {/* Relaciones */}
           {relations.length > 0 && (
-            <div className="my-4">
-              <p
+            <div className="">
+              {/* <p
                 style={{
                   width: '100%',
                   borderBottom: '1px solid #e2e8f0',
                   lineHeight: '0.1em',
-                  margin: '10px 0 20px',
+                  margin: '10px 0px 20px 0px',
                 }}
                 className="col-span-12 text-base font-semibold pt-4 border-b border-gray-200"
               >
                 <span style={{ background: '#fff', padding: '0 10px' }}>
                   Relaciones
                 </span>
-              </p>
-              <div className="grid grid-cols-12 gap-4">
+              </p> */}
+              <div className="grid grid-cols-12 gap-4 w-full h-full">
                 {relations.map((rel, i) => (
                   <div
                     key={i}
-                    className="col-span-12 md:col-span-4 lg:col-span-3"
+                    className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3 "
                   >
                     <InventoryProperty
                       label={rel.label}

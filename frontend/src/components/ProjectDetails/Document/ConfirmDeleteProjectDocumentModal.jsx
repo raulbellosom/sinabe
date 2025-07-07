@@ -1,64 +1,90 @@
-import React, { useState } from 'react';
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
-import { Button, Label, TextInput } from 'flowbite-react';
+// src/components/ProjectDetails/Document/ConfirmDeleteProjectDocumentModal.jsx
+import React, { useState, useEffect } from 'react';
+import ReusableModal from '../../Modals/ReusableModal';
+import { Label, TextInput } from 'flowbite-react';
 import Notifies from '../../Notifies/Notifies';
 import { useDeleteProjectDocument } from '../../../hooks/useProjectDocuments';
+import { IoMdClose } from 'react-icons/io';
+import { FaTrashAlt } from 'react-icons/fa';
 
 const ConfirmDeleteProjectDocumentModal = ({
   isOpen,
   onClose,
-  document,
+  documents = [], // acepta uno o varios documentos
   onSuccess,
   projectId,
 }) => {
   const [confirmation, setConfirmation] = useState('');
   const { mutate, isPending } = useDeleteProjectDocument(projectId);
 
+  useEffect(() => {
+    if (!isOpen) setConfirmation('');
+  }, [isOpen]);
+
+  const count = documents.length;
+  const canDelete = confirmation.trim().toLowerCase() === 'acepto';
+
   const handleDelete = () => {
-    mutate(document.id, {
-      onSuccess: () => {
-        Notifies('success', 'Documento eliminado');
-        onSuccess?.();
-      },
-      onError: () => {
-        Notifies('error', 'Error al eliminar');
-      },
+    documents.forEach((doc) => {
+      mutate(doc.id, {
+        onError: () => Notifies('error', `Error al eliminar documento`),
+      });
     });
+    Notifies(
+      'success',
+      `${count} documento${count > 1 ? 's' : ''} eliminado${count > 1 ? 's' : ''}`,
+    );
+    onSuccess?.();
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} className="z-50">
-      <div className="fixed inset-0 bg-black/30" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-          <DialogTitle className="text-lg font-semibold mb-4 text-red-600">
-            ¿Eliminar documento?
-          </DialogTitle>
-          <p className="text-sm text-gray-600 mb-4">
-            Esta acción es irreversible. Escribe <strong>"acepto"</strong> para
-            confirmar.
-          </p>
-          <Label htmlFor="confirmation">Confirmación</Label>
-          <TextInput
-            value={confirmation}
-            onChange={(e) => setConfirmation(e.target.value)}
-            placeholder="acepto"
-          />
-          <div className="flex justify-end gap-2 mt-4">
-            <Button color="gray" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button
-              color="red"
-              onClick={handleDelete}
-              disabled={confirmation !== 'acepto' || isPending}
-            >
-              Eliminar
-            </Button>
-          </div>
-        </DialogPanel>
-      </div>
-    </Dialog>
+    <ReusableModal
+      isOpen={isOpen}
+      onClose={() => {
+        setConfirmation('');
+        onClose();
+      }}
+      title={
+        <span className="flex items-center gap-2 text-red-600 font-semibold">
+          <FaTrashAlt /> ¿Eliminar {count} documento{count > 1 ? 's' : ''}?
+        </span>
+      }
+      size="sm"
+      actions={[
+        {
+          label: 'Cancelar',
+          color: 'stone',
+          icon: IoMdClose,
+          action: () => {
+            setConfirmation('');
+            onClose();
+          },
+        },
+        {
+          label: 'Eliminar',
+          color: 'red',
+          filled: true,
+          icon: FaTrashAlt,
+          action: handleDelete,
+          disabled: !canDelete || isPending,
+          type: 'submit',
+        },
+      ]}
+    >
+      <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+        Esta acción es irreversible. Escribe <strong>"acepto"</strong> para
+        confirmar.
+      </p>
+      <Label htmlFor="confirmation">Confirmación</Label>
+      <TextInput
+        id="confirmation"
+        value={confirmation}
+        onChange={(e) => setConfirmation(e.target.value)}
+        placeholder="acepto"
+        className="mt-2"
+      />
+    </ReusableModal>
   );
 };
 

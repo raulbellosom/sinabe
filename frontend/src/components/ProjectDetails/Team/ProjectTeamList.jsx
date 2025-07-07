@@ -15,6 +15,7 @@ import {
 import ConfirmRemoveProjectMemberModal from './ConfirmRemoveProjectMemberModal';
 import FilterDropdown from '../../Inputs/FilterDropdown';
 import { FormattedUrlImage } from '../../../utils/FormattedUrlImage';
+import Notifies from '../../Notifies/Notifies';
 
 const ProjectTeamList = ({ projectId }) => {
   const { data: team = [], isLoading } = useProjectTeam(projectId);
@@ -29,6 +30,8 @@ const ProjectTeamList = ({ projectId }) => {
   const handleRemove = async (memberId) => {
     try {
       await removeMember.mutateAsync(memberId);
+      Notifies('success', `Miembro eliminado`);
+
       setSelectedMember(null);
     } catch (err) {
       console.error('Error al eliminar miembro:', err);
@@ -84,12 +87,14 @@ const ProjectTeamList = ({ projectId }) => {
           />
 
           <div className="flex gap-2 items-center justify-between md:justify-start">
-            <FilterDropdown
-              label="Roles"
-              options={allRoles}
-              selected={roleFilters}
-              setSelected={setRoleFilters}
-            />
+            <div>
+              <FilterDropdown
+                label="Roles"
+                options={allRoles}
+                selected={roleFilters}
+                setSelected={setRoleFilters}
+              />
+            </div>
 
             <button
               onClick={() => setIsModalOpen(true)}

@@ -57,8 +57,8 @@ const POCard = ({ order, onEdit }) => {
   const [invoiceToManageInventory, setInvoiceToManageInventory] =
     useState(null);
 
-  const handleDownload = () =>
-    window.open(`/api/purchase-orders/${order.id}/pdf`, '_blank');
+  // const handleDownload = () =>
+  //   window.open(`/api/purchase-orders/${order.id}/pdf`, '_blank');
   const handleEditPO = () => onEdit(order);
   const handleRemoveOCFromProject = () => setShowRemoveModal(true);
 
@@ -84,7 +84,7 @@ const POCard = ({ order, onEdit }) => {
       icon: MdRemoveCircle,
       action: handleRemoveOCFromProject,
     },
-    { label: 'Descargar PDF', icon: FaDownload, action: handleDownload },
+    // { label: 'Descargar PDF', icon: FaDownload, action: handleDownload },
   ];
 
   return (

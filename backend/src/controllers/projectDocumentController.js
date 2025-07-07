@@ -158,6 +158,16 @@ export const updateDocument = async (req, res) => {
 export const deleteDocument = async (req, res) => {
   const { id } = req.params;
 
+  // Verificar si el documento existe
+  const existingDoc = await db.projectDocument.findUnique({
+    where: { id, enabled: true },
+  });
+
+  if (!existingDoc) {
+    return res.status(404).json({ message: "Documento no encontrado" });
+  }
+  // Verificar si el documento ya está eliminado
+
   try {
     await db.projectDocument.update({
       where: { id },

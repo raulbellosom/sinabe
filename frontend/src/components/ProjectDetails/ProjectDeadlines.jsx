@@ -262,19 +262,17 @@ const ProjectDeadlines = ({ projectId }) => {
           refetch();
         }}
       />
-      {selectedDeadlineId && (
-        <AssignInventoryModal
-          isOpen={isAssignModalOpen}
-          onClose={() => {
-            setIsAssignModalOpen(false);
-            setSelectedDeadlineId(null); // 🧼 limpiar después
-          }}
-          deadlineId={selectedDeadlineId}
-          onUpdate={() => {
-            refetch();
-          }}
-        />
-      )}
+      <AssignInventoryModal
+        isOpen={isAssignModalOpen}
+        onClose={() => {
+          setIsAssignModalOpen(false);
+          setSelectedDeadlineId(null); // 🧼 limpiar después
+        }}
+        deadlineId={selectedDeadlineId}
+        onUpdate={() => {
+          refetch();
+        }}
+      />
     </section>
   );
 };

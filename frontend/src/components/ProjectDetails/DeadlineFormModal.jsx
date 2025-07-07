@@ -1,6 +1,10 @@
 // src/components/ProjectDetails/DeadlineFormModal.jsx
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
+import React, { useState, useEffect, act } from 'react';
+import ReusableModal from '../../components/Modals/ReusableModal';
+import AsyncSelect from 'react-select/async';
+import { v4 as uuidv4 } from 'uuid';
+import Notifies from '../../components/Notifies/Notifies';
+import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 import {
   useCreateDeadline,
   useUpdateDeadline,
@@ -8,9 +12,7 @@ import {
   useUpdateTask,
   useDeleteTask,
 } from '../../hooks/useDeadlines';
-import { useProjectTeam } from '../../hooks/useProjectTeam'; // Asegúrate de tener este hook
-import { v4 as uuidv4 } from 'uuid';
-import AsyncSelect from 'react-select/async';
+import { useProjectTeam } from '../../hooks/useProjectTeam';
 import {
   FaCalendarAlt,
   FaTasks,
@@ -22,6 +24,7 @@ import {
   FaTimesCircle,
   FaTrashAlt,
   FaUser,
+  FaInfoCircle as FaInfo,
 } from 'react-icons/fa';
 import {
   MdInfoOutline,
@@ -29,9 +32,8 @@ import {
   MdOutlineTaskAlt,
   MdTextFields,
 } from 'react-icons/md';
-import { IoMdClose, IoMdCloseCircleOutline } from 'react-icons/io';
-import Notifies from '../../components/Notifies/Notifies';
-import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
+import { IoMdClose } from 'react-icons/io';
+import ActionButtons from '../ActionButtons/ActionButtons';
 
 const statusIcons = {
   PENDIENTE: <FaClock className="text-yellow-500 text-lg" />,
@@ -47,7 +49,6 @@ const borderColor = {
   CANCELADO: 'border-red-500',
 };
 
-// Componente para renderizar las opciones de usuario en el select
 const CustomUserOption = ({ data, innerRef, innerProps }) => (
   <div
     ref={innerRef}
@@ -61,7 +62,7 @@ const CustomUserOption = ({ data, innerRef, innerProps }) => (
         className="w-6 h-6 rounded-full object-cover mr-2"
       />
     ) : (
-      <div className="w-6 h-6 bg-gray-300 rounded-full text-white flex items-center justify-center mr-2 text-xs font-semibold">
+      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center mr-2 text-xs font-semibold">
         {data.label
           ?.split(' ')
           .map((w) => w[0])
@@ -86,10 +87,9 @@ const DeadlineFormModal = ({
 }) => {
   const isEditing = Boolean(initialData);
   const { data: team = [] } = useProjectTeam(projectId);
-
   const userOptions = team.map((u) => ({
     label: u.name,
-    value: u.id, // ← id ya es el del usuario real
+    value: u.id,
     email: u.email,
     thumbnail: FormattedUrlImage(u.thumbnail) || null,
   }));
@@ -102,9 +102,9 @@ const DeadlineFormModal = ({
     users: [],
     id: null,
   });
-  const [deletedTaskIds, setDeletedTaskIds] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [originalTasks, setOriginalTasks] = useState([]);
+  const [deletedTaskIds, setDeletedTaskIds] = useState([]);
   const [newTask, setNewTask] = useState({
     name: '',
     date: '',
@@ -144,7 +144,6 @@ const DeadlineFormModal = ({
           _isLocal: false,
         })),
       );
-
       setOriginalTasks(initialData.tasks || []);
     } else {
       setDeadline({
@@ -168,17 +167,22 @@ const DeadlineFormModal = ({
     setDeletedTaskIds([]);
   }, [initialData, isEditing]);
 
+  const loadUsers = (inputValue, callback) => {
+    const selectedIds = deadline.users.map((u) => u.value);
+    const filtered = userOptions.filter(
+      (opt) =>
+        opt.label.toLowerCase().includes(inputValue.toLowerCase()) &&
+        !selectedIds.includes(opt.value),
+    );
+    callback(filtered);
+  };
+
   const handleAddTask = () => {
     if (!newTask.name || !newTask.date) return;
     const id = uuidv4();
     setTasks((prev) => [
       ...prev,
-      {
-        id,
-        ...newTask,
-        order: prev.length,
-        _isLocal: true,
-      },
+      { id, ...newTask, order: prev.length, _isLocal: true },
     ]);
     setNewTask({
       name: '',
@@ -190,78 +194,53 @@ const DeadlineFormModal = ({
   };
 
   const handleSubmit = async () => {
-    // 🔧 Normalizar usuarios del deadline
-    const deadlineUsers =
-      deadline.users
-        ?.map((u) => {
-          if (typeof u === 'string') return u;
-          if (u && typeof u === 'object') return u.value ?? u.id;
-          return null;
-        })
-        .filter(Boolean) || [];
-
+    const deadlineUsers = (deadline.users || [])
+      .map((u) => (typeof u === 'object' ? u.value : u))
+      .filter(Boolean);
     const payload = { ...deadline, users: deadlineUsers };
-
     if (isEditing) {
       await updateDeadline.mutateAsync({ id: deadline.id, data: payload });
-
       await Promise.all(
         tasks.map(async (task) => {
-          const taskUsers =
-            task.users?.map((u) =>
-              typeof u === 'object' ? u.value || u.id : u,
-            ) || [];
-
-          const taskData = {
+          const users = (task.users || [])
+            .map((u) => (typeof u === 'object' ? u.value : u))
+            .filter(Boolean);
+          const data = {
             name: task.name,
             description: task.description,
             date: task.date,
             order: task.order,
             status: task.status || 'PENDIENTE',
-            users: taskUsers,
+            users,
             createdById: task.createdById || 'admin',
           };
-
-          if (task._isLocal) {
-            return createTask.mutateAsync({
-              deadlineId: deadline.id,
-              data: taskData,
-            });
-          }
-
-          const original = originalTasks.find((t) => t.id === task.id);
-          const hasChanged =
-            !original ||
-            original.name !== task.name ||
-            original.description !== task.description ||
-            original.date?.slice(0, 10) !== task.date?.slice(0, 10) ||
-            original.status !== task.status ||
-            JSON.stringify(original.users) !== JSON.stringify(taskUsers);
-
-          if (hasChanged) {
-            return updateTask.mutateAsync({ id: task.id, data: taskData });
-          }
+          if (task._isLocal)
+            return createTask.mutateAsync({ deadlineId: deadline.id, data });
+          const orig = originalTasks.find((t) => t.id === task.id);
+          const changed =
+            !orig ||
+            orig.name !== task.name ||
+            orig.description !== task.description ||
+            orig.date?.slice(0, 10) !== task.date?.slice(0, 10) ||
+            orig.status !== task.status ||
+            JSON.stringify(orig.users) !== JSON.stringify(users);
+          if (changed) return updateTask.mutateAsync({ id: task.id, data });
           return Promise.resolve();
         }),
       );
-
-      await Promise.all(deletedTaskIds.map((id) => deleteTask.mutateAsync(id)));
+      await Promise.all(
+        deletedTaskIds.map((tid) => deleteTask.mutateAsync(tid)),
+      );
       Notifies('success', 'Deadline actualizado');
     } else {
       const created = await createDeadline.mutateAsync(payload);
       const deadlineId = created?.id;
-
-      if (!deadlineId) {
-        return Notifies('error', 'Error al crear el deadline');
-      }
-
+      if (!deadlineId) return Notifies('error', 'Error al crear el deadline');
       await Promise.all(
         tasks.map((task) => {
-          const taskUsers =
-            task.users?.map((u) =>
-              typeof u === 'object' ? u.value || u.id : u,
-            ) || [];
-
+          const users = (task.users || [])
+            .map((u) => (typeof u === 'object' ? u.value : u))
+            .filter(Boolean);
           return createTask.mutateAsync({
             deadlineId,
             data: {
@@ -270,455 +249,378 @@ const DeadlineFormModal = ({
               date: task.date,
               order: task.order,
               status: task.status || 'PENDIENTE',
-              users: taskUsers,
+              users,
               createdById: created.createdById || 'admin',
             },
           });
         }),
       );
-
       Notifies('success', 'Deadline creado con éxito');
     }
-
     onSuccess?.();
   };
 
-  const loadUsers = (inputValue, callback) => {
-    const selectedValues = deadline.users?.map((u) => u.value) || [];
-    const filtered = userOptions
-      .filter((u) => u.label.toLowerCase().includes(inputValue.toLowerCase()))
-      .filter((u) => !selectedValues.includes(u.value));
-    callback(filtered);
-  };
-
   return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="bg-white dark:bg-gray-800 w-full max-w-6xl rounded-xl p-4 md:p-6 shadow-2xl overflow-y-auto max-h-[95vh]">
-          <div className="border-b pb-4 text-xl justify-between font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-            <DialogTitle>
-              {isEditing ? 'Editar Deadline' : 'Crear Deadline'}
-            </DialogTitle>
-            <span
-              onClick={onClose}
-              className="text-sm text-gray-500 dark:text-gray-400 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
-            >
-              <IoMdClose className="inline-block text-2xl" />
-            </span>
-          </div>
-          <div className="space-y-4">
-            <div className=" dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
-                <FaInfoCircle className="text-sinabe-primary" /> Información del
-                Deadline
-              </h2>
-              <div className="grid grid-cols-12 gap-4 pt-4">
-                {/* Nombre del Deadline */}
-                <div className="col-span-12 md:col-span-6">
-                  <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-2">
-                      <FaInfoCircle className="text-gray-500 dark:text-gray-400" />
-                      Nombre del Deadline
-                    </span>
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full rounded-md border border-gray-300 p-2"
-                    value={deadline.name}
-                    onChange={(e) =>
-                      setDeadline({ ...deadline, name: e.target.value })
-                    }
-                  />
-                </div>
-                {/* Fecha de vencimiento */}
-                <div className="col-span-6 md:col-span-3">
-                  <label className="block mb-2 text-sm font-medium truncate text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-2">
-                      <FaCalendarAlt className="text-gray-500 dark:text-gray-400" />
-                      Fecha de vencimiento
-                    </span>
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full rounded-md border border-gray-300 p-2"
-                    value={deadline.dueDate?.slice(0, 10)}
-                    onChange={(e) =>
-                      setDeadline({ ...deadline, dueDate: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="col-span-6 md:col-span-3">
-                  <label className="block mb-2 text-sm font-medium truncate text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-2">
-                      <FaTasks className="text-gray-500 dark:text-gray-400" />
-                      Estado del Deadline
-                    </span>
-                  </label>
-                  <select
-                    className="w-full rounded-md border border-gray-300 p-2"
-                    value={deadline.status}
-                    onChange={(e) =>
-                      setDeadline({ ...deadline, status: e.target.value })
-                    }
-                  >
-                    <option value="PENDIENTE">Pendiente</option>
-                    <option value="EN_PROGRESO">En progreso</option>
-                    <option value="COMPLETADO">Completado</option>
-                    <option value="CANCELADO">Cancelado</option>
-                  </select>
-                </div>
-              </div>
-              {/* Descripción del Deadline */}
-              <div className="mt-2">
-                <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <span className="flex items-center gap-2">
-                    <MdTextFields className="text-gray-500 dark:text-gray-400" />
-                    Descripción
-                  </span>
-                </label>
-                <textarea
-                  className="w-full rounded-md border border-gray-300 p-2"
-                  value={deadline.description}
-                  onChange={(e) =>
-                    setDeadline({ ...deadline, description: e.target.value })
-                  }
-                />
-              </div>
-              {/* Estado y Usuarios del Deadline */}
-              <div className="mt-2">
-                <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  <span className="flex items-center gap-2">
-                    <FaUser className="text-gray-500 dark:text-gray-400" />
-                    Asignar Usuarios
-                  </span>
-                </label>
-                <AsyncSelect
-                  isMulti
-                  cacheOptions
-                  closeMenuOnSelect={false}
-                  defaultOptions={userOptions}
-                  loadOptions={loadUsers}
-                  components={{ Option: CustomUserOption }}
-                  value={userOptions.filter((opt) =>
-                    deadline.users?.some((u) =>
-                      typeof u === 'object'
-                        ? u.value === opt.value || u.id === opt.value
-                        : u === opt.value,
-                    ),
-                  )}
-                  onChange={(selected) =>
-                    setDeadline({ ...deadline, users: selected })
-                  }
-                  className="w-full text-sm border-white border-b-gray-200"
-                  styles={{
-                    multiValue: (base) => ({
-                      ...base,
-                      backgroundColor: '#E0E7FF',
-                    }),
-                  }}
-                />
-              </div>
+    <ReusableModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isEditing ? 'Editar Deadline' : 'Crear Deadline'}
+      size="xl"
+      actions={[
+        { label: 'Cancelar', color: 'stone', icon: IoMdClose, action: onClose },
+        {
+          label: isEditing ? 'Guardar cambios' : 'Crear',
+          color: 'purple',
+          filled: true,
+          icon: FaSave,
+          action: handleSubmit,
+        },
+      ]}
+    >
+      <div className="space-y-6">
+        {/* Deadline Info */}
+        <div className="dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+            {' '}
+            <FaInfo /> Información del Deadline
+          </h2>
+          <div className="mt-4 grid grid-cols-12 gap-4">
+            <div className="col-span-12 md:col-span-6">
+              <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <FaInfoCircle className="mr-1" /> Titulo del Deadline
+              </label>
+              <input
+                type="text"
+                className="w-full rounded-md border-gray-300 p-2"
+                value={deadline.name}
+                onChange={(e) =>
+                  setDeadline({ ...deadline, name: e.target.value })
+                }
+              />
             </div>
-
-            <div className=" dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex flex-col gap-4 md:gap-8">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
-                <FaTasks className="text-sinabe-primary" /> Tareas del Deadline
-              </h3>
-
-              {/* Formulario para nueva tarea */}
-              <div className="grid grid-cols-12 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                <div className="col-span-12 text-sinabe-primary">
-                  <h4 className="text-sm font-medium ">
-                    <span className="flex items-center gap-2">
-                      <FaPlus className="" /> Agregar Nueva Tarea
-                    </span>
-                  </h4>
-                </div>
-                <div className="col-span-12 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
-                  <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-2">
-                      <MdOutlineTaskAlt className="text-gray-500" /> Nombre de
-                      la tarea
-                    </span>
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full rounded-md border-gray-300 p-2"
-                    value={newTask.name}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, name: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="col-span-6 md:col-span-3 lg:col-span-5 flex flex-col gap-2">
-                  <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-2">
-                      <MdOutlineCalendarToday className="text-gray-500" /> Fecha
-                    </span>
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full rounded-md border-gray-300 p-2"
-                    value={newTask.date}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, date: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="col-span-6 md:col-span-3 lg:col-span-2 flex items-end">
-                  <button
-                    onClick={handleAddTask}
-                    className="bg-sinabe-secondary text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 w-full"
-                  >
-                    <FaPlus /> Agregar
-                  </button>
-                </div>
-
-                <div className="col-span-12 flex flex-col gap-2">
-                  <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <span className="flex items-center gap-2">
-                      <MdTextFields className="text-gray-500" /> Descripción
-                    </span>
-                  </label>
-                  <textarea
-                    className="w-full rounded-md border-gray-300 p-2"
-                    value={newTask.description}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, description: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="col-span-12">
-                  <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <FaUser className="text-gray-500" /> Asignar Usuarios
-                  </label>
-                  <AsyncSelect
-                    isMulti
-                    cacheOptions
-                    closeMenuOnSelect={false}
-                    defaultOptions={userOptions}
-                    loadOptions={loadUsers}
-                    components={{ Option: CustomUserOption }}
-                    value={userOptions.filter((opt) =>
-                      newTask.users?.some((u) =>
-                        typeof u === 'object'
-                          ? u.value === opt.value || u.id === opt.value
-                          : u === opt.value,
-                      ),
-                    )}
-                    onChange={(selected) =>
-                      setNewTask({ ...newTask, users: selected })
-                    }
-                    className="w-full text-sm border-white border-b-gray-200"
-                    styles={{
-                      multiValue: (base) => ({
-                        ...base,
-                        backgroundColor: '#E0E7FF',
-                      }),
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Lista de tareas */}
-              {tasks.length === 0 ? (
-                <div className="text-center text-gray-400 py-6">
-                  <MdOutlineTaskAlt className="text-4xl mx-auto mb-2" />
-                  <p>No hay tareas definidas</p>
-                </div>
-              ) : (
-                <ul className="space-y-4 border-t pt-4">
-                  {tasks.map((task, i) => (
-                    <li
-                      key={task.id}
-                      className={`bg-white border-l-4 border-y-gray-200 border-r border-r-gray-200 border-y ${borderColor[task.status || 'PENDIENTE']} rounded-lg p-4`}
-                    >
-                      <div className="grid grid-cols-12 gap-4">
-                        <div className="col-span-12 md:col-span-6 lg:col-span-5 flex flex-col gap-2">
-                          <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <span className="flex items-center gap-2">
-                              <MdOutlineTaskAlt className="text-gray-500" />{' '}
-                              Nombre de la tarea
-                            </span>
-                          </label>
-                          <input
-                            type="text"
-                            value={task.name}
-                            onChange={(e) =>
-                              setTasks(
-                                tasks.map((t) =>
-                                  t.id === task.id
-                                    ? { ...t, name: e.target.value }
-                                    : t,
-                                ),
-                              )
-                            }
-                            className="w-full text-sm p-2 border-white border-b-gray-200"
-                          />
-                        </div>
-
-                        {/* Fecha Tarea */}
-                        <div className="col-span-6 md:col-span-3 lg:col-span-5 flex flex-col gap-2">
-                          <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <span className="flex items-center gap-2">
-                              <MdOutlineCalendarToday className="text-gray-500" />{' '}
-                              Fecha
-                            </span>
-                          </label>
-                          <input
-                            type="date"
-                            value={task.date?.slice(0, 10) || ''}
-                            onChange={(e) =>
-                              setTasks(
-                                tasks.map((t) =>
-                                  t.id === task.id
-                                    ? { ...t, date: e.target.value }
-                                    : t,
-                                ),
-                              )
-                            }
-                            className="w-full text-sm p-2 border-white border-b-gray-200"
-                          />
-                        </div>
-
-                        {/* Estado Tarea */}
-                        <div className="col-span-6 md:col-span-3 lg:col-span-2 flex flex-col gap-2">
-                          <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <span className="flex items-center gap-2">
-                              <MdInfoOutline className="text-gray-500" /> Estado
-                            </span>
-                          </label>
-                          <select
-                            value={task.status || 'PENDIENTE'}
-                            onChange={(e) =>
-                              setTasks(
-                                tasks.map((t) =>
-                                  t.id === task.id
-                                    ? { ...t, status: e.target.value }
-                                    : t,
-                                ),
-                              )
-                            }
-                            className="w-full text-sm p-2 border-white border-b-gray-200"
-                          >
-                            <option value="PENDIENTE">Pendiente</option>
-                            <option value="EN_PROGRESO">En Progreso</option>
-                            <option value="COMPLETADO">Completado</option>
-                            <option value="CANCELADO">Cancelado</option>
-                          </select>
-                        </div>
-
-                        {/* Descripción Tarea */}
-                        <div className="col-span-12 flex flex-col gap-2">
-                          <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <span className="flex items-center gap-2">
-                              <MdTextFields className="text-gray-500" />{' '}
-                              Descripción
-                            </span>
-                          </label>
-                          <textarea
-                            value={task.description}
-                            onChange={(e) =>
-                              setTasks(
-                                tasks.map((t) =>
-                                  t.id === task.id
-                                    ? { ...t, description: e.target.value }
-                                    : t,
-                                ),
-                              )
-                            }
-                            className="w-full text-sm p-2 border-white border-b-gray-200"
-                          />
-                        </div>
-
-                        {/* Usuarios Tarea */}
-                        <div className="col-span-12 md:col-span-11">
-                          <label className="text-xs font-semibold text-gray-600 mb-1 block">
-                            Asignar Usuarios
-                          </label>
-                          <AsyncSelect
-                            isMulti
-                            cacheOptions
-                            closeMenuOnSelect={false}
-                            defaultOptions={userOptions}
-                            loadOptions={loadUsers}
-                            components={{ Option: CustomUserOption }}
-                            value={userOptions.filter((opt) =>
-                              task.users?.some(
-                                (tu) =>
-                                  tu.value === opt.value || tu === opt.value,
-                              ),
-                            )}
-                            onChange={(selected) =>
-                              setTasks(
-                                tasks.map((t) =>
-                                  t.id === task.id
-                                    ? { ...t, users: selected }
-                                    : t,
-                                ),
-                              )
-                            }
-                            className="w-full text-sm border-white border-b-gray-200"
-                            styles={{
-                              control: (base) => ({
-                                ...base,
-                                borderColor: 'transparent',
-                                boxShadow: 'none',
-                                '&:hover': {
-                                  borderColor: 'transparent',
-                                },
-                              }),
-                              multiValue: (base) => ({
-                                ...base,
-                                backgroundColor: '#E0E7FF',
-                              }),
-                            }}
-                          />
-                        </div>
-                        {/* Botón Eliminar Tarea */}
-                        <div className="col-span-12 md:col-span-1 flex items-start justify-end pt-5 ">
-                          <button
-                            onClick={() => {
-                              if (!task._isLocal) {
-                                setDeletedTaskIds((prev) => [...prev, task.id]);
-                              }
-                              setTasks(tasks.filter((t) => t.id !== task.id));
-                              setOriginalTasks(
-                                originalTasks.filter((t) => t.id !== task.id),
-                              );
-                            }}
-                            title="Eliminar tarea"
-                            className="flex w-full items-center justify-center gap-1 bg-red-500 text-white hover:bg-red-700 cursor-pointer dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 h-full rounded-md p-2 hover:text-white transition-colors duration-200"
-                          >
-                            <FaTrashAlt />
-                          </button>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+            <div className="col-span-6 md:col-span-3">
+              <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <FaCalendarAlt className="mr-1" /> Vencimiento
+              </label>
+              <input
+                type="date"
+                className="w-full rounded-md border-gray-300 p-2"
+                value={deadline.dueDate?.slice(0, 10)}
+                onChange={(e) =>
+                  setDeadline({ ...deadline, dueDate: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-span-6 md:col-span-3">
+              <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <FaTasks className="mr-1" /> Estado
+              </label>
+              <select
+                className="w-full rounded-md border-gray-300 p-2"
+                value={deadline.status}
+                onChange={(e) =>
+                  setDeadline({ ...deadline, status: e.target.value })
+                }
+              >
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="EN_PROGRESO">En progreso</option>
+                <option value="COMPLETADO">Completado</option>
+                <option value="CANCELADO">Cancelado</option>
+              </select>
+            </div>
+          </div>
+          <div className="mt-4">
+            <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <MdTextFields className="mr-1" /> Descripción
+            </label>
+            <textarea
+              rows={3}
+              className="w-full rounded-md border-gray-300 p-2"
+              value={deadline.description}
+              onChange={(e) =>
+                setDeadline({ ...deadline, description: e.target.value })
+              }
+            />
+          </div>
+          <div className="mt-4">
+            <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <FaUser className="mr-1" /> Usuarios
+            </label>
+            <AsyncSelect
+              isMulti
+              cacheOptions
+              closeMenuOnSelect={false}
+              defaultOptions={userOptions}
+              loadOptions={loadUsers}
+              components={{ Option: CustomUserOption }}
+              value={userOptions.filter((opt) =>
+                deadline.users.some((u) => (u.value || u) === opt.value),
               )}
+              onChange={(sel) => setDeadline({ ...deadline, users: sel })}
+              className="w-full"
+              styles={{
+                multiValue: (base) => ({ ...base, backgroundColor: '#E0E7FF' }),
+              }}
+            />
+          </div>
+        </div>
+        {/* Tasks */}
+        <div className="dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+            <FaTasks className="mr-1" /> Tareas
+          </h3>
+          {/* New Task */}
+          <div className="grid grid-cols-12 gap-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
+            <div className="col-span-12 flex items-center text-purple-600 font-medium mb-2">
+              <FaPlus className="mr-1" /> Añadir Tarea
             </div>
-
-            <div className="flex justify-end gap-2 pt-4">
-              <button
-                onClick={onClose}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md"
+            <div className="col-span-12 md:col-span-6 flex flex-col">
+              <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <MdOutlineTaskAlt className="mr-1" /> Titulo de la Tarea
+              </label>
+              <input
+                type="text"
+                className="w-full rounded-md border-gray-300 p-2"
+                value={newTask.name}
+                onChange={(e) =>
+                  setNewTask({ ...newTask, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-span-6 md:col-span-3 flex flex-col">
+              <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <MdOutlineCalendarToday className="mr-1" /> Fecha
+              </label>
+              <input
+                type="date"
+                className="w-full rounded-md border-gray-300 p-2"
+                value={newTask.date}
+                onChange={(e) =>
+                  setNewTask({ ...newTask, date: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-span-6 md:col-span-3 flex items-end">
+              {/* <button
+                onClick={handleAddTask}
+                className="w-full bg-sinabe-secondary text-white py-2 rounded-md flex items-center justify-center gap-2"
               >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md flex items-center gap-2"
-              >
-                <FaSave /> Guardar
-              </button>
+                <FaPlus /> Añadir
+              </button> */}
+              <ActionButtons
+                extraActions={[
+                  {
+                    action: handleAddTask,
+                    label: 'Añadir',
+                    color: 'purple',
+                    icon: FaPlus,
+                    filled: true,
+                    className: 'min-w-full min-h-10 p-2',
+                    disabled: !newTask.name || !newTask.date,
+                  },
+                ]}
+              />
+            </div>
+            <div className="col-span-12 flex flex-col">
+              <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <MdTextFields className="mr-1" /> Descripción
+              </label>
+              <textarea
+                rows={2}
+                className="w-full rounded-md border-gray-300 p-2"
+                value={newTask.description}
+                onChange={(e) =>
+                  setNewTask({ ...newTask, description: e.target.value })
+                }
+              />
+            </div>
+            <div className="col-span-12">
+              <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <FaUser className="mr-1" /> Usuarios
+              </label>
+              <AsyncSelect
+                isMulti
+                cacheOptions
+                closeMenuOnSelect={false}
+                defaultOptions={userOptions}
+                loadOptions={loadUsers}
+                components={{ Option: CustomUserOption }}
+                value={userOptions.filter((opt) =>
+                  newTask.users.some((u) => (u.value || u) === opt.value),
+                )}
+                onChange={(sel) => setNewTask({ ...newTask, users: sel })}
+                className="w-full"
+                styles={{
+                  multiValue: (base) => ({
+                    ...base,
+                    backgroundColor: '#E0E7FF',
+                  }),
+                }}
+              />
             </div>
           </div>
-        </DialogPanel>
+          {/* Task List */}
+          {tasks.length === 0 ? (
+            <p className="text-center text-gray-500 py-4">
+              No hay tareas definidas
+            </p>
+          ) : (
+            <ul className="space-y-4">
+              {tasks.map((task) => (
+                <li
+                  key={task.id}
+                  className={`p-4 bg-white dark:bg-gray-800 rounded-lg border-l-4 ${borderColor[task.status]}`}
+                >
+                  <div className="grid grid-cols-12 gap-4">
+                    <div className="col-span-12 order-1 md:col-span-5 flex flex-col">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
+                        <MdOutlineTaskAlt className="mr-1" /> Titulo de la Tarea
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full rounded-md border-gray-300 p-2 mb-2"
+                        value={task.name}
+                        onChange={(e) =>
+                          setTasks(
+                            tasks.map((t) =>
+                              t.id === task.id
+                                ? { ...t, name: e.target.value }
+                                : t,
+                            ),
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="col-span-6 order-2 md:col-span-3 flex flex-col">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
+                        <MdOutlineCalendarToday className="mr-1" /> Fecha
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full rounded-md border-gray-300 p-2 mb-2"
+                        value={task.date?.slice(0, 10)}
+                        onChange={(e) =>
+                          setTasks(
+                            tasks.map((t) =>
+                              t.id === task.id
+                                ? { ...t, date: e.target.value }
+                                : t,
+                            ),
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="col-span-6 order-3 md:col-span-2 flex flex-col">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
+                        <MdInfoOutline className="mr-1" /> Estado
+                      </label>
+                      <select
+                        className="w-full rounded-md border-gray-300 p-2 mb-2"
+                        value={task.status}
+                        onChange={(e) =>
+                          setTasks(
+                            tasks.map((t) =>
+                              t.id === task.id
+                                ? { ...t, status: e.target.value }
+                                : t,
+                            ),
+                          )
+                        }
+                      >
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="EN_PROGRESO">En progreso</option>
+                        <option value="COMPLETADO">Completado</option>
+                        <option value="CANCELADO">Cancelado</option>
+                      </select>
+                    </div>
+                    <div className="col-span-12 order-7 md:order-4 md:col-span-2 flex flex-col items-end">
+                      <label className="mb-1 md:mt-5" />
+                      <ActionButtons
+                        extraActions={[
+                          {
+                            action: () => {
+                              if (!task._isLocal)
+                                setDeletedTaskIds((prev) => [...prev, task.id]);
+                              setTasks(tasks.filter((t) => t.id !== task.id));
+                            },
+                            label: 'Eliminar',
+                            color: 'red',
+                            icon: FaTrashAlt,
+                            filled: true,
+                            className: 'min-w-full max-h-fit min-h-10 p-2',
+                          },
+                        ]}
+                      />
+                    </div>
+                    <div className="col-span-12 order-5 flex flex-col">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
+                        <MdTextFields className="mr-1" /> Descripción
+                      </label>
+                      <textarea
+                        rows={2}
+                        className="w-full rounded-md border-gray-300 p-2 mb-2"
+                        value={task.description}
+                        onChange={(e) =>
+                          setTasks(
+                            tasks.map((t) =>
+                              t.id === task.id
+                                ? { ...t, description: e.target.value }
+                                : t,
+                            ),
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="col-span-12 order-6">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
+                        <FaUser className="mr-1" /> Usuarios
+                      </label>
+                      <AsyncSelect
+                        isMulti
+                        cacheOptions
+                        closeMenuOnSelect={false}
+                        defaultOptions={userOptions}
+                        loadOptions={loadUsers}
+                        components={{ Option: CustomUserOption }}
+                        value={userOptions.filter((opt) =>
+                          task.users.some((u) => (u.value || u) === opt.value),
+                        )}
+                        onChange={(sel) =>
+                          setTasks(
+                            tasks.map((t) =>
+                              t.id === task.id ? { ...t, users: sel } : t,
+                            ),
+                          )
+                        }
+                        className="w-full"
+                        styles={{
+                          multiValue: (base) => ({
+                            ...base,
+                            backgroundColor: '#E0E7FF',
+                          }),
+                        }}
+                      />
+                    </div>
+                    {/* <div className="col-span-12 flex justify-end">
+                      <button
+                        onClick={() => {
+                          if (!task._isLocal)
+                            setDeletedTaskIds((prev) => [...prev, task.id]);
+                          setTasks(tasks.filter((t) => t.id !== task.id));
+                        }}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <FaTrashAlt />
+                      </button>
+                    </div> */}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
-    </Dialog>
+    </ReusableModal>
   );
 };
 

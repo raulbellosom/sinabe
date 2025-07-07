@@ -98,7 +98,7 @@ const ActionButtons = forwardRef(
           type={action?.type || 'button'}
           disabled={action?.disabled || false}
         >
-          <i>{action.icon && <action.icon />}</i>
+          <i>{action.icon && <action.icon className="text-lg md:text-xl" />}</i>
           <span className={`${action?.label?.length > 0 && 'ml-2'}`}>
             {action.label}
           </span>
