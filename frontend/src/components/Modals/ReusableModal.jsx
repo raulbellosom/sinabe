@@ -41,6 +41,10 @@ export default function ReusableModal({
           open
           onClose={onClose}
           className="fixed inset-0 z-50 flex items-center justify-center p-3"
+          style={{
+            paddingTop: 'env(safe-area-inset-top, 1rem)',
+            paddingBottom: 'env(safe-area-inset-bottom, 1rem)',
+          }}
         >
           {/* Backdrop que captura todos los clicks */}
           <DialogBackdrop className="fixed inset-0 bg-black/50" />
@@ -48,7 +52,6 @@ export default function ReusableModal({
           {/* Panel animado */}
           <DialogPanel
             as={motion.div}
-            key="modal-panel"
             initial="hidden"
             animate="visible"
             exit="exit"
@@ -57,7 +60,10 @@ export default function ReusableModal({
               'relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col max-h-[90vh] overflow-hidden',
               sizeClasses[size],
               className,
+              // margen responsivo: 0.5rem en móvil, 1rem en pantallas ≥ sm
+              'mx-2 my-4 sm:mx-4 sm:my-6',
             )}
+            style={{ WebkitOverflowScrolling: 'touch' }}
           >
             {/* Header */}
             <DialogTitle
