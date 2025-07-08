@@ -6,6 +6,11 @@ html {
   scroll-behavior: auto;
 }
 
+.modal-root {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 .force-small-font {
   font-size: 0.75rem !important;
 }

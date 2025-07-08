@@ -1,4 +1,4 @@
-// File: frontend/src/components/Modals/ReusableModal.jsx
+// File src/components/Modals/ReusableModal.jsx
 import { IoMdClose } from 'react-icons/io';
 import { AnimatePresence, motion } from 'framer-motion';
 import classNames from 'classnames';
@@ -9,16 +9,6 @@ const panelVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
   exit: { opacity: 0, y: 50, transition: { duration: 0.2 } },
 };
-
-//  <TransitionChild
-//             as={Fragment}
-//             enter="ease-out duration-200"
-//             enterFrom="opacity-0 scale-95"
-//             enterTo="opacity-100 scale-100"
-//             leave="ease-in duration-150"
-//             leaveFrom="opacity-100 scale-100"
-//             leaveTo="opacity-0 scale-95"
-//           ></TransitionChild>
 
 const sizeClasses = {
   sm: 'max-w-md',
@@ -42,8 +32,8 @@ const ReusableModal = ({
     <AnimatePresence>
       {isOpen && (
         <div
+          className="fixed inset-0 bg-black/50 z-50 p-3 flex justify-center items-center modal-root"
           style={{ margin: 0 }}
-          className="fixed inset-0 bg-black/50 z-50 p-3 flex justify-center items-center"
         >
           <motion.div
             key="reusable-modal"
@@ -52,13 +42,13 @@ const ReusableModal = ({
             exit="exit"
             variants={panelVariants}
             className={classNames(
-              'bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col max-h-[90vh]',
+              'relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col h-[90vh] overflow-hidden',
               sizeClasses[size],
               className,
             )}
           >
-            {/* Header */}
-            <div className="sticky font-bold text-sinabe-primary text-sm md:text-xl top-0 z-10  dark:bg-gray-800 border-b px-6 py-4 flex justify-between items-center">
+            {/* Header (flex-shrink-0 evita que Safari lo colapse) */}
+            <div className="flex-shrink-0 relative font-bold text-sinabe-primary text-sm md:text-xl top-0 z-20 dark:bg-gray-800 border-b px-6 py-4 flex justify-between items-center">
               {title}
               <button
                 onClick={onClose}
@@ -68,16 +58,19 @@ const ReusableModal = ({
               </button>
             </div>
 
-            {/* Scrollable content */}
-            <div className="overflow-y-auto px-2 md:px-4 py-4 flex-1 min-h-0">
+            {/* Contenido desplazable */}
+            <div
+              className="flex-1 min-h-0 overflow-y-auto -webkit-overflow-scrolling-touch px-2 md:px-4 py-4"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
               {children}
             </div>
 
-            {/* Footer */}
+            {/* Footer (flex-shrink-0) */}
             {(footer || actions) && (
-              <div className="sticky bottom-0 z-10  dark:bg-gray-800 border-t px-6 py-4">
+              <div className="flex-shrink-0 relative bottom-0 z-20 dark:bg-gray-800 border-t px-6 py-4">
                 <div className="flex justify-end gap-4">
-                  {footer ? footer : <ActionButtons extraActions={actions} />}
+                  {footer || <ActionButtons extraActions={actions} />}
                 </div>
               </div>
             )}
