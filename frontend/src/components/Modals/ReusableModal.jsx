@@ -1,4 +1,10 @@
-// File: frontend/src/components/Modals/ReusableModal.jsx
+// frontend/src/components/Modals/ReusableModal.jsx
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogTitle,
+  DialogPanel,
+} from '@headlessui/react';
 import { IoMdClose } from 'react-icons/io';
 import { AnimatePresence, motion } from 'framer-motion';
 import classNames from 'classnames';
@@ -18,7 +24,7 @@ const sizeClasses = {
   full: 'max-w-full',
 };
 
-const ReusableModal = ({
+export default function ReusableModal({
   isOpen,
   onClose,
   title,
@@ -27,15 +33,22 @@ const ReusableModal = ({
   actions,
   size = 'md',
   className = '',
-}) => {
+}) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center modal-root"
-          style={{ margin: 0 }}
+        <Dialog
+          open
+          onClose={onClose}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3"
         >
-          <motion.div
+          {/* Backdrop que captura todos los clicks */}
+          <DialogBackdrop className="fixed inset-0 bg-black/50" />
+
+          {/* Panel animado */}
+          <DialogPanel
+            as={motion.div}
+            key="modal-panel"
             initial="hidden"
             animate="visible"
             exit="exit"
@@ -47,14 +60,20 @@ const ReusableModal = ({
             )}
           >
             {/* Header */}
-            <div className="flex-shrink-0 relative font-bold text-sinabe-primary text-sm md:text-xl dark:bg-gray-800 border-b px-6 py-4 flex justify-between items-center">
-              {title}
-              <button onClick={onClose} className="…">
+            <DialogTitle
+              as="div"
+              className="flex-shrink-0 font-bold text-sinabe-primary text-sm md:text-xl dark:bg-gray-800 border-b px-6 py-4 flex justify-between items-center"
+            >
+              <span>{title}</span>
+              <button
+                onClick={onClose}
+                className="text-gray-500 hover:bg-gray-100 p-1 rounded-full hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
+              >
                 <IoMdClose className="text-2xl" />
               </button>
-            </div>
+            </DialogTitle>
 
-            {/* Contenido con momentum scroll en iOS */}
+            {/* Contenido desplazable */}
             <div
               className="flex-1 min-h-0 overflow-y-auto px-2 md:px-4 py-4"
               style={{ WebkitOverflowScrolling: 'touch' }}
@@ -64,17 +83,15 @@ const ReusableModal = ({
 
             {/* Footer */}
             {(footer || actions) && (
-              <div className="flex-shrink-0 relative dark:bg-gray-800 border-t px-6 py-4">
+              <div className="flex-shrink-0 dark:bg-gray-800 border-t px-6 py-4">
                 <div className="flex justify-end gap-4">
                   {footer || <ActionButtons extraActions={actions} />}
                 </div>
               </div>
             )}
-          </motion.div>
-        </div>
+          </DialogPanel>
+        </Dialog>
       )}
     </AnimatePresence>
   );
-};
-
-export default ReusableModal;
+}
