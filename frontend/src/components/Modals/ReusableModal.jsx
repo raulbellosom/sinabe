@@ -57,7 +57,7 @@ export default function ReusableModal({
             exit="exit"
             variants={panelVariants}
             className={classNames(
-              'relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col max-h-[90vh] overflow-hidden',
+              'relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col max-h-[88dvh] md:max-h-[90dvh] overflow-hidden',
               sizeClasses[size],
               className,
               // margen responsivo: 0.5rem en móvil, 1rem en pantallas ≥ sm
