@@ -1,4 +1,4 @@
-// File src/components/Modals/ReusableModal.jsx
+// File: frontend/src/components/Modals/ReusableModal.jsx
 import { IoMdClose } from 'react-icons/io';
 import { AnimatePresence, motion } from 'framer-motion';
 import classNames from 'classnames';
@@ -32,43 +32,39 @@ const ReusableModal = ({
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-50 p-3 flex justify-center items-center modal-root"
+          className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center modal-root"
           style={{ margin: 0 }}
         >
           <motion.div
-            key="reusable-modal"
             initial="hidden"
             animate="visible"
             exit="exit"
             variants={panelVariants}
             className={classNames(
-              'relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col h-[90vh] overflow-hidden',
+              'relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col max-h-[90vh] overflow-hidden',
               sizeClasses[size],
               className,
             )}
           >
-            {/* Header (flex-shrink-0 evita que Safari lo colapse) */}
-            <div className="flex-shrink-0 relative font-bold text-sinabe-primary text-sm md:text-xl top-0 z-20 dark:bg-gray-800 border-b px-6 py-4 flex justify-between items-center">
+            {/* Header */}
+            <div className="flex-shrink-0 relative font-bold text-sinabe-primary text-sm md:text-xl dark:bg-gray-800 border-b px-6 py-4 flex justify-between items-center">
               {title}
-              <button
-                onClick={onClose}
-                className="text-gray-500 hover:bg-gray-100 p-1 rounded-full hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
-              >
+              <button onClick={onClose} className="…">
                 <IoMdClose className="text-2xl" />
               </button>
             </div>
 
-            {/* Contenido desplazable */}
+            {/* Contenido con momentum scroll en iOS */}
             <div
-              className="flex-1 min-h-0 overflow-y-auto -webkit-overflow-scrolling-touch px-2 md:px-4 py-4"
+              className="flex-1 min-h-0 overflow-y-auto px-2 md:px-4 py-4"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
               {children}
             </div>
 
-            {/* Footer (flex-shrink-0) */}
+            {/* Footer */}
             {(footer || actions) && (
-              <div className="flex-shrink-0 relative bottom-0 z-20 dark:bg-gray-800 border-t px-6 py-4">
+              <div className="flex-shrink-0 relative dark:bg-gray-800 border-t px-6 py-4">
                 <div className="flex justify-end gap-4">
                   {footer || <ActionButtons extraActions={actions} />}
                 </div>
