@@ -181,7 +181,6 @@ const ViewInventory = () => {
       });
     });
     inventory?.InventoryDeadline?.forEach((dl) => {
-      console.log(dl);
       rels.push({
         label: 'Deadline',
         value: dl?.deadline.name || parseToLocalDate(dl?.deadline.date),

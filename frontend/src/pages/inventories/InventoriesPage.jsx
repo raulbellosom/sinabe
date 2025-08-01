@@ -1,5 +1,5 @@
 // InventoriesPage.jsx
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useSearchInventories } from '../../hooks/useSearchInventories';
 import { useInventoryQueryParams } from '../../hooks/useInventoryQueryParams';
 import { useCatalogContext } from '../../context/CatalogContext';
@@ -46,10 +46,39 @@ const InventoriesPage = () => {
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [inventoryToDelete, setInventoryToDelete] = useState(null);
 
+  // Estado local para el término de búsqueda (evita cursor jumping)
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+
   // Use mainViewMode from query params as the source of truth for view mode
   const { query, updateQuery } = useInventoryQueryParams();
   const { data: verticals } = useVerticals();
   const viewMode = query.mainViewMode || 'table'; // Default to 'table'
+
+  // Sincronizar el estado local con el query cuando cambie externamente
+  useEffect(() => {
+    setLocalSearchTerm(query.searchTerm || '');
+  }, [query.searchTerm]);
+
+  // Debounce function para retrasar la búsqueda
+  const debounce = useCallback((func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func(...args), delay);
+    };
+  }, []);
+
+  // Función de búsqueda con debounce
+  const debouncedSearch = useCallback(
+    debounce((term) => {
+      updateQuery({
+        ...query,
+        searchTerm: term,
+        page: 1,
+      });
+    }, 500), // 500ms de delay
+    [query, updateQuery],
+  );
 
   const { inventoryConditions } = useCatalogContext();
   const { deleteInventory } = useInventoryContext();
@@ -395,11 +424,10 @@ const InventoriesPage = () => {
   };
 
   const handleSearch = (term) => {
-    updateQuery({
-      ...query,
-      searchTerm: term,
-      page: 1,
-    });
+    // Actualizar inmediatamente el estado local (sin cursor jumping)
+    setLocalSearchTerm(term);
+    // Ejecutar la búsqueda con debounce
+    debouncedSearch(term);
   };
 
   const handleDeepSearchToggle = (isChecked) => {
@@ -488,27 +516,60 @@ const InventoriesPage = () => {
 
       {/* Search, Filters, and View Mode Toggle - Always visible */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 mb-4">
-        <div className="relative w-full sm:w-auto flex-grow max-w-md">
-          <input
-            type="text"
-            placeholder="Buscar..."
-            value={query.searchTerm || ''}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10 pr-4 py-2 border-gray-300 rounded-md w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-          />
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-nowrap">
-            <Tooltip content="Activar búsqueda avanzada">
-              <ToggleSwitch
-                checked={query.advancedSearch}
-                onChange={handleDeepSearchToggle}
-                label=""
-                className="scale-75"
-              />
+        {/* View Mode Toggle */}
+        <div className="flex items-center space-x-2 w-full flex-grow sm:w-auto">
+          <div className="flex items-center space-x-2 border rounded-md p-1">
+            <Tooltip content="Vista de Tabla">
+              <button
+                onClick={() => handleViewModeChange('table')}
+                className={classNames(
+                  'p-2 rounded-md transition-colors duration-200',
+                  {
+                    'bg-purple-600 text-white': viewMode === 'table',
+                    'text-gray-600 hover:bg-gray-200': viewMode !== 'table',
+                  },
+                )}
+              >
+                <FaTable className="h-4 w-4" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Vista de Recursos">
+              <button
+                onClick={() => handleViewModeChange('resources')}
+                className={classNames(
+                  'p-2 rounded-md transition-colors duration-200',
+                  {
+                    'bg-purple-600 text-white': viewMode === 'resources',
+                    'text-gray-600 hover:bg-gray-200': viewMode !== 'resources',
+                  },
+                )}
+              >
+                <FaImages className="h-4 w-4" />
+              </button>
             </Tooltip>
           </div>
+          <div className="relative w-full sm:w-auto flex-grow max-w-md">
+            <input
+              type="text"
+              placeholder="Buscar por Modelo, Serial, Activo"
+              value={localSearchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="pl-10 pr-4 py-2 border-gray-300 rounded-md w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-nowrap">
+              <Tooltip content="Activar búsqueda avanzada">
+                <ToggleSwitch
+                  checked={query.advancedSearch}
+                  onChange={handleDeepSearchToggle}
+                  label=""
+                  className="scale-75"
+                />
+              </Tooltip>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           {inventoryConditions.length > 0 && (
             <FilterDropdown
               options={inventoryConditions.map((c) => ({
@@ -550,38 +611,6 @@ const InventoriesPage = () => {
             label="Filtrar por Vertical"
             icon={<FaSitemap className="h-4 w-4" />}
           />
-
-          {/* View Mode Toggle */}
-          <div className="flex items-center space-x-2 border rounded-md p-1">
-            <Tooltip content="Vista de Tabla">
-              <button
-                onClick={() => handleViewModeChange('table')}
-                className={classNames(
-                  'p-2 rounded-md transition-colors duration-200',
-                  {
-                    'bg-purple-600 text-white': viewMode === 'table',
-                    'text-gray-600 hover:bg-gray-200': viewMode !== 'table',
-                  },
-                )}
-              >
-                <FaTable className="h-4 w-4" />
-              </button>
-            </Tooltip>
-            <Tooltip content="Vista de Recursos">
-              <button
-                onClick={() => handleViewModeChange('resources')}
-                className={classNames(
-                  'p-2 rounded-md transition-colors duration-200',
-                  {
-                    'bg-purple-600 text-white': viewMode === 'resources',
-                    'text-gray-600 hover:bg-gray-200': viewMode !== 'resources',
-                  },
-                )}
-              >
-                <FaImages className="h-4 w-4" />
-              </button>
-            </Tooltip>
-          </div>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

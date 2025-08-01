@@ -237,17 +237,17 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
       {/* Content */}
       <div>
         {viewMode === 'images' && (
-          <div className="grid grid-cols-4 md:grid-cols-6 xl:grid-cols-12 gap-4">
-            {images.map((img) => (
-              <ImageViewer
-                key={img.id}
-                images={[{ ...img, id: img.id, url: img.fileUrl }]}
-                showCheckboxes
-                selectedImages={selectedImages}
-                onImageSelect={() => toggleImageSelection(img.id)}
-              />
-            ))}
-          </div>
+          <ImageViewer
+            images={images.map((img) => ({
+              ...img,
+              id: img.id,
+              url: img.fileUrl,
+            }))}
+            containerClassNames="grid grid-cols-4 md:grid-cols-6 xl:grid-cols-12 gap-4"
+            showCheckboxes
+            selectedImages={selectedImages}
+            onImageSelect={toggleImageSelection}
+          />
         )}
         {viewMode === 'files' && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
