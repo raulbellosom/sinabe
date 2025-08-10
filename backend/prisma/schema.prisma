@@ -52,6 +52,7 @@ model User {
   photo             UserImage[]     @relation("UserImages")
   assignedDeadlines Deadline[]      @relation("DeadlineUsers")
   assignedTasks     DeadlineTask[]  @relation("TaskUsers")
+  notifications     Notification[]
 
   @@index([roleId], map: "User_roleId_fkey")
 }
@@ -353,6 +354,19 @@ model UserImage {
   createdAt DateTime @default(now())
   userId    String?
   user      User?    @relation("UserImages", fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  metadata  Json?
+  user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
