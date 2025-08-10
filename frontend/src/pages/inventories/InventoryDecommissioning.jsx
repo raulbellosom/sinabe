@@ -23,7 +23,6 @@ import { useInventoryQueryParams } from '../../hooks/useInventoryQueryParams';
 import debounce from 'lodash/debounce';
 import TableHeader from '../../components/Table/TableHeader';
 import ResponsiveTable from '../../components/Table/ResponsiveTable';
-import TableFooter from '../../components/Table/TableFooter';
 import { MdCheckCircle, MdError, MdWarning } from 'react-icons/md';
 import { API_URL } from '../../services/api';
 
@@ -194,32 +193,6 @@ const InventoryDecommissioning = () => {
     const value = e.target.value;
     setSearchInput(value);
     debouncedSearch(value);
-  };
-
-  const changePageSize = (e) => {
-    updateQuery({ pageSize: parseInt(e.target.value), page: 1 });
-  };
-
-  const goOnPrevPage = () => updateQuery({ page: query.page - 1 });
-  const goOnNextPage = () => updateQuery({ page: query.page + 1 });
-  const handleSelectChange = (p) => updateQuery({ page: p });
-
-  const sortBy = (column) => {
-    const selectedHeaderIndex = columns?.findIndex((col) => col.id === column);
-    if (selectedHeaderIndex !== -1) {
-      const selectedHeader = columns[selectedHeaderIndex];
-      const updatedOrder = selectedHeader?.order === 'asc' ? 'desc' : 'asc';
-      const updatedHeader = {
-        ...selectedHeader,
-        order: updatedOrder,
-      };
-
-      const updatedHeaders = [...columns];
-      updatedHeaders[selectedHeaderIndex] = updatedHeader;
-      setColumns(updatedHeaders);
-
-      updateQuery({ sortBy: column, order: updatedOrder });
-    }
   };
 
   const selectAll = () => {
@@ -407,15 +380,6 @@ const InventoryDecommissioning = () => {
           onSelectAllRows={() => selectAll()}
           onRowDoubleClick={(row) => navigate(`/inventories/view/${row.id}`)}
         />
-        {inventories?.pagination && (
-          <TableFooter
-            pagination={inventories?.pagination}
-            goOnNextPage={goOnNextPage}
-            goOnPrevPage={goOnPrevPage}
-            handleSelectChange={handleSelectChange}
-            changePageSize={changePageSize}
-          />
-        )}
       </section>
 
       <ModalViewer
