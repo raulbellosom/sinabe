@@ -289,7 +289,20 @@ const Sidebar = ({ children }) => {
                       Catálogos
                     </MenuItem>
                   )}
-                  <MenuItem
+                  {(isInventoriesPermission.hasPermission ||
+                    isSelfInventoriesPermission.hasPermission) && (
+                    <MenuItem
+                      icon={<LuArchiveRestore size={23} />}
+                      active={isActivePath('/inventories/decommissioning')}
+                      component={<Link to={'/inventories/decommissioning'} />}
+                      onClick={() => {
+                        setToggled(false);
+                      }}
+                    >
+                      Bajas
+                    </MenuItem>
+                  )}
+                  {/* <MenuItem
                     icon={<LuArchiveRestore size={23} />}
                     active={isActivePath('/inventories/migrate')}
                     component={<Link to={'/inventories/migrate'} />}
@@ -298,7 +311,7 @@ const Sidebar = ({ children }) => {
                     }}
                   >
                     Migración
-                  </MenuItem>
+                  </MenuItem> */}
                 </SubMenu>
               )}
               <MenuItem

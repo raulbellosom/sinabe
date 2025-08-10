@@ -17,6 +17,7 @@ import InventoriesPage from '../pages/inventories/InventoriesPage';
 import CreateInventory from '../pages/inventories/CreateInventory';
 import UpdateInventory from '../pages/inventories/UpdateInventory';
 import ViewInventory from '../pages/inventories/ViewInventory';
+import InventoryDecommissioning from '../pages/inventories/InventoryDecommissioning';
 import InventoryMigration from '../pages/inventories/InventoryMigration';
 import Catalogs from '../pages/inventories/catalogs/Catalogs';
 import Account from '../pages/account/Account';
@@ -67,9 +68,13 @@ const AuthorizedRoute = ({ user }) => {
                     element={<CreateInventory />}
                   />
                   <Route
+                    path="/inventories/decommissioning"
+                    element={<InventoryDecommissioning />}
+                  />
+                  {/* <Route
                     path="/inventories/migrate"
                     element={<InventoryMigration />}
-                  />
+                  /> */}
                   <Route
                     path="/inventories/edit/:id"
                     element={<UpdateInventory />}

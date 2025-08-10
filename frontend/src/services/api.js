@@ -45,6 +45,19 @@ export const register = async (credentials) => {
   }
 };
 
+export const updateInventoriesStatus = async (inventoryIds, status) => {
+  try {
+    const response = await api.patch('/inventories/bulk-status', {
+      inventoryIds,
+      status,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const loadUser = async () => {
   try {
     const response = await api.get('/auth/me');

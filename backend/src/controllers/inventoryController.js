@@ -1217,3 +1217,46 @@ export const assignMissingFolios = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// @desc    Update status for multiple inventories
+// @route   PATCH /api/inventories/bulk-status
+// @access  Private
+export const bulkUpdateStatus = async (req, res) => {
+  try {
+    const { inventoryIds, status } = req.body;
+
+    if (
+      !inventoryIds ||
+      !Array.isArray(inventoryIds) ||
+      inventoryIds.length === 0
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Se requiere un array de IDs de inventario" });
+    }
+
+    if (!status) {
+      return res.status(400).json({ error: "Se requiere un estado" });
+    }
+
+    const updatePromises = inventoryIds.map((id) =>
+      db.inventory.update({
+        where: { id },
+        data: { status },
+      })
+    );
+
+    await Promise.all(updatePromises);
+
+    res.status(200).json({
+      message: `Estado actualizado a ${status} para ${inventoryIds.length} inventarios`,
+      updatedIds: inventoryIds,
+    });
+  } catch (error) {
+    console.error("Error en bulkUpdateStatus:", error);
+    res.status(500).json({
+      error: "Error al actualizar el estado de los inventarios",
+      details: error.message,
+    });
+  }
+};

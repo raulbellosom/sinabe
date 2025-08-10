@@ -9,6 +9,7 @@ import {
   searchInventories,
   checkSerialNumber,
   assignMissingFolios,
+  bulkUpdateStatus,
 } from "../controllers/inventoryController.js";
 import {
   getInventoryTypes,
@@ -133,5 +134,8 @@ router
 router
   .route("/customFields/:customFieldId/values")
   .get(protect, getCustomFieldValues);
+
+// Ruta para actualización masiva de estados
+router.route("/bulk-status").patch(protect, bulkUpdateStatus);
 
 export default router;
