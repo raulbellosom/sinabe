@@ -99,6 +99,71 @@ const fitDimensions = (width, height, maxWidth, maxHeight) => {
   };
 };
 
+// Función para comprimir imagen usando canvas
+const compressImage = async (img, maxSizeKB = 500) => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Establecer dimensiones iniciales manteniendo proporción
+  let width = img.naturalWidth;
+  let height = img.naturalHeight;
+  const aspectRatio = width / height;
+
+  // Si la imagen es muy grande, reducir dimensiones
+  const MAX_DIMENSION = 1500;
+  if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+    if (width > height) {
+      width = MAX_DIMENSION;
+      height = width / aspectRatio;
+    } else {
+      height = MAX_DIMENSION;
+      width = height * aspectRatio;
+    }
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+
+  // Dibujar imagen en el canvas
+  ctx.drawImage(img, 0, 0, width, height);
+
+  // Comenzar con calidad alta e ir ajustando si es necesario
+  let quality = 0.9;
+  let dataUrl;
+  let iterations = 0;
+  const maxIterations = 10;
+
+  do {
+    dataUrl = canvas.toDataURL('image/jpeg', quality);
+    // Calcular tamaño aproximado (el string base64 es 4/3 del tamaño real)
+    const sizeInKB = Math.round((dataUrl.length * 0.75) / 1024);
+
+    if (sizeInKB <= maxSizeKB || iterations >= maxIterations) {
+      break;
+    }
+
+    // Reducir calidad para la siguiente iteración
+    quality *= (maxSizeKB / sizeInKB) * 0.95;
+    quality = Math.max(0.1, quality); // No bajar de 0.1
+    iterations++;
+  } while (true);
+
+  // Convertir base64 a ArrayBuffer
+  const base64 = dataUrl.split(',')[1];
+  const binaryString = window.atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  return {
+    buffer: bytes.buffer,
+    width,
+    height,
+    quality,
+  };
+};
+
 // Función para cargar y procesar una imagen desde URL
 const loadImage = async (imageUrl) => {
   try {
@@ -112,24 +177,22 @@ const loadImage = async (imageUrl) => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const blob = await response.blob();
-    const arrayBuffer = await blob.arrayBuffer();
 
-    // Obtener dimensiones de la imagen
-    const dimensions = await new Promise((resolve) => {
+    // Cargar imagen en objeto Image
+    const img = await new Promise((resolve, reject) => {
       const img = new Image();
-      img.onload = () => {
-        resolve({
-          width: img.naturalWidth,
-          height: img.naturalHeight,
-        });
-      };
+      img.onload = () => resolve(img);
+      img.onerror = reject;
       img.src = URL.createObjectURL(blob);
     });
 
+    // Comprimir imagen
+    const compressed = await compressImage(img);
+
     return {
-      buffer: arrayBuffer,
-      width: dimensions.width,
-      height: dimensions.height,
+      buffer: compressed.buffer,
+      width: compressed.width,
+      height: compressed.height,
     };
   } catch (error) {
     console.error('Error loading image:', error);
