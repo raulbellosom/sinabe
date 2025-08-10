@@ -205,9 +205,6 @@ export const generateWordReport = async (inventories) => {
       // Espaciado después de la tabla
       children.push(new Paragraph({ spacing: { after: 200 } }));
 
-      // Procesar imágenes si están disponibles
-      console.log(inventory.images);
-
       if (inventory.images && inventory.images.length > 0) {
         // Encabezado de la sección de imágenes
         children.push(
