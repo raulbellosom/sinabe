@@ -38,6 +38,7 @@ export default defineConfig({
         navigateFallback: '/index.html',
         // ¡nunca hagas fallback en rutas /api/!
         navigateFallbackDenylist: [/^\/api\//],
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024, // 6 MiB
       },
     }),
   ],
