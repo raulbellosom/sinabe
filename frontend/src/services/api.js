@@ -30,7 +30,7 @@ export const login = async (credentials) => {
     const response = await api.post('/auth/login', credentials);
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Error en login:', error);
     throw error;
   }
 };
@@ -40,7 +40,7 @@ export const register = async (credentials) => {
     const response = await api.post('/auth/register', credentials);
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Error en register:', error);
     throw error;
   }
 };
@@ -53,7 +53,7 @@ export const updateInventoriesStatus = async (inventoryIds, status) => {
     });
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Error en updateInventoriesStatus:', error);
     throw error;
   }
 };
@@ -63,7 +63,7 @@ export const loadUser = async () => {
     const response = await api.get('/auth/me');
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Error en loadUser:', error);
     throw error;
   }
 };
@@ -73,7 +73,7 @@ export const logout = async () => {
     const response = await api.get('/auth/logout');
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Error en logout:', error);
     throw error;
   }
 };
@@ -83,7 +83,7 @@ export const updateProfile = async (profile) => {
     const response = await api.put('/auth/updateProfile', profile);
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Error en updateProfile:', error);
     throw error;
   }
 };
@@ -93,7 +93,7 @@ export const updatePassword = async (passwords) => {
     const response = await api.put('/auth/updatePassword', passwords);
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Error en updatePassword:', error);
     throw error;
   }
 };
@@ -109,7 +109,7 @@ export const updateProfileImage = async (profileImage) => {
     );
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Error en updateProfileImage:', error);
     throw error;
   }
 };
@@ -119,7 +119,7 @@ export const getUsers = async () => {
     const response = await api.get(`/users`);
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Error en getUsers:', error);
     throw error;
   }
 };
@@ -150,7 +150,7 @@ export const createUser = async (user) => {
     const response = await api.post(`/users`, data, headerFormData);
     return response.data;
   } catch (error) {
-    console.error(error);
+    console.error('Error en createUser:', error);
     throw error;
   }
 };

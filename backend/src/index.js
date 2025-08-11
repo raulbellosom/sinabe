@@ -19,6 +19,7 @@ import projectTeamRoutes from "./routes/projectTeamRoutes.js";
 import inventoryAssignmentRoutes from "./routes/inventoryAssignmentRoute.js";
 import verticalRoutes from "./routes/verticalRoutes.js";
 import invoiceRoutes from "./routes/invoiceRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
 
 dotenv.config();
 
@@ -72,6 +73,7 @@ app.use("/api/project-team", projectTeamRoutes);
 app.use("/api/inventory-assignments", inventoryAssignmentRoutes);
 app.use("/api/verticals", verticalRoutes);
 app.use("/api/ping", pingRoutes);
+app.use("/api/reports", reportRoutes);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 4000;

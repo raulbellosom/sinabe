@@ -234,27 +234,10 @@ const InventoryDecommissioning = () => {
 
   const handleGenerateExcelReport = async () => {
     try {
-      const processedData = await Promise.all(
-        Object.values(itemsToProcess).map(async (inventory) => {
-          if (inventory.images?.length > 0) {
-            const firstImage = inventory.images[0];
-            const imageUrl = `${API_URL}/${firstImage.url}`;
-            const imageResponse = await fetch(imageUrl);
-            const imageBuffer = await imageResponse.arrayBuffer();
-            return {
-              ...inventory,
-              imageBuffer,
-            };
-          }
-          return inventory;
-        }),
-      );
-
-      // Importación dinámica del generador de Excel
       const { generateExcelReport } = await import(
         '../../utils/reportGenerators'
       );
-      await generateExcelReport(processedData);
+      await generateExcelReport(itemsToProcess);
       Notifies('success', 'Reporte Excel generado correctamente');
     } catch (error) {
       console.error('Error generating Excel report:', error);
@@ -264,30 +247,10 @@ const InventoryDecommissioning = () => {
 
   const handleGenerateWordReport = async () => {
     try {
-      const processedData = await Promise.all(
-        Object.values(itemsToProcess).map(async (inventory) => {
-          if (inventory.images?.length > 0) {
-            const imagePromises = inventory.images.map(async (image) => {
-              const imageUrl = `${API_URL}/${image.url}`;
-              const imageResponse = await fetch(imageUrl);
-              return await imageResponse.arrayBuffer();
-            });
-
-            const imageBuffers = await Promise.all(imagePromises);
-            return {
-              ...inventory,
-              imageBuffers,
-            };
-          }
-          return inventory;
-        }),
-      );
-
-      // Importación dinámica del generador de Word
       const { generateWordReport } = await import(
         '../../utils/reportGenerators'
       );
-      await generateWordReport(processedData);
+      await generateWordReport(itemsToProcess);
       Notifies('success', 'Reporte Word generado correctamente');
     } catch (error) {
       console.error('Error generating Word report:', error);
