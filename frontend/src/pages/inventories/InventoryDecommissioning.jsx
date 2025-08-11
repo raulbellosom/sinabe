@@ -156,6 +156,8 @@ const InventoryDecommissioning = () => {
   const [searchInput, setSearchInput] = useState('');
   const [selectedImages, setSelectedImages] = useState([]);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [isGeneratingExcel, setIsGeneratingExcel] = useState(false);
+  const [isGeneratingWord, setIsGeneratingWord] = useState(false);
 
   const {
     data: inventories,
@@ -233,6 +235,9 @@ const InventoryDecommissioning = () => {
   };
 
   const handleGenerateExcelReport = async () => {
+    if (isGeneratingExcel || isGeneratingWord) return;
+
+    setIsGeneratingExcel(true);
     try {
       const { generateExcelReport } = await import(
         '../../utils/reportGenerators'
@@ -242,10 +247,15 @@ const InventoryDecommissioning = () => {
     } catch (error) {
       console.error('Error generating Excel report:', error);
       Notifies('error', 'Error al generar el reporte Excel');
+    } finally {
+      setIsGeneratingExcel(false);
     }
   };
 
   const handleGenerateWordReport = async () => {
+    if (isGeneratingWord || isGeneratingExcel) return;
+
+    setIsGeneratingWord(true);
     try {
       const { generateWordReport } = await import(
         '../../utils/reportGenerators'
@@ -255,6 +265,8 @@ const InventoryDecommissioning = () => {
     } catch (error) {
       console.error('Error generating Word report:', error);
       Notifies('error', 'Error al generar el reporte Word');
+    } finally {
+      setIsGeneratingWord(false);
     }
   };
 
@@ -378,17 +390,35 @@ const InventoryDecommissioning = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 onClick={handleGenerateExcelReport}
-                className="flex items-center justify-center gap-2 px-4 py-3 text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors duration-200"
+                disabled={isGeneratingExcel || isGeneratingWord}
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  isGeneratingExcel || isGeneratingWord
+                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                    : 'text-green-700 bg-green-50 hover:bg-green-100 border border-green-200'
+                }`}
               >
-                <FaFileExcel className="text-xl" />
-                <span className="font-medium">Reporte Excel</span>
+                <FaFileExcel
+                  className={`text-xl ${isGeneratingExcel ? 'animate-spin' : ''}`}
+                />
+                <span className="font-medium">
+                  {isGeneratingExcel ? 'Generando...' : 'Reporte Excel'}
+                </span>
               </button>
               <button
                 onClick={handleGenerateWordReport}
-                className="flex items-center justify-center gap-2 px-4 py-3 text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors duration-200"
+                disabled={isGeneratingWord || isGeneratingExcel}
+                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  isGeneratingWord || isGeneratingExcel
+                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                    : 'text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200'
+                }`}
               >
-                <FaFileWord className="text-xl" />
-                <span className="font-medium">Reporte Word</span>
+                <FaFileWord
+                  className={`text-xl ${isGeneratingWord ? 'animate-spin' : ''}`}
+                />
+                <span className="font-medium">
+                  {isGeneratingWord ? 'Generando...' : 'Reporte Word'}
+                </span>
               </button>
             </div>
           </div>

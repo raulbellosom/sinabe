@@ -71,8 +71,6 @@ const compressImage = async (imagePath, maxSizeKB = 500) => {
 
 export const generateExcelReport = async (req, res) => {
   try {
-    console.log("Request body:", req.body);
-    console.log("Request headers:", req.headers);
     const { inventoryIds } = req.body;
 
     // Verificar que se proporcionaron IDs
