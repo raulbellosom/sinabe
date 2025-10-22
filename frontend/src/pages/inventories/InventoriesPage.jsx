@@ -24,6 +24,7 @@ import {
   FaImages,
   FaSearch,
   FaSitemap, // Import FaImages for resources view icon (representing resources)
+  FaTh, // Import FaTh for cards view icon
 } from 'react-icons/fa';
 import {
   TbLayoutSidebarLeftCollapseFilled,
@@ -159,13 +160,13 @@ const InventoriesPage = () => {
   };
 
   const collapsedRowActions = (inventory) => [
-    {
-      key: 'main',
-      label: 'Ver',
-      icon: FaEye,
-      action: () => navigate(`/inventories/view/${inventory.id}`),
-      disabled: false,
-    },
+    // {
+    //   key: 'main',
+    //   label: 'Ver',
+    //   icon: FaEye,
+    //   action: () => navigate(`/inventories/view/${inventory.id}`),
+    //   disabled: false,
+    // },
     {
       key: 'edit',
       label: 'Editar',
@@ -196,12 +197,17 @@ const InventoriesPage = () => {
         render: (_, row) =>
           row.images?.length > 0 ? (
             <ImageViewer
-              containerClassNames="w-20 h-20 md:w-12 md:h-12"
+              containerClassNames={classNames(
+                '',
+                viewMode === 'cards'
+                  ? 'h-20 w-20 md:w-12 md:h-12'
+                  : 'h-8 w-8 md:w-12 md:h-12',
+              )}
               showOnlyFirstImage={true}
               images={row.images || []}
             />
           ) : (
-            <div className="w-20 h-20 md:w-12 md:h-12 bg-gray-200 rounded-md" />
+            <div className="w-8 h-8 md:w-12 md:h-12 bg-gray-200 rounded-md" />
           ),
         sortable: false,
         headerClassName: 'w-16',
@@ -526,21 +532,38 @@ const InventoriesPage = () => {
                   'p-2 rounded-md transition-colors duration-200',
                   {
                     'bg-purple-600 text-white': viewMode === 'table',
-                    'text-gray-600 hover:bg-gray-200': viewMode !== 'table',
+                    'text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700':
+                      viewMode !== 'table',
                   },
                 )}
               >
                 <FaTable className="h-4 w-4" />
               </button>
             </Tooltip>
-            <Tooltip content="Vista de Recursos">
+            <Tooltip content="Vista de Tarjetas">
+              <button
+                onClick={() => handleViewModeChange('cards')}
+                className={classNames(
+                  'p-2 rounded-md transition-colors duration-200',
+                  {
+                    'bg-purple-600 text-white': viewMode === 'cards',
+                    'text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700':
+                      viewMode !== 'cards',
+                  },
+                )}
+              >
+                <FaTh className="h-4 w-4" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Vista de Imágenes">
               <button
                 onClick={() => handleViewModeChange('resources')}
                 className={classNames(
                   'p-2 rounded-md transition-colors duration-200',
                   {
                     'bg-purple-600 text-white': viewMode === 'resources',
-                    'text-gray-600 hover:bg-gray-200': viewMode !== 'resources',
+                    'text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700':
+                      viewMode !== 'resources',
                   },
                 )}
               >
@@ -645,7 +668,6 @@ const InventoriesPage = () => {
             selectedRows={selectedTableRows}
             onSelectRow={onSelectTableRow}
             onSelectAllRows={onSelectAllTableRows}
-            resourcesEnabled={true}
             viewMode={viewMode}
           />
         </div>

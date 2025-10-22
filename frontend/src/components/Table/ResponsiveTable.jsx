@@ -44,10 +44,8 @@ const ResponsiveTable = ({
   onRowControlClick,
   rowActions = [],
   pageSizeOptions = [10, 20, 30, 50, 100, 0],
-  viewMode = 'table',
+  viewMode = 'table', // 'table', 'cards', 'resources'
 }) => {
-  const isMobile = useMediaQuery({ maxWidth: 768 });
-
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) return <FaSort className="opacity-30" />;
     if (sortConfig.direction === 'asc') return <FaSortUp />;
@@ -85,14 +83,14 @@ const ResponsiveTable = ({
       return <TableResources data={data} />;
     }
 
-    if (isMobile) {
+    if (viewMode === 'cards') {
       return (
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
           {data.map((row) => (
             <div
               key={row.id}
               className={classNames(
-                'relative bg-white dark:bg-gray-800 rounded-md shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden ',
+                'relative bg-white dark:bg-gray-800 rounded-md shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full',
                 {
                   'border-l-4 border-sinabe-danger': row.status === 'BAJA',
                   'border-l-4 border-sinabe-warning':
@@ -116,136 +114,142 @@ const ResponsiveTable = ({
               {/* Options Dropdown for actions, positioned top-right */}
               <div className="absolute top-1 right-0 z-10 text-nowrap"></div>
 
-              {/* Card Header with Image and Main Info */}
-              <div className="flex p-4 pb-2 items-center">
-                <div className="flex-shrink-0 mr-4">
-                  {columns
-                    .find((col) => col.key === 'images')
-                    ?.render?.(row.images, row) || (
-                    <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">
-                      No Imagen
+              {/* Main content section - grows to fill available space */}
+              <div className="flex-grow">
+                {/* Card Header with Image and Main Info */}
+                <div className="flex p-4 pb-2 items-center">
+                  <div className="flex-shrink-0 mr-4">
+                    {columns
+                      .find((col) => col.key === 'images')
+                      ?.render?.(row.images, row) || (
+                      <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">
+                        No Imagen
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <h3 className="text-base font-bold text-sinabe-primary dark:text-white truncate">
+                      {columns
+                        .find((col) => col.key === 'model.name')
+                        ?.render?.(row.model?.name, row) ||
+                        row.model?.name ||
+                        '-'}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                      {(columns
+                        .find((col) => col.key === 'model.type.name')
+                        ?.render?.(row.model?.type?.name, row) ||
+                        row.model?.type?.name ||
+                        '-') +
+                        ' - ' +
+                        (columns
+                          .find((col) => col.key === 'model.brand.name')
+                          ?.render?.(row.model?.brand?.name, row) ||
+                          row.model?.brand?.name ||
+                          '-')}
+                    </p>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {row.status && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${
+                            row.status === 'ALTA'
+                              ? 'bg-sinabe-success'
+                              : row.status === 'BAJA'
+                                ? 'bg-sinabe-danger'
+                                : 'bg-sinabe-warning'
+                          }`}
+                        >
+                          {row.status === 'PROPUESTA'
+                            ? 'PROP. BAJA'
+                            : row.status}
+                        </span>
+                      )}
+                      {row.conditions?.map((condition) => (
+                        <span
+                          key={condition.id}
+                          className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-200"
+                        >
+                          {condition?.condition?.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Body with Key Details */}
+                <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center">
+                    <span>
+                      <FaTag className="mr-2 text-gray-500" />
+                    </span>
+                    <span className="flex flex-col items-start">
+                      Serie:{' '}
+                      <span className="font-semibold">
+                        {row.serialNumber || '-'}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <span>
+                      <FaBox className="mr-2 text-gray-500" />
+                    </span>
+                    <span className="flex flex-col items-start">
+                      Activo:{' '}
+                      <span className="font-semibold">
+                        {row.activeNumber || '-'}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <span>
+                      <FaFileAlt className="mr-2 text-gray-500" />
+                    </span>
+                    <span className="flex flex-col items-start">
+                      Folio:{' '}
+                      <span className="font-semibold">
+                        {row.internalFolio || '-'}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <span>
+                      <FaCalendarAlt className="mr-2 text-gray-500" />
+                    </span>
+                    <span className="flex flex-col items-start">
+                      Recepción:{' '}
+                      <span className="font-semibold">
+                        {columns
+                          .find((c) => c.key === 'receptionDate')
+                          ?.render?.(row.receptionDate) || '-'}
+                      </span>
+                    </span>
+                  </div>
+                  {row.comments && (
+                    <div className="flex items-start col-span-2 my-1">
+                      <FaCommentDots className="mr-2 text-gray-500 mt-1" />
+                      <div className="text-gray-700 dark:text-gray-300 line-clamp-2">
+                        {columns
+                          .find((c) => c.key === 'comments')
+                          ?.render?.(row.comments, row) || row.comments}
+                      </div>
                     </div>
                   )}
                 </div>
-                <div className="flex-grow min-w-0">
-                  <h3 className="text-base font-bold text-sinabe-primary dark:text-white truncate">
-                    {columns
-                      .find((col) => col.key === 'model.name')
-                      ?.render?.(row.model?.name, row) ||
-                      row.model?.name ||
-                      '-'}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                    {(columns
-                      .find((col) => col.key === 'model.type.name')
-                      ?.render?.(row.model?.type?.name, row) ||
-                      row.model?.type?.name ||
-                      '-') +
-                      ' - ' +
-                      (columns
-                        .find((col) => col.key === 'model.brand.name')
-                        ?.render?.(row.model?.brand?.name, row) ||
-                        row.model?.brand?.name ||
-                        '-')}
-                  </p>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {row.status && (
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${
-                          row.status === 'ALTA'
-                            ? 'bg-sinabe-success'
-                            : row.status === 'BAJA'
-                              ? 'bg-sinabe-danger'
-                              : 'bg-sinabe-warning'
-                        }`}
-                      >
-                        {row.status === 'PROPUESTA' ? 'PROP. BAJA' : row.status}
-                      </span>
-                    )}
-                    {row.conditions?.map((condition) => (
-                      <span
-                        key={condition.id}
-                        className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-200"
-                      >
-                        {condition?.condition?.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
               </div>
 
-              {/* Card Body with Key Details */}
-              <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-700 dark:text-gray-300">
-                <div className="flex items-center">
-                  <span>
-                    <FaTag className="mr-2 text-gray-500" />
-                  </span>
-                  <span className="flex flex-col items-start">
-                    Serie:{' '}
-                    <span className="font-semibold">
-                      {row.serialNumber || '-'}
-                    </span>
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <span>
-                    <FaBox className="mr-2 text-gray-500" />
-                  </span>
-                  <span className="flex flex-col items-start">
-                    Activo:{' '}
-                    <span className="font-semibold">
-                      {row.activeNumber || '-'}
-                    </span>
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <span>
-                    <FaFileAlt className="mr-2 text-gray-500" />
-                  </span>
-                  <span className="flex flex-col items-start">
-                    Folio:{' '}
-                    <span className="font-semibold">
-                      {row.internalFolio || '-'}
-                    </span>
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <span>
-                    <FaCalendarAlt className="mr-2 text-gray-500" />
-                  </span>
-                  <span className="flex flex-col items-start">
-                    Recepción:{' '}
-                    <span className="font-semibold">
-                      {columns
-                        .find((c) => c.key === 'receptionDate')
-                        ?.render?.(row.receptionDate) || '-'}
-                    </span>
-                  </span>
-                </div>
-                {row.comments && (
-                  <div className="flex items-start col-span-2 my-1">
-                    <FaCommentDots className="mr-2 text-gray-500 mt-1" />
-                    <div className="text-gray-700 dark:text-gray-300 line-clamp-2">
-                      {columns
-                        .find((c) => c.key === 'comments')
-                        ?.render?.(row.comments, row) || row.comments}
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-center justify-end gap-2 col-span-2 pt-2">
-                  <div>
-                    <ActionButtons
-                      extraActions={[
-                        {
-                          icon: FaEye,
-                          label: 'Ver Detalles',
-                          action: () =>
-                            onRowDoubleClick && onRowDoubleClick(row),
-                          disabled: false,
-                        },
-                      ]}
-                    />
-                  </div>
+              {/* Actions section - always at the bottom */}
+              <div className="mt-auto px-4 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
+                <div className="flex items-center justify-end gap-2">
+                  <ActionButtons
+                    extraActions={[
+                      {
+                        icon: FaEye,
+                        label: 'Ver Detalles',
+                        action: () => onRowDoubleClick && onRowDoubleClick(row),
+                        disabled: false,
+                      },
+                    ]}
+                  />
                   {rowActions.length > 0 && (
                     <Dropdown
                       inline
@@ -255,7 +259,7 @@ const ResponsiveTable = ({
                         return (
                           <button
                             type="button"
-                            className="w-fit md:w-fit text-xs xl:text-sm transition ease-in-out duration-200 p-2.5 flex items-center justify-center rounded-md border text-stone-800"
+                            className="w-fit md:w-fit text-xs xl:text-sm transition ease-in-out duration-200 p-2.5 flex items-center justify-center rounded-md border text-stone-800 dark:text-gray-200 dark:border-gray-600"
                           >
                             <BsThreeDotsVertical />
                           </button>
@@ -457,90 +461,92 @@ const ResponsiveTable = ({
   return (
     <div className="flex flex-col gap-4">
       {renderContent()} {/* Call the rendering function here */}
-      {/* Pagination (always show for table/card view) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-2 border-t dark:border-gray-700 mt-4 pt-4">
-        {' '}
-        {/* Added top border and padding */}
-        <div className="text-sm text-gray-700 dark:text-gray-400">
-          Mostrando{' '}
-          <span className="font-semibold">
-            {Math.min(
-              (pagination.currentPage - 1) * pagination.pageSize + 1,
-              pagination.totalRecords,
-            )}
-            -
-            {Math.min(
-              pagination.currentPage * pagination.pageSize,
-              pagination.totalRecords,
-            )}
-          </span>{' '}
-          de <span className="font-semibold">{pagination.totalRecords}</span>{' '}
-          resultados
-        </div>
-        <div className="flex items-center gap-1">
-          {/* Previous Page Button */}
-          <button
-            onClick={() => onPageChange(pagination.currentPage - 1)}
-            disabled={pagination.currentPage === 1}
-            className="px-3 py-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed  dark:text-white transition-colors flex items-center justify-center text-gray-700 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
-            title="Página Anterior"
-          >
-            <MdNavigateBefore className="h-5 w-5" />
-          </button>
-
-          {/* Page Number Buttons */}
-          <div className="flex items-center gap-1 mx-1">
-            {' '}
-            {/* Added mx-1 for spacing */}
-            {pageNumbers.map((pageNumber) => (
-              <button
-                key={pageNumber}
-                onClick={() => onPageChange(pageNumber)}
-                className={classNames(
-                  'px-3 py-1 rounded-md text-sm transition-colors duration-200',
-                  {
-                    'bg-purple-600 text-white font-bold shadow-md':
-                      pageNumber === pagination.currentPage,
-                    'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600':
-                      pageNumber !== pagination.currentPage,
-                  },
-                )}
-              >
-                {pageNumber}
-              </button>
-            ))}
-          </div>
-
-          {/* Next Page Button */}
-          <button
-            onClick={() => onPageChange(pagination.currentPage + 1)}
-            disabled={pagination.currentPage >= pagination.totalPages}
-            className="px-3 py-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed  dark:text-white transition-colors flex items-center justify-center text-gray-700 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
-            title="Página Siguiente"
-          >
-            <MdNavigateNext className="h-5 w-5" />
-          </button>
-        </div>
-        {/* Results per page dropdown - moved to the right for better visual balance */}
-        <div className="flex items-center gap-2 md:order-last">
+      {/* Pagination (show for all view modes) */}
+      {viewMode !== 'resources' && (
+        <div className="flex flex-wrap items-center justify-between gap-4 p-2 border-t dark:border-gray-700 mt-4 pt-4">
           {' '}
-          {/* md:order-last to push it to the right on larger screens */}
-          <label className="text-sm text-gray-700 dark:text-gray-400">
-            Resultados por página:
-          </label>
-          <select
-            value={pagination.pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="px-2 py-1 border rounded-md text-sm dark:bg-gray-700 dark:text-white"
-          >
-            {pageSizeOptions.map((size) => (
-              <option key={size} value={size}>
-                {size === 0 ? 'Todos' : size}
-              </option>
-            ))}
-          </select>
+          {/* Added top border and padding */}
+          <div className="text-sm text-gray-700 dark:text-gray-400">
+            Mostrando{' '}
+            <span className="font-semibold">
+              {Math.min(
+                (pagination.currentPage - 1) * pagination.pageSize + 1,
+                pagination.totalRecords,
+              )}
+              -
+              {Math.min(
+                pagination.currentPage * pagination.pageSize,
+                pagination.totalRecords,
+              )}
+            </span>{' '}
+            de <span className="font-semibold">{pagination.totalRecords}</span>{' '}
+            resultados
+          </div>
+          <div className="flex items-center gap-1">
+            {/* Previous Page Button */}
+            <button
+              onClick={() => onPageChange(pagination.currentPage - 1)}
+              disabled={pagination.currentPage === 1}
+              className="px-3 py-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed  dark:text-white transition-colors flex items-center justify-center text-gray-700 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+              title="Página Anterior"
+            >
+              <MdNavigateBefore className="h-5 w-5" />
+            </button>
+
+            {/* Page Number Buttons */}
+            <div className="flex items-center gap-1 mx-1">
+              {' '}
+              {/* Added mx-1 for spacing */}
+              {pageNumbers.map((pageNumber) => (
+                <button
+                  key={pageNumber}
+                  onClick={() => onPageChange(pageNumber)}
+                  className={classNames(
+                    'px-3 py-1 rounded-md text-sm transition-colors duration-200',
+                    {
+                      'bg-purple-600 text-white font-bold shadow-md':
+                        pageNumber === pagination.currentPage,
+                      'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600':
+                        pageNumber !== pagination.currentPage,
+                    },
+                  )}
+                >
+                  {pageNumber}
+                </button>
+              ))}
+            </div>
+
+            {/* Next Page Button */}
+            <button
+              onClick={() => onPageChange(pagination.currentPage + 1)}
+              disabled={pagination.currentPage >= pagination.totalPages}
+              className="px-3 py-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed  dark:text-white transition-colors flex items-center justify-center text-gray-700 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+              title="Página Siguiente"
+            >
+              <MdNavigateNext className="h-5 w-5" />
+            </button>
+          </div>
+          {/* Results per page dropdown - moved to the right for better visual balance */}
+          <div className="flex items-center gap-2 md:order-last">
+            {' '}
+            {/* md:order-last to push it to the right on larger screens */}
+            <label className="text-sm text-gray-700 dark:text-gray-400">
+              Resultados por página:
+            </label>
+            <select
+              value={pagination.pageSize}
+              onChange={(e) => onPageSizeChange(Number(e.target.value))}
+              className="px-2 py-1 border rounded-md text-sm dark:bg-gray-700 dark:text-white"
+            >
+              {pageSizeOptions.map((size) => (
+                <option key={size} value={size}>
+                  {size === 0 ? 'Todos' : size}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
