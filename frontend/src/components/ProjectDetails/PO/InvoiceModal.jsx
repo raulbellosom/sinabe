@@ -19,12 +19,6 @@ import ActionButtons from '../../ActionButtons/ActionButtons';
 const InvoiceSchema = Yup.object({
   code: Yup.string().required('Código es requerido'),
   concept: Yup.string().required('Concepto es requerido'),
-  amount: Yup.number()
-    .typeError('Debe ser un número')
-    .positive('Debe ser positivo')
-    .required('Monto es requerido'),
-  status: Yup.string().required('Estado es requerido'),
-  date: Yup.date().typeError('Fecha inválida').required('Fecha es requerida'),
 });
 
 const InvoiceModal = ({
@@ -58,9 +52,6 @@ const InvoiceModal = ({
   const initialValues = {
     code: invoice?.code || '',
     concept: invoice?.concept || '',
-    amount: invoice?.amount || '',
-    status: invoice?.status || 'PENDIENTE',
-    date: invoice ? invoice.date.slice(0, 10) : '',
   };
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
@@ -117,49 +108,40 @@ const InvoiceModal = ({
       >
         {({ isSubmitting }) => (
           <Form className="space-y-4">
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { name: 'code', label: 'Factura', type: 'text', col: 2 },
-                { name: 'concept', label: 'Concepto', type: 'text', col: 2 },
-                { name: 'amount', label: 'Monto', type: 'number', col: 1 },
-                { name: 'date', label: 'Fecha', type: 'date', col: 1 },
-              ].map((field) => (
-                <div
-                  key={field.name}
-                  className={`flex flex-col ${field.col === 2 ? 'col-span-2' : ''}`}
-                >
-                  <label className="mb-1 text-sm font-medium">
-                    {field.label}
-                  </label>
-                  <Field
-                    name={field.name}
-                    type={field.type}
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
-                  />
-                  <ErrorMessage
-                    name={field.name}
-                    component="div"
-                    className="text-red-600 text-sm mt-1"
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="flex flex-col">
-              <label className="mb-1 text-sm font-medium">Estado</label>
-              <Field
-                as="select"
-                name="status"
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
-              >
-                <option value="PENDIENTE">Pendiente</option>
-                <option value="PAGADA">Pagada</option>
-                <option value="ANULADA">Anulada</option>
-              </Field>
-              <ErrorMessage
-                name="status"
-                component="div"
-                className="text-red-600 text-sm mt-1"
-              />
+            {/* Campos principales */}
+            <div className="space-y-4">
+              <div className="flex flex-col">
+                <label className="mb-1 text-sm font-medium">
+                  Código <span className="text-red-500">*</span>
+                </label>
+                <Field
+                  name="code"
+                  type="text"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+                  placeholder="Ingrese el código de la factura"
+                />
+                <ErrorMessage
+                  name="code"
+                  component="div"
+                  className="text-red-600 text-sm mt-1"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="mb-1 text-sm font-medium">
+                  Concepto <span className="text-red-500">*</span>
+                </label>
+                <Field
+                  name="concept"
+                  type="text"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+                  placeholder="Ingrese el concepto de la factura"
+                />
+                <ErrorMessage
+                  name="concept"
+                  component="div"
+                  className="text-red-600 text-sm mt-1"
+                />
+              </div>
             </div>
             <div className="flex flex-col">
               <label className="mb-1 text-sm font-medium flex items-center gap-2">

@@ -65,8 +65,8 @@ const ConfirmRemovePurchaseOrderModal = ({
               key={inv.id}
               className="text-gray-800 dark:text-gray-200 text-sm mb-1"
             >
-              • {inv.code} — ${inv.amount.toLocaleString()} —{' '}
-              {new Date(inv.date).toLocaleDateString()}
+              • {inv.code} — {inv.concept} —{' '}
+              {new Date(inv.createdAt).toLocaleDateString()}
             </li>
           ))
         ) : (

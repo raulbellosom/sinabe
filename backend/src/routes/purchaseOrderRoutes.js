@@ -11,8 +11,11 @@ import {
   createPurchaseOrderWithoutProject,
   getUnassignedPurchaseOrders,
   searchUnassignedPurchaseOrders,
+  getInventoriesByPurchaseOrder,
+  assignInventoriesToPurchaseOrder,
+  removeInventoryFromPurchaseOrder,
 } from "../controllers/purchaseOrderController.js";
-import invoiceRoutes from "./invoiceRoutes.js";
+import { purchaseOrderRouter } from "./invoiceRoutes.js";
 
 const router = express.Router();
 
@@ -50,10 +53,24 @@ router.delete(
   removePurchaseOrderFromProject
 );
 
+// 📦 Inventarios asociados a una orden de compra
+// GET  /purchase-orders/:orderId/inventories
+// POST /purchase-orders/:orderId/inventories
+router
+  .route("/:orderId/inventories")
+  .get(getInventoriesByPurchaseOrder)
+  .post(assignInventoriesToPurchaseOrder);
+
+// 🗑️ Desasignar un inventario de la orden de compra
+// DELETE /purchase-orders/:orderId/inventories/:inventoryId
+router
+  .route("/:orderId/inventories/:inventoryId")
+  .delete(removeInventoryFromPurchaseOrder);
+
 // ✏️ Actualizar / ❌ Eliminar OC por ID
 router.route("/:id").put(updatePurchaseOrder).delete(deletePurchaseOrder);
 
 // 🎫 Sub‐rutas de facturas anidadas
-router.use("/:orderId/invoices", invoiceRoutes);
+router.use("/:orderId/invoices", purchaseOrderRouter);
 
 export default router;

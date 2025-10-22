@@ -15,8 +15,9 @@ export const getPurchaseOrdersByProjectId = async (req, res) => {
           where: { enabled: true },
           include: { inventories: true },
         },
+        inventories: true,
       },
-      orderBy: { date: "desc" },
+      orderBy: { createdAt: "desc" },
     });
 
     res.json(orders);
@@ -29,7 +30,7 @@ export const getPurchaseOrdersByProjectId = async (req, res) => {
 // ➕ Crear orden de compra
 export const createPurchaseOrder = async (req, res) => {
   const { projectId } = req.params;
-  const { code, supplier, description, status, date } = req.body;
+  const { code, supplier, description } = req.body;
 
   try {
     const order = await db.purchaseOrder.create({
@@ -38,9 +39,6 @@ export const createPurchaseOrder = async (req, res) => {
         code,
         supplier,
         description,
-        amount: 0,
-        status,
-        date: new Date(date),
         enabled: true,
         createdById: req.user.id,
       },
@@ -55,7 +53,7 @@ export const createPurchaseOrder = async (req, res) => {
 
 // ➕ Crear orden de compra sin proyecto asignado
 export const createPurchaseOrderWithoutProject = async (req, res) => {
-  const { code, supplier, description, status, date } = req.body;
+  const { code, supplier, description } = req.body;
 
   try {
     const order = await db.purchaseOrder.create({
@@ -64,9 +62,6 @@ export const createPurchaseOrderWithoutProject = async (req, res) => {
         code,
         supplier,
         description,
-        amount: 0,
-        status,
-        date: new Date(date),
         enabled: true,
         createdById: req.user.id,
       },
@@ -85,7 +80,7 @@ export const createPurchaseOrderWithoutProject = async (req, res) => {
 // ✏️ Actualizar orden de compra
 export const updatePurchaseOrder = async (req, res) => {
   const { id } = req.params;
-  const { code, supplier, description, status, date } = req.body;
+  const { code, supplier, description } = req.body;
 
   try {
     const order = await db.purchaseOrder.update({
@@ -94,8 +89,6 @@ export const updatePurchaseOrder = async (req, res) => {
         code,
         supplier,
         description,
-        status,
-        date: new Date(date),
       },
     });
 
@@ -129,7 +122,7 @@ export const searchPurchaseOrders = async (req, res) => {
   const {
     searchTerm = "",
     statuses = [],
-    sortBy = "date",
+    sortBy = "createdAt",
     order = "desc",
     page = 1,
     pageSize = 10,
@@ -147,7 +140,6 @@ export const searchPurchaseOrders = async (req, res) => {
   const where = {
     enabled: true,
     ...(projectId && { projectId }),
-    ...(parsedStatuses.length > 0 && { status: { in: parsedStatuses } }),
     OR: [
       { code: { contains: searchTerm } },
       { supplier: { contains: searchTerm } },
@@ -175,21 +167,26 @@ export const searchPurchaseOrders = async (req, res) => {
     ],
   };
 
+  // Validar sortBy para evitar errores
+  const validSortFields = ["createdAt", "updatedAt", "code", "supplier"];
+  const validSortBy = validSortFields.includes(sortBy) ? sortBy : "createdAt";
+
   try {
     const [data, totalRecords] = await Promise.all([
       db.purchaseOrder.findMany({
         where,
         include: {
-          project: true, // 👈 esto es lo nuevo
+          project: true,
           invoices: {
             include: {
               inventories: true,
             },
           },
+          inventories: true, // Incluir inventarios directos
         },
         skip,
         take,
-        orderBy: { [sortBy]: order },
+        orderBy: { [validSortBy]: order },
       }),
       db.purchaseOrder.count({ where }),
     ]);
@@ -305,8 +302,9 @@ export const getUnassignedPurchaseOrders = async (req, res) => {
         invoices: {
           include: { inventories: true },
         },
+        inventories: true,
       },
-      orderBy: { date: "desc" },
+      orderBy: { createdAt: "desc" },
     });
 
     res.json(orders);
@@ -398,13 +396,99 @@ export const searchUnassignedPurchaseOrders = async (req, res) => {
             },
           },
         },
+        inventories: true,
       },
-      orderBy: { date: "desc" },
+      orderBy: { createdAt: "desc" },
     });
 
     res.json(orders);
   } catch (error) {
     console.error("Error searching unassigned purchase orders:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 📦 Obtener inventarios asociados a una orden de compra
+export const getInventoriesByPurchaseOrder = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const inventories = await db.inventory.findMany({
+      where: {
+        purchaseOrderId: orderId,
+        enabled: true,
+      },
+      include: {
+        model: {
+          include: {
+            brand: true,
+            type: true,
+          },
+        },
+        conditions: {
+          include: {
+            condition: true,
+          },
+        },
+        images: {
+          where: { enabled: true },
+        },
+        files: {
+          where: { enabled: true },
+        },
+      },
+    });
+
+    res.json(inventories);
+  } catch (error) {
+    console.error(
+      "Error getting inventories by purchase order:",
+      error.message
+    );
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ⚙️ Asignar inventarios a orden de compra (bulk)
+export const assignInventoriesToPurchaseOrder = async (req, res) => {
+  const { orderId } = req.params;
+  const { inventoryIds } = req.body;
+
+  try {
+    const updated = await db.inventory.updateMany({
+      where: { id: { in: inventoryIds } },
+      data: { purchaseOrderId: orderId },
+    });
+
+    res.json({
+      message: `${updated.count} inventarios asignados a la orden de compra`,
+      count: updated.count,
+    });
+  } catch (error) {
+    console.error(
+      "Error assigning inventories to purchase order:",
+      error.message
+    );
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🛠️ Desasignar un inventario de la orden de compra
+export const removeInventoryFromPurchaseOrder = async (req, res) => {
+  const { inventoryId } = req.params;
+
+  try {
+    await db.inventory.update({
+      where: { id: inventoryId },
+      data: { purchaseOrderId: null },
+    });
+
+    res.status(204).end();
+  } catch (error) {
+    console.error(
+      "Error removing inventory from purchase order:",
+      error.message
+    );
     res.status(500).json({ error: error.message });
   }
 };

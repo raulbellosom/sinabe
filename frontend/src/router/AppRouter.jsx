@@ -31,10 +31,15 @@ import EditProjectPage from '../pages/projects/EditProjectPage';
 import ProjectDetailPage from '../pages/projects/ProjectDetailPage';
 import VerticalPage from '../pages/vertical/VerticalPage';
 import PurchaseOrdersPage from '../pages/purchaseOrders/PurchaseOrdersPage';
-import InvoicesPage from '../pages/purchaseOrders/InvoicesPage';
+import InvoicesPage from '../pages/invoices/InvoicesPage';
 
 const AppRouter = () => {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+
+  // Mostrar loading mientras verifica la autenticación
+  if (loading) {
+    return <LoadingModal loading={true} />;
+  }
 
   return (
     <>
@@ -97,14 +102,12 @@ const AuthorizedRoute = ({ user }) => {
                     path="/projects/view/:id"
                     element={<ProjectDetailPage />}
                   />
+                  {/* 🆕 Rutas independientes para Finanzas */}
                   <Route
                     path="/purchase-orders"
                     element={<PurchaseOrdersPage />}
                   />
-                  <Route
-                    path="/purchase-orders/:orderId/invoices"
-                    element={<InvoicesPage />}
-                  />
+                  <Route path="/invoices" element={<InvoicesPage />} />
                   <Route path="/catalogs" element={<Catalogs />} />
                   <Route path="/roles" element={<Roles />} />
                   <Route

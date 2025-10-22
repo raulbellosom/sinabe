@@ -23,12 +23,6 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { getFileUrl } from '../../utils/getFileUrl';
 import { useMediaQuery } from 'react-responsive';
 
-const statusColors = {
-  PENDIENTE: 'yellow',
-  PAGADA: 'green',
-  ANULADA: 'red',
-};
-
 const InvoicesPage = () => {
   const { orderId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -38,7 +32,7 @@ const InvoicesPage = () => {
   const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
   const searchTerm = searchParams.get('searchTerm') || '';
   const modalId = searchParams.get('modalId') || null;
-  const sortBy = searchParams.get('sortBy') || 'date'; // o 'code'
+  const sortBy = searchParams.get('sortBy') || 'createdAt'; // o 'code'
   const order = searchParams.get('order') || 'desc';
 
   const debouncedSearchTerm = useDebounce(searchTerm);
@@ -109,37 +103,18 @@ const InvoicesPage = () => {
     () => [
       {
         key: 'code',
-        title: 'ID Factura',
+        title: 'Código',
         render: (code) => (
           <span className="text-nowrap font-semibold">{code}</span>
         ),
         sortable: true,
       },
-      { key: 'concept', title: 'Concepto', sortable: true },
       {
-        key: 'amount',
-        title: 'Monto',
-        render: (amt) => `$${amt.toLocaleString('es-MX')}`,
+        key: 'concept',
+        title: 'Concepto',
         sortable: true,
-      },
-      {
-        key: 'status',
-        title: 'Estado',
-        sortable: true,
-        render: (status) => (
-          <Badge
-            color={statusColors[status] || 'gray'}
-            className="uppercase px-2 py-1"
-          >
-            {status}
-          </Badge>
-        ),
-      },
-      {
-        key: 'date',
-        title: 'Fecha',
-        sortable: true,
-        render: (d) => parseToLocalDate(d, 'es-MX'),
+        render: (concept) =>
+          concept || <span className="text-gray-400 italic">—</span>,
       },
       {
         key: 'inventories',
@@ -165,6 +140,7 @@ const InvoicesPage = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-red-500"
+                title="Ver PDF"
               >
                 <FaFilePdf size={20} />
               </a>
@@ -175,12 +151,19 @@ const InvoicesPage = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500"
+                title="Ver XML"
               >
                 <FaFileCode size={20} />
               </a>
             )}
           </div>
         ),
+      },
+      {
+        key: 'createdAt',
+        title: 'Fecha creación',
+        sortable: true,
+        render: (createdAt) => parseToLocalDate(createdAt, 'es-MX'),
       },
       { key: 'actions', title: 'Acciones' },
     ],

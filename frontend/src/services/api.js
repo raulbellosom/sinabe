@@ -19,6 +19,26 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
+// Interceptor para manejar errores de respuesta globalmente
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Si es error 401 (no autorizado), limpiar datos de autenticación
+    if (error.response?.status === 401) {
+      console.warn('Token expired or invalid, clearing auth data');
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+
+      // Solo recargar si no estamos ya en la página de login
+      if (!window.location.pathname.includes('/login')) {
+        window.location.reload();
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 const headerFormData = {
   headers: {
     'Content-Type': 'multipart/form-data',

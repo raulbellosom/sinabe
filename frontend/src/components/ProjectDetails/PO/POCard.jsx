@@ -25,14 +25,6 @@ import { MdInventory, MdRemoveCircle } from 'react-icons/md';
 import SideModal from '../../Modals/SideModal';
 import InvoiceInventoryManager from '../../purchaseOrders/invoices/InvoiceInventoryManager';
 
-const statusColors = {
-  PLANIFICACION: 'gray',
-  EN_EJECUCION: 'blue',
-  EN_REVISION: 'yellow',
-  FINALIZADO: 'green',
-  CANCELADO: 'red',
-};
-
 const getFileUrl = (file) => {
   if (file instanceof File) {
     return URL.createObjectURL(file);
@@ -68,12 +60,10 @@ const POCard = ({ order, onEdit }) => {
     id: inv.id,
     code: inv.code,
     concept: inv.concept,
-    amount: inv.amount,
-    status: inv.status,
-    date: inv.date,
     pdf: inv.fileUrl ? getFileUrl({ url: inv.fileUrl }) : null,
     xml: inv.xmlUrl ? getFileUrl({ url: inv.xmlUrl }) : null,
     inventories: inv.inventories || [],
+    createdAt: inv.createdAt,
   }));
 
   // collapsed menu OC
@@ -102,20 +92,14 @@ const POCard = ({ order, onEdit }) => {
                   {order.code}
                 </h3>
                 <p className="text-xs md:text-sm text-gray-500">
-                  {order.supplier} · {parseToLocalDate(order.date, 'es-MX')} ·{' '}
-                  <span className="font-medium text-green-500">
-                    {parseToCurrency(order.amount)}
-                  </span>
+                  {order.supplier && <>{order.supplier} ·</>}
+                  {parseToLocalDate(order.createdAt, 'es-MX')}
                 </p>
               </div>
             </div>
-            <Badge
-              color={statusColors[order.status] || 'gray'}
-              size="sm"
-              className="text-xs uppercase px-2 py-1 text-nowrap"
-            >
-              {order.status.replace('_', ' ')}
-            </Badge>
+            <div className="text-xs text-gray-400">
+              {order.invoices?.length || 0} facturas
+            </div>
           </div>
           {order.description && (
             <p className="text-gray-700 text-xs pt-2 leading-relaxed whitespace-pre-line">
@@ -131,39 +115,15 @@ const POCard = ({ order, onEdit }) => {
             columns={[
               {
                 key: 'code',
-                title: 'ID Factura',
+                title: 'Código',
                 headerClassName: 'pl-4',
                 cellClassName: 'font-medium',
               },
-              { key: 'concept', title: 'Concepto' },
               {
-                key: 'amount',
-                title: 'Monto',
-                render: (amt) => `$${amt.toLocaleString('es-MX')}`,
-              },
-              {
-                key: 'status',
-                title: 'Estado',
-                render: (st) => (
-                  <Badge
-                    color={
-                      st === 'PAGADA'
-                        ? 'green'
-                        : st === 'PENDIENTE'
-                          ? 'yellow'
-                          : 'red'
-                    }
-                    size="xs"
-                    className="uppercase px-2 py-1"
-                  >
-                    {st}
-                  </Badge>
-                ),
-              },
-              {
-                key: 'date',
-                title: 'Fecha',
-                render: (d) => parseToLocalDate(d, 'es-MX'),
+                key: 'concept',
+                title: 'Concepto',
+                render: (concept) =>
+                  concept || <span className="text-gray-400 italic">—</span>,
               },
               {
                 key: 'inventories',
@@ -189,8 +149,9 @@ const POCard = ({ order, onEdit }) => {
                         rel="noopener noreferrer"
                         href={row.pdf ? getFileUrl({ url: row.pdf }) : '#'}
                         className="text-red-500"
+                        title="Ver PDF"
                       >
-                        <FaFilePdf size={20} />
+                        <FaFilePdf size={16} />
                       </a>
                     )}
                     {row.xml && (
@@ -199,12 +160,18 @@ const POCard = ({ order, onEdit }) => {
                         rel="noopener noreferrer"
                         href={row.xml ? getFileUrl({ url: row.xml }) : '#'}
                         className="text-blue-500"
+                        title="Ver XML"
                       >
-                        <FaFileCode size={20} />
+                        <FaFileCode size={16} />
                       </a>
                     )}
                   </div>
                 ),
+              },
+              {
+                key: 'createdAt',
+                title: 'Fecha',
+                render: (createdAt) => parseToLocalDate(createdAt, 'es-MX'),
               },
               {
                 key: 'actions',

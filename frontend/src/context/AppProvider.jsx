@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import AuthProvider from './AuthProvider';
 import UserProvider from './UserProvider';
 import InventoryProvider from './InventoryProvider';
@@ -8,6 +8,7 @@ import RoleProvider from './RoleProvider';
 import PermissionProvider from './PermissionProvider';
 import { BreadcrumbProvider } from './BreadcrumbContext';
 import CustomFieldProvider from './CustomFieldProvider';
+import AuthContext from './AuthContext';
 
 const SecurityProvider = ({ children }) => (
   <AuthProvider>
@@ -17,22 +18,31 @@ const SecurityProvider = ({ children }) => (
   </AuthProvider>
 );
 
-const DataProvider = ({ children }) => (
-  <UserProvider>
-    <InventoryProvider>
-      <CatalogProvider>
-        <CustomFieldProvider>{children}</CustomFieldProvider>
-      </CatalogProvider>
-    </InventoryProvider>
-  </UserProvider>
-);
+const AuthenticatedDataProvider = ({ children }) => {
+  const { user, loading } = useContext(AuthContext);
+
+  // Solo cargar providers de datos si el usuario está autenticado
+  if (!user && !loading) {
+    return children;
+  }
+
+  return (
+    <UserProvider>
+      <InventoryProvider>
+        <CatalogProvider>
+          <CustomFieldProvider>
+            <BreadcrumbProvider>{children}</BreadcrumbProvider>
+          </CustomFieldProvider>
+        </CatalogProvider>
+      </InventoryProvider>
+    </UserProvider>
+  );
+};
 
 const AppProvider = ({ children }) => (
   <LoadingProvider>
     <SecurityProvider>
-      <DataProvider>
-        <BreadcrumbProvider>{children}</BreadcrumbProvider>
-      </DataProvider>
+      <AuthenticatedDataProvider>{children}</AuthenticatedDataProvider>
     </SecurityProvider>
   </LoadingProvider>
 );

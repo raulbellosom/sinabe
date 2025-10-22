@@ -25,6 +25,7 @@ import {
   FaSearch,
   FaSitemap, // Import FaImages for resources view icon (representing resources)
   FaTh, // Import FaTh for cards view icon
+  FaFileInvoice,
 } from 'react-icons/fa';
 import {
   TbLayoutSidebarLeftCollapseFilled,
@@ -40,6 +41,9 @@ import classNames from 'classnames';
 // Import InventoriesImagesView to support the 'resources' view mode
 import FilterDropdown from '../../components/Inputs/FilterDropdown'; // Make sure this import is present
 import { useVerticals } from '../../hooks/useVerticals';
+import { useSearchAllInvoices } from '../../hooks/useInvoices';
+import { useSearchPurchaseOrders } from '../../hooks/usePurchaseOrders';
+import { GrClose } from 'react-icons/gr';
 
 const InventoriesPage = () => {
   const [selectedInventory, setSelectedInventory] = useState(null);
@@ -54,6 +58,46 @@ const InventoriesPage = () => {
   const { query, updateQuery } = useInventoryQueryParams();
   const { data: verticals } = useVerticals();
   const viewMode = query.mainViewMode || 'table'; // Default to 'table'
+
+  // Get invoice/purchase order info for filter display
+  const { data: invoiceData } = useSearchAllInvoices(
+    query.invoiceId || query.invoiceCode
+      ? { searchTerm: query.invoiceCode || '', page: 1, pageSize: 1000 }
+      : null,
+  );
+  const { data: purchaseOrderData } = useSearchPurchaseOrders(
+    null,
+    query.purchaseOrderId || query.purchaseOrderCode
+      ? { searchTerm: query.purchaseOrderCode || '', page: 1, pageSize: 1000 }
+      : null,
+  );
+
+  const currentInvoice = query.invoiceId
+    ? invoiceData?.data?.find((inv) => inv.id === query.invoiceId)
+    : invoiceData?.data?.find((inv) => inv.code === query.invoiceCode);
+
+  const currentPurchaseOrder = query.purchaseOrderId
+    ? purchaseOrderData?.data?.find((po) => po.id === query.purchaseOrderId)
+    : purchaseOrderData?.data?.find(
+        (po) => po.code === query.purchaseOrderCode,
+      );
+
+  // Create modified query with IDs for backend
+  const searchQuery = useMemo(() => {
+    const baseQuery = { ...query };
+
+    // Convert codes to IDs if needed
+    if (query.invoiceCode && currentInvoice) {
+      baseQuery.invoiceId = currentInvoice.id;
+      delete baseQuery.invoiceCode;
+    }
+    if (query.purchaseOrderCode && currentPurchaseOrder) {
+      baseQuery.purchaseOrderId = currentPurchaseOrder.id;
+      delete baseQuery.purchaseOrderCode;
+    }
+
+    return baseQuery;
+  }, [query, currentInvoice, currentPurchaseOrder]);
 
   // Sincronizar el estado local con el query cuando cambie externamente
   useEffect(() => {
@@ -84,7 +128,7 @@ const InventoriesPage = () => {
   const { inventoryConditions } = useCatalogContext();
   const { deleteInventory } = useInventoryContext();
 
-  const { data, isLoading, error, refetch } = useSearchInventories(query);
+  const { data, isLoading, error, refetch } = useSearchInventories(searchQuery);
   const inventories = data?.data || [];
   const pagination = data?.pagination || {
     currentPage: 1,
@@ -492,9 +536,11 @@ const InventoriesPage = () => {
   return (
     <div className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-          <MdInventory className="text-purple-500" /> Inventarios
-        </h1>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+            <MdInventory className="text-purple-500" /> Inventarios
+          </h1>
+        </div>
 
         <div className="flex gap-2">
           <ActionButtons extraActions={pageActions} />
@@ -634,6 +680,50 @@ const InventoriesPage = () => {
             label="Filtrar por Vertical"
             icon={<FaSitemap className="h-4 w-4" />}
           />
+        </div>
+
+        {/* Filtros activos */}
+        <div className="w-full">
+          {(currentInvoice || currentPurchaseOrder) && (
+            <div className="flex flex-wrap gap-2">
+              {currentInvoice && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                  <FaFileInvoice size={12} />
+                  <span>Factura: {currentInvoice.code}</span>
+                  <button
+                    onClick={() =>
+                      updateQuery({
+                        invoiceId: null,
+                        invoiceCode: null,
+                        page: 1,
+                      })
+                    }
+                    className="ml-1 hover:text-blue-900"
+                  >
+                    <GrClose size={12} />
+                  </button>
+                </div>
+              )}
+              {currentPurchaseOrder && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                  <FaSitemap size={12} />
+                  <span>OC: {currentPurchaseOrder.code}</span>
+                  <button
+                    onClick={() =>
+                      updateQuery({
+                        purchaseOrderId: null,
+                        purchaseOrderCode: null,
+                        page: 1,
+                      })
+                    }
+                    className="ml-1 hover:text-green-900"
+                  >
+                    <GrClose size={12} />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

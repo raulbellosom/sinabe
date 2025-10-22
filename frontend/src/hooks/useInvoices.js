@@ -10,6 +10,17 @@ import {
   assignInventoriesToInvoice,
   removeInventoryFromInvoice,
   searchInvoicesByOrderId,
+  // 🆕 Facturas independientes
+  getIndependentInvoices,
+  searchIndependentInvoices,
+  createIndependentInvoice,
+  getIndependentInvoiceById,
+  updateIndependentInvoice,
+  deleteIndependentInvoice,
+  getInventoriesByIndependentInvoice,
+  assignInventoriesToIndependentInvoice,
+  removeInventoryFromIndependentInvoice,
+  searchAllInvoices,
 } from '../services/invoice.api';
 
 // 🧾 Obtener todas las facturas de una orden de compra
@@ -138,3 +149,120 @@ export const useSearchInvoices = (orderId, params) => {
     enabled: !!orderId,
   });
 };
+
+// ===============================================
+// 🆕 HOOKS PARA FACTURAS INDEPENDIENTES
+// ===============================================
+
+// 📄 Obtener todas las facturas independientes
+export const useIndependentInvoices = () =>
+  useQuery({
+    queryKey: ['independent-invoices'],
+    queryFn: () => getIndependentInvoices().then((res) => res.data),
+  });
+
+// 🔍 Buscar facturas independientes
+export const useSearchIndependentInvoices = (params) =>
+  useQuery({
+    queryKey: ['independent-invoices', 'search', params],
+    queryFn: () => searchIndependentInvoices(params).then((res) => res.data),
+    enabled: !!params,
+  });
+
+// ➕ Crear factura independiente
+export const useCreateIndependentInvoice = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (formData) => createIndependentInvoice(formData),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['independent-invoices'] });
+      qc.invalidateQueries({ queryKey: ['all-invoices'] });
+    },
+  });
+};
+
+// 🔍 Obtener detalle de factura independiente
+export const useIndependentInvoice = (invoiceId) =>
+  useQuery({
+    queryKey: ['independent-invoice', invoiceId],
+    queryFn: () => getIndependentInvoiceById(invoiceId).then((res) => res.data),
+    enabled: !!invoiceId,
+  });
+
+// ✏️ Actualizar factura independiente
+export const useUpdateIndependentInvoice = (invoiceId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (formData) => updateIndependentInvoice(invoiceId, formData),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['independent-invoices'] });
+      qc.invalidateQueries({ queryKey: ['independent-invoice', invoiceId] });
+      qc.invalidateQueries({ queryKey: ['all-invoices'] });
+    },
+  });
+};
+
+// 🗑️ Eliminar factura independiente
+export const useDeleteIndependentInvoice = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (invoiceId) => deleteIndependentInvoice(invoiceId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['independent-invoices'] });
+      qc.invalidateQueries({ queryKey: ['all-invoices'] });
+    },
+  });
+};
+
+// 📦 Obtener inventarios de factura independiente
+export const useIndependentInvoiceInventories = (invoiceId) =>
+  useQuery({
+    queryKey: ['independent-invoice-inventories', invoiceId],
+    queryFn: () =>
+      getInventoriesByIndependentInvoice(invoiceId).then((res) => res.data),
+    enabled: !!invoiceId,
+  });
+
+// ⚙️ Asignar inventarios a factura independiente
+export const useAssignInventoriesToIndependentInvoice = (invoiceId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (inventoryIds) =>
+      assignInventoriesToIndependentInvoice(invoiceId, inventoryIds),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: ['independent-invoice-inventories', invoiceId],
+      });
+      qc.invalidateQueries({ queryKey: ['independent-invoices'] });
+      qc.invalidateQueries({ queryKey: ['independent-invoice', invoiceId] });
+      // Invalidar inventarios para que se actualice su estado de asignación
+      qc.invalidateQueries({ queryKey: ['inventories'] });
+    },
+  });
+};
+
+// 🛠️ Desasignar inventario de factura independiente
+export const useRemoveInventoryFromIndependentInvoice = (invoiceId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (inventoryId) =>
+      removeInventoryFromIndependentInvoice(invoiceId, inventoryId),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: ['independent-invoice-inventories', invoiceId],
+      });
+      qc.invalidateQueries({ queryKey: ['independent-invoices'] });
+      qc.invalidateQueries({ queryKey: ['independent-invoice', invoiceId] });
+      // Invalidar inventarios para que se actualice su estado de asignación
+      qc.invalidateQueries({ queryKey: ['inventories'] });
+    },
+  });
+};
+
+// 🔍 Buscar TODAS las facturas (independientes + con orden de compra)
+export const useSearchAllInvoices = (params) =>
+  useQuery({
+    queryKey: ['all-invoices', 'search', params],
+    queryFn: () => searchAllInvoices(params).then((res) => res.data),
+    enabled: params !== null && params !== undefined,
+  });

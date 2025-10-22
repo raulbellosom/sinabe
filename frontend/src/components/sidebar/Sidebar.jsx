@@ -15,6 +15,7 @@ import {
   FaUserShield,
   FaBoxes,
   FaClipboardList,
+  FaFileInvoice,
 } from 'react-icons/fa';
 import { useAuthContext } from '../../context/AuthContext';
 import AccountSidebar from './AccountSidebar';
@@ -27,6 +28,8 @@ import { MdAddBox, MdAdminPanelSettings, MdInventory } from 'react-icons/md';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
 import { FaDiagramProject, FaListCheck, FaSitemap } from 'react-icons/fa6';
 import { LuArchiveRestore } from 'react-icons/lu';
+import { AiOutlineFieldNumber } from 'react-icons/ai';
+import { PiInvoiceBold } from 'react-icons/pi';
 
 const themes = {
   light: {
@@ -314,6 +317,38 @@ const Sidebar = ({ children }) => {
                   </MenuItem> */}
                 </SubMenu>
               )}
+              <SubMenu label="Finanzas" icon={<PiInvoiceBold size={23} />}>
+                <MenuItem
+                  icon={<FaClipboardList size={23} />}
+                  active={isActivePath('/purchase-orders')}
+                  component={<Link to={'/purchase-orders'} />}
+                  onClick={() => {
+                    setToggled(false);
+                  }}
+                >
+                  OC
+                </MenuItem>
+                <MenuItem
+                  icon={<FaFileInvoice size={23} />}
+                  active={isActivePath('/invoices')}
+                  component={<Link to={'/invoices'} />}
+                  onClick={() => {
+                    setToggled(false);
+                  }}
+                >
+                  Facturas
+                </MenuItem>
+                <MenuItem
+                  icon={<AiOutlineFieldNumber size={23} />}
+                  active={isActivePath('/fixed-assets')}
+                  component={<Link to={'/fixed-assets'} />}
+                  onClick={() => {
+                    setToggled(false);
+                  }}
+                >
+                  Activos
+                </MenuItem>
+              </SubMenu>
               <MenuItem
                 icon={<FaSitemap size={23} />}
                 active={isActivePath('/verticals')}
@@ -323,16 +358,6 @@ const Sidebar = ({ children }) => {
                 }}
               >
                 Verticales
-              </MenuItem>
-              <MenuItem
-                icon={<FaClipboardList size={23} />}
-                active={isActivePath('/purchase-orders')}
-                component={<Link to={'/purchase-orders'} />}
-                onClick={() => {
-                  setToggled(false);
-                }}
-              >
-                OC
               </MenuItem>
               <MenuItem
                 icon={<FaDiagramProject size={23} />}

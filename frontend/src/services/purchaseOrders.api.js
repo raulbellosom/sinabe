@@ -50,3 +50,19 @@ export const searchPurchaseOrders = (projectId, params) => {
     return api.get(`/purchase-orders/search`, { params });
   }
 };
+
+// ===============================================
+// 🆕 GESTIÓN DE INVENTARIOS EN ÓRDENES DE COMPRA
+// ===============================================
+
+// 📦 Obtener inventarios asignados a una orden de compra
+export const getInventoriesByPurchaseOrder = (orderId) =>
+  api.get(`/purchase-orders/${orderId}/inventories`);
+
+// ⚙️ Asignar inventarios a orden de compra
+export const assignInventoriesToPurchaseOrder = (orderId, inventoryIds) =>
+  api.post(`/purchase-orders/${orderId}/inventories`, { inventoryIds });
+
+// 🛠️ Desasignar un inventario de la orden de compra
+export const removeInventoryFromPurchaseOrder = (orderId, inventoryId) =>
+  api.delete(`/purchase-orders/${orderId}/inventories/${inventoryId}`);

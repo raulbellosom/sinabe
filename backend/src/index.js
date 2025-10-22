@@ -18,7 +18,7 @@ import projectDocumentRoutes from "./routes/projectDocumentRoutes.js";
 import projectTeamRoutes from "./routes/projectTeamRoutes.js";
 import inventoryAssignmentRoutes from "./routes/inventoryAssignmentRoute.js";
 import verticalRoutes from "./routes/verticalRoutes.js";
-import invoiceRoutes from "./routes/invoiceRoutes.js";
+import invoiceRoutes, { purchaseOrderRouter } from "./routes/invoiceRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 
 dotenv.config();

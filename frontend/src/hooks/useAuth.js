@@ -61,17 +61,27 @@ export const useAuthData = (dispatch) => {
 
   const loadUserData = useMutation({
     mutationFn: loadUser,
-    onMutate: () => setLoading(true),
     onSuccess: (data) => {
-      queryClient.setQueryData('user', data);
-      localStorage.setItem('user', JSON.stringify(data));
-      return data;
+      if (data) {
+        queryClient.setQueryData('user', data);
+        localStorage.setItem('user', JSON.stringify(data));
+        return data;
+      } else {
+        // Usuario no válido, limpiar datos
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        dispatch({ type: 'AUTH_ERROR' });
+        return null;
+      }
     },
     onError: (error) => {
-      dispatch({ type: 'AUTH_ERROR', payload: error });
-      return error;
+      console.warn('Error loading user:', error);
+      // Error al cargar usuario, probablemente token inválido
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      dispatch({ type: 'AUTH_ERROR' });
+      return null;
     },
-    onSettled: () => setLoading(false),
   });
 
   const updateProfileMutation = useMutation({

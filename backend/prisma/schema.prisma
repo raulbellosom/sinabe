@@ -73,10 +73,12 @@ model Inventory {
   bajaDate          DateTime?
   internalFolio     String?                @unique
   invoiceId         String?
+  purchaseOrderId   String?
   files             File[]
   images            Image[]                @relation("InventoryImages")
   createdBy         User                   @relation(fields: [createdById], references: [id])
   invoice           Invoice?               @relation("InvoiceInventories", fields: [invoiceId], references: [id])
+  purchaseOrder     PurchaseOrder?         @relation("PurchaseOrderInventories", fields: [purchaseOrderId], references: [id])
   model             Model                  @relation(fields: [modelId], references: [id])
   conditions        InventoryCondition[]
   customField       InventoryCustomField[]
@@ -85,6 +87,7 @@ model Inventory {
   @@index([createdById], map: "Inventory_createdById_fkey")
   @@index([modelId], map: "Inventory_modelId_fkey")
   @@index([invoiceId], map: "Inventory_invoiceId_fkey")
+  @@index([purchaseOrderId], map: "Inventory_purchaseOrderId_fkey")
 }
 
 model InventoryType {
@@ -207,42 +210,41 @@ model InventoryDeadline {
 }
 
 model PurchaseOrder {
-  id          String    @id @default(uuid())
-  code        String    @unique
+  id          String      @id @default(uuid())
+  code        String      
   supplier    String?
-  description String?   @db.Text
-  amount      Float?
-  status      String
-  date        DateTime?
+  description String?     @db.Text
   projectId   String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  enabled     Boolean   @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  enabled     Boolean     @default(true)
   createdById String
   invoices    Invoice[]
-  project     Project?  @relation(fields: [projectId], references: [id])
+  project     Project?    @relation(fields: [projectId], references: [id])
+  inventories Inventory[] @relation("PurchaseOrderInventories")
 
   @@index([projectId], map: "PurchaseOrder_projectId_fkey")
+  @@unique([code, enabled])
+
 }
 
 model Invoice {
-  id              String    @id @default(uuid())
-  code            String
+  id              String         @id @default(uuid())
+  code            String         
   concept         String
-  amount          Float
-  status          String
-  date            DateTime
-  fileUrl         String?       @db.Text
-  purchaseOrderId String
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  enabled         Boolean       @default(true)
+  fileUrl         String?        @db.Text
+  // Hacer purchaseOrderId opcional para mayor flexibilidad
+  purchaseOrderId String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  enabled         Boolean        @default(true)
   createdById     String
-  xmlUrl          String?       @db.Text
-  inventories     Inventory[]   @relation("InvoiceInventories")
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  xmlUrl          String?        @db.Text
+  inventories     Inventory[]    @relation("InvoiceInventories")
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
 
   @@index([purchaseOrderId], map: "Invoice_purchaseOrderId_fkey")
+  @@unique([code, enabled])
 }
 
 model ProjectMember {

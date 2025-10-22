@@ -44,3 +44,52 @@ export const removeInventoryFromInvoice = (orderId, invoiceId, inventoryId) =>
 // 🔍 Buscar facturas por orden de compra (incluye filtros y paginación)
 export const searchInvoicesByOrderId = (orderId, params) =>
   api.get(`/purchase-orders/${orderId}/invoices/search`, { params });
+
+// ===============================================
+// 🆕 FACTURAS INDEPENDIENTES (SIN ORDEN DE COMPRA)
+// ===============================================
+
+// 📄 Obtener todas las facturas independientes
+export const getIndependentInvoices = () => api.get('/invoices');
+
+// 🔍 Buscar facturas independientes
+export const searchIndependentInvoices = (params) =>
+  api.get('/invoices/search', { params });
+
+// ➕ Crear factura independiente (PDF/XML)
+export const createIndependentInvoice = (formData) =>
+  api.post('/invoices', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+// 🔍 Obtener detalle de factura independiente por ID
+export const getIndependentInvoiceById = (invoiceId) =>
+  api.get(`/invoices/${invoiceId}`);
+
+// ✏️ Actualizar factura independiente (PDF/XML)
+export const updateIndependentInvoice = (invoiceId, formData) =>
+  api.put(`/invoices/${invoiceId}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+// 🗑️ Eliminar factura independiente
+export const deleteIndependentInvoice = (invoiceId) =>
+  api.delete(`/invoices/${invoiceId}`);
+
+// 📦 Obtener inventarios de una factura independiente
+export const getInventoriesByIndependentInvoice = (invoiceId) =>
+  api.get(`/invoices/${invoiceId}/inventories`);
+
+// ⚙️ Asignar inventarios a factura independiente
+export const assignInventoriesToIndependentInvoice = (
+  invoiceId,
+  inventoryIds,
+) => api.post(`/invoices/${invoiceId}/inventories`, { inventoryIds });
+
+// 🛠️ Desasignar inventario de factura independiente
+export const removeInventoryFromIndependentInvoice = (invoiceId, inventoryId) =>
+  api.delete(`/invoices/${invoiceId}/inventories/${inventoryId}`);
+
+// 🔍 Buscar TODAS las facturas (independientes + con orden de compra)
+export const searchAllInvoices = (params) =>
+  api.get('/invoices/search', { params });

@@ -96,7 +96,7 @@ const BreadcrumbsBuilder = (path) => {
     },
     {
       label: 'Facturas',
-      href: '/purchase-orders/invoices',
+      href: '/invoices',
       icon: FaFileInvoice,
     },
     {

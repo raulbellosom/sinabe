@@ -19,6 +19,10 @@ export const useInventoryQueryParams = () => {
       advancedSearch: params.get('advancedSearch') === 'true',
       mainViewMode: params.get('mainViewMode') || 'table',
       verticalId: params.getAll('verticalId'),
+      invoiceId: params.get('invoiceId') || null,
+      purchaseOrderId: params.get('purchaseOrderId') || null,
+      invoiceCode: params.get('invoiceCode') || null,
+      purchaseOrderCode: params.get('purchaseOrderCode') || null,
     };
   }, [location.search]);
 
@@ -46,6 +50,10 @@ export const useInventoryQueryParams = () => {
         'order',
         'advancedSearch',
         'mainViewMode',
+        'invoiceId',
+        'purchaseOrderId',
+        'invoiceCode',
+        'purchaseOrderCode',
       ].forEach((key) => {
         const newValue =
           newParams[key] !== undefined

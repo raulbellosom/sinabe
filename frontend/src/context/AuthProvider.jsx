@@ -24,18 +24,31 @@ const AuthProvider = ({ children }) => {
     const verifyToken = async () => {
       try {
         const token = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+
         if (!token) {
+          // Limpiar cualquier dato almacenado y marcar como no autenticado
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
           dispatch({ type: 'AUTH_ERROR' });
           return;
         }
 
+        // Si hay token, intentar verificar el usuario
         const user = await loadUser();
         if (user) {
           dispatch({ type: 'LOAD_USER', payload: user });
         } else {
+          // Token inválido, limpiar datos
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
           dispatch({ type: 'AUTH_ERROR' });
         }
       } catch (error) {
+        console.warn('Error during token verification:', error);
+        // Error de verificación, limpiar datos
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
         dispatch({ type: 'AUTH_ERROR' });
       }
     };

@@ -1,27 +1,8 @@
 // controllers/invoiceController.js
 import { db } from "../lib/db.js";
 
-const updatePurchaseOrderAmount = async (purchaseOrderId) => {
-  const total = await db.invoice.aggregate({
-    where: {
-      purchaseOrderId,
-      enabled: true,
-      status: {
-        in: ["PAGADA", "PENDIENTE"], // solo estas suman
-      },
-    },
-    _sum: {
-      amount: true,
-    },
-  });
-
-  await db.purchaseOrder.update({
-    where: { id: purchaseOrderId },
-    data: {
-      amount: total._sum.amount || 0,
-    },
-  });
-};
+// Función removida: updatePurchaseOrderAmount
+// Ya no necesitamos calcular montos en las órdenes de compra
 
 // 📄 Obtener facturas de una orden de compra
 export const getInvoicesByOrderId = async (req, res) => {
@@ -69,7 +50,7 @@ export const getInvoiceById = async (req, res) => {
 // ➕ Crear nueva factura (con PDF y XML opcionales)
 export const createInvoice = async (req, res) => {
   const { orderId } = req.params;
-  const { code, concept, amount, status, date } = req.body;
+  const { code, concept } = req.body;
   const { pdfUrl: fileUrl = null, xmlUrl = null } = req.invoiceData || {};
 
   try {
@@ -77,12 +58,9 @@ export const createInvoice = async (req, res) => {
       data: {
         code,
         concept,
-        amount: parseFloat(amount),
-        status,
-        date: new Date(date),
         fileUrl,
         xmlUrl,
-        purchaseOrderId: orderId,
+        purchaseOrderId: orderId || null, // Hacer opcional
         createdById: req.user.id,
         enabled: true,
       },
@@ -91,8 +69,6 @@ export const createInvoice = async (req, res) => {
         purchaseOrder: true,
       },
     });
-
-    await updatePurchaseOrderAmount(orderId);
 
     res.status(201).json(invoice);
   } catch (error) {
@@ -104,7 +80,7 @@ export const createInvoice = async (req, res) => {
 // ✏️ Actualizar factura (campos y archivos)
 export const updateInvoice = async (req, res) => {
   const { invoiceId } = req.params;
-  const { code, concept, amount, status, date } = req.body;
+  const { code, concept } = req.body;
   const { pdfUrl: fileUrl, xmlUrl } = req.invoiceData || {};
 
   try {
@@ -113,9 +89,6 @@ export const updateInvoice = async (req, res) => {
       data: {
         code,
         concept,
-        amount: parseFloat(amount),
-        status,
-        date: new Date(date),
         ...(fileUrl && { fileUrl }),
         ...(xmlUrl && { xmlUrl }),
       },
@@ -124,8 +97,6 @@ export const updateInvoice = async (req, res) => {
         purchaseOrder: true,
       },
     });
-
-    await updatePurchaseOrderAmount(invoice.purchaseOrderId);
 
     res.json(invoice);
   } catch (error) {
@@ -139,12 +110,10 @@ export const deleteInvoice = async (req, res) => {
   const { invoiceId } = req.params;
 
   try {
-    const invoice = await db.invoice.update({
+    await db.invoice.update({
       where: { id: invoiceId },
       data: { enabled: false },
     });
-
-    await updatePurchaseOrderAmount(invoice.purchaseOrderId);
 
     res.status(204).end();
   } catch (error) {
@@ -219,7 +188,7 @@ export const searchInvoicesByOrderId = async (req, res) => {
     searchTerm = "",
     page = 1,
     pageSize = 10,
-    sortBy = "date", // 👈 nuevo
+    sortBy = "createdAt", // 👈 corregido
     order = "desc", // 👈 nuevo
   } = req.query;
 
@@ -252,10 +221,10 @@ export const searchInvoicesByOrderId = async (req, res) => {
   };
 
   // Validar sortBy y order por seguridad
-  const validSortFields = ["date", "amount", "code", "concept"];
+  const validSortFields = ["createdAt", "updatedAt", "code", "concept"];
   const validOrders = ["asc", "desc"];
 
-  const sortField = validSortFields.includes(sortBy) ? sortBy : "date";
+  const sortField = validSortFields.includes(sortBy) ? sortBy : "createdAt";
   const sortOrder = validOrders.includes(order.toLowerCase())
     ? order.toLowerCase()
     : "desc";
@@ -293,6 +262,189 @@ export const searchInvoicesByOrderId = async (req, res) => {
     });
   } catch (error) {
     console.error("Error searching invoices:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ➕ Crear factura independiente (sin orden de compra)
+export const createIndependentInvoice = async (req, res) => {
+  const { code, concept } = req.body;
+
+  try {
+    const invoice = await db.invoice.create({
+      data: {
+        code,
+        concept,
+        purchaseOrderId: null, // Factura independiente
+        fileUrl: req.processedFiles?.factura?.[0]?.url || null,
+        xmlUrl: req.processedFiles?.xml?.[0]?.url || null,
+        enabled: true,
+        createdById: req.user.id,
+      },
+    });
+
+    res.status(201).json(invoice);
+  } catch (error) {
+    console.error("Error creating independent invoice:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔍 Obtener todas las facturas independientes (sin orden de compra)
+export const getIndependentInvoices = async (req, res) => {
+  try {
+    const invoices = await db.invoice.findMany({
+      where: {
+        purchaseOrderId: null, // Solo facturas independientes
+        enabled: true,
+      },
+      include: {
+        inventories: {
+          include: {
+            model: {
+              include: {
+                brand: true,
+                type: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json(invoices);
+  } catch (error) {
+    console.error("Error getting independent invoices:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔎 Buscar facturas independientes
+export const searchIndependentInvoices = async (req, res) => {
+  const {
+    searchTerm = "",
+    page = 1,
+    pageSize = 10,
+    sortBy = "createdAt",
+    order = "desc",
+  } = req.query;
+
+  const parsedPage = parseInt(page, 10) || 1;
+  const parsedPageSize = parseInt(pageSize, 10) || 10;
+  const skip = (parsedPage - 1) * parsedPageSize;
+  const take = parsedPageSize;
+
+  const where = {
+    purchaseOrderId: null, // Solo facturas independientes
+    enabled: true,
+    ...(searchTerm && {
+      OR: [
+        { code: { contains: searchTerm } },
+        { concept: { contains: searchTerm } },
+      ],
+    }),
+  };
+
+  try {
+    const [invoices, totalCount] = await Promise.all([
+      db.invoice.findMany({
+        where,
+        include: {
+          inventories: {
+            include: {
+              model: {
+                include: {
+                  brand: true,
+                  type: true,
+                },
+              },
+            },
+          },
+        },
+        skip,
+        take,
+        orderBy: { [sortBy]: order },
+      }),
+      db.invoice.count({ where }),
+    ]);
+
+    res.json({
+      data: invoices,
+      pagination: {
+        currentPage: parsedPage,
+        totalPages: Math.ceil(totalCount / take),
+        totalRecords: totalCount,
+        pageSize: take,
+      },
+    });
+  } catch (error) {
+    console.error("Error searching independent invoices:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔍 Buscar TODAS las facturas (independientes + con orden de compra)
+export const searchAllInvoices = async (req, res) => {
+  const {
+    searchTerm = "",
+    page = 1,
+    pageSize = 10,
+    sortBy = "createdAt",
+    order = "desc",
+  } = req.query;
+
+  const parsedPage = parseInt(page, 10) || 1;
+  const parsedPageSize = parseInt(pageSize, 10) || 10;
+  const skip = (parsedPage - 1) * parsedPageSize;
+  const take = parsedPageSize;
+
+  const where = {
+    enabled: true, // Buscar todas las facturas habilitadas (con y sin OC)
+    ...(searchTerm && {
+      OR: [
+        { code: { contains: searchTerm } },
+        { concept: { contains: searchTerm } },
+        { purchaseOrder: { code: { contains: searchTerm } } }, // También buscar por código de OC
+      ],
+    }),
+  };
+
+  try {
+    const [invoices, totalCount] = await Promise.all([
+      db.invoice.findMany({
+        where,
+        include: {
+          inventories: {
+            include: {
+              model: {
+                include: {
+                  brand: true,
+                  type: true,
+                },
+              },
+            },
+          },
+          purchaseOrder: true, // Incluir la orden de compra si existe
+        },
+        skip,
+        take,
+        orderBy: { [sortBy]: order },
+      }),
+      db.invoice.count({ where }),
+    ]);
+
+    res.json({
+      data: invoices,
+      pagination: {
+        currentPage: parsedPage,
+        totalPages: Math.ceil(totalCount / take),
+        totalRecords: totalCount,
+        pageSize: take,
+      },
+    });
+  } catch (error) {
+    console.error("Error searching all invoices:", error.message);
     res.status(500).json({ error: error.message });
   }
 };

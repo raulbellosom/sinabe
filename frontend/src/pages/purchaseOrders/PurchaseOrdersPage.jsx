@@ -1,6 +1,6 @@
 // pages/PurchaseOrdersPage.jsx
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   FaFileInvoice,
   FaTrashAlt,
@@ -8,35 +8,48 @@ import {
   FaUnlink,
   FaSearch,
   FaClipboardList,
+  FaExternalLinkAlt,
 } from 'react-icons/fa';
+import { MdInventory } from 'react-icons/md';
 import ReusableTable from '../../components/Table/ReusableTable';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import {
   useSearchPurchaseOrders,
   useRemovePurchaseOrderFromProject,
+  useDeletePurchaseOrder,
 } from '../../hooks/usePurchaseOrders';
 import { PurchaseOrderFormModal } from '../../components/ProjectDetails/PO/PurchaseOrderModals';
 import { parseToLocalDate } from '../../utils/formatValues';
 import { useProjectQueryParams } from '../../hooks/useProjectQueryParams';
-import { Badge } from 'flowbite-react';
+import { Badge, Button } from 'flowbite-react';
+import { useQueryClient } from '@tanstack/react-query';
 import ConfirmRemovePurchaseOrderModal from '../../components/ProjectDetails/PO/ConfirmRemovePurchaseOrderModal';
+import ConfirmModal from '../../components/Modals/ConfirmModal';
 import Notifies from '../../components/Notifies/Notifies';
-
-const statusColors = {
-  PLANIFICACION: 'gray',
-  EN_EJECUCION: 'blue',
-  EN_REVISION: 'yellow',
-  FINALIZADO: 'green',
-  CANCELADO: 'red',
-};
 
 const PurchaseOrdersPage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isLogicalDeleteModalOpen, setIsLogicalDeleteModalOpen] =
+    useState(false);
+
+  // Leer parámetros de búsqueda de URL
+  const urlSearch = searchParams.get('search') || '';
   const { query, updateParams } = useProjectQueryParams();
-  const { data = [], isLoading } = useSearchPurchaseOrders(null, query);
+
+  // Si hay un parámetro de búsqueda en URL, usarlo
+  const searchQuery = useMemo(
+    () => ({
+      ...query,
+      searchTerm: urlSearch || query.searchTerm,
+    }),
+    [query, urlSearch],
+  );
+
+  const { data = [], isLoading } = useSearchPurchaseOrders(null, searchQuery);
   const orders = data?.data || [];
   const pagination = data?.pagination || {
     currentPage: 1,
@@ -46,6 +59,8 @@ const PurchaseOrdersPage = () => {
   };
 
   const removePOFromProject = useRemovePurchaseOrderFromProject();
+  const deletePO = useDeletePurchaseOrder();
+  const queryClient = useQueryClient();
 
   // Función para manejar la remoción de OC del proyecto
   const handleRemovePOFromProject = async (order) => {
@@ -64,11 +79,26 @@ const PurchaseOrdersPage = () => {
     }
   };
 
+  // Función para manejar la eliminación lógica de OC
+  const handleDeletePO = async () => {
+    if (!selectedOrder) return;
+
+    try {
+      await deletePO.mutateAsync(selectedOrder.id);
+      Notifies('success', 'Orden de compra eliminada exitosamente');
+      setIsLogicalDeleteModalOpen(false);
+      setSelectedOrder(null);
+    } catch (error) {
+      console.error('Error eliminando orden de compra:', error);
+      Notifies('error', 'Error eliminando la orden de compra');
+    }
+  };
+
   const columns = useMemo(
     () => [
       {
         key: 'code',
-        title: 'Orden de compra',
+        title: 'Código',
         sortable: true,
         render: (code) => (
           <span className="text-nowrap font-semibold">{code}</span>
@@ -78,31 +108,15 @@ const PurchaseOrdersPage = () => {
         key: 'supplier',
         title: 'Proveedor',
         sortable: true,
+        render: (supplier) =>
+          supplier || <span className="text-gray-400 italic">—</span>,
       },
       {
-        key: 'status',
-        title: 'Estado',
+        key: 'description',
+        title: 'Descripción',
         sortable: true,
-        render: (status) => (
-          <Badge
-            color={statusColors[status] || 'gray'}
-            className="uppercase px-2 py-1"
-          >
-            {status.replace('_', ' ')}
-          </Badge>
-        ),
-      },
-      {
-        key: 'date',
-        title: 'Fecha',
-        sortable: true,
-        render: (date) => parseToLocalDate(date, 'es-MX'),
-      },
-      {
-        key: 'amount',
-        title: 'Monto',
-        sortable: true,
-        render: (amt) => `$${amt.toLocaleString('es-MX')}`,
+        render: (description) =>
+          description || <span className="text-gray-400 italic">—</span>,
       },
       {
         key: 'project.name',
@@ -116,21 +130,60 @@ const PurchaseOrdersPage = () => {
               {row.project.name}
             </a>
           ) : (
-            <span className="text-gray-400 italic">—</span>
+            <span className="text-gray-400 italic text-nowrap">—</span>
           ),
       },
       {
         key: 'invoices',
         title: 'Facturas',
-        render: (_, row) => (
-          <Badge
-            size="sm"
-            color="purple"
-            className="text-center flex justify-center items-center"
-          >
-            {row.invoices?.length || 0}
-          </Badge>
-        ),
+        render: (_, row) => {
+          const invoiceCount = row.invoices?.length || 0;
+          return invoiceCount > 0 ? (
+            <button
+              onClick={() =>
+                navigate(`/invoices?search=${encodeURIComponent(row.code)}`)
+              }
+              className="inline-flex items-center gap-1 text-purple-600 hover:text-purple-800 hover:underline transition-colors text-sm font-medium whitespace-nowrap"
+            >
+              <FaExternalLinkAlt size={12} />
+              {invoiceCount} Factura{invoiceCount !== 1 ? 's' : ''}
+            </button>
+          ) : (
+            <Badge className="whitespace-nowrap" color="gray">
+              0 Facturas
+            </Badge>
+          );
+        },
+      },
+      {
+        key: 'inventories',
+        title: 'Inventarios',
+        render: (_, row) => {
+          const inventoryCount = row.inventories?.length || 0;
+          return inventoryCount > 0 ? (
+            <button
+              onClick={() =>
+                navigate(
+                  `/inventories?purchaseOrderCode=${encodeURIComponent(row.code)}`,
+                )
+              }
+              className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 hover:underline transition-colors text-sm font-medium whitespace-nowrap"
+            >
+              <MdInventory size={14} />
+              {inventoryCount} Inventario{inventoryCount !== 1 ? 's' : ''}
+            </button>
+          ) : (
+            <Badge className="whitespace-nowrap" color="gray">
+              0 Inventarios
+            </Badge>
+          );
+        },
+      },
+      {
+        key: 'createdAt',
+        title: 'Fecha creación',
+        sortable: true,
+        render: (createdAt) => parseToLocalDate(createdAt, 'es-MX'),
       },
       { key: 'actions', title: 'Acciones' },
     ],
@@ -165,11 +218,19 @@ const PurchaseOrdersPage = () => {
       {/* 🔎 Input de búsqueda */}
       <div className="relative max-w-md">
         <input
-          type="text"
-          defaultValue={query.searchTerm}
-          onChange={(e) =>
-            updateParams({ searchTerm: e.target.value, page: 1 })
-          }
+          type="search"
+          value={urlSearch || query.searchTerm || ''}
+          onChange={(e) => {
+            const value = e.target.value;
+            // Limpiar parámetro de URL si existe
+            if (urlSearch) {
+              const newParams = new URLSearchParams(searchParams);
+              newParams.delete('search');
+              setSearchParams(newParams);
+            }
+            // Actualizar búsqueda normal
+            updateParams({ searchTerm: value, page: 1 });
+          }}
           placeholder="Buscar órdenes, proveedor, facturas..."
           className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-4 focus:outline-none focus:ring focus:border-blue-500"
         />
@@ -199,19 +260,21 @@ const PurchaseOrdersPage = () => {
         onPageSizeChange={(size) => updateParams({ pageSize: size })}
         rowActions={(order) => [
           {
-            key: 'main',
-            icon: FaFileInvoice,
-            label: 'Facturas',
-            color: 'purple',
-            action: () => navigate(`/purchase-orders/${order.id}/invoices`),
-          },
-          {
             key: 'edit',
             icon: FaEdit,
             label: 'Editar',
             action: () => {
               setSelectedOrder(order);
               setIsModalOpen(true);
+            },
+          },
+          {
+            key: 'delete',
+            icon: FaTrashAlt,
+            label: 'Eliminar',
+            action: () => {
+              setSelectedOrder(order);
+              setIsLogicalDeleteModalOpen(true);
             },
           },
           ...(order.projectId
@@ -236,6 +299,7 @@ const PurchaseOrdersPage = () => {
       />
 
       <PurchaseOrderFormModal
+        projectId={null}
         order={selectedOrder}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -254,6 +318,18 @@ const PurchaseOrdersPage = () => {
             setSelectedOrder(null);
           }
         }}
+      />
+
+      <ConfirmModal
+        isOpen={isLogicalDeleteModalOpen}
+        onClose={() => {
+          setIsLogicalDeleteModalOpen(false);
+          setSelectedOrder(null);
+        }}
+        onConfirm={handleDeletePO}
+        title="Eliminar Orden de Compra"
+        message={`¿Estás seguro de que deseas eliminar la orden de compra ${selectedOrder?.code}? Esta acción no se puede deshacer.`}
+        isLoading={deletePO.isLoading}
       />
     </section>
   );

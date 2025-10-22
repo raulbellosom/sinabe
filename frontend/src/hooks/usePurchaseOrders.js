@@ -11,6 +11,10 @@ import {
   createPurchaseOrderWithoutProject,
   getUnassignedPurchaseOrders,
   searchUnassignedPurchaseOrders,
+  // 🆕 Gestión de inventarios
+  getInventoriesByPurchaseOrder,
+  assignInventoriesToPurchaseOrder,
+  removeInventoryFromPurchaseOrder,
 } from '../services/purchaseOrders.api';
 
 // 📦 Obtener órdenes de compra de un proyecto
@@ -40,6 +44,10 @@ export const useCreatePurchaseOrder = (projectId) => {
       queryClient.invalidateQueries({
         queryKey: ['purchase-orders', projectId],
       });
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+      queryClient.invalidateQueries({
+        queryKey: ['purchase-orders', 'without-project'],
+      });
     },
   });
 };
@@ -52,6 +60,10 @@ export const useUpdatePurchaseOrder = (projectId) => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['purchase-orders', projectId],
+      });
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+      queryClient.invalidateQueries({
+        queryKey: ['purchase-orders', 'without-project'],
       });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['project-search'] });
@@ -72,6 +84,10 @@ export const useDeletePurchaseOrder = (projectId) => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['purchase-orders', projectId],
+      });
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+      queryClient.invalidateQueries({
+        queryKey: ['purchase-orders', 'without-project'],
       });
     },
   });
@@ -138,6 +154,9 @@ export const useCreatePurchaseOrderWithoutProject = () => {
     mutationFn: (data) => createPurchaseOrderWithoutProject(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+      queryClient.invalidateQueries({
+        queryKey: ['purchase-orders', 'without-project'],
+      });
     },
   });
 };
@@ -159,6 +178,53 @@ export const useSearchUnassignedPurchaseOrders = () => {
     mutationFn: async (query) => {
       const { data } = await searchUnassignedPurchaseOrders(query);
       return data;
+    },
+  });
+};
+
+// ===============================================
+// 🆕 HOOKS PARA INVENTARIOS EN ÓRDENES DE COMPRA
+// ===============================================
+
+// 📦 Obtener inventarios asignados a una orden de compra
+export const usePurchaseOrderInventories = (orderId) =>
+  useQuery({
+    queryKey: ['purchase-order-inventories', orderId],
+    queryFn: () =>
+      getInventoriesByPurchaseOrder(orderId).then((res) => res.data),
+    enabled: !!orderId,
+  });
+
+// ⚙️ Asignar inventarios a orden de compra
+export const useAssignInventoriesToPurchaseOrder = (orderId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (inventoryIds) =>
+      assignInventoriesToPurchaseOrder(orderId, inventoryIds),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: ['purchase-order-inventories', orderId],
+      });
+      qc.invalidateQueries({ queryKey: ['purchase-orders'] });
+      // Invalidar inventarios para que se actualice su estado de asignación
+      qc.invalidateQueries({ queryKey: ['inventories'] });
+    },
+  });
+};
+
+// 🛠️ Desasignar inventario de orden de compra
+export const useRemoveInventoryFromPurchaseOrder = (orderId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (inventoryId) =>
+      removeInventoryFromPurchaseOrder(orderId, inventoryId),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: ['purchase-order-inventories', orderId],
+      });
+      qc.invalidateQueries({ queryKey: ['purchase-orders'] });
+      // Invalidar inventarios para que se actualice su estado de asignación
+      qc.invalidateQueries({ queryKey: ['inventories'] });
     },
   });
 };

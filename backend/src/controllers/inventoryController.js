@@ -164,6 +164,9 @@ export const getInventoryById = async (req, res) => {
             },
           },
         },
+        purchaseOrder: {
+          include: { project: true },
+        },
         InventoryDeadline: {
           include: {
             deadline: {
@@ -856,10 +859,11 @@ export const searchInventories = async (req, res) => {
         OR: [
           { InventoryDeadline: { some: { deadline: { projectId } } } },
           { invoice: { purchaseOrder: { projectId } } },
+          { purchaseOrder: { projectId } },
         ],
       }),
       ...(purchaseOrderId && {
-        invoice: { purchaseOrderId },
+        OR: [{ purchaseOrderId }, { invoice: { purchaseOrderId } }],
       }),
       ...(invoiceId && { invoiceId }),
       ...(verticalIdsInt.length > 0 && {
@@ -925,10 +929,20 @@ export const searchInventories = async (req, res) => {
           },
         },
         {
+          purchaseOrder: {
+            code: { contains: term },
+          },
+        },
+        {
           invoice: {
             purchaseOrder: {
               supplier: { contains: term },
             },
+          },
+        },
+        {
+          purchaseOrder: {
+            supplier: { contains: term },
           },
         },
 
@@ -942,6 +956,13 @@ export const searchInventories = async (req, res) => {
                   { name: { contains: term } },
                 ],
               },
+            },
+          },
+        },
+        {
+          purchaseOrder: {
+            project: {
+              OR: [{ code: { contains: term } }, { name: { contains: term } }],
             },
           },
         },
@@ -1034,6 +1055,9 @@ export const searchInventories = async (req, res) => {
             include: { project: true },
           },
         },
+      },
+      purchaseOrder: {
+        include: { project: true },
       },
       InventoryDeadline: {
         include: {

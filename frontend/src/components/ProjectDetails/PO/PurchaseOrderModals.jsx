@@ -13,11 +13,9 @@ import {
 
 // Validación de formulario de Orden de Compra
 const PurchaseOrderSchema = Yup.object({
-  code: Yup.string().required('Orden de compra es requerido'),
+  code: Yup.string().required('Código es requerido'),
   supplier: Yup.string(),
   description: Yup.string(),
-  status: Yup.string().required('Estado es requerido'),
-  date: Yup.date().typeError('Fecha inválida'),
 });
 
 export const PurchaseOrderFormModal = ({
@@ -35,8 +33,6 @@ export const PurchaseOrderFormModal = ({
     code: order?.code || '',
     supplier: order?.supplier || '',
     description: order?.description || '',
-    status: order?.status || 'PLANIFICACION',
-    date: order ? order.date.slice(0, 10) : '',
   };
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
@@ -91,16 +87,17 @@ export const PurchaseOrderFormModal = ({
       >
         {({ isSubmitting }) => (
           <Form className="space-y-6">
-            {/* Primera fila */}
+            {/* Campos principales */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="mb-1 text-sm font-medium">
-                  Orden de compra
+                  Código <span className="text-red-500">*</span>
                 </label>
                 <Field
                   name="code"
                   type="text"
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+                  placeholder="Ingrese el código de la orden"
                 />
                 <ErrorMessage
                   name="code"
@@ -114,42 +111,10 @@ export const PurchaseOrderFormModal = ({
                   name="supplier"
                   type="text"
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+                  placeholder="Ingrese el nombre del proveedor"
                 />
                 <ErrorMessage
                   name="supplier"
-                  component="div"
-                  className="text-red-600 text-sm mt-1"
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="mb-1 text-sm font-medium">Estado</label>
-                <Field
-                  as="select"
-                  name="status"
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
-                >
-                  <option value="PLANIFICACION">Planificación</option>
-                  <option value="EN_REVISION">En Revisión</option>
-                  <option value="EN_EJECUCION">En Ejecución</option>
-                  <option value="FINALIZADO">Finalizado</option>
-                  <option value="CANCELADO">Cancelado</option>
-                </Field>
-                <ErrorMessage
-                  name="status"
-                  component="div"
-                  className="text-red-600 text-sm mt-1"
-                />
-              </div>
-              {/* Fecha */}
-              <div className="flex flex-col">
-                <label className="mb-1 text-sm font-medium">Fecha</label>
-                <Field
-                  name="date"
-                  type="date"
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
-                />
-                <ErrorMessage
-                  name="date"
                   component="div"
                   className="text-red-600 text-sm mt-1"
                 />
