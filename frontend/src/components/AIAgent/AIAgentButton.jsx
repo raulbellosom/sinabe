@@ -19,8 +19,8 @@ const AIAgentButton = ({ className = '' }) => {
   };
 
   const getIcon = () => {
-    if (!isHealthy) return <HiExclamationCircle className="text-lg" />;
-    return <HiSparkles className="text-lg" />;
+    if (!isHealthy) return <HiExclamationCircle className="w-5 h-5" />;
+    return <HiSparkles className="w-5 h-5" />;
   };
 
   return (
@@ -44,10 +44,12 @@ const AIAgentButton = ({ className = '' }) => {
         style={{
           borderStyle: 'none',
           minWidth: '40px',
-          padding: '0',
+          padding: '8px',
         }}
       >
-        {getIcon()}
+        <div className="flex items-center justify-center w-full h-full">
+          {getIcon()}
+        </div>
       </Button>
     </Tooltip>
   );

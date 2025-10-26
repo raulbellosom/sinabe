@@ -14,18 +14,30 @@ const AIModelSpecs = ({ item, specs, onClose }) => {
 
   // Format specs text for better display
   const formatSpecs = (specsText) => {
-    if (!specsText) return [];
+    if (!specsText) return { type: 'none', content: [] };
 
-    return specsText
-      .split('\n')
-      .filter((line) => line.trim())
-      .map((line) => line.trim());
+    // Check if it's a structured list (with * or - bullets)
+    if (specsText.includes('*') || specsText.includes('- ')) {
+      const lines = specsText
+        .split('\n')
+        .filter((line) => line.trim())
+        .map((line) => line.trim());
+      return { type: 'list', content: lines };
+    }
+
+    // If it's a paragraph, split by sections or double newlines
+    const sections = specsText
+      .split(/\n\s*\n/)
+      .filter((section) => section.trim())
+      .map((section) => section.trim());
+
+    return { type: 'paragraphs', content: sections };
   };
 
   const formattedSpecs = formatSpecs(specs?.specs);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[60] p-4">
       <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-start pb-4 mb-4 border-b border-gray-200">
@@ -121,23 +133,73 @@ const AIModelSpecs = ({ item, specs, onClose }) => {
               </h4>
 
               <div className="bg-white border border-gray-200 rounded-lg p-4">
-                {formattedSpecs.length > 0 ? (
+                {formattedSpecs.type === 'list' ? (
                   <ul className="space-y-2">
-                    {formattedSpecs.map((spec, index) => (
+                    {formattedSpecs.content.map((spec, index) => (
                       <li
                         key={index}
                         className="flex items-start gap-2 text-sm"
                       >
                         <span className="text-purple-500 mt-1">•</span>
                         <span className="text-gray-700">
-                          {spec.replace(/^-\s*/, '')}
+                          {spec.replace(/^[*\-]\s*/, '')}
                         </span>
                       </li>
                     ))}
                   </ul>
+                ) : formattedSpecs.type === 'paragraphs' ? (
+                  <div className="space-y-4">
+                    {formattedSpecs.content.map((paragraph, index) => (
+                      <div key={index} className="text-sm text-gray-700">
+                        {paragraph.split('\n').map((line, lineIndex) => {
+                          // Handle bold formatting **text**
+                          const formattedLine = line.replace(
+                            /\*\*(.+?)\*\*/g,
+                            '<strong>$1</strong>',
+                          );
+
+                          if (formattedLine.includes('<strong>')) {
+                            const parts = formattedLine.split(
+                              /(<strong>.*?<\/strong>)/,
+                            );
+                            return (
+                              <p key={lineIndex} className="mb-2 last:mb-0">
+                                {parts.map((part, partIndex) => {
+                                  if (
+                                    part.startsWith('<strong>') &&
+                                    part.endsWith('</strong>')
+                                  ) {
+                                    const boldText = part.replace(
+                                      /<\/?strong>/g,
+                                      '',
+                                    );
+                                    return (
+                                      <strong
+                                        key={partIndex}
+                                        className="font-semibold text-gray-900"
+                                      >
+                                        {boldText}
+                                      </strong>
+                                    );
+                                  }
+                                  return <span key={partIndex}>{part}</span>;
+                                })}
+                              </p>
+                            );
+                          }
+
+                          return (
+                            <p key={lineIndex} className="mb-2 last:mb-0">
+                              {line}
+                            </p>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <p className="text-gray-600 italic">
-                    {specs.specs ||
+                    {specs?.specs ||
                       'No se pudieron generar especificaciones para este modelo.'}
                   </p>
                 )}

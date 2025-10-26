@@ -96,42 +96,70 @@ const AIResultCard = ({
 
           <Badge color={getStatusColor(result.status)}>{result.status}</Badge>
         </div>
-
         {/* Key Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           <div className="flex items-center gap-2">
-            <HiHashtag className="text-gray-400" />
+            <HiHashtag className="text-gray-400 flex-shrink-0" />
             <span className="font-medium">Serial:</span>
-            <span className="font-mono bg-gray-100 px-2 py-1 rounded">
+            <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">
               {result.serialNumber}
             </span>
           </div>
 
           {result.activeNumber && (
             <div className="flex items-center gap-2">
-              <HiCube className="text-gray-400" />
+              <HiCube className="text-gray-400 flex-shrink-0" />
               <span className="font-medium">No. Activo:</span>
-              <span>{result.activeNumber}</span>
+              <span className="font-mono text-purple-600">
+                {result.activeNumber}
+              </span>
             </div>
           )}
 
           {result.receptionDate && (
             <div className="flex items-center gap-2">
-              <HiCalendar className="text-gray-400" />
-              <span className="font-medium">Fecha recepción:</span>
+              <HiCalendar className="text-gray-400 flex-shrink-0" />
+              <span className="font-medium">Recepción:</span>
               <span>{formatDate(result.receptionDate)}</span>
+            </div>
+          )}
+
+          {result.createdAt && (
+            <div className="flex items-center gap-2">
+              <HiCalendar className="text-blue-400 flex-shrink-0" />
+              <span className="font-medium">Creado:</span>
+              <span>{formatDate(result.createdAt)}</span>
+            </div>
+          )}
+
+          {result.internalFolio && (
+            <div className="flex items-center gap-2">
+              <HiDocument className="text-green-400 flex-shrink-0" />
+              <span className="font-medium">Folio Interno:</span>
+              <span className="font-mono text-green-600">
+                {result.internalFolio}
+              </span>
             </div>
           )}
 
           {customFields.Ubicación && (
             <div className="flex items-center gap-2">
-              <HiLocationMarker className="text-gray-400" />
+              <HiLocationMarker className="text-red-400 flex-shrink-0" />
               <span className="font-medium">Ubicación:</span>
               <span>{customFields.Ubicación}</span>
             </div>
           )}
-        </div>
 
+          {customFields.Cantidad && (
+            <div className="flex items-center gap-2">
+              <HiCube className="text-indigo-400 flex-shrink-0" />
+              <span className="font-medium">Cantidad:</span>
+              <span className="font-semibold text-indigo-600">
+                {customFields.Cantidad}
+              </span>
+            </div>
+          )}
+        </div>{' '}
         {/* Purchase Information */}
         {(result.invoiceCode || result.purchaseOrderCode) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm bg-gray-50 p-3 rounded">
@@ -159,7 +187,6 @@ const AIResultCard = ({
             )}
           </div>
         )}
-
         {/* Comments */}
         {result.comments && (
           <div className="text-sm">
@@ -169,27 +196,26 @@ const AIResultCard = ({
             </p>
           </div>
         )}
-
         {/* Action Buttons */}
         <div className="flex gap-2 pt-2 border-t border-gray-200">
           <Button
             size="sm"
             color="purple"
             onClick={onNavigate}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-1.5 px-3 py-2"
           >
-            <HiExternalLink />
-            Ver Inventario
+            <HiExternalLink className="w-4 h-4" />
+            <span>Ver Inventario</span>
           </Button>
 
           <Button
             size="sm"
             color="light"
             onClick={onViewSpecs}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 border border-gray-300 hover:bg-gray-50"
           >
-            <HiInformationCircle />
-            Ficha Técnica
+            <HiInformationCircle className="w-4 h-4" />
+            <span>Ficha Técnica</span>
           </Button>
         </div>
       </div>
