@@ -7,6 +7,7 @@ import classNames from 'classnames';
 import GlobalInventorySearch from '../InventoryComponents/GlobalInventorySearch';
 import { Link, useLocation } from 'react-router-dom';
 import { AiFillPlusCircle } from 'react-icons/ai';
+import { AIAgentButton } from '../AIAgent';
 
 const Navbar = ({
   collapsed,
@@ -40,6 +41,7 @@ const Navbar = ({
       )} */}
       <div className="flex items-center gap-2 w-full px-4">
         <GlobalInventorySearch />
+        <AIAgentButton />
         <Tooltip content="Crear nuevo inventario" placement="bottom">
           <Link to="/inventories/create">
             <AiFillPlusCircle className="text-4xl text-purple-500 hover:text-sinabe-primary cursor-pointer" />

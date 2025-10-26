@@ -3,6 +3,7 @@ import SafeAppProvider from './context/SafeAppProvider';
 import AppRouter from './router/AppRouter';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AIAgentModal } from './components/AIAgent';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +29,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <SafeAppProvider>
         <AppRouter />
+        <AIAgentModal />
         <Toaster position="bottom-right" />
       </SafeAppProvider>
     </QueryClientProvider>

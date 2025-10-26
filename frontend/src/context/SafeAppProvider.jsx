@@ -2,6 +2,7 @@ import React from 'react';
 import AuthProvider from './AuthProvider';
 import LoadingProvider from './LoadingProvider';
 import ConditionalDataProvider from './ConditionalDataProvider';
+import { AIAgentProvider } from './AIAgentContext.jsx';
 
 /**
  * SafeAppProvider - Proveedor principal que maneja la carga segura de la aplicación
@@ -13,9 +14,11 @@ import ConditionalDataProvider from './ConditionalDataProvider';
  */
 const SafeAppProvider = ({ children }) => (
   <LoadingProvider>
-    <AuthProvider>
-      <ConditionalDataProvider>{children}</ConditionalDataProvider>
-    </AuthProvider>
+    <AIAgentProvider>
+      <AuthProvider>
+        <ConditionalDataProvider>{children}</ConditionalDataProvider>
+      </AuthProvider>
+    </AIAgentProvider>
   </LoadingProvider>
 );
 

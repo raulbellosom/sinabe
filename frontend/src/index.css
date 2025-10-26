@@ -31,6 +31,29 @@ html {
   background: #a0a0a0; /* Darker gray on hover */
 }
 
+/* AI Agent Modal Styles */
+.ai-agent-modal .flowbite-modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.ai-agent-modal .flowbite-modal-content {
+  max-width: 90vw;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .ai-agent-modal .flowbite-modal-content {
+    max-width: 80vw;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ai-agent-modal .flowbite-modal-content {
+    max-width: 60vw;
+  }
+}
+
 /* For Firefox */
 .custom-scrollbar {
   scrollbar-width: thin; /* "auto" or "thin" */

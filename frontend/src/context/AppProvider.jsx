@@ -8,6 +8,7 @@ import RoleProvider from './RoleProvider';
 import PermissionProvider from './PermissionProvider';
 import { BreadcrumbProvider } from './BreadcrumbContext';
 import CustomFieldProvider from './CustomFieldProvider';
+
 import AuthContext from './AuthContext';
 
 const SecurityProvider = ({ children }) => (
