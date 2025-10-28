@@ -1,30 +1,28 @@
 // pages/PurchaseOrdersPage.jsx
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   FaFileInvoice,
   FaTrashAlt,
   FaEdit,
-  FaUnlink,
   FaSearch,
   FaClipboardList,
   FaExternalLinkAlt,
+  FaEye,
 } from 'react-icons/fa';
 import { MdInventory } from 'react-icons/md';
 import ReusableTable from '../../components/Table/ReusableTable';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import {
   useSearchPurchaseOrders,
-  useRemovePurchaseOrderFromProject,
   useDeletePurchaseOrder,
 } from '../../hooks/usePurchaseOrders';
 import { PurchaseOrderFormModal } from '../../components/ProjectDetails/PO/PurchaseOrderModals';
 import { parseToLocalDate } from '../../utils/formatValues';
 import { useProjectQueryParams } from '../../hooks/useProjectQueryParams';
-import { Badge, Button } from 'flowbite-react';
-import { useQueryClient } from '@tanstack/react-query';
-import ConfirmRemovePurchaseOrderModal from '../../components/ProjectDetails/PO/ConfirmRemovePurchaseOrderModal';
+import { Badge } from 'flowbite-react';
 import ConfirmModal from '../../components/Modals/ConfirmModal';
+import PurchaseOrderDetailModal from '../../components/purchaseOrders/PurchaseOrderDetailModal';
 import Notifies from '../../components/Notifies/Notifies';
 
 const PurchaseOrdersPage = () => {
@@ -33,8 +31,7 @@ const PurchaseOrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isLogicalDeleteModalOpen, setIsLogicalDeleteModalOpen] =
-    useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Leer parámetros de búsqueda de URL
   const urlSearch = searchParams.get('search') || '';
@@ -58,35 +55,16 @@ const PurchaseOrdersPage = () => {
     totalRecords: 0,
   };
 
-  const removePOFromProject = useRemovePurchaseOrderFromProject();
   const deletePO = useDeletePurchaseOrder();
-  const queryClient = useQueryClient();
 
-  // Función para manejar la remoción de OC del proyecto
-  const handleRemovePOFromProject = async (order) => {
-    if (!order.projectId) return;
-
-    try {
-      await removePOFromProject.mutateAsync({
-        projectId: order.projectId,
-        purchaseOrderId: order.id,
-      });
-
-      Notifies('success', 'Orden de compra removida del proyecto exitosamente');
-      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
-    } catch (error) {
-      console.error('Error removiendo orden del proyecto:', error);
-    }
-  };
-
-  // Función para manejar la eliminación lógica de OC
+  // Función para manejar la eliminación de OC
   const handleDeletePO = async () => {
     if (!selectedOrder) return;
 
     try {
       await deletePO.mutateAsync(selectedOrder.id);
       Notifies('success', 'Orden de compra eliminada exitosamente');
-      setIsLogicalDeleteModalOpen(false);
+      setIsDeleteModalOpen(false);
       setSelectedOrder(null);
     } catch (error) {
       console.error('Error eliminando orden de compra:', error);
@@ -117,21 +95,6 @@ const PurchaseOrdersPage = () => {
         sortable: true,
         render: (description) =>
           description || <span className="text-gray-400 italic">—</span>,
-      },
-      {
-        key: 'project.name',
-        title: 'Proyecto',
-        render: (_, row) =>
-          row.project ? (
-            <a
-              href={`/projects/view/${row.project.id}?tab=3`}
-              className="text-blue-600 hover:underline text-nowrap"
-            >
-              {row.project.name}
-            </a>
-          ) : (
-            <span className="text-gray-400 italic text-nowrap">—</span>
-          ),
       },
       {
         key: 'invoices',
@@ -260,6 +223,15 @@ const PurchaseOrdersPage = () => {
         onPageSizeChange={(size) => updateParams({ pageSize: size })}
         rowActions={(order) => [
           {
+            key: 'view',
+            icon: FaEye,
+            label: 'Ver detalles',
+            action: () => {
+              setSelectedOrder(order);
+              setIsDetailModalOpen(true);
+            },
+          },
+          {
             key: 'edit',
             icon: FaEdit,
             label: 'Editar',
@@ -274,27 +246,9 @@ const PurchaseOrdersPage = () => {
             label: 'Eliminar',
             action: () => {
               setSelectedOrder(order);
-              setIsLogicalDeleteModalOpen(true);
+              setIsDeleteModalOpen(true);
             },
           },
-          ...(order.projectId
-            ? [
-                {
-                  key: 'remove',
-                  icon: FaUnlink,
-                  label: 'Remover del proyecto',
-                  action: () => {
-                    setSelectedOrder(order); // importante pasar orden completa
-                    setIsDeleteModalOpen(true);
-                  },
-                },
-                {
-                  key: 'viewproject',
-                  label: 'Ir al Proyecto',
-                  href: `/projects/view/${order.projectId}?tab=3`,
-                },
-              ]
-            : []),
         ]}
       />
 
@@ -304,32 +258,31 @@ const PurchaseOrdersPage = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-      <ConfirmRemovePurchaseOrderModal
-        order={selectedOrder}
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setSelectedOrder(null);
-          setIsDeleteModalOpen(false);
-        }}
-        onConfirm={(orderId) => {
-          if (selectedOrder) {
-            handleRemovePOFromProject(selectedOrder);
-            setIsDeleteModalOpen(false);
-            setSelectedOrder(null);
-          }
-        }}
-      />
 
       <ConfirmModal
-        isOpen={isLogicalDeleteModalOpen}
+        isOpen={isDeleteModalOpen}
         onClose={() => {
-          setIsLogicalDeleteModalOpen(false);
+          setIsDeleteModalOpen(false);
           setSelectedOrder(null);
         }}
         onConfirm={handleDeletePO}
         title="Eliminar Orden de Compra"
         message={`¿Estás seguro de que deseas eliminar la orden de compra ${selectedOrder?.code}? Esta acción no se puede deshacer.`}
         isLoading={deletePO.isLoading}
+      />
+
+      <PurchaseOrderDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedOrder(null);
+        }}
+        purchaseOrder={selectedOrder}
+        onEdit={(order) => {
+          setSelectedOrder(order);
+          setIsDetailModalOpen(false);
+          setIsModalOpen(true);
+        }}
       />
     </section>
   );

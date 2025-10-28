@@ -14,6 +14,7 @@ import {
   getInventoriesByPurchaseOrder,
   assignInventoriesToPurchaseOrder,
   removeInventoryFromPurchaseOrder,
+  getAllInventoriesByPurchaseOrder,
 } from "../controllers/purchaseOrderController.js";
 import { purchaseOrderRouter } from "./invoiceRoutes.js";
 
@@ -61,11 +62,19 @@ router
   .get(getInventoriesByPurchaseOrder)
   .post(assignInventoriesToPurchaseOrder);
 
+// 📦 Obtener TODOS los inventarios de una OC (directos + de facturas)
+// GET /purchase-orders/:orderId/all-inventories
+router.get("/:orderId/all-inventories", getAllInventoriesByPurchaseOrder);
+
 // 🗑️ Desasignar un inventario de la orden de compra
 // DELETE /purchase-orders/:orderId/inventories/:inventoryId
 router
   .route("/:orderId/inventories/:inventoryId")
   .delete(removeInventoryFromPurchaseOrder);
+
+// 📦 Obtener TODOS los inventarios de una OC (directos + de facturas)
+// GET /purchase-orders/:orderId/all-inventories
+router.get("/:orderId/all-inventories", getAllInventoriesByPurchaseOrder);
 
 // ✏️ Actualizar / ❌ Eliminar OC por ID
 router.route("/:id").put(updatePurchaseOrder).delete(deletePurchaseOrder);

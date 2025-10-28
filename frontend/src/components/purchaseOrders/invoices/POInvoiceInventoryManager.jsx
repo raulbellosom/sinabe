@@ -1,27 +1,25 @@
-// components/invoices/InvoiceInventoryManager.jsx
+// components/purchaseOrders/invoices/POInvoiceInventoryManager.jsx
 import React, { useState } from 'react';
 import { Button, Badge } from 'flowbite-react';
 import { FaPlus, FaTrash, FaSearch } from 'react-icons/fa';
 import { MdInventory } from 'react-icons/md';
 import {
-  useIndependentInvoiceInventories,
-  useAssignInventoriesToIndependentInvoice,
-  useRemoveInventoryFromIndependentInvoice,
-} from '../../hooks/useInvoices';
-import { useSearchInventories } from '../../hooks/useSearchInventories';
-import Notifies from '../Notifies/Notifies';
+  useInvoiceInventories,
+  useAssignInventoriesToInvoice,
+  useRemoveInventoryFromInvoice,
+} from '../../../hooks/useInvoices';
+import { useSearchInventories } from '../../../hooks/useSearchInventories';
+import Notifies from '../../Notifies/Notifies';
 
-const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
+const POInvoiceInventoryManager = ({ orderId, invoiceId, invoice }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Hooks para facturas independientes
+  // Hooks para facturas de órdenes de compra
   const { data: assignedInventories = [], isLoading: loadingAssigned } =
-    useIndependentInvoiceInventories(invoice?.id);
+    useInvoiceInventories(orderId, invoiceId);
 
-  const assignInventories = useAssignInventoriesToIndependentInvoice(
-    invoice?.id,
-  );
-  const removeInventory = useRemoveInventoryFromIndependentInvoice(invoice?.id);
+  const assignInventories = useAssignInventoriesToInvoice(orderId, invoiceId);
+  const removeInventory = useRemoveInventoryFromInvoice(orderId, invoiceId);
 
   // Búsqueda de inventarios disponibles
   // Incluir TODOS los inventarios para poder mostrar si están asignados
@@ -36,12 +34,12 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
   // Filtrar inventarios: separar disponibles de los ya asignados
   const inventoriesStatus = allInventories.map((inv) => {
     const isAssignedToThis = assignedInventories.some((a) => a.id === inv.id);
-    const hasOtherInvoice = inv.invoiceId && inv.invoiceId !== invoice?.id;
+    const hasOtherInvoice = inv.invoiceId && inv.invoiceId !== invoiceId;
     return {
       ...inv,
       isAssignedToThis,
       hasOtherInvoice,
-      canAssign: !inv.invoiceId || inv.invoiceId === invoice?.id,
+      canAssign: !inv.invoiceId || inv.invoiceId === invoiceId,
     };
   });
 
@@ -80,7 +78,7 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
     }
   };
 
-  if (!invoice) {
+  if (!invoiceId) {
     return <div className="text-center py-8">No hay factura seleccionada</div>;
   }
 
@@ -267,4 +265,4 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
   );
 };
 
-export default InvoiceInventoryManager;
+export default POInvoiceInventoryManager;

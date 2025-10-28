@@ -66,3 +66,7 @@ export const assignInventoriesToPurchaseOrder = (orderId, inventoryIds) =>
 // 🛠️ Desasignar un inventario de la orden de compra
 export const removeInventoryFromPurchaseOrder = (orderId, inventoryId) =>
   api.delete(`/purchase-orders/${orderId}/inventories/${inventoryId}`);
+
+// 📦 Obtener TODOS los inventarios de una OC (directos + de facturas)
+export const getAllInventoriesByPurchaseOrder = (orderId) =>
+  api.get(`/purchase-orders/${orderId}/all-inventories`);

@@ -492,3 +492,105 @@ export const removeInventoryFromPurchaseOrder = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// 📦 Obtener todos los inventarios relacionados a una orden de compra (directos + de facturas)
+export const getAllInventoriesByPurchaseOrder = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const purchaseOrder = await db.purchaseOrder.findUnique({
+      where: { id: orderId },
+      include: {
+        // Inventarios directamente asignados a la OC
+        inventories: {
+          where: { enabled: true },
+          include: {
+            model: {
+              include: {
+                type: true,
+                brand: true,
+              },
+            },
+            images: true,
+            customField: {
+              include: {
+                customField: true,
+              },
+            },
+          },
+        },
+        // Facturas asignadas a la OC
+        invoices: {
+          where: { enabled: true },
+          include: {
+            // Inventarios de cada factura
+            inventories: {
+              where: { enabled: true },
+              include: {
+                model: {
+                  include: {
+                    type: true,
+                    brand: true,
+                  },
+                },
+                images: true,
+                customField: {
+                  include: {
+                    customField: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!purchaseOrder) {
+      return res.status(404).json({ error: "Purchase order not found" });
+    }
+
+    // Combinar inventarios directos + inventarios de facturas
+    const directInventories = purchaseOrder.inventories || [];
+    const invoiceInventories = purchaseOrder.invoices.flatMap(
+      (invoice) => invoice.inventories || []
+    );
+
+    // Evitar duplicados por si un inventario está tanto directo como en factura
+    const allInventoriesMap = new Map();
+
+    [...directInventories, ...invoiceInventories].forEach((inventory) => {
+      if (!allInventoriesMap.has(inventory.id)) {
+        allInventoriesMap.set(inventory.id, {
+          ...inventory,
+          source: directInventories.find((inv) => inv.id === inventory.id)
+            ? "direct"
+            : "invoice",
+        });
+      }
+    });
+
+    const allInventories = Array.from(allInventoriesMap.values());
+
+    res.json({
+      purchaseOrder: {
+        id: purchaseOrder.id,
+        code: purchaseOrder.code,
+        supplier: purchaseOrder.supplier,
+        description: purchaseOrder.description,
+      },
+      inventories: allInventories,
+      summary: {
+        directInventories: directInventories.length,
+        invoiceInventories: invoiceInventories.length,
+        totalInventories: allInventories.length,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Error getting all inventories by purchase order:",
+      error.message
+    );
+    res.status(500).json({ error: error.message });
+  }
+};

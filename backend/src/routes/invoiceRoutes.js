@@ -19,6 +19,8 @@ import {
   removeInventoryFromInvoice,
   searchInvoicesByOrderId,
   searchAllInvoices,
+  assignInvoiceToPurchaseOrder,
+  removeInvoiceFromPurchaseOrder,
 } from "../controllers/invoiceController.js";
 
 // === FACTURACIÓN INDEPENDIENTE (Rutas principales) ===
@@ -32,6 +34,20 @@ independentRouter.get("/search/independent", searchIndependentInvoices);
 // 🔎 Buscar TODAS las facturas (independientes + con OC)
 // GET /api/invoices/search
 independentRouter.get("/search", searchAllInvoices);
+
+// 🔗 Asignar factura a orden de compra
+// PUT /api/invoices/:invoiceId/assign-purchase-order
+independentRouter.put(
+  "/:invoiceId/assign-purchase-order",
+  assignInvoiceToPurchaseOrder
+);
+
+// 🔓 Remover factura de orden de compra
+// PUT /api/invoices/:invoiceId/remove-purchase-order
+independentRouter.put(
+  "/:invoiceId/remove-purchase-order",
+  removeInvoiceFromPurchaseOrder
+);
 
 // 📄 CRUD facturas independientes
 // POST /api/invoices - Crear factura independiente

@@ -709,6 +709,8 @@ export const searchInventories = async (req, res) => {
       purchaseOrderId,
       invoiceId,
       verticalId,
+      excludeInvoiceId, // Para excluir inventarios ya asignados a una factura
+      onlyAvailable, // Para mostrar solo inventarios sin factura asignada
     } = req.query;
     // Validaciones de entrada mejoradas
     const isAdvanced = advancedSearch === "true";
@@ -866,6 +868,15 @@ export const searchInventories = async (req, res) => {
         OR: [{ purchaseOrderId }, { invoice: { purchaseOrderId } }],
       }),
       ...(invoiceId && { invoiceId }),
+      ...(excludeInvoiceId && {
+        OR: [
+          { invoiceId: null }, // Sin factura asignada
+          { invoiceId: { not: excludeInvoiceId } }, // O tiene otra factura diferente
+        ],
+      }),
+      ...(onlyAvailable === "true" && {
+        invoiceId: null, // Solo inventarios sin factura
+      }),
       ...(verticalIdsInt.length > 0 && {
         model: {
           ModelVertical: {

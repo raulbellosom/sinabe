@@ -23,7 +23,7 @@ import { API_URL } from '../../../services/api';
 import { useInvoices } from '../../../hooks/useInvoices';
 import { MdInventory, MdRemoveCircle } from 'react-icons/md';
 import SideModal from '../../Modals/SideModal';
-import InvoiceInventoryManager from '../../purchaseOrders/invoices/InvoiceInventoryManager';
+import POInvoiceInventoryManager from '../../purchaseOrders/invoices/POInvoiceInventoryManager';
 
 const getFileUrl = (file) => {
   if (file instanceof File) {
@@ -281,9 +281,10 @@ const POCard = ({ order, onEdit }) => {
         className="mt-4 ml-4"
       >
         {invoiceToManageInventory && (
-          <InvoiceInventoryManager
+          <POInvoiceInventoryManager
             invoiceId={invoiceToManageInventory.id}
             orderId={order.id}
+            invoice={invoiceToManageInventory}
           />
         )}
       </SideModal>

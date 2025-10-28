@@ -19,6 +19,7 @@ import ActionButtons from '../../ActionButtons/ActionButtons';
 const InvoiceSchema = Yup.object({
   code: Yup.string().required('Código es requerido'),
   concept: Yup.string().required('Concepto es requerido'),
+  supplier: Yup.string(),
 });
 
 const InvoiceModal = ({
@@ -52,6 +53,7 @@ const InvoiceModal = ({
   const initialValues = {
     code: invoice?.code || '',
     concept: invoice?.concept || '',
+    supplier: invoice?.supplier || '',
   };
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
@@ -122,6 +124,20 @@ const InvoiceModal = ({
                 />
                 <ErrorMessage
                   name="code"
+                  component="div"
+                  className="text-red-600 text-sm mt-1"
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="mb-1 text-sm font-medium">Proveedor</label>
+                <Field
+                  name="supplier"
+                  type="text"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring"
+                  placeholder="Nombre del proveedor (opcional)"
+                />
+                <ErrorMessage
+                  name="supplier"
                   component="div"
                   className="text-red-600 text-sm mt-1"
                 />

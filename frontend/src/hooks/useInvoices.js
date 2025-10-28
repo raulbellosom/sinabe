@@ -21,6 +21,8 @@ import {
   assignInventoriesToIndependentInvoice,
   removeInventoryFromIndependentInvoice,
   searchAllInvoices,
+  assignInvoiceToPurchaseOrder,
+  removeInvoiceFromPurchaseOrder,
 } from '../services/invoice.api';
 
 // 🧾 Obtener todas las facturas de una orden de compra
@@ -119,6 +121,7 @@ export const useAssignInventoriesToInvoice = (orderId, invoiceId) => {
       queryClient.invalidateQueries({
         queryKey: ['invoice', orderId, invoiceId],
       });
+      queryClient.invalidateQueries({ queryKey: ['all-invoices'] }); // Para que se actualice en la página principal
     },
   });
 };
@@ -137,6 +140,7 @@ export const useRemoveInventoryFromInvoice = (orderId, invoiceId) => {
       queryClient.invalidateQueries({
         queryKey: ['invoice', orderId, invoiceId],
       });
+      queryClient.invalidateQueries({ queryKey: ['all-invoices'] }); // Para que se actualice en la página principal
     },
   });
 };
@@ -235,6 +239,7 @@ export const useAssignInventoriesToIndependentInvoice = (invoiceId) => {
       });
       qc.invalidateQueries({ queryKey: ['independent-invoices'] });
       qc.invalidateQueries({ queryKey: ['independent-invoice', invoiceId] });
+      qc.invalidateQueries({ queryKey: ['all-invoices'] }); // Para que se actualice en la página principal
       // Invalidar inventarios para que se actualice su estado de asignación
       qc.invalidateQueries({ queryKey: ['inventories'] });
     },
@@ -253,6 +258,7 @@ export const useRemoveInventoryFromIndependentInvoice = (invoiceId) => {
       });
       qc.invalidateQueries({ queryKey: ['independent-invoices'] });
       qc.invalidateQueries({ queryKey: ['independent-invoice', invoiceId] });
+      qc.invalidateQueries({ queryKey: ['all-invoices'] }); // Para que se actualice en la página principal
       // Invalidar inventarios para que se actualice su estado de asignación
       qc.invalidateQueries({ queryKey: ['inventories'] });
     },
@@ -266,3 +272,55 @@ export const useSearchAllInvoices = (params) =>
     queryFn: () => searchAllInvoices(params).then((res) => res.data),
     enabled: params !== null && params !== undefined,
   });
+
+// 🔗 Asignar factura a orden de compra
+export const useAssignInvoiceToPurchaseOrder = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ invoiceId, purchaseOrderId }) =>
+      assignInvoiceToPurchaseOrder(invoiceId, purchaseOrderId),
+    onSuccess: (_, { invoiceId, purchaseOrderId }) => {
+      // Invalidar facturas independientes
+      qc.invalidateQueries({ queryKey: ['independent-invoices'] });
+      qc.invalidateQueries({ queryKey: ['independent-invoice', invoiceId] });
+
+      // Invalidar facturas de la orden de compra
+      qc.invalidateQueries({ queryKey: ['invoices', purchaseOrderId] });
+
+      // Invalidar búsquedas
+      qc.invalidateQueries({ queryKey: ['all-invoices'] });
+
+      // Invalidar órdenes de compra para que se actualice la info
+      qc.invalidateQueries({ queryKey: ['purchase-orders'] });
+      qc.invalidateQueries({
+        queryKey: ['purchase-order-all-inventories', purchaseOrderId],
+      });
+    },
+  });
+};
+
+// 🔓 Remover factura de orden de compra
+export const useRemoveInvoiceFromPurchaseOrder = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (invoiceId) => removeInvoiceFromPurchaseOrder(invoiceId),
+    onSuccess: (data, invoiceId) => {
+      // Invalidar facturas independientes
+      qc.invalidateQueries({ queryKey: ['independent-invoices'] });
+      qc.invalidateQueries({ queryKey: ['independent-invoice', invoiceId] });
+
+      // Invalidar todas las facturas de órdenes de compra
+      qc.invalidateQueries({ queryKey: ['invoices'] });
+
+      // Invalidar búsquedas
+      qc.invalidateQueries({ queryKey: ['all-invoices'] });
+
+      // Invalidar órdenes de compra
+      qc.invalidateQueries({ queryKey: ['purchase-orders'] });
+      qc.invalidateQueries({ queryKey: ['purchase-order-all-inventories'] });
+    },
+  });
+};
+
+// Alias para compatibilidad - obtener facturas por orden de compra
+export const useGetInvoicesByOrderId = (orderId) => useInvoices(orderId);

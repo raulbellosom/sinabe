@@ -16,7 +16,7 @@ import ReusableTable from '../../components/Table/ReusableTable';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import InvoiceModal from '../../components/ProjectDetails/PO/InvoiceModal';
 import SideModal from '../../components/Modals/SideModal';
-import InvoiceInventoryManager from '../../components/purchaseOrders/invoices/InvoiceInventoryManager';
+import POInvoiceInventoryManager from '../../components/purchaseOrders/invoices/POInvoiceInventoryManager';
 import { parseToLocalDate } from '../../utils/formatValues';
 import { Badge } from 'flowbite-react';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -115,6 +115,16 @@ const InvoicesPage = () => {
         sortable: true,
         render: (concept) =>
           concept || <span className="text-gray-400 italic">—</span>,
+      },
+      {
+        key: 'supplier',
+        title: 'Proveedor',
+        render: (supplier) =>
+          supplier ? (
+            <span className="text-gray-700">{supplier}</span>
+          ) : (
+            <span className="text-gray-400 italic text-sm">—</span>
+          ),
       },
       {
         key: 'inventories',
@@ -288,9 +298,10 @@ const InvoicesPage = () => {
         className="mt-4 ml-4"
       >
         {invoiceToManageInventory && (
-          <InvoiceInventoryManager
+          <POInvoiceInventoryManager
             invoiceId={invoiceToManageInventory.id}
             orderId={orderId}
+            invoice={invoiceToManageInventory}
           />
         )}
       </SideModal>

@@ -93,3 +93,11 @@ export const removeInventoryFromIndependentInvoice = (invoiceId, inventoryId) =>
 // 🔍 Buscar TODAS las facturas (independientes + con orden de compra)
 export const searchAllInvoices = (params) =>
   api.get('/invoices/search', { params });
+
+// 🔗 Asignar factura a orden de compra
+export const assignInvoiceToPurchaseOrder = (invoiceId, purchaseOrderId) =>
+  api.put(`/invoices/${invoiceId}/assign-purchase-order`, { purchaseOrderId });
+
+// 🔓 Remover factura de orden de compra
+export const removeInvoiceFromPurchaseOrder = (invoiceId) =>
+  api.put(`/invoices/${invoiceId}/remove-purchase-order`);

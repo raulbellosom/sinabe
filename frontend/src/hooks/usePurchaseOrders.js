@@ -15,6 +15,7 @@ import {
   getInventoriesByPurchaseOrder,
   assignInventoriesToPurchaseOrder,
   removeInventoryFromPurchaseOrder,
+  getAllInventoriesByPurchaseOrder,
 } from '../services/purchaseOrders.api';
 
 // 📦 Obtener órdenes de compra de un proyecto
@@ -222,9 +223,21 @@ export const useRemoveInventoryFromPurchaseOrder = (orderId) => {
       qc.invalidateQueries({
         queryKey: ['purchase-order-inventories', orderId],
       });
+      qc.invalidateQueries({
+        queryKey: ['purchase-order-all-inventories', orderId],
+      });
       qc.invalidateQueries({ queryKey: ['purchase-orders'] });
       // Invalidar inventarios para que se actualice su estado de asignación
       qc.invalidateQueries({ queryKey: ['inventories'] });
     },
   });
 };
+
+// 📦 Obtener TODOS los inventarios de una OC (directos + de facturas)
+export const useGetAllInventoriesByPurchaseOrder = (orderId) =>
+  useQuery({
+    queryKey: ['purchase-order-all-inventories', orderId],
+    queryFn: () =>
+      getAllInventoriesByPurchaseOrder(orderId).then((res) => res.data),
+    enabled: !!orderId,
+  });

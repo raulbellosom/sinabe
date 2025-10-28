@@ -9,17 +9,21 @@ import {
   FaFilePdf,
   FaFileCode,
   FaExternalLinkAlt,
+  FaClipboardList,
 } from 'react-icons/fa';
 import { MdInventory } from 'react-icons/md';
 import {
   useSearchAllInvoices,
   useDeleteIndependentInvoice,
+  useRemoveInvoiceFromPurchaseOrder,
 } from '../../hooks/useInvoices';
 import ReusableTable from '../../components/Table/ReusableTable';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import InvoiceModal from '../../components/invoices/InvoiceModal';
 import SideModal from '../../components/Modals/SideModal';
+import ReusableModal from '../../components/Modals/ReusableModal';
 import InvoiceInventoryManager from '../../components/invoices/InvoiceInventoryManager';
+import AssignToPurchaseOrderModal from '../../components/invoices/AssignToPurchaseOrderModal';
 import { parseToLocalDate } from '../../utils/formatValues';
 import { Badge } from 'flowbite-react';
 import { getFileUrl } from '../../utils/getFileUrl';
@@ -35,6 +39,9 @@ const InvoicesPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
+  const [isAssignToPOModalOpen, setIsAssignToPOModalOpen] = useState(false);
+  const [isUnassignPOModalOpen, setIsUnassignPOModalOpen] = useState(false);
+  const [poCodeConfirmation, setPoCodeConfirmation] = useState('');
 
   // Leer parámetros de búsqueda de URL
   const urlSearch = searchParams.get('search') || '';
@@ -61,6 +68,7 @@ const InvoicesPage = () => {
   };
 
   const deleteInvoice = useDeleteIndependentInvoice();
+  const removeInvoiceFromPO = useRemoveInvoiceFromPurchaseOrder();
 
   // Handlers para búsqueda y navegación
   const handleSearch = (term) => {
@@ -96,6 +104,35 @@ const InvoicesPage = () => {
     setIsInventoryModalOpen(true);
   };
 
+  const handleAssignToPurchaseOrder = (invoice) => {
+    setSelectedInvoice(invoice);
+    setIsAssignToPOModalOpen(true);
+  };
+
+  const handleUnassignFromPurchaseOrder = (invoice) => {
+    setSelectedInvoice(invoice);
+    setPoCodeConfirmation('');
+    setIsUnassignPOModalOpen(true);
+  };
+
+  const handleConfirmUnassignPO = async () => {
+    if (!selectedInvoice || !selectedInvoice.purchaseOrder) return;
+
+    // Validar que el código de OC coincida
+    if (poCodeConfirmation !== selectedInvoice.purchaseOrder.code) {
+      return; // No hacer nada si no coincide
+    }
+
+    try {
+      await removeInvoiceFromPO.mutateAsync(selectedInvoice.id);
+      setIsUnassignPOModalOpen(false);
+      setSelectedInvoice(null);
+      setPoCodeConfirmation('');
+    } catch (error) {
+      console.error('Error unassigning invoice from purchase order:', error);
+    }
+  };
+
   // Navegación cruzada a Purchase Orders
   const navigateToPurchaseOrder = (purchaseOrderCode) => {
     navigate(
@@ -110,13 +147,14 @@ const InvoicesPage = () => {
         key: 'code',
         title: 'Código',
         sortable: true,
-        className: 'w-32',
+        render: (code) => (
+          <span className="text-nowrap font-semibold">{code}</span>
+        ),
       },
       {
         key: 'concept',
         title: 'Concepto',
         sortable: true,
-        className: 'w-48',
         render: (value) => (
           <div className="max-w-xs truncate" title={value}>
             {value}
@@ -124,10 +162,22 @@ const InvoicesPage = () => {
         ),
       },
       {
+        key: 'supplier',
+        title: 'Proveedor',
+        sortable: false,
+        render: (value) =>
+          value ? (
+            <div className="max-w-xs truncate" title={value}>
+              {value}
+            </div>
+          ) : (
+            <span className="text-gray-400 text-sm">-</span>
+          ),
+      },
+      {
         key: 'purchaseOrder',
         title: 'Orden de Compra',
         sortable: false,
-        className: 'w-36',
         render: (_, invoice) =>
           invoice.purchaseOrder ? (
             <button
@@ -147,7 +197,6 @@ const InvoicesPage = () => {
         key: 'inventories',
         title: 'Inventarios',
         sortable: false,
-        className: 'w-24 text-center',
         render: (_, invoice) => {
           const inventoryCount = invoice.inventories?.length || 0;
           return inventoryCount > 0 ? (
@@ -171,7 +220,6 @@ const InvoicesPage = () => {
         key: 'fileUrl',
         title: 'PDF',
         sortable: false,
-        className: 'w-16 text-center',
         render: (fileUrl) =>
           fileUrl ? (
             <a
@@ -190,7 +238,6 @@ const InvoicesPage = () => {
         key: 'xmlUrl',
         title: 'XML',
         sortable: false,
-        className: 'w-16 text-center',
         render: (xmlUrl) =>
           xmlUrl ? (
             <a
@@ -292,6 +339,24 @@ const InvoicesPage = () => {
             label: 'Gestionar inventarios',
             action: () => handleManageInventories(invoice),
           },
+          // Solo mostrar "Asignar a OC" si la factura no tiene purchaseOrderId
+          ...(invoice.purchaseOrderId
+            ? [
+                {
+                  key: 'unassign-po',
+                  icon: FaClipboardList,
+                  label: 'Desasignar de OC',
+                  action: () => handleUnassignFromPurchaseOrder(invoice),
+                },
+              ]
+            : [
+                {
+                  key: 'assign-po',
+                  icon: FaClipboardList,
+                  label: 'Asignar a OC',
+                  action: () => handleAssignToPurchaseOrder(invoice),
+                },
+              ]),
           {
             key: 'edit',
             icon: FaEdit,
@@ -346,6 +411,89 @@ const InvoicesPage = () => {
         message={`¿Estás seguro de que deseas eliminar la factura ${selectedInvoice?.code}?`}
         isLoading={deleteInvoice.isLoading}
       />
+
+      <AssignToPurchaseOrderModal
+        isOpen={isAssignToPOModalOpen}
+        onClose={() => {
+          setIsAssignToPOModalOpen(false);
+          setSelectedInvoice(null);
+        }}
+        invoice={selectedInvoice}
+        onSuccess={() => {
+          setIsAssignToPOModalOpen(false);
+          setSelectedInvoice(null);
+        }}
+      />
+
+      {/* Modal para desasignar OC con confirmación */}
+      <ReusableModal
+        isOpen={isUnassignPOModalOpen}
+        onClose={() => {
+          setIsUnassignPOModalOpen(false);
+          setSelectedInvoice(null);
+          setPoCodeConfirmation('');
+        }}
+        title="Desasignar de Orden de Compra"
+        size="md"
+        actions={[
+          {
+            label: 'Cancelar',
+            action: () => {
+              setIsUnassignPOModalOpen(false);
+              setSelectedInvoice(null);
+              setPoCodeConfirmation('');
+            },
+            color: 'gray',
+            disabled: removeInvoiceFromPO.isPending,
+          },
+          {
+            label: removeInvoiceFromPO.isPending
+              ? 'Desasignando...'
+              : 'Desasignar',
+            action: handleConfirmUnassignPO,
+            color: 'red',
+            filled: true,
+            disabled:
+              poCodeConfirmation !== selectedInvoice?.purchaseOrder?.code ||
+              removeInvoiceFromPO.isPending,
+          },
+        ]}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Estás a punto de desasignar la factura{' '}
+            <strong className="text-gray-900 dark:text-white">
+              {selectedInvoice?.code}
+            </strong>{' '}
+            de la orden de compra{' '}
+            <strong className="text-gray-900 dark:text-white">
+              {selectedInvoice?.purchaseOrder?.code}
+            </strong>
+            .
+          </p>
+          <p className="text-sm text-gray-700 dark:text-gray-200 font-medium">
+            Para confirmar, escribe el código de la orden de compra:
+          </p>
+          <input
+            type="text"
+            value={poCodeConfirmation}
+            onChange={(e) => setPoCodeConfirmation(e.target.value)}
+            onPaste={(e) => e.preventDefault()}
+            onCopy={(e) => e.preventDefault()}
+            onCut={(e) => e.preventDefault()}
+            placeholder={selectedInvoice?.purchaseOrder?.code}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            autoFocus
+            autoComplete="off"
+          />
+          {poCodeConfirmation &&
+            poCodeConfirmation !== selectedInvoice?.purchaseOrder?.code && (
+              <p className="text-xs text-red-600 dark:text-red-400">
+                El código no coincide. Verifica e intenta nuevamente.
+              </p>
+            )}
+        </div>
+      </ReusableModal>
     </section>
   );
 };

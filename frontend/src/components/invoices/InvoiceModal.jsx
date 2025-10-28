@@ -22,6 +22,7 @@ const InvoiceModal = ({
   const [formData, setFormData] = useState({
     code: '',
     concept: '',
+    supplier: '',
     factura: null,
     xml: null,
   });
@@ -34,6 +35,7 @@ const InvoiceModal = ({
       setFormData({
         code: invoice.code || '',
         concept: invoice.concept || '',
+        supplier: invoice.supplier || '',
         factura: null,
         xml: null,
       });
@@ -41,6 +43,7 @@ const InvoiceModal = ({
       setFormData({
         code: '',
         concept: '',
+        supplier: '',
         factura: null,
         xml: null,
       });
@@ -73,6 +76,9 @@ const InvoiceModal = ({
       const submitData = new FormData();
       submitData.append('code', formData.code);
       submitData.append('concept', formData.concept);
+      if (formData.supplier) {
+        submitData.append('supplier', formData.supplier);
+      }
 
       if (formData.factura) {
         submitData.append('factura', formData.factura);
@@ -97,7 +103,7 @@ const InvoiceModal = ({
   const isLoading = createInvoice.isLoading || updateInvoice.isLoading;
 
   return (
-    <Modal show={isOpen} onClose={onClose} size="md">
+    <Modal show={isOpen} onClose={onClose} size="xl">
       <Modal.Header>
         {invoice ? 'Editar Factura' : 'Nueva Factura'}
       </Modal.Header>
@@ -113,6 +119,18 @@ const InvoiceModal = ({
               onChange={(e) => handleInputChange('code', e.target.value)}
               placeholder="Ej: FACT-2024-001"
               required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="supplier" value="Proveedor" />
+            <TextInput
+              id="supplier"
+              type="text"
+              value={formData.supplier}
+              onChange={(e) => handleInputChange('supplier', e.target.value)}
+              placeholder="Nombre del proveedor (opcional)"
               disabled={isLoading}
             />
           </div>

@@ -50,7 +50,7 @@ export const getInvoiceById = async (req, res) => {
 // ➕ Crear nueva factura (con PDF y XML opcionales)
 export const createInvoice = async (req, res) => {
   const { orderId } = req.params;
-  const { code, concept } = req.body;
+  const { code, concept, supplier } = req.body;
   const { pdfUrl: fileUrl = null, xmlUrl = null } = req.invoiceData || {};
 
   try {
@@ -58,6 +58,7 @@ export const createInvoice = async (req, res) => {
       data: {
         code,
         concept,
+        supplier: supplier || null,
         fileUrl,
         xmlUrl,
         purchaseOrderId: orderId || null, // Hacer opcional
@@ -80,7 +81,7 @@ export const createInvoice = async (req, res) => {
 // ✏️ Actualizar factura (campos y archivos)
 export const updateInvoice = async (req, res) => {
   const { invoiceId } = req.params;
-  const { code, concept } = req.body;
+  const { code, concept, supplier } = req.body;
   const { pdfUrl: fileUrl, xmlUrl } = req.invoiceData || {};
 
   try {
@@ -89,6 +90,7 @@ export const updateInvoice = async (req, res) => {
       data: {
         code,
         concept,
+        ...(supplier !== undefined && { supplier: supplier || null }),
         ...(fileUrl && { fileUrl }),
         ...(xmlUrl && { xmlUrl }),
       },
@@ -155,6 +157,35 @@ export const assignInventoriesToInvoice = async (req, res) => {
   const { inventoryIds } = req.body;
 
   try {
+    // 🔍 Validar que los inventarios no estén ya asignados a otra factura
+    const inventoriesWithInvoice = await db.inventory.findMany({
+      where: {
+        id: { in: inventoryIds },
+        invoiceId: { not: null },
+        invoiceId: { not: invoiceId }, // Excluir si ya está asignado a esta misma factura
+      },
+      select: {
+        id: true,
+        internalFolio: true,
+        invoice: {
+          select: {
+            code: true,
+          },
+        },
+      },
+    });
+
+    if (inventoriesWithInvoice.length > 0) {
+      const conflicts = inventoriesWithInvoice.map(
+        (inv) => `${inv.internalFolio} (Factura: ${inv.invoice.code})`
+      );
+      return res.status(400).json({
+        error: "Algunos inventarios ya están asignados a otras facturas",
+        conflicts,
+      });
+    }
+
+    // ✅ Si todo está bien, asignar los inventarios
     const updated = await db.inventory.updateMany({
       where: { id: { in: inventoryIds } },
       data: { invoiceId },
@@ -203,6 +234,7 @@ export const searchInvoicesByOrderId = async (req, res) => {
     OR: [
       { code: { contains: searchTerm } },
       { concept: { contains: searchTerm } },
+      { supplier: { contains: searchTerm } },
       {
         inventories: {
           some: {
@@ -268,13 +300,14 @@ export const searchInvoicesByOrderId = async (req, res) => {
 
 // ➕ Crear factura independiente (sin orden de compra)
 export const createIndependentInvoice = async (req, res) => {
-  const { code, concept } = req.body;
+  const { code, concept, supplier } = req.body;
 
   try {
     const invoice = await db.invoice.create({
       data: {
         code,
         concept,
+        supplier: supplier || null,
         purchaseOrderId: null, // Factura independiente
         fileUrl: req.processedFiles?.factura?.[0]?.url || null,
         xmlUrl: req.processedFiles?.xml?.[0]?.url || null,
@@ -342,6 +375,7 @@ export const searchIndependentInvoices = async (req, res) => {
       OR: [
         { code: { contains: searchTerm } },
         { concept: { contains: searchTerm } },
+        { supplier: { contains: searchTerm } },
       ],
     }),
   };
@@ -405,6 +439,7 @@ export const searchAllInvoices = async (req, res) => {
       OR: [
         { code: { contains: searchTerm } },
         { concept: { contains: searchTerm } },
+        { supplier: { contains: searchTerm } },
         { purchaseOrder: { code: { contains: searchTerm } } }, // También buscar por código de OC
       ],
     }),
@@ -445,6 +480,49 @@ export const searchAllInvoices = async (req, res) => {
     });
   } catch (error) {
     console.error("Error searching all invoices:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔗 Asignar factura existente a una orden de compra
+export const assignInvoiceToPurchaseOrder = async (req, res) => {
+  const { invoiceId } = req.params;
+  const { purchaseOrderId } = req.body;
+
+  try {
+    const invoice = await db.invoice.update({
+      where: { id: invoiceId },
+      data: { purchaseOrderId },
+      include: {
+        inventories: true,
+        purchaseOrder: true,
+      },
+    });
+
+    res.json(invoice);
+  } catch (error) {
+    console.error("Error assigning invoice to purchase order:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 🔓 Remover factura de orden de compra
+export const removeInvoiceFromPurchaseOrder = async (req, res) => {
+  const { invoiceId } = req.params;
+
+  try {
+    const invoice = await db.invoice.update({
+      where: { id: invoiceId },
+      data: { purchaseOrderId: null },
+      include: {
+        inventories: true,
+        purchaseOrder: true,
+      },
+    });
+
+    res.json(invoice);
+  } catch (error) {
+    console.error("Error removing invoice from purchase order:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
