@@ -21,7 +21,7 @@ import { PurchaseOrderFormModal } from '../../components/ProjectDetails/PO/Purch
 import { parseToLocalDate } from '../../utils/formatValues';
 import { useProjectQueryParams } from '../../hooks/useProjectQueryParams';
 import { Badge } from 'flowbite-react';
-import ConfirmModal from '../../components/Modals/ConfirmModal';
+import ConfirmDeleteModal from '../../components/Modals/ConfirmDeleteModal';
 import PurchaseOrderDetailModal from '../../components/purchaseOrders/PurchaseOrderDetailModal';
 import Notifies from '../../components/Notifies/Notifies';
 
@@ -122,8 +122,23 @@ const PurchaseOrdersPage = () => {
         key: 'inventories',
         title: 'Inventarios',
         render: (_, row) => {
-          const inventoryCount = row.inventories?.length || 0;
-          return inventoryCount > 0 ? (
+          // Usar Set para evitar duplicados (un inventario puede estar en OC directa Y en factura)
+          const uniqueInventoryIds = new Set();
+
+          // Agregar IDs de inventarios directos de la OC
+          row.inventories?.forEach((inv) => uniqueInventoryIds.add(inv.id));
+
+          // Agregar IDs de inventarios de todas las facturas
+          row.invoices?.forEach((invoice) => {
+            invoice.inventories?.forEach((inv) =>
+              uniqueInventoryIds.add(inv.id),
+            );
+          });
+
+          // Contar inventarios únicos
+          const totalInventoryCount = uniqueInventoryIds.size;
+
+          return totalInventoryCount > 0 ? (
             <button
               onClick={() =>
                 navigate(
@@ -133,7 +148,8 @@ const PurchaseOrdersPage = () => {
               className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 hover:underline transition-colors text-sm font-medium whitespace-nowrap"
             >
               <MdInventory size={14} />
-              {inventoryCount} Inventario{inventoryCount !== 1 ? 's' : ''}
+              {totalInventoryCount} Inventario
+              {totalInventoryCount !== 1 ? 's' : ''}
             </button>
           ) : (
             <Badge className="whitespace-nowrap" color="gray">
@@ -259,16 +275,16 @@ const PurchaseOrdersPage = () => {
         onClose={() => setIsModalOpen(false)}
       />
 
-      <ConfirmModal
+      <ConfirmDeleteModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
           setSelectedOrder(null);
         }}
         onConfirm={handleDeletePO}
-        title="Eliminar Orden de Compra"
-        message={`¿Estás seguro de que deseas eliminar la orden de compra ${selectedOrder?.code}? Esta acción no se puede deshacer.`}
-        isLoading={deletePO.isLoading}
+        itemName={selectedOrder?.code}
+        itemType="orden de compra"
+        requireNameConfirmation={true}
       />
 
       <PurchaseOrderDetailModal
@@ -288,4 +304,5 @@ const PurchaseOrdersPage = () => {
   );
 };
 
+// cuando hay un error al guardar la factura o la OC se dispara un window alert que no es muy amigable, mejor usar Notifies para esos errores
 export default PurchaseOrdersPage;

@@ -12,7 +12,6 @@ export const getInvoicesByOrderId = async (req, res) => {
     const invoices = await db.invoice.findMany({
       where: {
         purchaseOrderId: orderId,
-        enabled: true,
       },
       include: { inventories: true, purchaseOrder: true },
     });
@@ -36,7 +35,7 @@ export const getInvoiceById = async (req, res) => {
       },
     });
 
-    if (!invoice || !invoice.enabled) {
+    if (!invoice) {
       return res.status(404).json({ error: "Invoice not found" });
     }
 
@@ -63,7 +62,6 @@ export const createInvoice = async (req, res) => {
         xmlUrl,
         purchaseOrderId: orderId || null, // Hacer opcional
         createdById: req.user.id,
-        enabled: true,
       },
       include: {
         inventories: true,
@@ -112,9 +110,19 @@ export const deleteInvoice = async (req, res) => {
   const { invoiceId } = req.params;
 
   try {
-    await db.invoice.update({
+    // 🔄 Desasignar todos los inventarios de esta factura
+    await db.inventory.updateMany({
+      where: { invoiceId },
+      data: {
+        invoiceId: null,
+        // Si el inventario estaba en una OC a través de la factura, mantenerlo en la OC
+        // (no tocamos purchaseOrderId)
+      },
+    });
+
+    // 🗑️ Eliminar físicamente la factura
+    await db.invoice.delete({
       where: { id: invoiceId },
-      data: { enabled: false },
     });
 
     res.status(204).end();
@@ -132,7 +140,6 @@ export const getInventoriesByInvoice = async (req, res) => {
     const inventories = await db.inventory.findMany({
       where: {
         invoiceId,
-        enabled: true,
       },
       include: {
         model: {
@@ -230,7 +237,7 @@ export const searchInvoicesByOrderId = async (req, res) => {
 
   const where = {
     purchaseOrderId: orderId,
-    enabled: true,
+
     OR: [
       { code: { contains: searchTerm } },
       { concept: { contains: searchTerm } },
@@ -311,7 +318,7 @@ export const createIndependentInvoice = async (req, res) => {
         purchaseOrderId: null, // Factura independiente
         fileUrl: req.processedFiles?.factura?.[0]?.url || null,
         xmlUrl: req.processedFiles?.xml?.[0]?.url || null,
-        enabled: true,
+
         createdById: req.user.id,
       },
     });
@@ -329,7 +336,6 @@ export const getIndependentInvoices = async (req, res) => {
     const invoices = await db.invoice.findMany({
       where: {
         purchaseOrderId: null, // Solo facturas independientes
-        enabled: true,
       },
       include: {
         inventories: {
@@ -370,7 +376,7 @@ export const searchIndependentInvoices = async (req, res) => {
 
   const where = {
     purchaseOrderId: null, // Solo facturas independientes
-    enabled: true,
+
     ...(searchTerm && {
       OR: [
         { code: { contains: searchTerm } },
@@ -434,7 +440,7 @@ export const searchAllInvoices = async (req, res) => {
   const take = parsedPageSize;
 
   const where = {
-    enabled: true, // Buscar todas las facturas habilitadas (con y sin OC)
+    // Buscar todas las facturas habilitadas (con y sin OC)
     ...(searchTerm && {
       OR: [
         { code: { contains: searchTerm } },

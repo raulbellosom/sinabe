@@ -1,18 +1,23 @@
 // components/invoices/InvoiceInventoryManager.jsx
 import React, { useState } from 'react';
-import { Button, Badge } from 'flowbite-react';
-import { FaPlus, FaTrash, FaSearch } from 'react-icons/fa';
-import { MdInventory } from 'react-icons/md';
+import { Badge } from 'flowbite-react';
+import { FaSearch } from 'react-icons/fa';
+import { MdInventory, MdLinkOff } from 'react-icons/md';
+import { FaPlus } from 'react-icons/fa';
 import {
   useIndependentInvoiceInventories,
   useAssignInventoriesToIndependentInvoice,
   useRemoveInventoryFromIndependentInvoice,
 } from '../../hooks/useInvoices';
 import { useSearchInventories } from '../../hooks/useSearchInventories';
+import ConfirmUnassignModal from '../Modals/ConfirmUnassignModal';
 import Notifies from '../Notifies/Notifies';
+import ActionButtons from '../ActionButtons/ActionButtons';
 
 const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [inventoryToRemove, setInventoryToRemove] = useState(null);
+  const [isUnassignModalOpen, setIsUnassignModalOpen] = useState(false);
 
   // Hooks para facturas independientes
   const { data: assignedInventories = [], isLoading: loadingAssigned } =
@@ -67,16 +72,21 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
   };
 
   const handleRemoveInventory = async (inventoryId) => {
-    if (
-      window.confirm('¿Estás seguro de que deseas desasignar este inventario?')
-    ) {
-      try {
-        await removeInventory.mutateAsync(inventoryId);
-        Notifies('success', 'Inventario desasignado correctamente');
-      } catch (error) {
-        console.error('Error removing inventory:', error);
-        Notifies('error', 'Error al desasignar inventario de la factura');
-      }
+    setInventoryToRemove(inventoryId);
+    setIsUnassignModalOpen(true);
+  };
+
+  const confirmRemoveInventory = async () => {
+    if (!inventoryToRemove) return;
+
+    try {
+      await removeInventory.mutateAsync(inventoryToRemove);
+      Notifies('success', 'Inventario desasignado correctamente');
+      setIsUnassignModalOpen(false);
+      setInventoryToRemove(null);
+    } catch (error) {
+      console.error('Error removing inventory:', error);
+      Notifies('error', 'Error al desasignar inventario de la factura');
     }
   };
 
@@ -147,7 +157,17 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
                       } transition-colors`}
                     >
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate">
+                        <div className="font-medium text-sm truncate flex items-center gap-2">
+                          <Badge
+                            color={
+                              inventory.status === 'ALTA'
+                                ? 'success'
+                                : 'warning'
+                            }
+                            size="sm"
+                          >
+                            {inventory.status}
+                          </Badge>
                           {inventory.model?.name}
                         </div>
                         <div className="text-xs text-gray-600">
@@ -170,25 +190,40 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
                         )}
                       </div>
                       <div className="flex items-center gap-2 ml-2">
-                        <Badge
-                          color={
-                            inventory.status === 'ALTA' ? 'success' : 'warning'
-                          }
-                          size="sm"
-                        >
-                          {inventory.status}
-                        </Badge>
                         {/* Solo mostrar botón de agregar si NO está asignado a ninguna factura o si ya está en esta */}
                         {!alreadyAssigned && !hasOtherInvoice && (
-                          <Button
-                            size="xs"
-                            color="purple"
-                            onClick={() => handleAssignInventory(inventory.id)}
-                            disabled={assignInventories.isPending}
-                          >
-                            <FaPlus />
-                          </Button>
+                          <ActionButtons
+                            extraActions={[
+                              {
+                                label: 'Asignar',
+                                icon: FaPlus,
+                                color: 'purple',
+                                filled: true,
+                                action: () =>
+                                  handleAssignInventory(inventory.id),
+                                disabled: assignInventories.isPending,
+                              },
+                            ]}
+                          />
                         )}
+                        {
+                          // si el inventario esta asignado entonces que muestre un boton de eliminar siempre y cuando pertenezca a esta factura
+                          alreadyAssigned && (
+                            <ActionButtons
+                              extraActions={[
+                                {
+                                  label: 'Desasignar',
+                                  action: () =>
+                                    handleRemoveInventory(inventory.id),
+                                  icon: MdLinkOff,
+                                  disabled: removeInventory.isPending,
+                                  color: 'red',
+                                  filled: true,
+                                },
+                              ]}
+                            />
+                          )
+                        }
                       </div>
                     </div>
                   );
@@ -231,7 +266,15 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
                 className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm">
+                  <div className="font-medium text-sm flex items-center gap-2">
+                    <Badge
+                      color={
+                        inventory.status === 'ALTA' ? 'success' : 'warning'
+                      }
+                      size="sm"
+                    >
+                      {inventory.status}
+                    </Badge>
                     {inventory.model?.name}
                   </div>
                   <div className="text-xs text-gray-600 mt-1">
@@ -243,26 +286,45 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 ml-3">
-                  <Badge
-                    color={inventory.status === 'ALTA' ? 'success' : 'warning'}
-                    size="sm"
-                  >
-                    {inventory.status}
-                  </Badge>
-                  <Button
-                    size="xs"
-                    color="failure"
-                    onClick={() => handleRemoveInventory(inventory.id)}
-                    disabled={removeInventory.isPending}
-                  >
-                    <FaTrash />
-                  </Button>
+                  <ActionButtons
+                    extraActions={[
+                      {
+                        label: 'Desasignar',
+                        icon: MdLinkOff,
+                        color: 'red',
+                        filled: true,
+                        action: () => handleRemoveInventory(inventory.id),
+                        disabled: removeInventory.isPending,
+                      },
+                    ]}
+                  />
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Modal de confirmación para desasignar */}
+      <ConfirmUnassignModal
+        isOpen={isUnassignModalOpen}
+        onClose={() => {
+          setIsUnassignModalOpen(false);
+          setInventoryToRemove(null);
+        }}
+        onConfirm={confirmRemoveInventory}
+        sourceItem={
+          assignedInventories.find((inv) => inv.id === inventoryToRemove)
+            ?.serialNumber ||
+          assignedInventories.find((inv) => inv.id === inventoryToRemove)
+            ?.internalFolio ||
+          'este inventario'
+        }
+        targetItem={invoice?.code}
+        sourceLabel="inventario"
+        targetLabel="factura"
+        requireConfirmation={true}
+      />
     </div>
   );
 };

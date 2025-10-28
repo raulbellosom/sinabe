@@ -1,8 +1,8 @@
 // components/purchaseOrders/inventory/AllInventoriesViewer.jsx
 import React, { useState } from 'react';
 import { Button, Badge } from 'flowbite-react';
-import { FaPlus, FaTrash, FaSearch } from 'react-icons/fa';
-import { MdInventory } from 'react-icons/md';
+import { FaPlus, FaSearch } from 'react-icons/fa';
+import { MdInventory, MdLinkOff } from 'react-icons/md';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   useGetAllInventoriesByPurchaseOrder,
@@ -10,10 +10,14 @@ import {
 } from '../../../hooks/usePurchaseOrders';
 import { assignInventoriesToPurchaseOrder } from '../../../services/purchaseOrders.api';
 import { useSearchInventories } from '../../../hooks/useSearchInventories';
+import ConfirmUnassignModal from '../../Modals/ConfirmUnassignModal';
 import Notifies from '../../Notifies/Notifies';
+import ActionButtons from '../../ActionButtons/ActionButtons';
 
 const AllInventoriesViewer = ({ purchaseOrder }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [inventoryToRemove, setInventoryToRemove] = useState(null);
+  const [isUnassignModalOpen, setIsUnassignModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   // Obtener inventarios ya asignados a esta OC
@@ -86,19 +90,21 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
   };
 
   const handleRemoveInventory = async (inventoryId) => {
-    if (
-      window.confirm('¿Estás seguro de que deseas desasignar este inventario?')
-    ) {
-      try {
-        await removeInventory.mutateAsync(inventoryId);
-        Notifies('success', 'Inventario desasignado correctamente');
-      } catch (error) {
-        console.error('Error removing inventory:', error);
-        Notifies(
-          'error',
-          'Error al desasignar inventario de la orden de compra',
-        );
-      }
+    setInventoryToRemove(inventoryId);
+    setIsUnassignModalOpen(true);
+  };
+
+  const confirmRemoveInventory = async () => {
+    if (!inventoryToRemove) return;
+
+    try {
+      await removeInventory.mutateAsync(inventoryToRemove);
+      Notifies('success', 'Inventario desasignado correctamente');
+      setIsUnassignModalOpen(false);
+      setInventoryToRemove(null);
+    } catch (error) {
+      console.error('Error removing inventory:', error);
+      Notifies('error', 'Error al desasignar inventario de la orden de compra');
     }
   };
 
@@ -248,11 +254,19 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
               return (
                 <div
                   key={inventory.id}
-                  className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
+                  className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between p-3 hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <div className="font-medium text-sm">
+                      <div className="font-medium text-sm flex items-center gap-2">
+                        <Badge
+                          color={
+                            inventory.status === 'ALTA' ? 'success' : 'warning'
+                          }
+                          size="sm"
+                        >
+                          {inventory.status}
+                        </Badge>
                         {inventory.model?.name}
                       </div>
                       {!isDirect && inventory.invoice && (
@@ -269,25 +283,21 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
                       Folio: {inventory.internalFolio}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 ml-3">
-                    <Badge
-                      color={
-                        inventory.status === 'ALTA' ? 'success' : 'warning'
-                      }
-                      size="sm"
-                    >
-                      {inventory.status}
-                    </Badge>
+                  <div className="flex justify-center w-full md:w-auto md:justify-start md:items-center gap-2">
                     {/* Solo permitir remover inventarios directos */}
                     {isDirect && (
-                      <Button
-                        size="xs"
-                        color="failure"
-                        onClick={() => handleRemoveInventory(inventory.id)}
-                        disabled={removeInventory.isPending}
-                      >
-                        <FaTrash />
-                      </Button>
+                      <ActionButtons
+                        extraActions={[
+                          {
+                            label: 'Desasignar',
+                            icon: MdLinkOff,
+                            color: 'red',
+                            filled: true,
+                            action: () => handleRemoveInventory(inventory.id),
+                            disabled: removeInventory.isPending,
+                          },
+                        ]}
+                      />
                     )}
                   </div>
                 </div>
@@ -296,6 +306,27 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
           </div>
         )}
       </div>
+
+      {/* Modal de confirmación para desasignar */}
+      <ConfirmUnassignModal
+        isOpen={isUnassignModalOpen}
+        onClose={() => {
+          setIsUnassignModalOpen(false);
+          setInventoryToRemove(null);
+        }}
+        onConfirm={confirmRemoveInventory}
+        sourceItem={
+          assignedInventories.find((inv) => inv.id === inventoryToRemove)
+            ?.serialNumber ||
+          assignedInventories.find((inv) => inv.id === inventoryToRemove)
+            ?.internalFolio ||
+          'este inventario'
+        }
+        targetItem={purchaseOrder?.code}
+        sourceLabel="inventario"
+        targetLabel="orden de compra"
+        requireConfirmation={true}
+      />
     </div>
   );
 };

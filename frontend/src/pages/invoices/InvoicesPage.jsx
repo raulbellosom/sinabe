@@ -1,6 +1,6 @@
 // pages/invoices/InvoicesPage.jsx - INDEPENDIENTE
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   FaEdit,
   FaTrashAlt,
@@ -28,7 +28,9 @@ import { parseToLocalDate } from '../../utils/formatValues';
 import { Badge } from 'flowbite-react';
 import { getFileUrl } from '../../utils/getFileUrl';
 import { useProjectQueryParams } from '../../hooks/useProjectQueryParams';
-import ConfirmModal from '../../components/Modals/ConfirmModal';
+import ConfirmDeleteModal from '../../components/Modals/ConfirmDeleteModal';
+import ConfirmUnassignModal from '../../components/Modals/ConfirmUnassignModal';
+import Notifies from '../../components/Notifies/Notifies';
 
 const InvoicesPage = () => {
   const navigate = useNavigate();
@@ -41,7 +43,6 @@ const InvoicesPage = () => {
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
   const [isAssignToPOModalOpen, setIsAssignToPOModalOpen] = useState(false);
   const [isUnassignPOModalOpen, setIsUnassignPOModalOpen] = useState(false);
-  const [poCodeConfirmation, setPoCodeConfirmation] = useState('');
 
   // Leer parámetros de búsqueda de URL
   const urlSearch = searchParams.get('search') || '';
@@ -92,10 +93,15 @@ const InvoicesPage = () => {
 
     try {
       await deleteInvoice.mutateAsync(selectedInvoice.id);
+      Notifies('success', 'Factura eliminada exitosamente');
       setIsDeleteModalOpen(false);
       setSelectedInvoice(null);
     } catch (error) {
       console.error('Error deleting invoice:', error);
+      Notifies(
+        'error',
+        error?.response?.data?.message || 'Error al eliminar la factura',
+      );
     }
   };
 
@@ -111,25 +117,27 @@ const InvoicesPage = () => {
 
   const handleUnassignFromPurchaseOrder = (invoice) => {
     setSelectedInvoice(invoice);
-    setPoCodeConfirmation('');
     setIsUnassignPOModalOpen(true);
   };
 
   const handleConfirmUnassignPO = async () => {
     if (!selectedInvoice || !selectedInvoice.purchaseOrder) return;
 
-    // Validar que el código de OC coincida
-    if (poCodeConfirmation !== selectedInvoice.purchaseOrder.code) {
-      return; // No hacer nada si no coincide
-    }
-
     try {
       await removeInvoiceFromPO.mutateAsync(selectedInvoice.id);
+      Notifies(
+        'success',
+        'Factura desasignada de la orden de compra exitosamente',
+      );
       setIsUnassignPOModalOpen(false);
       setSelectedInvoice(null);
       setPoCodeConfirmation('');
     } catch (error) {
       console.error('Error unassigning invoice from purchase order:', error);
+      Notifies(
+        'error',
+        error?.response?.data?.message || 'Error al desasignar la factura',
+      );
     }
   };
 
@@ -200,17 +208,13 @@ const InvoicesPage = () => {
         render: (_, invoice) => {
           const inventoryCount = invoice.inventories?.length || 0;
           return inventoryCount > 0 ? (
-            <button
-              onClick={() =>
-                navigate(
-                  `/inventories?invoiceCode=${encodeURIComponent(invoice.code)}`,
-                )
-              }
+            <Link
+              to={`/inventories?invoiceCode=${encodeURIComponent(invoice.code)}`}
               className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 hover:underline transition-colors text-sm font-medium"
             >
               <MdInventory size={14} />
               {inventoryCount}
-            </button>
+            </Link>
           ) : (
             <Badge color="gray">0</Badge>
           );
@@ -403,13 +407,16 @@ const InvoicesPage = () => {
         )}
       </SideModal>
 
-      <ConfirmModal
+      <ConfirmDeleteModal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedInvoice(null);
+        }}
         onConfirm={handleDeleteInvoice}
-        title="Eliminar Factura"
-        message={`¿Estás seguro de que deseas eliminar la factura ${selectedInvoice?.code}?`}
-        isLoading={deleteInvoice.isLoading}
+        itemName={selectedInvoice?.code}
+        itemType="factura"
+        requireNameConfirmation={true}
       />
 
       <AssignToPurchaseOrderModal
@@ -426,74 +433,19 @@ const InvoicesPage = () => {
       />
 
       {/* Modal para desasignar OC con confirmación */}
-      <ReusableModal
+      <ConfirmUnassignModal
         isOpen={isUnassignPOModalOpen}
         onClose={() => {
           setIsUnassignPOModalOpen(false);
           setSelectedInvoice(null);
-          setPoCodeConfirmation('');
         }}
-        title="Desasignar de Orden de Compra"
-        size="md"
-        actions={[
-          {
-            label: 'Cancelar',
-            action: () => {
-              setIsUnassignPOModalOpen(false);
-              setSelectedInvoice(null);
-              setPoCodeConfirmation('');
-            },
-            color: 'gray',
-            disabled: removeInvoiceFromPO.isPending,
-          },
-          {
-            label: removeInvoiceFromPO.isPending
-              ? 'Desasignando...'
-              : 'Desasignar',
-            action: handleConfirmUnassignPO,
-            color: 'red',
-            filled: true,
-            disabled:
-              poCodeConfirmation !== selectedInvoice?.purchaseOrder?.code ||
-              removeInvoiceFromPO.isPending,
-          },
-        ]}
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Estás a punto de desasignar la factura{' '}
-            <strong className="text-gray-900 dark:text-white">
-              {selectedInvoice?.code}
-            </strong>{' '}
-            de la orden de compra{' '}
-            <strong className="text-gray-900 dark:text-white">
-              {selectedInvoice?.purchaseOrder?.code}
-            </strong>
-            .
-          </p>
-          <p className="text-sm text-gray-700 dark:text-gray-200 font-medium">
-            Para confirmar, escribe el código de la orden de compra:
-          </p>
-          <input
-            type="text"
-            value={poCodeConfirmation}
-            onChange={(e) => setPoCodeConfirmation(e.target.value)}
-            onPaste={(e) => e.preventDefault()}
-            onCopy={(e) => e.preventDefault()}
-            onCut={(e) => e.preventDefault()}
-            placeholder={selectedInvoice?.purchaseOrder?.code}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            autoFocus
-            autoComplete="off"
-          />
-          {poCodeConfirmation &&
-            poCodeConfirmation !== selectedInvoice?.purchaseOrder?.code && (
-              <p className="text-xs text-red-600 dark:text-red-400">
-                El código no coincide. Verifica e intenta nuevamente.
-              </p>
-            )}
-        </div>
-      </ReusableModal>
+        onConfirm={handleConfirmUnassignPO}
+        sourceItem={selectedInvoice?.code}
+        targetItem={selectedInvoice?.purchaseOrder?.code}
+        sourceLabel="factura"
+        targetLabel="orden de compra"
+        requireConfirmation={true}
+      />
     </section>
   );
 };

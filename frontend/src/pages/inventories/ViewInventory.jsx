@@ -148,28 +148,58 @@ const ViewInventory = () => {
 
     // --- Relaciones dinámicas ---
     const rels = [];
-    if (inventory?.invoice?.purchaseOrder) {
+
+    // Orden de Compra directa (sin factura)
+    if (inventory?.purchaseOrder) {
+      rels.push({
+        label: 'Orden de Compra',
+        value: inventory.purchaseOrder.code,
+        icon: FaClipboardList,
+        route: `/purchase-orders/${inventory.purchaseOrder.id}/invoices`,
+      });
+
+      // Proyecto de la orden de compra directa
+      if (inventory?.purchaseOrder?.project) {
+        rels.push({
+          label: 'Proyecto',
+          value: inventory.purchaseOrder.project.name,
+          icon: FaProjectDiagram,
+          route: `/projects/view/${inventory.purchaseOrder.project.id}`,
+        });
+      }
+    }
+
+    // Orden de Compra a través de factura
+    if (inventory?.invoice?.purchaseOrder && !inventory?.purchaseOrder) {
       rels.push({
         label: 'Orden de Compra',
         value: inventory.invoice.purchaseOrder.code,
         icon: FaClipboardList,
         route: `/purchase-orders/${inventory.invoice.purchaseOrder.id}/invoices`,
       });
+
+      // Proyecto de la orden de compra a través de factura
+      if (inventory?.invoice?.purchaseOrder?.project) {
+        rels.push({
+          label: 'Proyecto',
+          value: inventory.invoice.purchaseOrder.project.name,
+          icon: FaProjectDiagram,
+          route: `/projects/view/${inventory.invoice.purchaseOrder.project.id}`,
+        });
+      }
     }
+
+    // Factura (si existe)
     if (inventory?.invoice) {
+      const invoiceRoute = inventory.invoice.purchaseOrder
+        ? `/purchase-orders/${inventory.invoice.purchaseOrder.id}/invoices/?modalId=${inventory.invoice.id}`
+        : `/invoices?modalId=${inventory.invoice.id}`;
+
       rels.push({
         label: 'Factura',
         value: inventory.invoice.code,
         icon: FaFileInvoiceDollar,
-        route: `/purchase-orders/${inventory.invoice.purchaseOrder.id}/invoices/?modalId=${inventory.invoice.id}`,
-      });
-    }
-    if (inventory?.invoice?.purchaseOrder?.project) {
-      rels.push({
-        label: 'Proyecto',
-        value: inventory.invoice.purchaseOrder.project.name,
-        icon: FaProjectDiagram,
-        route: `/projects/view/${inventory.invoice.purchaseOrder.project.id}`,
+        route: invoiceRoute,
       });
     }
     inventory?.model?.ModelVertical?.forEach(({ vertical }) => {

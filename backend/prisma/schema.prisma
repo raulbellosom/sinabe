@@ -211,26 +211,23 @@ model InventoryDeadline {
 
 model PurchaseOrder {
   id          String      @id @default(uuid())
-  code        String      
+  code        String      @unique
   supplier    String?
   description String?     @db.Text
   projectId   String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  enabled     Boolean     @default(true)
   createdById String
   invoices    Invoice[]
   project     Project?    @relation(fields: [projectId], references: [id])
   inventories Inventory[] @relation("PurchaseOrderInventories")
 
   @@index([projectId], map: "PurchaseOrder_projectId_fkey")
-  @@unique([code, enabled])
-
 }
 
 model Invoice {
   id              String         @id @default(uuid())
-  code            String         
+  code            String         @unique
   concept         String
   supplier        String?
   fileUrl         String?        @db.Text
@@ -238,14 +235,12 @@ model Invoice {
   purchaseOrderId String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-  enabled         Boolean        @default(true)
   createdById     String
   xmlUrl          String?        @db.Text
   inventories     Inventory[]    @relation("InvoiceInventories")
   purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
 
   @@index([purchaseOrderId], map: "Invoice_purchaseOrderId_fkey")
-  @@unique([code, enabled])
 }
 
 model ProjectMember {

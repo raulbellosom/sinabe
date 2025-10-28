@@ -1,13 +1,8 @@
 // components/purchaseOrders/invoices/PurchaseOrderInvoicesManager.jsx
 import React, { useState } from 'react';
 import { Button, Badge } from 'flowbite-react';
-import {
-  FaPlus,
-  FaTrash,
-  FaSearch,
-  FaFilePdf,
-  FaFileCode,
-} from 'react-icons/fa';
+import { FaPlus, FaSearch, FaFilePdf, FaFileCode } from 'react-icons/fa';
+import { MdLinkOff } from 'react-icons/md';
 import { FaFileInvoice } from 'react-icons/fa';
 import { MdInventory } from 'react-icons/md';
 import {
@@ -17,10 +12,14 @@ import {
   useSearchAllInvoices,
 } from '../../../hooks/useInvoices';
 import { getFileUrl } from '../../../utils/getFileUrl';
+import ConfirmUnassignModal from '../../Modals/ConfirmUnassignModal';
 import Notifies from '../../Notifies/Notifies';
+import ActionButtons from '../../ActionButtons/ActionButtons';
 
 const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [invoiceToRemove, setInvoiceToRemove] = useState(null);
+  const [isUnassignModalOpen, setIsUnassignModalOpen] = useState(false);
 
   // Obtener facturas ya asignadas a esta OC
   const { data: assignedInvoices = [], isLoading: loadingAssigned } =
@@ -70,16 +69,21 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
   };
 
   const handleRemoveInvoice = async (invoiceId) => {
-    if (
-      window.confirm('¿Estás seguro de que deseas desasignar esta factura?')
-    ) {
-      try {
-        await removeInvoice.mutateAsync(invoiceId);
-        Notifies('success', 'Factura desasignada correctamente');
-      } catch (error) {
-        console.error('Error removing invoice:', error);
-        Notifies('error', 'Error al desasignar factura de la orden de compra');
-      }
+    setInvoiceToRemove(invoiceId);
+    setIsUnassignModalOpen(true);
+  };
+
+  const confirmRemoveInvoice = async () => {
+    if (!invoiceToRemove) return;
+
+    try {
+      await removeInvoice.mutateAsync(invoiceToRemove);
+      Notifies('success', 'Factura desasignada correctamente');
+      setIsUnassignModalOpen(false);
+      setInvoiceToRemove(null);
+    } catch (error) {
+      console.error('Error removing invoice:', error);
+      Notifies('error', 'Error al desasignar factura de la orden de compra');
     }
   };
 
@@ -294,14 +298,18 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
                         </a>
                       )}
                     </div>
-                    <Button
-                      size="xs"
-                      color="failure"
-                      onClick={() => handleRemoveInvoice(invoice.id)}
-                      disabled={removeInvoice.isPending}
-                    >
-                      <FaTrash />
-                    </Button>
+                    <ActionButtons
+                      extraActions={[
+                        {
+                          label: 'Desasignar',
+                          icon: MdLinkOff,
+                          color: 'red',
+                          filled: true,
+                          action: () => handleRemoveInvoice(invoice.id),
+                          disabled: removeInvoice.isPending,
+                        },
+                      ]}
+                    />
                   </div>
                 </div>
               );
@@ -309,6 +317,23 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
           </div>
         )}
       </div>
+
+      {/* Modal de confirmación para desasignar */}
+      <ConfirmUnassignModal
+        isOpen={isUnassignModalOpen}
+        onClose={() => {
+          setIsUnassignModalOpen(false);
+          setInvoiceToRemove(null);
+        }}
+        onConfirm={confirmRemoveInvoice}
+        sourceItem={
+          assignedInvoices.find((inv) => inv.id === invoiceToRemove)?.code || ''
+        }
+        targetItem={purchaseOrder?.code}
+        sourceLabel="factura"
+        targetLabel="orden de compra"
+        requireConfirmation={true}
+      />
     </div>
   );
 };

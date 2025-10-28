@@ -8,11 +8,9 @@ export const getPurchaseOrdersByProjectId = async (req, res) => {
     const orders = await db.purchaseOrder.findMany({
       where: {
         projectId,
-        enabled: true,
       },
       include: {
         invoices: {
-          where: { enabled: true },
           include: { inventories: true },
         },
         inventories: true,
@@ -39,7 +37,6 @@ export const createPurchaseOrder = async (req, res) => {
         code,
         supplier,
         description,
-        enabled: true,
         createdById: req.user.id,
       },
     });
@@ -62,7 +59,6 @@ export const createPurchaseOrderWithoutProject = async (req, res) => {
         code,
         supplier,
         description,
-        enabled: true,
         createdById: req.user.id,
       },
     });
@@ -99,14 +95,26 @@ export const updatePurchaseOrder = async (req, res) => {
   }
 };
 
-// ❌ Eliminación lógica de orden de compra
+// ❌ Eliminación física de orden de compra
 export const deletePurchaseOrder = async (req, res) => {
   const { id } = req.params;
 
   try {
-    await db.purchaseOrder.update({
+    // 🔄 Desasignar todas las facturas de esta OC (convertirlas en independientes)
+    await db.invoice.updateMany({
+      where: { purchaseOrderId: id },
+      data: { purchaseOrderId: null },
+    });
+
+    // 🔄 Desasignar todos los inventarios directos de esta OC
+    await db.inventory.updateMany({
+      where: { purchaseOrderId: id },
+      data: { purchaseOrderId: null },
+    });
+
+    // 🗑️ Eliminar físicamente la orden de compra
+    await db.purchaseOrder.delete({
       where: { id },
-      data: { enabled: false },
     });
 
     res.status(204).end();
@@ -138,7 +146,6 @@ export const searchPurchaseOrders = async (req, res) => {
     : statuses.split?.(",") || [];
 
   const where = {
-    enabled: true,
     ...(projectId && { projectId }),
     OR: [
       { code: { contains: searchTerm } },
@@ -213,7 +220,7 @@ export const assignPurchaseOrderToProject = async (req, res) => {
   try {
     // Verificar que el proyecto existe y está habilitado
     const project = await db.project.findUnique({
-      where: { id: projectId, enabled: true },
+      where: { id: projectId },
     });
 
     if (!project) {
@@ -222,7 +229,7 @@ export const assignPurchaseOrderToProject = async (req, res) => {
 
     // Verificar que la orden de compra existe y está habilitada
     const order = await db.purchaseOrder.findUnique({
-      where: { id: orderId, enabled: true },
+      where: { id: orderId },
     });
 
     if (!order) {
@@ -264,7 +271,6 @@ export const removePurchaseOrderFromProject = async (req, res) => {
       where: {
         id: orderId,
         projectId: projectId,
-        enabled: true,
       },
     });
 
@@ -296,7 +302,6 @@ export const getUnassignedPurchaseOrders = async (req, res) => {
     const orders = await db.purchaseOrder.findMany({
       where: {
         projectId: null,
-        enabled: true,
       },
       include: {
         invoices: {
@@ -327,7 +332,6 @@ export const searchUnassignedPurchaseOrders = async (req, res) => {
 
     const orders = await db.purchaseOrder.findMany({
       where: {
-        enabled: true,
         projectId: null,
         OR: [
           {
@@ -416,7 +420,6 @@ export const getInventoriesByPurchaseOrder = async (req, res) => {
     const inventories = await db.inventory.findMany({
       where: {
         purchaseOrderId: orderId,
-        enabled: true,
       },
       include: {
         model: {
@@ -431,10 +434,8 @@ export const getInventoriesByPurchaseOrder = async (req, res) => {
           },
         },
         images: {
-          where: { enabled: true },
         },
         files: {
-          where: { enabled: true },
         },
       },
     });
@@ -503,7 +504,6 @@ export const getAllInventoriesByPurchaseOrder = async (req, res) => {
       include: {
         // Inventarios directamente asignados a la OC
         inventories: {
-          where: { enabled: true },
           include: {
             model: {
               include: {
@@ -521,11 +521,9 @@ export const getAllInventoriesByPurchaseOrder = async (req, res) => {
         },
         // Facturas asignadas a la OC
         invoices: {
-          where: { enabled: true },
           include: {
             // Inventarios de cada factura
             inventories: {
-              where: { enabled: true },
               include: {
                 model: {
                   include: {
