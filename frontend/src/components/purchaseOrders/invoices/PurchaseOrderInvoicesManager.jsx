@@ -1,7 +1,7 @@
 // components/purchaseOrders/invoices/PurchaseOrderInvoicesManager.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Button, Badge } from 'flowbite-react';
-import { FaPlus, FaSearch, FaFilePdf, FaFileCode } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaFilePdf, FaFileCode, FaEye } from 'react-icons/fa';
 import { MdLinkOff } from 'react-icons/md';
 import { FaFileInvoice } from 'react-icons/fa';
 import { MdInventory } from 'react-icons/md';
@@ -15,6 +15,7 @@ import { getFileUrl } from '../../../utils/getFileUrl';
 import ConfirmUnassignModal from '../../Modals/ConfirmUnassignModal';
 import Notifies from '../../Notifies/Notifies';
 import ActionButtons from '../../ActionButtons/ActionButtons';
+import ReusableTable from '../../Table/ReusableTable';
 
 const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,10 +69,10 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
     }
   };
 
-  const handleRemoveInvoice = async (invoiceId) => {
+  const handleRemoveInvoice = useCallback((invoiceId) => {
     setInvoiceToRemove(invoiceId);
     setIsUnassignModalOpen(true);
-  };
+  }, []);
 
   const confirmRemoveInvoice = async () => {
     if (!invoiceToRemove) return;
@@ -86,6 +87,116 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
       Notifies('error', 'Error al desasignar factura de la orden de compra');
     }
   };
+
+  // Columnas para la tabla de facturas asignadas
+  const invoiceColumns = useMemo(
+    () => [
+      {
+        key: 'code',
+        title: 'Código',
+        sortable: false,
+        render: (_, row) => (
+          <ActionButtons
+            extraActions={[
+              {
+                label: row.code,
+                href: `/invoices?search=${row.code}`,
+                color: 'purple',
+                className:
+                  'text-sm font-medium hover:underline border-0 text-nowrap',
+                filled: false,
+                outline: true,
+              },
+            ]}
+          />
+        ),
+      },
+      {
+        key: 'concept',
+        title: 'Concepto',
+        sortable: false,
+        render: (val) => val || <span className="text-gray-400 italic">—</span>,
+      },
+      {
+        key: 'supplier',
+        title: 'Proveedor',
+        sortable: false,
+        render: (val) => val || <span className="text-gray-400 italic">—</span>,
+      },
+      {
+        key: 'inventories',
+        title: 'Inventarios',
+        sortable: false,
+        render: (_, row) => {
+          const count = row.inventories?.length || 0;
+          return count > 0 ? (
+            <Badge color="success" size="sm">
+              <MdInventory className="inline mr-1" />
+              {count}
+            </Badge>
+          ) : (
+            <span className="text-gray-400 text-sm">0</span>
+          );
+        },
+      },
+      {
+        key: 'files',
+        title: 'Archivos',
+        sortable: false,
+        render: (_, row) => (
+          <div className="flex items-center gap-2">
+            {row.fileUrl && (
+              <a
+                href={getFileUrl(row.fileUrl)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-red-600 hover:text-red-700"
+                title="Ver PDF"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FaFilePdf size={16} />
+              </a>
+            )}
+            {row.xmlUrl && (
+              <a
+                href={getFileUrl(row.xmlUrl)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-600 hover:text-green-700"
+                title="Ver XML"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <FaFileCode size={16} />
+              </a>
+            )}
+            {!row.fileUrl && !row.xmlUrl && (
+              <span className="text-gray-400 text-sm">—</span>
+            )}
+          </div>
+        ),
+      },
+      {
+        key: 'act',
+        title: 'Acciones',
+        sortable: false,
+        render: (_, row) => (
+          <ActionButtons
+            extraActions={[
+              {
+                label: 'Desasignar',
+                icon: MdLinkOff,
+                color: 'red',
+                filled: true,
+                action: () => handleRemoveInvoice(row.id),
+                disabled: removeInvoice.isPending,
+              },
+            ]}
+          />
+        ),
+      },
+    ],
+    [removeInvoice.isPending],
+  );
 
   if (!purchaseOrder) {
     return (
@@ -222,7 +333,7 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
         )}
       </div>
 
-      {/* Facturas asignadas - Ocupa todo el espacio restante */}
+      {/* Facturas asignadas - Tabla */}
       <div className="flex-1 flex flex-col min-h-0">
         <div className="flex justify-between items-center mb-3">
           <h4 className="font-medium text-sm">
@@ -245,76 +356,12 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto border rounded-lg divide-y">
-            {assignedInvoices.map((invoice) => {
-              const inventoryCount = invoice.inventories?.length || 0;
-
-              return (
-                <div
-                  key={invoice.id}
-                  className="flex items-center justify-between p-3 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <div className="font-medium text-sm">{invoice.code}</div>
-                      {inventoryCount > 0 && (
-                        <Badge color="success" size="xs">
-                          {inventoryCount} inv.
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-600 mt-1 truncate">
-                      {invoice.concept || 'Sin concepto'}
-                    </div>
-                    {invoice.supplier && (
-                      <div className="text-xs text-gray-500">
-                        Proveedor: {invoice.supplier}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 ml-3">
-                    {/* Archivos */}
-                    <div className="flex items-center gap-2">
-                      {invoice.fileUrl && (
-                        <a
-                          href={getFileUrl(invoice.fileUrl)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-red-600 hover:text-red-700"
-                          title="Ver PDF"
-                        >
-                          <FaFilePdf />
-                        </a>
-                      )}
-                      {invoice.xmlUrl && (
-                        <a
-                          href={getFileUrl(invoice.xmlUrl)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-green-600 hover:text-green-700"
-                          title="Ver XML"
-                        >
-                          <FaFileCode />
-                        </a>
-                      )}
-                    </div>
-                    <ActionButtons
-                      extraActions={[
-                        {
-                          label: 'Desasignar',
-                          icon: MdLinkOff,
-                          color: 'red',
-                          filled: true,
-                          action: () => handleRemoveInvoice(invoice.id),
-                          disabled: removeInvoice.isPending,
-                        },
-                      ]}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <ReusableTable
+            columns={invoiceColumns}
+            data={assignedInvoices}
+            showPagination={false}
+            striped
+          />
         )}
       </div>
 

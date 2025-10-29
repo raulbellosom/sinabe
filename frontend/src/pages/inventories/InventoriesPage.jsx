@@ -37,6 +37,7 @@ import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
 import { MdInfo, MdInventory } from 'react-icons/md';
 import { useInventoryContext } from '../../context/InventoryContext';
+import { useInventorySelection } from '../../context/InventorySelectionProvider';
 import classNames from 'classnames';
 // Import InventoriesImagesView to support the 'resources' view mode
 import FilterDropdown from '../../components/Inputs/FilterDropdown'; // Make sure this import is present
@@ -127,6 +128,12 @@ const InventoriesPage = () => {
 
   const { inventoryConditions } = useCatalogContext();
   const { deleteInventory } = useInventoryContext();
+  const {
+    toggleInventory,
+    isSelected,
+    addMultipleInventories,
+    removeMultipleInventories,
+  } = useInventorySelection();
 
   const { data, isLoading, error, refetch } = useSearchInventories(searchQuery);
   const inventories = data?.data || [];
@@ -145,6 +152,10 @@ const InventoriesPage = () => {
   const [selectedForDownload, setSelectedForDownload] = useState({});
 
   const onSelectTableRow = (row) => {
+    // Toggle en el contexto global para el carrito
+    toggleInventory(row);
+
+    // Mantener la lógica original para descarga
     setSelectedTableRows((prevSelected) => ({
       ...prevSelected,
       [row.id]: !prevSelected[row.id],
@@ -177,11 +188,19 @@ const InventoriesPage = () => {
     const newSelectedForDownload = {};
 
     if (!allSelected) {
+      // Seleccionar todos
       inventories.forEach((row) => {
         newSelectedRows[row.id] = true;
         newSelectedForDownload[row.id] = row;
       });
+      // Agregar todos al carrito
+      addMultipleInventories(inventories);
+    } else {
+      // Deseleccionar todos - remover del carrito
+      const inventoryIds = inventories.map((row) => row.id);
+      removeMultipleInventories(inventoryIds);
     }
+
     setSelectedTableRows(newSelectedRows);
     setSelectedForDownload(newSelectedForDownload);
   };

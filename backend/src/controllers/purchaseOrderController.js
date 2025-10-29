@@ -433,10 +433,8 @@ export const getInventoriesByPurchaseOrder = async (req, res) => {
             condition: true,
           },
         },
-        images: {
-        },
-        files: {
-        },
+        images: {},
+        files: {},
       },
     });
 
@@ -517,6 +515,12 @@ export const getAllInventoriesByPurchaseOrder = async (req, res) => {
                 customField: true,
               },
             },
+            invoice: {
+              select: {
+                id: true,
+                code: true,
+              },
+            },
           },
         },
         // Facturas asignadas a la OC
@@ -535,6 +539,12 @@ export const getAllInventoriesByPurchaseOrder = async (req, res) => {
                 customField: {
                   include: {
                     customField: true,
+                  },
+                },
+                invoice: {
+                  select: {
+                    id: true,
+                    code: true,
                   },
                 },
               },

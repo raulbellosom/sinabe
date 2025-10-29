@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { FaXmark } from 'react-icons/fa6';
 import classNames from 'classnames';
+import { useEffect } from 'react';
 
 const slideVariants = {
   hidden: { x: '100%' },
@@ -25,6 +26,23 @@ const SideModal = ({
   children,
   className = '',
 }) => {
+  // Cerrar con tecla ESC
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   return (
     <AnimatePresence>
       {isOpen && (

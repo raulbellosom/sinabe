@@ -73,6 +73,8 @@ export const useUpdatePurchaseOrder = (projectId) => {
         queryKey: ['project-summary', projectId],
       });
       queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+      // Invalidar inventarios para que se actualice su estado de asignación
+      queryClient.invalidateQueries({ queryKey: ['inventories'] });
     },
   });
 };
@@ -90,6 +92,8 @@ export const useDeletePurchaseOrder = (projectId) => {
       queryClient.invalidateQueries({
         queryKey: ['purchase-orders', 'without-project'],
       });
+      // Invalidar inventarios para que se actualice su estado de asignación
+      queryClient.invalidateQueries({ queryKey: ['inventories'] });
     },
   });
 };
@@ -152,7 +156,8 @@ export const useRemovePurchaseOrderFromProject = () => {
 export const useCreatePurchaseOrderWithoutProject = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data) => createPurchaseOrderWithoutProject(data),
+    mutationFn: (data) =>
+      createPurchaseOrderWithoutProject(data).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       queryClient.invalidateQueries({

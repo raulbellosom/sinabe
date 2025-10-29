@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import AuthContext from './AuthContext';
 import UserProvider from './UserProvider';
 import InventoryProvider from './InventoryProvider';
+import InventorySelectionProvider from './InventorySelectionProvider';
 import CatalogProvider from './CatalogProvider';
 import RoleProvider from './RoleProvider';
 import PermissionProvider from './PermissionProvider';
@@ -31,15 +32,17 @@ const ConditionalDataProvider = ({ children }) => {
   return (
     <RoleProvider>
       <PermissionProvider>
-        <UserProvider>
-          <InventoryProvider>
-            <CatalogProvider>
-              <CustomFieldProvider>
-                <BreadcrumbProvider>{children}</BreadcrumbProvider>
-              </CustomFieldProvider>
-            </CatalogProvider>
-          </InventoryProvider>
-        </UserProvider>
+        <InventorySelectionProvider>
+          <UserProvider>
+            <InventoryProvider>
+              <CatalogProvider>
+                <CustomFieldProvider>
+                  <BreadcrumbProvider>{children}</BreadcrumbProvider>
+                </CustomFieldProvider>
+              </CatalogProvider>
+            </InventoryProvider>
+          </UserProvider>
+        </InventorySelectionProvider>
       </PermissionProvider>
     </RoleProvider>
   );

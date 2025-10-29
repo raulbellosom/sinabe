@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import AuthProvider from './AuthProvider';
 import UserProvider from './UserProvider';
 import InventoryProvider from './InventoryProvider';
+import InventorySelectionProvider from './InventorySelectionProvider';
 import LoadingProvider from './LoadingProvider';
 import CatalogProvider from './CatalogProvider';
 import RoleProvider from './RoleProvider';
@@ -43,7 +44,9 @@ const AuthenticatedDataProvider = ({ children }) => {
 const AppProvider = ({ children }) => (
   <LoadingProvider>
     <SecurityProvider>
-      <AuthenticatedDataProvider>{children}</AuthenticatedDataProvider>
+      <InventorySelectionProvider>
+        <AuthenticatedDataProvider>{children}</AuthenticatedDataProvider>
+      </InventorySelectionProvider>
     </SecurityProvider>
   </LoadingProvider>
 );

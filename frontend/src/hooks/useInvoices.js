@@ -77,6 +77,8 @@ export const useUpdateInvoice = (orderId, projectId) => {
       qc.invalidateQueries({ queryKey: ['search-projects'] });
       qc.invalidateQueries({ queryKey: ['project', projectId] });
       qc.invalidateQueries({ queryKey: ['project-summary', projectId] });
+      // Invalidar inventarios para que se actualice su estado de asignación
+      qc.invalidateQueries({ queryKey: ['inventories'] });
     },
   });
 };
@@ -94,6 +96,8 @@ export const useDeleteInvoice = (orderId, projectId) => {
       qc.invalidateQueries({ queryKey: ['search-projects'] });
       qc.invalidateQueries({ queryKey: ['project', projectId] });
       qc.invalidateQueries({ queryKey: ['project-summary', projectId] });
+      // Invalidar inventarios para que se actualice su estado de asignación
+      qc.invalidateQueries({ queryKey: ['inventories'] });
     },
   });
 };
@@ -177,7 +181,8 @@ export const useSearchIndependentInvoices = (params) =>
 export const useCreateIndependentInvoice = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (formData) => createIndependentInvoice(formData),
+    mutationFn: (formData) =>
+      createIndependentInvoice(formData).then((res) => res.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['independent-invoices'] });
       qc.invalidateQueries({ queryKey: ['all-invoices'] });
@@ -202,6 +207,8 @@ export const useUpdateIndependentInvoice = (invoiceId) => {
       qc.invalidateQueries({ queryKey: ['independent-invoices'] });
       qc.invalidateQueries({ queryKey: ['independent-invoice', invoiceId] });
       qc.invalidateQueries({ queryKey: ['all-invoices'] });
+      // Invalidar inventarios para que se actualice su estado de asignación
+      qc.invalidateQueries({ queryKey: ['inventories'] });
     },
   });
 };
@@ -214,6 +221,8 @@ export const useDeleteIndependentInvoice = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['independent-invoices'] });
       qc.invalidateQueries({ queryKey: ['all-invoices'] });
+      // Invalidar inventarios para que se actualice su estado de asignación
+      qc.invalidateQueries({ queryKey: ['inventories'] });
     },
   });
 };

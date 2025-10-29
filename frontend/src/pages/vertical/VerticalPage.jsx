@@ -23,6 +23,7 @@ import {
 import ModalVerticalForm from '../../components/Verticals/ModalVerticalForm';
 import VerticalModelsDetail from '../../components/Verticals/VerticalModelsDetail';
 import SideModal from '../../components/Modals/SideModal';
+import ConfirmModal from '../../components/Modals/ConfirmModal';
 import Skeleton from 'react-loading-skeleton';
 import { Dropdown } from 'flowbite-react';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
@@ -49,6 +50,8 @@ const VerticalPage = () => {
   const [editData, setEditData] = useState(null);
   const [expanded, setExpanded] = useState(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [verticalToDelete, setVerticalToDelete] = useState(null);
 
   // Abrir detalle de vertical si viene en URL
   useEffect(() => {
@@ -92,9 +95,18 @@ const VerticalPage = () => {
   };
 
   const handleDelete = (id) => {
-    if (confirm('¿Estás seguro de eliminar esta vertical?')) {
-      deleteVertical.mutate(id, {
-        onSuccess: () => refetchVerticals(),
+    setVerticalToDelete(id);
+    setShowConfirmDelete(true);
+  };
+
+  const confirmDelete = () => {
+    if (verticalToDelete) {
+      deleteVertical.mutate(verticalToDelete, {
+        onSuccess: () => {
+          refetchVerticals();
+          setShowConfirmDelete(false);
+          setVerticalToDelete(null);
+        },
       });
     }
   };
@@ -284,6 +296,22 @@ const VerticalPage = () => {
           }}
         />
       )}
+
+      {/* Modal de Confirmación para Eliminar */}
+      <ConfirmModal
+        isOpen={showConfirmDelete}
+        onClose={() => {
+          setShowConfirmDelete(false);
+          setVerticalToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Eliminar Vertical"
+        message="¿Estás seguro de que deseas eliminar esta vertical? Esta acción no se puede deshacer."
+        confirmText="Sí, eliminar"
+        cancelText="Cancelar"
+        confirmColor="red"
+        isLoading={deleteVertical.isPending}
+      />
     </div>
   );
 };

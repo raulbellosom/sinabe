@@ -8,6 +8,7 @@ import ActionButtons from '../../../components/ActionButtons/ActionButtons';
 import { RiFolderZipLine } from 'react-icons/ri';
 import { BsBadgeHdFill } from 'react-icons/bs';
 import FileIcon from '../../../components/FileIcon/FileIcon';
+import Notifies from '../../../components/Notifies/Notifies';
 
 /**
  * @param {Array} inventories - Lista de inventarios (cada inventario con su "id", "model", "images", "files", etc.)
@@ -139,7 +140,7 @@ const InventoriesImagesView = ({
   const handleDownloadZip = (isLowQuality = false) => {
     const imagesToDownload = getAllSelectedImages();
     if (imagesToDownload.length === 0) {
-      alert('Selecciona al menos una imagen para descargar.');
+      Notifies('warning', 'Selecciona al menos una imagen para descargar.');
       return;
     }
     onDownloadZip(imagesToDownload, isLowQuality);
@@ -149,7 +150,7 @@ const InventoriesImagesView = ({
   const handleDownloadFilesZip = () => {
     const filesToDownload = getAllSelectedFiles();
     if (filesToDownload.length === 0) {
-      alert('Selecciona al menos un archivo para descargar.');
+      Notifies('warning', 'Selecciona al menos un archivo para descargar.');
       return;
     }
     onDownloadFilesZip(filesToDownload);
@@ -291,7 +292,8 @@ const InventoriesImagesView = ({
                       title="Descargar seleccionados en ZIP"
                       onClick={() => {
                         if (selectedFilesInInventory.length === 0) {
-                          alert(
+                          Notifies(
+                            'warning',
                             'Selecciona al menos un archivo para descargar.',
                           );
                           return;

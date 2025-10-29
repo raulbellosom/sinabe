@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import FileSaver from 'file-saver';
 import { API_URL, fetchFileBlob } from '../services/api';
+import Notifies from '../components/Notifies/Notifies';
 
 /**
  * Función que recibe un blob de imagen, lo dibuja en un canvas y genera un nuevo blob comprimido
@@ -43,7 +44,7 @@ export const downloadImagesAsZip = async (
   isLowQuality = false,
 ) => {
   if (!selectedImages || selectedImages.length === 0) {
-    alert('No hay imágenes seleccionadas para descargar.');
+    Notifies('warning', 'No hay imágenes seleccionadas para descargar.');
     return;
   }
 
@@ -84,7 +85,7 @@ export const downloadImagesAsZip = async (
  */
 export const downloadFilesAsZip = async (selectedFiles = []) => {
   if (!selectedFiles || selectedFiles.length === 0) {
-    alert('No hay archivos seleccionados para descargar.');
+    Notifies('warning', 'No hay archivos seleccionados para descargar.');
     return;
   }
 

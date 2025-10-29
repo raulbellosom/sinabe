@@ -842,4 +842,41 @@ export const fetchFileBlob = async (file) => {
   }
 };
 
+// ===============================================
+// 🆕 ASIGNACIÓN MASIVA DE INVENTARIOS
+// ===============================================
+
+// Asignar múltiples inventarios a una factura
+export const assignInventoriesToInvoice = async ({
+  invoiceId,
+  inventoryIds,
+}) => {
+  try {
+    const response = await api.post(`/invoices/${invoiceId}/inventories`, {
+      inventoryIds,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+// Asignar múltiples inventarios a una orden de compra
+export const assignInventoriesToPurchaseOrder = async ({
+  purchaseOrderId,
+  inventoryIds,
+}) => {
+  try {
+    const response = await api.post(
+      `/purchase-orders/${purchaseOrderId}/inventories`,
+      { inventoryIds },
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export default api;

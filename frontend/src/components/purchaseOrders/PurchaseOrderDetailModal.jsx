@@ -9,6 +9,7 @@ import {
   FaChevronUp,
 } from 'react-icons/fa';
 import { MdInventory } from 'react-icons/md';
+import { useGetAllInventoriesByPurchaseOrder } from '../../hooks/usePurchaseOrders';
 import PurchaseOrderInvoicesManager from './invoices/PurchaseOrderInvoicesManager';
 import AllInventoriesViewer from './inventory/AllInventoriesViewer';
 import ReusableModal from '../Modals/ReusableModal';
@@ -22,10 +23,15 @@ const PurchaseOrderDetailModal = ({
   const [activeTab, setActiveTab] = useState('invoices');
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
+  // Obtener el total de inventarios (directos + de facturas)
+  const { data: inventoryData } = useGetAllInventoriesByPurchaseOrder(
+    purchaseOrder?.id,
+  );
+
   if (!purchaseOrder) return null;
 
   const invoiceCount = purchaseOrder.invoices?.length || 0;
-  const inventoryCount = purchaseOrder.inventories?.length || 0;
+  const inventoryCount = inventoryData?.summary?.totalInventories || 0;
 
   // Check if description is long (more than 150 characters)
   const isLongDescription =
@@ -35,6 +41,7 @@ const PurchaseOrderDetailModal = ({
     <ReusableModal
       isOpen={isOpen}
       onClose={onClose}
+      size="xl"
       title={
         <div className="flex items-center gap-3">
           <FaClipboardList />
@@ -48,7 +55,6 @@ const PurchaseOrderDetailModal = ({
           </div>
         </div>
       }
-      size="xl"
     >
       <div className="space-y-6">
         {/* Descripción colapsable */}

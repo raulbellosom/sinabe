@@ -87,14 +87,30 @@ const PurchaseOrdersPage = () => {
         title: 'Proveedor',
         sortable: true,
         render: (supplier) =>
-          supplier || <span className="text-gray-400 italic">—</span>,
+          supplier ? (
+            <span title={supplier}>
+              {supplier.length > 60
+                ? `${supplier.substring(0, 60)}...`
+                : supplier}
+            </span>
+          ) : (
+            <span className="text-gray-400 italic">—</span>
+          ),
       },
       {
         key: 'description',
         title: 'Descripción',
         sortable: true,
         render: (description) =>
-          description || <span className="text-gray-400 italic">—</span>,
+          description ? (
+            <span title={description}>
+              {description.length > 100
+                ? `${description.substring(0, 100)}...`
+                : description}
+            </span>
+          ) : (
+            <span className="text-gray-400 italic">—</span>
+          ),
       },
       {
         key: 'invoices',

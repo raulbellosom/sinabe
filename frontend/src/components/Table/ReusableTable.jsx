@@ -1,6 +1,5 @@
 // ReusableTable.jsx
 import React from 'react';
-import { useMediaQuery } from 'react-responsive';
 import { FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { MdNavigateBefore, MdNavigateNext } from 'react-icons/md';
@@ -34,7 +33,7 @@ const ReusableTable = ({
   onRowClick = () => {},
   onRowDoubleClick = () => {},
 
-  enableCardView = true,
+  viewMode = 'table', // 'table' or 'cards'
   cardViewConfig = {
     imageKey: null,
     titleKey: null,
@@ -44,7 +43,6 @@ const ReusableTable = ({
   rowClassName = () => '',
   striped = false,
 }) => {
-  const isMobile = useMediaQuery({ maxWidth: 768 });
   const getNestedValue = (obj, path) => {
     if (!path) return undefined;
     return path.split('.').reduce((o, i) => (o ? o[i] : undefined), obj);
@@ -130,8 +128,9 @@ const ReusableTable = ({
         </div>
       );
     if (data.length === 0) return <TableResultsNotFound />;
-    // --- Card View for Mobile ---
-    if (isMobile && enableCardView) {
+
+    // --- Card View ---
+    if (viewMode === 'cards') {
       return (
         <div className="flex flex-col gap-4">
           {data.map((row) => {

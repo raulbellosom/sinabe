@@ -1,7 +1,7 @@
 // components/purchaseOrders/inventory/AllInventoriesViewer.jsx
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Button, Badge } from 'flowbite-react';
-import { FaPlus, FaSearch } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaEye } from 'react-icons/fa';
 import { MdInventory, MdLinkOff } from 'react-icons/md';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -13,6 +13,7 @@ import { useSearchInventories } from '../../../hooks/useSearchInventories';
 import ConfirmUnassignModal from '../../Modals/ConfirmUnassignModal';
 import Notifies from '../../Notifies/Notifies';
 import ActionButtons from '../../ActionButtons/ActionButtons';
+import ReusableTable from '../../Table/ReusableTable';
 
 const AllInventoriesViewer = ({ purchaseOrder }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -89,10 +90,10 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
     }
   };
 
-  const handleRemoveInventory = async (inventoryId) => {
+  const handleRemoveInventory = useCallback((inventoryId) => {
     setInventoryToRemove(inventoryId);
     setIsUnassignModalOpen(true);
-  };
+  }, []);
 
   const confirmRemoveInventory = async () => {
     if (!inventoryToRemove) return;
@@ -107,6 +108,118 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
       Notifies('error', 'Error al desasignar inventario de la orden de compra');
     }
   };
+
+  // Columnas para la tabla de inventarios asignados
+  const inventoryColumns = useMemo(
+    () => [
+      {
+        key: 'model.name',
+        title: 'Modelo',
+        sortable: false,
+        render: (_, row) => (
+          <ActionButtons
+            extraActions={[
+              {
+                label:
+                  row.model?.brand?.name +
+                  ' ' +
+                  (row.model?.name || 'Sin modelo'),
+                href: `/inventories/view/${row.id}`,
+                color: 'purple',
+                className:
+                  'text-sm font-medium hover:underline border-0 text-normal min-w-44',
+                filled: false,
+                outline: true,
+              },
+            ]}
+          />
+        ),
+      },
+      {
+        key: 'model.type.name',
+        title: 'Tipo',
+        sortable: false,
+        render: (_, row) => row.model?.type?.name || '—',
+      },
+      {
+        key: 'status',
+        title: 'Estado',
+        sortable: false,
+        render: (val) => (
+          <Badge
+            color={
+              val === 'ALTA'
+                ? 'success'
+                : val === 'BAJA'
+                  ? 'failure'
+                  : 'warning'
+            }
+            size="sm"
+          >
+            {val === 'PROPUESTA' ? 'PROP. BAJA' : val}
+          </Badge>
+        ),
+      },
+      {
+        key: 'serialNumber',
+        title: 'Serial / Activo / Folio',
+        sortable: false,
+        render: (_, row) => (
+          <div className="min-w-52">
+            <div>{row.serialNumber || 'N/A'}</div>
+            <div>{row.activeNumber || 'N/A'}</div>
+            <div>{row.internalFolio || 'N/A'}</div>
+          </div>
+        ),
+      },
+      {
+        key: 'origin',
+        title: 'Origen',
+        sortable: false,
+        render: (_, row) => {
+          const isDirect = row.source === 'direct';
+          return isDirect ? (
+            <Badge color="gray" size="sm">
+              Directo
+            </Badge>
+          ) : (
+            <Badge color="purple" size="sm">
+              Factura: {row.invoice?.code || 'N/A'}
+            </Badge>
+          );
+        },
+      },
+      {
+        key: 'act',
+        title: 'Acciones',
+        sortable: false,
+        render: (_, row) => {
+          // Solo mostrar botón de desasignar para inventarios directos
+          // source: "direct" significa que se asignó directo a la OC
+          // source: "invoice" significa que vino por medio de una factura
+          const isDirect = row.source === 'direct';
+          if (!isDirect) {
+            return <span className="text-gray-400 text-sm">—</span>;
+          }
+          return (
+            <ActionButtons
+              extraActions={[
+                {
+                  label: 'Desasignar',
+                  icon: MdLinkOff,
+                  color: 'red',
+                  filled: true,
+                  action: () => handleRemoveInventory(row.id),
+                  disabled: removeInventory.isPending,
+                },
+              ]}
+            />
+          );
+        },
+      },
+    ],
+    [removeInventory.isPending],
+  );
 
   if (!purchaseOrder) {
     return (
@@ -221,7 +334,7 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
         )}
       </div>
 
-      {/* Inventarios asignados - Ocupa todo el espacio restante */}
+      {/* Inventarios asignados - Tabla */}
       <div className="flex-1 flex flex-col min-h-0">
         <div className="flex justify-between items-center mb-3">
           <h4 className="font-medium text-sm">
@@ -246,64 +359,12 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto border rounded-lg divide-y">
-            {assignedInventories.map((inventory) => {
-              // Determinar el origen del inventario
-              const isDirect = !inventory.invoiceId;
-
-              return (
-                <div
-                  key={inventory.id}
-                  className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between p-3 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <div className="font-medium text-sm flex items-center gap-2">
-                        <Badge
-                          color={
-                            inventory.status === 'ALTA' ? 'success' : 'warning'
-                          }
-                          size="sm"
-                        >
-                          {inventory.status}
-                        </Badge>
-                        {inventory.model?.name}
-                      </div>
-                      {!isDirect && inventory.invoice && (
-                        <Badge color="purple" size="xs">
-                          De Factura: {inventory.invoice.code}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      Serial: {inventory.serialNumber || 'N/A'} | Activo:{' '}
-                      {inventory.activeNumber || 'N/A'}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      Folio: {inventory.internalFolio}
-                    </div>
-                  </div>
-                  <div className="flex justify-center w-full md:w-auto md:justify-start md:items-center gap-2">
-                    {/* Solo permitir remover inventarios directos */}
-                    {isDirect && (
-                      <ActionButtons
-                        extraActions={[
-                          {
-                            label: 'Desasignar',
-                            icon: MdLinkOff,
-                            color: 'red',
-                            filled: true,
-                            action: () => handleRemoveInventory(inventory.id),
-                            disabled: removeInventory.isPending,
-                          },
-                        ]}
-                      />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <ReusableTable
+            columns={inventoryColumns}
+            data={assignedInventories}
+            showPagination={false}
+            striped
+          />
         )}
       </div>
 
