@@ -46,21 +46,21 @@ const BreadcrumbsBuilder = (path) => {
       icon: MdInventory,
     },
     {
-      label: 'Crear Inventarios',
+      label: 'Crear',
       href: '/inventories/create',
       icon: PiStackPlusFill,
     },
     {
-      label: 'Editar Inventarios',
+      label: 'Editar',
       href: '/inventories/edit',
     },
     {
-      label: 'Detalles del Inventarios',
+      label: 'Detalles',
       href: '/inventories/view',
       icon: MdChecklist,
     },
     {
-      label: 'Migrar Inventarios',
+      label: 'Migrar',
       href: '/inventories/migrate',
       icon: HiHome,
     },
@@ -100,12 +100,12 @@ const BreadcrumbsBuilder = (path) => {
       icon: FaFileInvoice,
     },
     {
-      label: 'Crear Orden de Compra',
+      label: 'Crear',
       href: '/purchase-orders/create',
       icon: PiStackPlusFill,
     },
     {
-      label: 'Editar Orden de Compra',
+      label: 'Editar',
       href: '/purchase-orders/edit',
       icon: null,
     },
@@ -115,12 +115,12 @@ const BreadcrumbsBuilder = (path) => {
       icon: BiCategory,
     },
     {
-      label: 'Crear Modelo de Inventarios',
+      label: 'Crear',
       href: '/catalogs/inventory-models/create',
       icon: null,
     },
     {
-      label: 'Editar Modelo de Inventarios',
+      label: 'Editar',
       href: '/catalogs/inventory-models/edit',
       icon: null,
     },
@@ -130,22 +130,22 @@ const BreadcrumbsBuilder = (path) => {
       icon: FaUserCircle,
     },
     {
-      label: 'Crear Usuario',
+      label: 'Crear',
       href: '/users/create',
       icon: null,
     },
     {
-      label: 'Editar Usuario',
+      label: 'Editar',
       href: '/users/edit',
       icon: null,
     },
     {
-      label: 'Detalles del Usuario',
+      label: 'Detalles',
       href: '/users/view',
       icon: null,
     },
     {
-      label: 'Configuracion de la Cuenta',
+      label: 'Configuración',
       href: '/account-settings',
       icon: FaUserCog,
     },

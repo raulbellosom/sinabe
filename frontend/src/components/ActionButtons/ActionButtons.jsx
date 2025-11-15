@@ -1,7 +1,7 @@
 // src/components/ActionButtons/ActionButtons.jsx
 import React, { forwardRef } from 'react';
 import { FaEdit, FaEye, FaPlus, FaTrash } from 'react-icons/fa';
-import { MdCancel } from 'react-icons/md';
+import { MdCancel, MdOutlinePushPin, MdPushPin } from 'react-icons/md';
 import LinkButton from './LinkButton';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
 
@@ -13,11 +13,14 @@ const ActionButtons = forwardRef(
       onRemove,
       onCreate,
       onCancel,
+      onTogglePin,
       labelShow,
       labelEdit,
       labelRemove,
       labelCreate,
       labelCancel,
+      labelPin,
+      isPinMode = false,
       extraActions = [],
     },
     ref,
@@ -59,6 +62,15 @@ const ActionButtons = forwardRef(
         action: onCancel,
         color: 'red',
         icon: MdCancel,
+        disabled: false,
+      },
+      {
+        label: isPinMode
+          ? labelPin || 'Desactivar Pin'
+          : labelPin || 'Activar Pin',
+        action: onTogglePin,
+        color: isPinMode ? 'green' : 'blue',
+        icon: isPinMode ? MdPushPin : MdOutlinePushPin,
         disabled: false,
       },
     ];

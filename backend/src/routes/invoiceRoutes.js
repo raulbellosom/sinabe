@@ -49,6 +49,10 @@ independentRouter.put(
   removeInvoiceFromPurchaseOrder
 );
 
+// 📄 Crear factura independiente (ruta específica para frontend)
+// POST /api/invoices/independent
+independentRouter.post("/independent", createIndependentInvoice);
+
 // 📄 CRUD facturas independientes
 // POST /api/invoices - Crear factura independiente
 // GET  /api/invoices - Listar facturas independientes

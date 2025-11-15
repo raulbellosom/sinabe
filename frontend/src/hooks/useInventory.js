@@ -7,7 +7,15 @@ import {
   deleteInventory,
   searchInventories as searchInventoriesAPI,
   createMultipleInventories,
+  getPurchaseOrdersList,
+  getInvoicesList,
+  createPurchaseOrderSimple,
+  createInvoiceSimple,
 } from '../services/api';
+import {
+  getInventoryLocationsList,
+  createInventoryLocation,
+} from '../services/inventoryLocationService';
 import { useLoading } from '../context/LoadingContext';
 import Notifies from '../components/Notifies/Notifies';
 
@@ -89,6 +97,84 @@ const useInventoy = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
+  const fetchPurchaseOrdersMutation = useMutation({
+    mutationFn: getPurchaseOrdersList,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      dispatch({ type: 'FETCH_PURCHASE_ORDERS_SUCCESS', payload: data });
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al cargar órdenes de compra');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const fetchInvoicesMutation = useMutation({
+    mutationFn: getInvoicesList,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      dispatch({ type: 'FETCH_INVOICES_SUCCESS', payload: data });
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al cargar facturas');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const createPurchaseOrderMutation = useMutation({
+    mutationFn: createPurchaseOrderSimple,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      dispatch({ type: 'CREATE_PURCHASE_ORDER', payload: data });
+      Notifies('success', 'Orden de compra creada exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al crear orden de compra');
+      Notifies('error', error?.response?.data?.message);
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const createInvoiceMutation = useMutation({
+    mutationFn: createInvoiceSimple,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      dispatch({ type: 'CREATE_INVOICE', payload: data });
+      Notifies('success', 'Factura creada exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al crear factura');
+      Notifies('error', error?.response?.data?.message);
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const fetchLocationsMutation = useMutation({
+    mutationFn: getInventoryLocationsList,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      dispatch({ type: 'FETCH_LOCATIONS_SUCCESS', payload: data });
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al cargar ubicaciones');
+    },
+    onSettled: () => setLoading(false),
+  });
+
+  const createLocationMutation = useMutation({
+    mutationFn: createInventoryLocation,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      dispatch({ type: 'CREATE_LOCATION', payload: data });
+      Notifies('success', 'Ubicación creada exitosamente');
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al crear ubicación');
+      Notifies('error', error?.response?.data?.message);
+    },
+    onSettled: () => setLoading(false),
+  });
+
   return {
     fetchInventories: fetchInventories.mutate,
     createInventory: (values) => {
@@ -101,6 +187,18 @@ const useInventoy = (dispatch) => {
       return updateInventoryMutation.mutateAsync(values);
     },
     deleteInventory: deleteInventoryMutation.mutate,
+    fetchPurchaseOrders: fetchPurchaseOrdersMutation.mutate,
+    fetchInvoices: fetchInvoicesMutation.mutate,
+    fetchLocations: fetchLocationsMutation.mutate,
+    createPurchaseOrder: (values) => {
+      return createPurchaseOrderMutation.mutateAsync(values);
+    },
+    createInvoice: (values) => {
+      return createInvoiceMutation.mutateAsync(values);
+    },
+    createLocation: (values) => {
+      return createLocationMutation.mutateAsync(values);
+    },
   };
 };
 

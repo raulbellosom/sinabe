@@ -4,22 +4,19 @@ import { FileInput as File, Label } from 'flowbite-react';
 import classNames from 'classnames';
 import FileIcon from '../FileIcon/FileIcon';
 
-const FileInput = ({
-  className,
-  field,
-  form: { setFieldValue, touched, errors },
-  ...props
-}) => {
+const FileInput = ({ className, field, form = {}, ...props }) => {
+  // Provide defaults for form properties
+  const { setFieldValue = () => {}, touched = {}, errors = {} } = form;
   const handleChange = (e) => {
     const newFiles = Array.from(e.target.files);
     const currentFiles = field.value || [];
     const combinedFiles = [...currentFiles, ...newFiles];
-    setFieldValue(field.name, combinedFiles);
+    setFieldValue(field?.name, combinedFiles);
   };
 
   const removeFile = (index) => {
     const updatedFiles = field.value.filter((_, i) => i !== index);
-    setFieldValue(field.name, updatedFiles);
+    setFieldValue(field?.name, updatedFiles);
   };
 
   return (
@@ -27,7 +24,7 @@ const FileInput = ({
       <Label
         htmlFor={props.id || props.name}
         className={'block text-sm font-medium'}
-        color={touched[field.name] && errors[field.name] ? 'failure' : ''}
+        color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
         value={props.label}
       />
       <File
@@ -35,7 +32,7 @@ const FileInput = ({
         multiple={props.multiple}
         helperText={props.helperText || ''}
         accept={props.accept || ''}
-        color={touched[field.name] && errors[field.name] ? 'failure' : ''}
+        color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
         className="mt-1"
         onChange={handleChange}
       />
@@ -51,7 +48,7 @@ const FileInput = ({
           ))}
       </div>
       <ErrorMessage
-        name={field.name}
+        name={field?.name || ''}
         component="div"
         className="text-red-500 text-sm"
       />

@@ -10,6 +10,9 @@ import {
   checkSerialNumber,
   assignMissingFolios,
   bulkUpdateStatus,
+  getPurchaseOrdersList,
+  getInvoicesList,
+  getInventoryLocationsList,
 } from "../controllers/inventoryController.js";
 import {
   getInventoryTypes,
@@ -95,6 +98,13 @@ router
   .get(protect, getCustomFields)
   .post(protect, createCustomField);
 router.route("/customFields/values").post(protect, addCustomFieldValue);
+
+// Rutas para obtener listas de Purchase Orders e Invoices para autocomplete
+// IMPORTANTE: Estas rutas deben estar ANTES de /:id para evitar conflictos
+router.route("/purchase-orders-list").get(protect, getPurchaseOrdersList);
+router.route("/invoices-list").get(protect, getInvoicesList);
+router.route("/locations-list").get(protect, getInventoryLocationsList);
+
 router
   .route("/:id")
   .get(protect, getInventoryById)

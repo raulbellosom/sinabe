@@ -167,6 +167,7 @@ export const getInventoryById = async (req, res) => {
         purchaseOrder: {
           include: { project: true },
         },
+        location: true,
         InventoryDeadline: {
           include: {
             deadline: {
@@ -213,6 +214,10 @@ export const createInventory = async (req, res) => {
       details,
       customFields,
       status,
+      purchaseOrderId,
+      invoiceId,
+      locationId,
+      locationName,
     } = inventoryData;
 
     // check if model exists
@@ -249,6 +254,30 @@ export const createInventory = async (req, res) => {
       return;
     }
 
+    // Manejar ubicación: priorizar locationId, sino crear/buscar por locationName
+    let finalLocationId = null;
+
+    if (locationId) {
+      finalLocationId = parseInt(locationId, 10);
+    } else if (locationName && locationName.trim()) {
+      const trimmedLocationName = locationName.trim();
+
+      // Buscar si ya existe la ubicación
+      const existingLocation = await db.inventoryLocation.findFirst({
+        where: { name: trimmedLocationName, enabled: true },
+      });
+
+      if (existingLocation) {
+        finalLocationId = existingLocation.id;
+      } else {
+        // Crear nueva ubicación
+        const newLocation = await db.inventoryLocation.create({
+          data: { name: trimmedLocationName },
+        });
+        finalLocationId = newLocation.id;
+      }
+    }
+
     const createdInventory = await db.$transaction(async (prisma) => {
       const inventory = await prisma.inventory.create({
         data: {
@@ -262,6 +291,9 @@ export const createInventory = async (req, res) => {
           createdById: user.id,
           details,
           enabled: true,
+          purchaseOrderId: purchaseOrderId || null,
+          invoiceId: invoiceId || null,
+          locationId: finalLocationId,
         },
         include: {
           model: {
@@ -380,6 +412,10 @@ export const updateInventory = async (req, res) => {
     images,
     files,
     status,
+    purchaseOrderId,
+    invoiceId,
+    locationId,
+    locationName,
   } = JSON.parse(req.body.inventory || "{}");
 
   try {
@@ -404,6 +440,30 @@ export const updateInventory = async (req, res) => {
       }
     }
 
+    // Manejar ubicación: priorizar locationId, sino crear/buscar por locationName
+    let finalLocationId = null;
+
+    if (locationId) {
+      finalLocationId = parseInt(locationId, 10);
+    } else if (locationName && locationName.trim()) {
+      const trimmedLocationName = locationName.trim();
+
+      // Buscar si ya existe la ubicación
+      const existingLocation = await db.inventoryLocation.findFirst({
+        where: { name: trimmedLocationName, enabled: true },
+      });
+
+      if (existingLocation) {
+        finalLocationId = existingLocation.id;
+      } else {
+        // Crear nueva ubicación
+        const newLocation = await db.inventoryLocation.create({
+          data: { name: trimmedLocationName },
+        });
+        finalLocationId = newLocation.id;
+      }
+    }
+
     await db.$transaction(async (prisma) => {
       await prisma.inventory.update({
         where: { id },
@@ -415,6 +475,9 @@ export const updateInventory = async (req, res) => {
           comments,
           details,
           status,
+          purchaseOrderId: purchaseOrderId || null,
+          invoiceId: invoiceId || null,
+          locationId: finalLocationId || null,
         },
       });
 
@@ -582,6 +645,7 @@ export const updateInventory = async (req, res) => {
             customField: true,
           },
         },
+        location: true,
         images: {
           where: { enabled: true },
           select: {
@@ -1293,5 +1357,111 @@ export const bulkUpdateStatus = async (req, res) => {
       error: "Error al actualizar el estado de los inventarios",
       details: error.message,
     });
+  }
+};
+
+// 📋 Obtener lista de Purchase Orders para autocomplete
+export const getPurchaseOrdersList = async (req, res) => {
+  try {
+    const purchaseOrders = await db.purchaseOrder.findMany({
+      select: {
+        id: true,
+        code: true,
+        supplier: true,
+        description: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const formattedPurchaseOrders = purchaseOrders.map((po) => ({
+      id: po.id,
+      label: `${po.code}${
+        po.supplier
+          ? ` - ${po.supplier.substring(0, 30)}${
+              po.supplier.length > 30 ? "..." : ""
+            }`
+          : ""
+      }${
+        po.description
+          ? ` - ${po.description.substring(0, 40)}${
+              po.description.length > 40 ? "..." : ""
+            }`
+          : ""
+      }`,
+      value: po.id,
+      code: po.code,
+      supplier: po.supplier,
+      description: po.description,
+    }));
+
+    res.json(formattedPurchaseOrders);
+  } catch (error) {
+    console.error("Error fetching purchase orders list:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 📄 Obtener lista de Invoices para autocomplete
+export const getInvoicesList = async (req, res) => {
+  try {
+    const invoices = await db.invoice.findMany({
+      select: {
+        id: true,
+        code: true,
+        concept: true,
+        supplier: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const formattedInvoices = invoices.map((invoice) => ({
+      id: invoice.id,
+      label: `${invoice.code} - ${invoice.concept.substring(0, 40)}${
+        invoice.concept.length > 40 ? "..." : ""
+      }${
+        invoice.supplier
+          ? ` - ${invoice.supplier.substring(0, 30)}${
+              invoice.supplier.length > 30 ? "..." : ""
+            }`
+          : ""
+      }`,
+      value: invoice.id,
+      code: invoice.code,
+      concept: invoice.concept,
+      supplier: invoice.supplier,
+    }));
+
+    res.json(formattedInvoices);
+  } catch (error) {
+    console.error("Error fetching invoices list:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 📍 Obtener lista de Inventory Locations para autocomplete
+export const getInventoryLocationsList = async (req, res) => {
+  try {
+    const locations = await db.inventoryLocation.findMany({
+      where: { enabled: true },
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: { name: "asc" },
+    });
+
+    const formattedLocations = locations.map((location) => ({
+      id: location.id,
+      label: location.name,
+      value: location.id,
+      name: location.name,
+    }));
+
+    res.json(formattedLocations);
+  } catch (error) {
+    console.error("Error fetching inventory locations list:", error);
+    res.status(500).json({ error: error.message });
   }
 };

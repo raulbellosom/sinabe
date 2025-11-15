@@ -9,6 +9,9 @@ const InventoryProvider = ({ children }) => {
     inventory: {},
     pagination: {},
     loading: true,
+    purchaseOrders: [],
+    invoices: [],
+    locations: [],
   });
 
   const {
@@ -17,6 +20,12 @@ const InventoryProvider = ({ children }) => {
     deleteInventory,
     fetchInventories,
     updateInventory,
+    fetchPurchaseOrders,
+    fetchInvoices,
+    fetchLocations,
+    createPurchaseOrder,
+    createInvoice,
+    createLocation,
   } = useInventory(dispatch);
 
   return (
@@ -28,6 +37,12 @@ const InventoryProvider = ({ children }) => {
         deleteInventory,
         updateInventory,
         fetchInventories,
+        fetchPurchaseOrders,
+        fetchInvoices,
+        fetchLocations,
+        createPurchaseOrder,
+        createInvoice,
+        createLocation,
       }}
     >
       {children}

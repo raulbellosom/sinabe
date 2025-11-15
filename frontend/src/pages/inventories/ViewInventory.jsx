@@ -10,6 +10,7 @@ import {
   FaUser,
   FaFileInvoiceDollar,
   FaProjectDiagram,
+  FaMapMarkerAlt,
 } from 'react-icons/fa';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import { MdInfo, MdOutlineTextsms, MdInventory } from 'react-icons/md';
@@ -202,6 +203,16 @@ const ViewInventory = () => {
         route: invoiceRoute,
       });
     }
+
+    // Ubicación (si existe)
+    if (inventory?.location) {
+      rels.push({
+        label: 'Ubicación',
+        value: inventory.location.name,
+        icon: FaMapMarkerAlt,
+      });
+    }
+
     inventory?.model?.ModelVertical?.forEach(({ vertical }) => {
       rels.push({
         label: 'Vertical',

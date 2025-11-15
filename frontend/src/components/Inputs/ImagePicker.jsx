@@ -10,12 +10,9 @@ import { useNativeCamera } from '../../hooks/useNativeCamera';
 import { useMediaQuery } from 'react-responsive';
 import { FaCamera } from 'react-icons/fa';
 
-const ImagePicker = ({
-  className,
-  field,
-  form: { setFieldValue, touched, errors },
-  ...props
-}) => {
+const ImagePicker = ({ className, field, form = {}, ...props }) => {
+  // Provide defaults for form properties
+  const { setFieldValue = () => {}, touched = {}, errors = {} } = form;
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const { openCamera } = useNativeCamera();
 
@@ -77,14 +74,14 @@ const ImagePicker = ({
       }
     }
 
-    setFieldValue(field.name, [...(field.value || []), ...processedFiles]);
+    setFieldValue(field?.name, [...(field.value || []), ...processedFiles]);
   };
 
   const handleRemoveImage = (idOrIndex) => {
     const updatedFiles = field.value.filter((img, i) =>
       img.id !== undefined ? img.id !== idOrIndex : i !== idOrIndex,
     );
-    setFieldValue(field.name, updatedFiles);
+    setFieldValue(field?.name, updatedFiles);
   };
 
   const handleDrop = (e) => {
@@ -102,7 +99,7 @@ const ImagePicker = ({
       const file = new File([blob], `photo_${Date.now()}.jpg`, {
         type: blob.type,
       });
-      setFieldValue(field.name, [...(field.value || []), file]);
+      setFieldValue(field?.name, [...(field.value || []), file]);
     }
   };
 
@@ -113,7 +110,7 @@ const ImagePicker = ({
       <Label
         htmlFor={props.id || props.name}
         className="block text-sm font-medium"
-        color={touched[field.name] && errors[field.name] ? 'failure' : ''}
+        color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
         value={props.label}
       />
 
@@ -217,7 +214,7 @@ const ImagePicker = ({
       )}
 
       <ErrorMessage
-        name={field.name}
+        name={field?.name || ''}
         component="div"
         className="text-red-500 text-sm"
       />

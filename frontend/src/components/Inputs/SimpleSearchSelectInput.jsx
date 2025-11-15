@@ -7,7 +7,7 @@ import Notifies from '../Notifies/Notifies';
 
 const SimpleSearchSelectInput = ({
   field,
-  form: { touched, errors, setFieldValue },
+  form = {},
   closeMenuOnSelect = true,
   onSelect,
   className,
@@ -16,6 +16,8 @@ const SimpleSearchSelectInput = ({
   isClearable = false,
   ...props
 }) => {
+  // Provide defaults for form properties
+  const { touched = {}, errors = {}, setFieldValue = () => {} } = form;
   const selectedValue = isMulti
     ? props.options.filter((option) => field.value?.includes(option.value))
     : props.options.find((option) => option.value === field.value);
@@ -28,11 +30,11 @@ const SimpleSearchSelectInput = ({
 
       if (selectedOption?.__isNew__) {
         createOption({ name: selectedOption.value }).then((response) => {
-          setFieldValue(field.name, response.id);
+          setFieldValue(field?.name, response.id);
         });
         return;
       }
-      setFieldValue(field.name, value);
+      setFieldValue(field?.name, value);
       if (onSelect) {
         onSelect(value);
       }
@@ -47,7 +49,7 @@ const SimpleSearchSelectInput = ({
       <Label
         htmlFor={props.id || props.name}
         className="block text-sm font-medium"
-        color={touched[field.name] && errors[field.name] ? 'failure' : ''}
+        color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
         value={props.label}
       />
       <CreatableSelect
@@ -62,7 +64,7 @@ const SimpleSearchSelectInput = ({
         options={props.options}
       />
       <ErrorMessage
-        name={field.name}
+        name={field?.name || ''}
         component="div"
         className="text-red-500 text-sm"
       />

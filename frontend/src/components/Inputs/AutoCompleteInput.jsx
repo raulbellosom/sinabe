@@ -12,7 +12,7 @@ const Dropdown = ({
   highlightedIndex,
 }) => {
   return (
-    <div className="mt-2 pt-1 min-w-full max-h-[44vh] overflow-y-auto border border-gray-300 bg-white rounded-md shadow-lg absolute z-30">
+    <div className="mt-2 pt-1 min-w-full max-h-[50dvh] overflow-y-auto border border-gray-300 bg-white rounded-md shadow-lg absolute z-30">
       {options.map((option, i) => (
         <div
           key={i}
@@ -42,7 +42,7 @@ const Dropdown = ({
 
 const AutocompleteInput = ({
   field,
-  form: { touched, errors, setFieldValue, setFieldTouched },
+  form = {},
   options,
   placeholder = 'Escribe aquí...',
   className,
@@ -55,6 +55,13 @@ const AutocompleteInput = ({
   allowOther, // Boolean: si es true, se muestra la opción "Otro"
   onOtherSelected, // Función a llamar cuando se selecciona "Otro"
 }) => {
+  // Provide defaults for form properties
+  const {
+    touched = {},
+    errors = {},
+    setFieldValue = () => {},
+    setFieldTouched = () => {},
+  } = form;
   const [inputValue, setInputValue] = useState('');
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -200,9 +207,9 @@ const AutocompleteInput = ({
     <div className={classNames('relative', className)}>
       {label && (
         <Label
-          htmlFor={field.name}
+          htmlFor={field?.name}
           className={classNames('block text-sm font-medium', {
-            'text-red-500': touched[field.name] && errors[field.name],
+            'text-red-500': touched[field?.name] && errors[field?.name],
           })}
         >
           {label}
@@ -214,7 +221,7 @@ const AutocompleteInput = ({
             className={classNames(
               `absolute text-lg left-3 top-1/2 transform ${!disabled && 'text-neutral-500'} -translate-y-1/2`,
               { 'text-neutral-400': disabled && !inputValue },
-              { 'text-red-500': touched[field.name] && errors[field.name] },
+              { 'text-red-500': touched[field?.name] && errors[field?.name] },
             )}
           >
             <Icon />
@@ -227,10 +234,10 @@ const AutocompleteInput = ({
             'w-full text-xs md:text-sm py-2.5 px-3 border rounded-md focus:outline-none focus:ring',
             {
               'border-neutral-500 focus:border-blue-500': !(
-                touched[field.name] && errors[field.name]
+                touched[field?.name] && errors[field?.name]
               ),
               'border-red-500 focus:border-red-500 focus:ring-red-500':
-                touched[field.name] && errors[field.name],
+                touched[field?.name] && errors[field?.name],
             },
             Icon && 'pl-10',
           )}
@@ -267,7 +274,7 @@ const AutocompleteInput = ({
         />
       )}
       <ErrorMessage
-        name={field.name}
+        name={field?.name || ''}
         component="div"
         className="text-red-500 text-sm mt-1"
       />

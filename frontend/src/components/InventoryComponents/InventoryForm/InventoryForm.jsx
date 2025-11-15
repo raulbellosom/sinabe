@@ -16,6 +16,18 @@ const InventoryForm = forwardRef(
       createCustomField,
       currentCustomFields,
       inventoryId,
+      purchaseOrders = [],
+      invoices = [],
+      locations = [],
+      onOtherPurchaseOrderSelected,
+      onOtherInvoiceSelected,
+      onOtherLocationSelected,
+      // Props para el sistema de pin
+      isPinMode = false,
+      pinnedFields = {},
+      onPinField,
+      onUnpinField,
+      onFormChange,
     },
     ref,
   ) => {
@@ -23,6 +35,8 @@ const InventoryForm = forwardRef(
       enableReinitialize: true,
       initialValues: initialValues,
       validationSchema: InventoryFormSchema,
+      validateOnChange: false,
+      validateOnBlur: false,
       onSubmit: async (values, actions) => {
         try {
           await onSubmit(values, actions);
@@ -32,6 +46,13 @@ const InventoryForm = forwardRef(
         }
       },
     });
+
+    // Manejar cambios en el formulario para el sistema de localStorage
+    React.useEffect(() => {
+      if (onFormChange && formik.dirty) {
+        onFormChange(formik.values);
+      }
+    }, [formik.values, formik.dirty, onFormChange]);
 
     useImperativeHandle(ref, () => ({
       submitForm: () => {
@@ -51,6 +72,18 @@ const InventoryForm = forwardRef(
             createCustomField={createCustomField}
             currentCustomFields={currentCustomFields}
             inventoryId={inventoryId}
+            purchaseOrders={purchaseOrders}
+            invoices={invoices}
+            locations={locations}
+            onOtherPurchaseOrderSelected={onOtherPurchaseOrderSelected}
+            onOtherInvoiceSelected={onOtherInvoiceSelected}
+            onOtherLocationSelected={onOtherLocationSelected}
+            // Props del sistema de pin
+            isPinMode={isPinMode}
+            pinnedFields={pinnedFields}
+            onPinField={onPinField}
+            onUnpinField={onUnpinField}
+            formikValues={formik.values}
           />
         </Form>
       </FormikProvider>

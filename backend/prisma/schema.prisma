@@ -74,6 +74,10 @@ model Inventory {
   internalFolio     String?                @unique
   invoiceId         String?
   purchaseOrderId   String?
+
+  locationId        Int?
+  location          InventoryLocation?     @relation(fields: [locationId], references: [id])
+
   files             File[]
   images            Image[]                @relation("InventoryImages")
   createdBy         User                   @relation(fields: [createdById], references: [id])
@@ -117,6 +121,15 @@ model Model {
 
   @@index([brandId], map: "Model_brandId_fkey")
   @@index([typeId], map: "Model_typeId_fkey")
+}
+
+model InventoryLocation {
+  id           Int         @id @default(autoincrement())
+  name         String
+  enabled      Boolean     @default(true)
+  inventories  Inventory[]
+
+  @@unique([name])
 }
 
 model CustomField {

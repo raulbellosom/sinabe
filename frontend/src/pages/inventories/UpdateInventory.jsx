@@ -7,6 +7,9 @@ import { useQuery } from '@tanstack/react-query';
 import Skeleton from 'react-loading-skeleton';
 import ModalForm from '../../components/Modals/ModalForm';
 import ModelForm from '../../components/InventoryComponents/ModelForm/ModelForm';
+import PurchaseOrderForm from '../../components/Forms/PurchaseOrderForm';
+import InvoiceForm from '../../components/Forms/InvoiceForm';
+import LocationForm from '../../components/Forms/LocationForm';
 import ModalRemove from '../../components/Modals/ModalRemove';
 const InventoryForm = React.lazy(
   () =>
@@ -22,9 +25,22 @@ import { ThreeCircles } from 'react-loader-spinner';
 
 const UpdateInventory = () => {
   const formRef = useRef(null);
+  const locationFormRef = useRef(null);
   const { id } = useParams();
   const navigate = useNavigate();
-  const { updateInventory, deleteInventory } = useInventoryContext();
+  const {
+    updateInventory,
+    deleteInventory,
+    purchaseOrders,
+    invoices,
+    locations,
+    fetchPurchaseOrders,
+    fetchInvoices,
+    fetchLocations,
+    createPurchaseOrder,
+    createInvoice,
+    createLocation,
+  } = useInventoryContext();
   const { customFields, createField } = useCustomFieldContext();
   const {
     createInventoryModel,
@@ -47,9 +63,18 @@ const UpdateInventory = () => {
     conditions: [],
     files: [],
     customFields: [],
+    purchaseOrderId: '',
+    invoiceId: '',
+    locationId: '',
   });
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPOModalOpen, setIsPOModalOpen] = useState(false);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [lastCreatedPOId, setLastCreatedPOId] = useState(null);
+  const [lastCreatedInvoiceId, setLastCreatedInvoiceId] = useState(null);
+  const [lastCreatedLocationId, setLastCreatedLocationId] = useState(null);
   const [newModelValue, setNewModelValue] = useState({
     name: '',
     brandId: '',
@@ -70,7 +95,64 @@ const UpdateInventory = () => {
   });
 
   useEffect(() => {
+    // Auto-seleccionar la nueva PO cuando se crea
+    if (lastCreatedPOId && purchaseOrders.length > 0) {
+      const newPO = purchaseOrders.find((po) => po.id === lastCreatedPOId);
+      if (newPO) {
+        setInitialValues((prevValues) => ({
+          ...prevValues,
+          purchaseOrderId: newPO.value,
+        }));
+        setLastCreatedPOId(null); // Reset
+      }
+    }
+  }, [purchaseOrders, lastCreatedPOId]);
+
+  useEffect(() => {
+    // Auto-seleccionar la nueva invoice cuando se crea
+    if (lastCreatedInvoiceId && invoices.length > 0) {
+      const newInvoice = invoices.find(
+        (inv) => inv.id === lastCreatedInvoiceId,
+      );
+      if (newInvoice) {
+        setInitialValues((prevValues) => ({
+          ...prevValues,
+          invoiceId: newInvoice.value,
+        }));
+        setLastCreatedInvoiceId(null); // Reset
+      }
+    }
+  }, [invoices, lastCreatedInvoiceId]);
+
+  useEffect(() => {
+    // Auto-seleccionar la nueva ubicación cuando se crea
+    if (lastCreatedLocationId && locations.length > 0) {
+      const newLocation = locations.find(
+        (loc) => loc.id === lastCreatedLocationId,
+      );
+      if (newLocation) {
+        setInitialValues((prevValues) => ({
+          ...prevValues,
+          locationId: newLocation.value,
+        }));
+        setLastCreatedLocationId(null); // Reset
+      }
+    }
+  }, [locations, lastCreatedLocationId]);
+
+  useEffect(() => {
+    // Cargar listas de PO, invoices y ubicaciones al montar el componente
+    fetchPurchaseOrders();
+    fetchInvoices();
+    fetchLocations();
+  }, [fetchPurchaseOrders, fetchInvoices, fetchLocations]);
+
+  useEffect(() => {
     if (inventory && Object.keys(inventory).length !== 0) {
+      console.log('Inventory data:', inventory);
+      console.log('Inventory location:', inventory.location);
+      console.log('Inventory locationId:', inventory.locationId);
+
       const formatedFiles = inventory?.files?.map((file) => ({
         id: file.id,
         url: file.url,
@@ -90,6 +172,9 @@ const UpdateInventory = () => {
         conditions: inventory.conditions.map(
           (condition) => condition.conditionId,
         ),
+        purchaseOrderId: inventory.purchaseOrderId || '',
+        invoiceId: inventory.invoiceId || '',
+        locationId: inventory.locationId || '',
         customFields: inventory?.customField
           ? inventory.customField
               .filter(
@@ -143,8 +228,55 @@ const UpdateInventory = () => {
     }
   };
 
+  const handlePOModalOpen = async () => {
+    setIsPOModalOpen(true);
+  };
+
+  const handleInvoiceModalOpen = async () => {
+    setIsInvoiceModalOpen(true);
+  };
+
+  const handleLocationModalOpen = async () => {
+    setIsLocationModalOpen(true);
+  };
+
+  const handleNewPurchaseOrderSubmit = async (values) => {
+    try {
+      const newPO = await createPurchaseOrder(values);
+      setLastCreatedPOId(newPO.id); // Guardar ID para auto-seleccionar
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsPOModalOpen(false);
+    }
+  };
+
+  const handleNewInvoiceSubmit = async (values) => {
+    try {
+      const newInvoice = await createInvoice(values);
+      setLastCreatedInvoiceId(newInvoice.id); // Guardar ID para auto-seleccionar
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsInvoiceModalOpen(false);
+    }
+  };
+
+  const handleNewLocationSubmit = async (values) => {
+    try {
+      const newLocation = await createLocation(values);
+      setLastCreatedLocationId(newLocation.id); // Guardar ID para auto-seleccionar
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLocationModalOpen(false);
+    }
+  };
+
   const handleSubmit = (values, { setSubmitting, resetForm }) => {
     try {
+      console.log('Values being sent to backend in UPDATE:', values);
+      console.log('LocationId specifically in UPDATE:', values.locationId);
       updateInventory(values);
       resetForm();
     } catch (error) {
@@ -176,6 +308,10 @@ const UpdateInventory = () => {
       brandId: '',
       typeId: '',
     });
+  };
+
+  const onCloseLocationModal = () => {
+    setIsLocationModalOpen(false);
   };
 
   const handleSubmitRef = () => {
@@ -250,19 +386,29 @@ const UpdateInventory = () => {
             <Skeleton className="h-10 rounded-md" />
           </div>
         ) : (
-          <InventoryForm
-            ref={formRef}
-            initialValues={initialValues}
-            onSubmit={handleSubmit}
-            inventoryModels={formattedModels}
-            inventoryConditions={inventoryConditions}
-            isUpdate={true}
-            onOtherModelSelected={() => handleModalOpen()}
-            customFields={customFields}
-            createCustomField={createField}
-            currentCustomFields={initialValues.customFields}
-            inventoryId={id}
-          />
+          <>
+            {console.log('Locations in UpdateInventory:', locations)}
+            {console.log('InitialValues in UpdateInventory:', initialValues)}
+            <InventoryForm
+              ref={formRef}
+              initialValues={initialValues}
+              onSubmit={handleSubmit}
+              inventoryModels={formattedModels}
+              inventoryConditions={inventoryConditions}
+              isUpdate={true}
+              onOtherModelSelected={() => handleModalOpen()}
+              onOtherPurchaseOrderSelected={() => handlePOModalOpen()}
+              onOtherInvoiceSelected={() => handleInvoiceModalOpen()}
+              onOtherLocationSelected={() => handleLocationModalOpen()}
+              purchaseOrders={purchaseOrders}
+              invoices={invoices}
+              locations={locations}
+              customFields={customFields}
+              createCustomField={createField}
+              currentCustomFields={initialValues.customFields}
+              inventoryId={id}
+            />
+          </>
         )}
       </div>
       <ModalRemove
@@ -285,6 +431,63 @@ const UpdateInventory = () => {
           isUpdate={true}
         />
       </ModalForm>
+      {isPOModalOpen && (
+        <ModalForm
+          onClose={() => setIsPOModalOpen(false)}
+          title={'Crear Orden de Compra'}
+          isOpenModal={isPOModalOpen}
+        >
+          <PurchaseOrderForm
+            onSubmit={handleNewPurchaseOrderSubmit}
+            onCancel={() => setIsPOModalOpen(false)}
+          />
+        </ModalForm>
+      )}
+      {isInvoiceModalOpen && (
+        <ModalForm
+          onClose={() => setIsInvoiceModalOpen(false)}
+          title={'Crear Factura'}
+          isOpenModal={isInvoiceModalOpen}
+        >
+          <InvoiceForm
+            onSubmit={handleNewInvoiceSubmit}
+            onCancel={() => setIsInvoiceModalOpen(false)}
+          />
+        </ModalForm>
+      )}
+      {isLocationModalOpen && (
+        <ModalForm
+          onClose={onCloseLocationModal}
+          title={'Crear Ubicación'}
+          isOpenModal={isLocationModalOpen}
+          size="md"
+          actions={[
+            {
+              label: 'Cancelar',
+              action: onCloseLocationModal,
+              color: 'gray',
+              type: 'button',
+            },
+            {
+              label: 'Crear Ubicación',
+              action: () => {
+                if (locationFormRef.current) {
+                  locationFormRef.current.submitForm();
+                }
+              },
+              color: 'purple',
+              type: 'submit',
+              filled: true,
+            },
+          ]}
+        >
+          <LocationForm
+            ref={locationFormRef}
+            onSubmit={handleNewLocationSubmit}
+            onCancel={onCloseLocationModal}
+          />
+        </ModalForm>
+      )}
     </>
   );
 };

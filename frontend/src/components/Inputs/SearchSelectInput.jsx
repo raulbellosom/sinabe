@@ -6,12 +6,14 @@ import Select from 'react-select/creatable';
 
 const SearchSelectInput = ({
   field,
-  form: { touched, errors, setFieldValue },
+  form = {},
   closeMenuOnSelect = false,
   onSelect,
   className,
   ...props
 }) => {
+  // Provide defaults for form properties
+  const { touched = {}, errors = {}, setFieldValue = () => {} } = form;
   const handleChange = (selectedOptions) => {
     const values = selectedOptions
       ? selectedOptions.map((option) => option.value)
@@ -29,7 +31,7 @@ const SearchSelectInput = ({
       <Label
         htmlFor={props.id || props.name}
         className="block text-sm font-medium"
-        color={touched[field.name] && errors[field.name] ? 'failure' : ''}
+        color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
         value={props.label}
       />
       <Select
@@ -47,7 +49,7 @@ const SearchSelectInput = ({
         options={props.options}
       />
       <ErrorMessage
-        name={field.name}
+        name={field?.name || ''}
         component="div"
         className="text-red-500 text-sm"
       />

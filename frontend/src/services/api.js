@@ -879,4 +879,51 @@ export const assignInventoriesToPurchaseOrder = async ({
   }
 };
 
+// Obtener lista de Purchase Orders para autocomplete
+export const getPurchaseOrdersList = async () => {
+  try {
+    const response = await api.get('/inventories/purchase-orders-list');
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+// Obtener lista de Invoices para autocomplete
+export const getInvoicesList = async () => {
+  try {
+    const response = await api.get('/inventories/invoices-list');
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+// Crear nueva Purchase Order
+export const createPurchaseOrderSimple = async (purchaseOrder) => {
+  try {
+    const response = await api.post(
+      '/purchase-orders/without-project',
+      purchaseOrder,
+    );
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+// Crear nueva Invoice
+export const createInvoiceSimple = async (invoice) => {
+  try {
+    const response = await api.post('/invoices/independent', invoice);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export default api;

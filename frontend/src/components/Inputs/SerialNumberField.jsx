@@ -8,10 +8,12 @@ import classNames from 'classnames';
 const SerialNumberField = ({
   className,
   field,
-  form: { touched, errors },
+  form = {},
   inventoryId,
   ...props
 }) => {
+  // Provide defaults for form properties
+  const { touched = {}, errors = {} } = form;
   const { setFieldError } = useFormikContext();
   const [error, setError] = useState(null);
   const handleBlur = async (e) => {
@@ -22,7 +24,7 @@ const SerialNumberField = ({
       try {
         const result = await checkSerialNumber(serial, inventoryId);
         if (result.exists) {
-          setFieldError(field.name, 'El número de serie ya existe');
+          setFieldError(field?.name, 'El número de serie ya existe');
           setError('El número de serie ya existe');
         } else {
           setError(null);
