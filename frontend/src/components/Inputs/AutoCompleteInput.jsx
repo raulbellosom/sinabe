@@ -273,11 +273,6 @@ const AutocompleteInput = ({
           highlightedIndex={highlightedIndex}
         />
       )}
-      <ErrorMessage
-        name={field?.name || ''}
-        component="div"
-        className="text-red-500 text-sm mt-1"
-      />
     </div>
   );
 };

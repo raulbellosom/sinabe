@@ -5,7 +5,7 @@ import { useCatalogContext } from '../../context/CatalogContext';
 import { getInventory } from '../../services/api';
 import { useQuery } from '@tanstack/react-query';
 import Skeleton from 'react-loading-skeleton';
-import ModalForm from '../../components/Modals/ModalForm';
+import ReusableModal from '../../components/Modals/ReusableModal';
 import ModelForm from '../../components/InventoryComponents/ModelForm/ModelForm';
 import PurchaseOrderForm from '../../components/Forms/PurchaseOrderForm';
 import InvoiceForm from '../../components/Forms/InvoiceForm';
@@ -26,6 +26,9 @@ import { ThreeCircles } from 'react-loader-spinner';
 const UpdateInventory = () => {
   const formRef = useRef(null);
   const locationFormRef = useRef(null);
+  const modelFormRef = useRef(null);
+  const poFormRef = useRef(null);
+  const invoiceFormRef = useRef(null);
   const { id } = useParams();
   const navigate = useNavigate();
   const {
@@ -67,6 +70,7 @@ const UpdateInventory = () => {
     invoiceId: '',
     locationId: '',
   });
+  const [currentFormValues, setCurrentFormValues] = useState({});
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPOModalOpen, setIsPOModalOpen] = useState(false);
@@ -99,14 +103,14 @@ const UpdateInventory = () => {
     if (lastCreatedPOId && purchaseOrders.length > 0) {
       const newPO = purchaseOrders.find((po) => po.id === lastCreatedPOId);
       if (newPO) {
-        setInitialValues((prevValues) => ({
-          ...prevValues,
+        setInitialValues({
+          ...currentFormValues,
           purchaseOrderId: newPO.value,
-        }));
+        });
         setLastCreatedPOId(null); // Reset
       }
     }
-  }, [purchaseOrders, lastCreatedPOId]);
+  }, [purchaseOrders, lastCreatedPOId, currentFormValues]);
 
   useEffect(() => {
     // Auto-seleccionar la nueva invoice cuando se crea
@@ -115,14 +119,14 @@ const UpdateInventory = () => {
         (inv) => inv.id === lastCreatedInvoiceId,
       );
       if (newInvoice) {
-        setInitialValues((prevValues) => ({
-          ...prevValues,
+        setInitialValues({
+          ...currentFormValues,
           invoiceId: newInvoice.value,
-        }));
+        });
         setLastCreatedInvoiceId(null); // Reset
       }
     }
-  }, [invoices, lastCreatedInvoiceId]);
+  }, [invoices, lastCreatedInvoiceId, currentFormValues]);
 
   useEffect(() => {
     // Auto-seleccionar la nueva ubicación cuando se crea
@@ -131,14 +135,14 @@ const UpdateInventory = () => {
         (loc) => loc.id === lastCreatedLocationId,
       );
       if (newLocation) {
-        setInitialValues((prevValues) => ({
-          ...prevValues,
+        setInitialValues({
+          ...currentFormValues,
           locationId: newLocation.value,
-        }));
+        });
         setLastCreatedLocationId(null); // Reset
       }
     }
-  }, [locations, lastCreatedLocationId]);
+  }, [locations, lastCreatedLocationId, currentFormValues]);
 
   useEffect(() => {
     // Cargar listas de PO, invoices y ubicaciones al montar el componente
@@ -190,6 +194,7 @@ const UpdateInventory = () => {
       };
 
       setInitialValues(values);
+      setCurrentFormValues(values);
     }
   }, [inventory]);
 
@@ -217,10 +222,10 @@ const UpdateInventory = () => {
           id: newModel.id,
         },
       ]);
-      setInitialValues((prevValues) => ({
-        ...prevValues,
+      setInitialValues({
+        ...currentFormValues,
         modelId: newModel.id,
-      }));
+      });
     } catch (error) {
       console.error(error);
     } finally {
@@ -407,6 +412,7 @@ const UpdateInventory = () => {
               createCustomField={createField}
               currentCustomFields={initialValues.customFields}
               inventoryId={id}
+              onFormChange={setCurrentFormValues}
             />
           </>
         )}
@@ -416,12 +422,32 @@ const UpdateInventory = () => {
         onCloseModal={() => setIsOpenModal(false)}
         removeFunction={handleDeleteInventory}
       />
-      <ModalForm
+      <ReusableModal
         onClose={onCloseModal}
         title={'Crear Modelo'}
-        isOpenModal={isModalOpen}
+        isOpen={isModalOpen}
+        actions={[
+          {
+            label: 'Cancelar',
+            action: onCloseModal,
+            color: 'gray',
+            type: 'button',
+          },
+          {
+            label: 'Crear Modelo',
+            action: () => {
+              if (modelFormRef.current) {
+                modelFormRef.current.submitForm();
+              }
+            },
+            color: 'purple',
+            type: 'button',
+            filled: true,
+          },
+        ]}
       >
         <ModelForm
+          ref={modelFormRef}
           onSubmit={handleNewModelSubmit}
           initialValues={newModelValue}
           inventoryBrands={inventoryBrands}
@@ -430,36 +456,76 @@ const UpdateInventory = () => {
           createType={createInventoryType}
           isUpdate={true}
         />
-      </ModalForm>
+      </ReusableModal>
       {isPOModalOpen && (
-        <ModalForm
+        <ReusableModal
           onClose={() => setIsPOModalOpen(false)}
           title={'Crear Orden de Compra'}
-          isOpenModal={isPOModalOpen}
+          isOpen={isPOModalOpen}
+          actions={[
+            {
+              label: 'Cancelar',
+              action: () => setIsPOModalOpen(false),
+              color: 'gray',
+              type: 'button',
+            },
+            {
+              label: 'Crear Orden',
+              action: () => {
+                if (poFormRef.current) {
+                  poFormRef.current.submitForm();
+                }
+              },
+              color: 'purple',
+              type: 'button',
+              filled: true,
+            },
+          ]}
         >
           <PurchaseOrderForm
+            ref={poFormRef}
             onSubmit={handleNewPurchaseOrderSubmit}
             onCancel={() => setIsPOModalOpen(false)}
           />
-        </ModalForm>
+        </ReusableModal>
       )}
       {isInvoiceModalOpen && (
-        <ModalForm
+        <ReusableModal
           onClose={() => setIsInvoiceModalOpen(false)}
           title={'Crear Factura'}
-          isOpenModal={isInvoiceModalOpen}
+          isOpen={isInvoiceModalOpen}
+          actions={[
+            {
+              label: 'Cancelar',
+              action: () => setIsInvoiceModalOpen(false),
+              color: 'gray',
+              type: 'button',
+            },
+            {
+              label: 'Crear Factura',
+              action: () => {
+                if (invoiceFormRef.current) {
+                  invoiceFormRef.current.submitForm();
+                }
+              },
+              color: 'purple',
+              type: 'button',
+              filled: true,
+            },
+          ]}
         >
           <InvoiceForm
+            ref={invoiceFormRef}
             onSubmit={handleNewInvoiceSubmit}
             onCancel={() => setIsInvoiceModalOpen(false)}
           />
-        </ModalForm>
+        </ReusableModal>
       )}
       {isLocationModalOpen && (
-        <ModalForm
+        <ReusableModal
           onClose={onCloseLocationModal}
           title={'Crear Ubicación'}
-          isOpenModal={isLocationModalOpen}
+          isOpen={isLocationModalOpen}
           size="md"
           actions={[
             {
@@ -476,7 +542,7 @@ const UpdateInventory = () => {
                 }
               },
               color: 'purple',
-              type: 'submit',
+              type: 'button',
               filled: true,
             },
           ]}
@@ -486,7 +552,7 @@ const UpdateInventory = () => {
             onSubmit={handleNewLocationSubmit}
             onCancel={onCloseLocationModal}
           />
-        </ModalForm>
+        </ReusableModal>
       )}
     </>
   );

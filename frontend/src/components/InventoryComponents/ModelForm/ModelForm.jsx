@@ -1,56 +1,51 @@
-import React from 'react';
+import React, { forwardRef, useImperativeHandle } from 'react';
 import { FormikProvider, useFormik, Form } from 'formik';
 import { ModelFormSchema } from './ModelFormSchema';
 import ModelFormFields from './ModelFormFields';
-import { Button } from 'flowbite-react';
-import { FaRegTrashAlt, FaSave } from 'react-icons/fa';
 
-const ModelForm = ({
-  initialValues,
-  onSubmit,
-  inventoryBrands,
-  inventoryTypes,
-  isUpdate = false,
-  createBrand,
-  createType,
-}) => {
-  const formik = useFormik({
-    enableReinitialize: true,
-    initialValues: initialValues,
-    validationSchema: ModelFormSchema,
-    onSubmit: (values, actions) => {
-      onSubmit(values, actions);
+const ModelForm = forwardRef(
+  (
+    {
+      initialValues,
+      onSubmit,
+      inventoryBrands,
+      inventoryTypes,
+      createBrand,
+      createType,
     },
-  });
-  return (
-    <FormikProvider value={formik}>
-      <Form className="space-y-4" onSubmit={formik.handleSubmit}>
-        <ModelFormFields
-          inventoryBrands={inventoryBrands}
-          inventoryTypes={inventoryTypes}
-          createBrand={createBrand}
-          createType={createType}
-        />
-        <div className="flex justify-end items-center space-x-4 pt-4">
-          <Button type="button" color="gray" onClick={() => formik.resetForm()}>
-            <FaRegTrashAlt size={20} className="mr-2" />
-            Limpiar
-          </Button>
-          <Button
-            type="submit"
-            disabled={formik.isSubmitting}
-            color={formik.isSubmitting ? 'gray' : 'purple'}
-            isProcessing={formik.isSubmitting}
-          >
-            <>
-              <FaSave size={20} className="mr-2" />
-              {isUpdate ? 'Actualizar ' : ' Crear '} Inventario
-            </>
-          </Button>
-        </div>
-      </Form>
-    </FormikProvider>
-  );
-};
+    ref,
+  ) => {
+    const formik = useFormik({
+      enableReinitialize: true,
+      initialValues: initialValues,
+      validationSchema: ModelFormSchema,
+      onSubmit: (values, actions) => {
+        onSubmit(values, actions);
+      },
+    });
+
+    useImperativeHandle(ref, () => ({
+      submitForm: () => {
+        formik.submitForm();
+      },
+      resetForm: () => {
+        formik.resetForm();
+      },
+    }));
+
+    return (
+      <FormikProvider value={formik}>
+        <Form className="space-y-4" onSubmit={formik.handleSubmit}>
+          <ModelFormFields
+            inventoryBrands={inventoryBrands}
+            inventoryTypes={inventoryTypes}
+            createBrand={createBrand}
+            createType={createType}
+          />
+        </Form>
+      </FormikProvider>
+    );
+  },
+);
 
 export default ModelForm;

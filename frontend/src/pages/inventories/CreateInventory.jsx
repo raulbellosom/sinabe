@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useCatalogContext } from '../../context/CatalogContext';
 import { useInventoryContext } from '../../context/InventoryContext';
-import ModalForm from '../../components/Modals/ModalForm';
 import ReusableModal from '../../components/Modals/ReusableModal';
 import ModelForm from '../../components/InventoryComponents/ModelForm/ModelForm';
 import PurchaseOrderForm from '../../components/Forms/PurchaseOrderForm';
@@ -38,6 +37,10 @@ const initValues = {
 const CreateInventory = () => {
   const formRef = useRef(null);
   const locationFormRef = useRef(null);
+  const modelFormRef = useRef(null);
+  const poFormRef = useRef(null);
+  const invoiceFormRef = useRef(null);
+  const lastSubmitTimeRef = useRef(0); // Track last submission time
   const {
     createInventory,
     purchaseOrders,
@@ -107,14 +110,18 @@ const CreateInventory = () => {
     if (lastCreatedPOId && purchaseOrders.length > 0) {
       const newPO = purchaseOrders.find((po) => po.id === lastCreatedPOId);
       if (newPO) {
-        setInitialValues((prevValues) => ({
-          ...prevValues,
+        // Use formRef to get current values from Formik (most up-to-date)
+        const currentValues = formRef.current?.values || currentFormValues;
+        const updatedValues = {
+          ...currentValues,
           purchaseOrderId: newPO.value,
-        }));
+        };
+        setInitialValues(updatedValues);
+        setCurrentFormValues(updatedValues);
         setLastCreatedPOId(null); // Reset
       }
     }
-  }, [purchaseOrders, lastCreatedPOId]);
+  }, [purchaseOrders, lastCreatedPOId, currentFormValues]);
 
   useEffect(() => {
     // Auto-seleccionar la nueva invoice cuando se crea
@@ -123,23 +130,21 @@ const CreateInventory = () => {
         (inv) => inv.id === lastCreatedInvoiceId,
       );
       if (newInvoice) {
-        setInitialValues((prevValues) => ({
-          ...prevValues,
+        // Use formRef to get current values from Formik (most up-to-date)
+        const currentValues = formRef.current?.values || currentFormValues;
+        const updatedValues = {
+          ...currentValues,
           invoiceId: newInvoice.value,
-        }));
+        };
+        setInitialValues(updatedValues);
+        setCurrentFormValues(updatedValues);
         setLastCreatedInvoiceId(null); // Reset
       }
     }
-  }, [invoices, lastCreatedInvoiceId]);
+  }, [invoices, lastCreatedInvoiceId, currentFormValues]);
 
   useEffect(() => {
     // Auto-seleccionar la nueva ubicación cuando se crea
-    console.log(
-      'Location useEffect triggered - lastCreatedLocationId:',
-      lastCreatedLocationId,
-      'locations:',
-      locations,
-    );
     if (lastCreatedLocationId && locations.length > 0) {
       const newLocation = locations.find(
         (loc) => loc.id === lastCreatedLocationId,
@@ -147,14 +152,18 @@ const CreateInventory = () => {
       console.log('Found new location:', newLocation);
       if (newLocation) {
         console.log('Auto-selecting location with value:', newLocation.value);
-        setInitialValues((prevValues) => ({
-          ...prevValues,
+        // Use formRef to get current values from Formik (most up-to-date)
+        const currentValues = formRef.current?.values || currentFormValues;
+        const updatedValues = {
+          ...currentValues,
           locationId: newLocation.value,
-        }));
+        };
+        setInitialValues(updatedValues);
+        setCurrentFormValues(updatedValues);
         setLastCreatedLocationId(null); // Reset
       }
     }
-  }, [locations, lastCreatedLocationId]);
+  }, [locations, lastCreatedLocationId, currentFormValues]);
 
   useEffect(() => {
     console.log('Locations changed:', locations);
@@ -191,10 +200,10 @@ const CreateInventory = () => {
         },
       ]);
 
-      setInitialValues((prevValues) => ({
-        ...prevValues,
+      setInitialValues({
+        ...currentFormValues,
         modelId: newModel.id,
-      }));
+      });
     } catch (error) {
       console.error(error);
     } finally {
@@ -237,17 +246,53 @@ const CreateInventory = () => {
     }
   };
 
+  // Helper function to extract simple pinned values (not custom field objects)
+  const extractSimplePinnedValues = (pinnedFields) => {
+    const simpleFields = {};
+    Object.keys(pinnedFields).forEach(key => {
+      // Skip custom field pins (they have complex objects)
+      if (key.startsWith('customField') || key === 'customFields_selected') {
+        return;
+      }
+      // Include simple values and arrays (like conditions)
+      const value = pinnedFields[key];
+      if (typeof value === 'string' || typeof value === 'number' || Array.isArray(value)) {
+        simpleFields[key] = value;
+      }
+    });
+    return simpleFields;
+  };
+
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
+      // Check if 5 seconds have passed since last submission
+      const now = Date.now();
+      const timeSinceLastSubmit = now - lastSubmitTimeRef.current;
+      const cooldownPeriod = 5000; // 5 seconds in milliseconds
+
+      if (timeSinceLastSubmit < cooldownPeriod) {
+        const remainingTime = Math.ceil((cooldownPeriod - timeSinceLastSubmit) / 1000);
+        Notifies('warning', `Por favor espera ${remainingTime} segundo(s) antes de crear otro inventario`);
+        setSubmitting(false);
+        return;
+      }
+
       console.log('Values being sent to backend:', values);
       console.log('LocationId specifically:', values.locationId);
       const inventory = await createInventory(values);
       if (inventory?.id) {
+        // Update last submit time
+        lastSubmitTimeRef.current = Date.now();
+        
         // Limpiar localStorage después del éxito
         clearLocalStorage();
         setSubmitting(false);
         resetForm({ values: initValues });
-        setInitialValues({ ...initValues, ...pinnedFields }); // Mantener campos pinned
+        // Preserve pinned values correctly (only simple fields, not custom field objects)
+        const simplePinnedValues = extractSimplePinnedValues(pinnedFields);
+        const newInitialValues = { ...initValues, ...simplePinnedValues };
+        setInitialValues(newInitialValues);
+        setCurrentFormValues(newInitialValues);
       }
     } catch (error) {
       Notifies('error', error?.response?.data?.message);
@@ -285,13 +330,18 @@ const CreateInventory = () => {
   const togglePinMode = () => {
     const newPinMode = !isPinMode;
     setIsPinMode(newPinMode);
+    
+    // Persist pin mode state
+    localStorage.setItem('isPinModeActive', JSON.stringify(newPinMode));
 
     // Si se está desactivando el modo pin, limpiar todos los pins
     if (!newPinMode) {
       setPinnedFields({});
       localStorage.removeItem('pinnedInventoryFields');
-      // También resetear el formulario a los valores iniciales sin pins
-      setInitialValues({ ...initValues });
+      // Preserve current form values when disabling pin mode
+      const preservedValues = { ...initValues, ...currentFormValues };
+      setInitialValues(preservedValues);
+      setCurrentFormValues(preservedValues);
     }
   };
 
@@ -323,7 +373,7 @@ const CreateInventory = () => {
 
   const clearLocalStorage = () => {
     localStorage.removeItem('unsavedInventoryForm');
-    localStorage.removeItem('pinnedInventoryFields');
+    // DO NOT remove pinnedInventoryFields - they should persist!
     setHasUnsavedChanges(false);
     setCurrentFormValues({ ...initValues });
   };
@@ -331,6 +381,12 @@ const CreateInventory = () => {
   const loadFromLocalStorage = () => {
     const savedForm = localStorage.getItem('unsavedInventoryForm');
     const savedPinnedFields = localStorage.getItem('pinnedInventoryFields');
+    const savedPinMode = localStorage.getItem('isPinModeActive');
+
+    // Restore pin mode state
+    if (savedPinMode) {
+      setIsPinMode(JSON.parse(savedPinMode));
+    }
 
     if (savedPinnedFields) {
       setPinnedFields(JSON.parse(savedPinnedFields));
@@ -338,7 +394,9 @@ const CreateInventory = () => {
 
     if (savedForm) {
       const parsedForm = JSON.parse(savedForm);
-      setInitialValues({ ...initValues, ...pinnedFields, ...parsedForm });
+      const mergedValues = { ...initValues, ...pinnedFields, ...parsedForm };
+      setInitialValues(mergedValues);
+      setCurrentFormValues(mergedValues);
       setShowUnsavedModal(true);
     }
   };
@@ -347,7 +405,9 @@ const CreateInventory = () => {
     const savedForm = localStorage.getItem('unsavedInventoryForm');
     if (savedForm) {
       const parsedForm = JSON.parse(savedForm);
-      setInitialValues({ ...initValues, ...pinnedFields, ...parsedForm });
+      const mergedValues = { ...initValues, ...pinnedFields, ...parsedForm };
+      setInitialValues(mergedValues);
+      setCurrentFormValues(mergedValues);
     }
     setShowUnsavedModal(false);
   };
@@ -355,7 +415,9 @@ const CreateInventory = () => {
   const discardUnsavedChanges = () => {
     localStorage.removeItem('unsavedInventoryForm');
     setHasUnsavedChanges(false);
+    setHasUnsavedChanges(false);
     setInitialValues({ ...initValues, ...pinnedFields });
+    setCurrentFormValues({ ...initValues, ...pinnedFields });
     setShowUnsavedModal(false);
   };
 
@@ -445,12 +507,32 @@ const CreateInventory = () => {
         onFormChange={saveToLocalStorage}
       />
       {isModalOpen && (
-        <ModalForm
+        <ReusableModal
           onClose={onCloseModal}
           title={'Crear Modelo'}
-          isOpenModal={isModalOpen}
+          isOpen={isModalOpen}
+          actions={[
+            {
+              label: 'Cancelar',
+              action: onCloseModal,
+              color: 'gray',
+              type: 'button',
+            },
+            {
+              label: 'Crear Modelo',
+              action: () => {
+                if (modelFormRef.current) {
+                  modelFormRef.current.submitForm();
+                }
+              },
+              color: 'purple',
+              type: 'button',
+              filled: true,
+            },
+          ]}
         >
           <ModelForm
+            ref={modelFormRef}
             onSubmit={handleNewModelSubmit}
             initialValues={newModelValue}
             inventoryBrands={inventoryBrands}
@@ -458,37 +540,77 @@ const CreateInventory = () => {
             createBrand={createInventoryBrand}
             createType={createInventoryType}
           />
-        </ModalForm>
+        </ReusableModal>
       )}
       {isPOModalOpen && (
-        <ModalForm
+        <ReusableModal
           onClose={onClosePOModal}
           title={'Crear Orden de Compra'}
-          isOpenModal={isPOModalOpen}
+          isOpen={isPOModalOpen}
+          actions={[
+            {
+              label: 'Cancelar',
+              action: onClosePOModal,
+              color: 'gray',
+              type: 'button',
+            },
+            {
+              label: 'Crear Orden',
+              action: () => {
+                if (poFormRef.current) {
+                  poFormRef.current.submitForm();
+                }
+              },
+              color: 'purple',
+              type: 'button',
+              filled: true,
+            },
+          ]}
         >
           <PurchaseOrderForm
+            ref={poFormRef}
             onSubmit={handleNewPurchaseOrderSubmit}
             onCancel={onClosePOModal}
           />
-        </ModalForm>
+        </ReusableModal>
       )}
       {isInvoiceModalOpen && (
-        <ModalForm
+        <ReusableModal
           onClose={onCloseInvoiceModal}
           title={'Crear Factura'}
-          isOpenModal={isInvoiceModalOpen}
+          isOpen={isInvoiceModalOpen}
+          actions={[
+            {
+              label: 'Cancelar',
+              action: onCloseInvoiceModal,
+              color: 'gray',
+              type: 'button',
+            },
+            {
+              label: 'Crear Factura',
+              action: () => {
+                if (invoiceFormRef.current) {
+                  invoiceFormRef.current.submitForm();
+                }
+              },
+              color: 'purple',
+              type: 'button',
+              filled: true,
+            },
+          ]}
         >
           <InvoiceForm
+            ref={invoiceFormRef}
             onSubmit={handleNewInvoiceSubmit}
             onCancel={onCloseInvoiceModal}
           />
-        </ModalForm>
+        </ReusableModal>
       )}
       {isLocationModalOpen && (
-        <ModalForm
+        <ReusableModal
           onClose={onCloseLocationModal}
           title={'Crear Ubicación'}
-          isOpenModal={isLocationModalOpen}
+          isOpen={isLocationModalOpen}
           size="md"
           actions={[
             {
@@ -505,7 +627,7 @@ const CreateInventory = () => {
                 }
               },
               color: 'purple',
-              type: 'submit',
+              type: 'button',
               filled: true,
             },
           ]}
@@ -515,7 +637,7 @@ const CreateInventory = () => {
             onSubmit={handleNewLocationSubmit}
             onCancel={onCloseLocationModal}
           />
-        </ModalForm>
+        </ReusableModal>
       )}
 
       {/* Modal para cambios sin guardar */}

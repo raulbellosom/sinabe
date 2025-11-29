@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import TextInput from '../Inputs/TextInput';
 import { FaFileInvoice, FaTruck, FaTag } from 'react-icons/fa';
-import { Button } from 'flowbite-react';
 
 const validationSchema = Yup.object({
   code: Yup.string().required('El código es requerido'),
@@ -11,7 +10,7 @@ const validationSchema = Yup.object({
   supplier: Yup.string(),
 });
 
-const InvoiceForm = ({ onSubmit, initialValues = {}, onCancel }) => {
+const InvoiceForm = forwardRef(({ onSubmit, initialValues = {} }, ref) => {
   const defaultValues = {
     code: '',
     concept: '',
@@ -19,8 +18,19 @@ const InvoiceForm = ({ onSubmit, initialValues = {}, onCancel }) => {
     ...initialValues,
   };
 
+  const formikRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    submitForm: () => {
+      if (formikRef.current) {
+        formikRef.current.submitForm();
+      }
+    },
+  }));
+
   return (
     <Formik
+      innerRef={formikRef}
       initialValues={defaultValues}
       validationSchema={validationSchema}
       onSubmit={onSubmit}
@@ -50,31 +60,10 @@ const InvoiceForm = ({ onSubmit, initialValues = {}, onCancel }) => {
             placeholder="Nombre del proveedor (opcional)"
             icon={FaTruck}
           />
-
-          <div className="flex justify-end gap-2 mt-6">
-            <Button
-              type="button"
-              onClick={onCancel}
-              color="gray"
-              size="sm"
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              color="purple"
-              size="sm"
-              disabled={isSubmitting}
-              isProcessing={isSubmitting}
-            >
-              {isSubmitting ? 'Creando...' : 'Crear Factura'}
-            </Button>
-          </div>
         </Form>
       )}
     </Formik>
   );
-};
+});
 
 export default InvoiceForm;

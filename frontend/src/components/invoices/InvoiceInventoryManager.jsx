@@ -29,11 +29,9 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
   const removeInventory = useRemoveInventoryFromIndependentInvoice(invoice?.id);
 
   // Búsqueda de inventarios disponibles
-  // Incluir TODOS los inventarios para poder mostrar si están asignados
   const { data: searchResults, isLoading: searching } = useSearchInventories({
     searchTerm,
     pageSize: 20,
-    // No filtramos aquí, lo haremos en el componente para mostrar información
   });
 
   const allInventories = searchResults?.data || [];

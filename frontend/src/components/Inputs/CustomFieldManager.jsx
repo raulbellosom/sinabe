@@ -25,47 +25,140 @@ const CustomFieldManager = ({
 
   const [selectedFields, setSelectedFields] = useState([]);
 
-  useEffect(() => {
-    const initialFields = currentCustomFields.map((field) => ({
-      value: field.customFieldId,
-      label: field.name,
-      fieldValue: field.value || '',
-    }));
-    setSelectedFields(initialFields);
-  }, [currentCustomFields]);
+  // Ref to track previous currentCustomFields to detect deep changes
+  const prevCurrentCustomFieldsRef = React.useRef(currentCustomFields);
+  const prevPinnedFieldsRef = React.useRef(pinnedFields);
 
-  // useEffect para cargar campos pineados
   useEffect(() => {
-    // Cargar campos personalizados seleccionados pineados
-    if (pinnedFields.customFields_selected) {
-      setSelectedFields(pinnedFields.customFields_selected);
+    // Check if currentCustomFields actually changed (deep comparison or length check)
+    const hasCurrentFieldsChanged = JSON.stringify(prevCurrentCustomFieldsRef.current) !== JSON.stringify(currentCustomFields);
+    
+    // Check if custom field pins changed (not other pins like location, PO, etc.)
+    const customFieldPinKeys = Object.keys(pinnedFields).filter(k => k === 'customFields_selected' || k.startsWith('customField_'));
+    const prevCustomFieldPinKeys = Object.keys(prevPinnedFieldsRef.current).filter(k => k === 'customFields_selected' || k.startsWith('customField_'));
+    const hasCustomFieldPinsChanged = JSON.stringify(customFieldPinKeys.sort()) !== JSON.stringify(prevCustomFieldPinKeys.sort()) ||
+      customFieldPinKeys.some(k => JSON.stringify(pinnedFields[k]) !== JSON.stringify(prevPinnedFieldsRef.current[k]));
+    
+    if (hasCurrentFieldsChanged) {
+       prevCurrentCustomFieldsRef.current = currentCustomFields;
+    }
+    
+    if (hasCustomFieldPinsChanged || hasCurrentFieldsChanged) {
+       prevPinnedFieldsRef.current = pinnedFields;
     }
 
-    // Cargar valores individuales pineados
-    Object.keys(pinnedFields).forEach((key) => {
-      if (key.startsWith('customField_')) {
-        const fieldData = pinnedFields[key];
-        if (fieldData && fieldData.selectedFields) {
-          // Merge con los campos actuales si es necesario
-          setSelectedFields((prevFields) => {
-            const existingFieldIds = prevFields.map((f) => f.value);
-            const newFields = fieldData.selectedFields.filter(
-              (f) => !existingFieldIds.includes(f.value),
-            );
-            return [...prevFields, ...newFields];
-          });
+    // Map currentCustomFields (from parent/initialValues)
+    const initialFields = currentCustomFields.map((field) => {
+      const id = field.customFieldId || field.id;
+      let name = field.name;
+      let value = field.value || '';
+
+      if (!name && id) {
+        const foundField = customFields.find((cf) => cf.id === id);
+        if (foundField) {
+          name = foundField.name;
         }
       }
+
+      return {
+        value: id,
+        label: name || 'Campo Desconocido',
+        fieldValue: value,
+      };
     });
-  }, [pinnedFields]);
+
+    // If Pin Mode is active
+    if (isPinMode) {
+        let mergedFields = [];
+        const processedIds = new Set();
+
+        // 1. Add fields from Main Pin (List only)
+        if (pinnedFields.customFields_selected) {
+            pinnedFields.customFields_selected.forEach(f => {
+                if (!processedIds.has(f.value)) {
+                    mergedFields.push({ ...f, fieldValue: '' }); // Main pin doesn't enforce value
+                    processedIds.add(f.value);
+                }
+            });
+        }
+
+        // 2. Add fields from Individual Pins (Field + Value)
+        Object.keys(pinnedFields).forEach(key => {
+            if (key.startsWith('customField_')) {
+                const pinData = pinnedFields[key];
+                // pinData should be { value, label, fieldValue }
+                if (pinData && pinData.value && !processedIds.has(pinData.value)) {
+                    mergedFields.push(pinData);
+                    processedIds.add(pinData.value);
+                }
+            }
+        });
+
+        // 3. Process merged fields to set correct values
+        mergedFields = mergedFields.map(field => {
+           const individualPin = pinnedFields[`customField_${field.value}`];
+           let finalValue = '';
+           
+           // Priority 1: Individual Pin Value
+           if (individualPin && individualPin.fieldValue) {
+             finalValue = individualPin.fieldValue;
+           }
+           
+           // Priority 2: User Input (from initialFields which comes from currentCustomFields/currentFormValues)
+           const existingInput = initialFields.find(f => f.value === field.value);
+           if (existingInput && existingInput.fieldValue) {
+               finalValue = existingInput.fieldValue;
+           }
+           
+           // Priority 3: Preserve current selectedFields value if it exists (user typed it)
+           // This is crucial when pinnedFields changes but currentCustomFields doesn't
+           // We can't add selectedFields to deps, so we'll rely on initialFields (from currentFormValues)
+           
+           return {
+             ...field,
+             fieldValue: finalValue
+           };
+        });
+        
+        // 4. Add any other fields currently selected by user (that are not pinned)
+        initialFields.forEach(field => {
+          if (!processedIds.has(field.value)) {
+            mergedFields.push(field);
+          }
+        });
+
+        setSelectedFields(mergedFields);
+        return;
+    }
+
+    // If currentCustomFields CHANGED, we should respect it (it's a reset or load)
+    if (hasCurrentFieldsChanged) {
+        setSelectedFields(initialFields);
+        return;
+    }
+
+    // If only customFields catalog changed (not currentCustomFields), update labels only
+    setSelectedFields(prevSelected => {
+        return prevSelected.map(field => {
+            if (field.label === 'Campo Desconocido' || !field.label) {
+                const found = customFields.find(cf => cf.id === field.value);
+                if (found) {
+                    return { ...field, label: found.name };
+                }
+            }
+            return field;
+        });
+    });
+
+  }, [currentCustomFields, customFields, isPinMode, pinnedFields]);
 
   // Funciones para manejar pin de campos personalizados
   const handlePinCustomField = (fieldId, currentFields) => {
-    const pinnedData = {
-      selectedFields: currentFields,
-      formikValues: values[name],
-    };
-    onPinField(`customField_${fieldId}`, pinnedData);
+    // Find the specific field to pin
+    const fieldToPin = currentFields.find(f => f.value === fieldId);
+    if (fieldToPin) {
+        onPinField(`customField_${fieldId}`, fieldToPin);
+    }
   };
 
   const handleUnpinCustomField = (fieldId) => {
@@ -74,7 +167,9 @@ const CustomFieldManager = ({
 
   // Función para pinear los campos personalizados seleccionados
   const handlePinSelectedFields = () => {
-    onPinField('customFields_selected', selectedFields);
+    // Main Pin: Save list only (strip values to avoid confusion)
+    const listToSave = selectedFields.map(f => ({ ...f, fieldValue: '' }));
+    onPinField('customFields_selected', listToSave);
   };
 
   const handleUnpinSelectedFields = () => {
@@ -88,8 +183,19 @@ const CustomFieldManager = ({
     }
 
     if (selectedOption.__isNew__) {
-      const response = await createCustomField({ name: selectedOption.label });
-      selectedOption = { value: response.data.id, label: response.data.name };
+      try {
+        const response = await createCustomField({ name: selectedOption.label });
+        // Handle response structure (it might be response.data or just response)
+        const newFieldData = response?.data || response;
+        if (!newFieldData || !newFieldData.id) {
+           throw new Error('Invalid response from createCustomField');
+        }
+        selectedOption = { value: newFieldData.id, label: newFieldData.name };
+      } catch (error) {
+        console.error('Error creating custom field:', error);
+        Notifies('error', 'Error al crear el campo personalizado');
+        return;
+      }
     }
 
     const newField = {
@@ -107,9 +213,10 @@ const CustomFieldManager = ({
     ];
     setFieldValue(name, updatedFormikValues);
 
-    // Si está en modo pin, actualizar el pin con los nuevos campos
+    // If Main Pin is active, update it (add new field to list)
     if (isPinMode && pinnedFields.customFields_selected !== undefined) {
-      onPinField('customFields_selected', updatedSelectedFields);
+       const listToSave = updatedSelectedFields.map(f => ({ ...f, fieldValue: '' }));
+       onPinField('customFields_selected', listToSave);
     }
   };
 
@@ -141,16 +248,13 @@ const CustomFieldManager = ({
     updatedFormikValues[index].value = selectedValue.label;
     setFieldValue(name, updatedFormikValues);
 
-    // Si este campo específico está pineado, actualizar el pin
+    // If Individual Pin is active, update it with new value
     const fieldId = selectedFields[index].value;
     if (isPinMode && pinnedFields[`customField_${fieldId}`] !== undefined) {
       handlePinCustomField(fieldId, updatedFields);
     }
 
-    // Si los campos seleccionados están pineados, actualizar el pin general
-    if (isPinMode && pinnedFields.customFields_selected !== undefined) {
-      onPinField('customFields_selected', updatedFields);
-    }
+    // DO NOT update Main Pin here (it only cares about the list)
   };
 
   const handleFieldRemove = (fieldValue) => {
@@ -179,6 +283,20 @@ const CustomFieldManager = ({
       onPinField('customFields_selected', updatedSelectedFields);
     }
   };
+
+  // Sincronizar selectedFields con Formik values
+  useEffect(() => {
+    const currentFormikValues = values[name] || [];
+    const newFormikValues = selectedFields.map((field) => ({
+      id: field.value,
+      value: field.fieldValue || '',
+    }));
+
+    // Evitar actualizaciones innecesarias
+    if (JSON.stringify(currentFormikValues) !== JSON.stringify(newFormikValues)) {
+      setFieldValue(name, newFormikValues);
+    }
+  }, [selectedFields, name, setFieldValue, values[name]]);
 
   return (
     <div className="w-full col-span-12 text-neutral-800 md:pb-24">

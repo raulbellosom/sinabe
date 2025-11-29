@@ -42,11 +42,6 @@ const SelectInput = ({
         ))}
         {isOtherOption && <option value="0">Otro</option>}
       </Select>
-      <ErrorMessage
-        name={field?.name || ''}
-        component="div"
-        className="text-red-500 text-sm"
-      />
     </>
   );
 
