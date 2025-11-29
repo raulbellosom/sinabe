@@ -21,7 +21,7 @@ const Dropdown = ({
             onSelect(option);
           }}
           className={classNames(
-            'py-2 px-4 text-sm cursor-pointer flex justify-between items-center border-b border-neutral-200 transition ease-in-out duration-100',
+            'py-2 px-4 text-sm cursor-pointer border-b border-b-neutral-100 flex gap-1 justify-between items-center rounded-lg transition ease-in-out duration-100 mx-2',
             {
               'bg-blue-500 text-white': selectedOption?.value === option.value,
               'bg-gray-200':
@@ -70,10 +70,19 @@ const AutocompleteInput = ({
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (options.length && field.value) {
-      const option = options.find((opt) => opt.value === field.value);
-      setSelectedOption(option || null);
-      setInputValue(option ? option.label : '');
+    if (options.length) {
+      // If field has a value (including 0), try to find it in options
+      if (field.value || field.value === 0) {
+        // Use loose equality to match string/number IDs
+        const option = options.find((opt) => opt.value == field.value);
+        setSelectedOption(option || null);
+        setInputValue(option ? option.label : '');
+      } else {
+        // If field value is empty/null/undefined, clear the input
+        // This is crucial for form resets
+        setSelectedOption(null);
+        setInputValue('');
+      }
     }
   }, [field.value, options]);
 

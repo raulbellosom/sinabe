@@ -58,6 +58,9 @@ const InventoryForm = forwardRef(
       submitForm: () => {
         formik.submitForm();
       },
+      resetForm: (nextState) => {
+        formik.resetForm(nextState);
+      },
     }));
     // console.log(formik.values.modelId);
     return (

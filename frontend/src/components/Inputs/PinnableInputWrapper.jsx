@@ -39,7 +39,7 @@ const PinnableInputWrapper = ({
     }
     return child;
   });
-
+  // TODO: los campos de ubicaicon se borran y no se conserva aun al ser fijado
   return (
     <div className={classNames('relative w-full', className)}>
       {label && (

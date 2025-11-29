@@ -166,14 +166,7 @@ const CreateInventory = () => {
   }, [locations, lastCreatedLocationId, currentFormValues]);
 
   useEffect(() => {
-    console.log('Locations changed:', locations);
-  }, [locations]);
-
-  useEffect(() => {
     // Cargar listas de PO, invoices y ubicaciones al montar el componente
-    console.log(
-      'Loading initial data - calling fetchPurchaseOrders, fetchInvoices, fetchLocations',
-    );
     fetchPurchaseOrders();
     fetchInvoices();
     fetchLocations();
@@ -249,18 +242,64 @@ const CreateInventory = () => {
   // Helper function to extract simple pinned values (not custom field objects)
   const extractSimplePinnedValues = (pinnedFields) => {
     const simpleFields = {};
-    Object.keys(pinnedFields).forEach(key => {
+    Object.keys(pinnedFields).forEach((key) => {
       // Skip custom field pins (they have complex objects)
       if (key.startsWith('customField') || key === 'customFields_selected') {
         return;
       }
       // Include simple values and arrays (like conditions)
       const value = pinnedFields[key];
-      if (typeof value === 'string' || typeof value === 'number' || Array.isArray(value)) {
+      if (
+        typeof value === 'string' ||
+        typeof value === 'number' ||
+        Array.isArray(value)
+      ) {
         simpleFields[key] = value;
       }
     });
     return simpleFields;
+  };
+
+  // Helper function to extract pinned custom fields for Formik
+  const extractPinnedCustomFields = (pinnedFields) => {
+    const customFieldsFormik = [];
+    const processedIds = new Set();
+
+    // 1. Handle 'customFields_selected' (List of fields pinned)
+    if (
+      pinnedFields.customFields_selected &&
+      Array.isArray(pinnedFields.customFields_selected)
+    ) {
+      pinnedFields.customFields_selected.forEach((field) => {
+        if (!processedIds.has(field.value)) {
+          // Check if there is a specific value pinned for this field
+          const specificPin = pinnedFields[`customField_${field.value}`];
+          const value = specificPin ? specificPin.fieldValue : '';
+
+          customFieldsFormik.push({
+            id: field.value,
+            value: value,
+          });
+          processedIds.add(field.value);
+        }
+      });
+    }
+
+    // 2. Handle individual pins that might not be in the selected list
+    Object.keys(pinnedFields).forEach((key) => {
+      if (key.startsWith('customField_')) {
+        const pinData = pinnedFields[key];
+        if (pinData && pinData.value && !processedIds.has(pinData.value)) {
+          customFieldsFormik.push({
+            id: pinData.value,
+            value: pinData.fieldValue || '',
+          });
+          processedIds.add(pinData.value);
+        }
+      }
+    });
+
+    return customFieldsFormik;
   };
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
@@ -271,8 +310,13 @@ const CreateInventory = () => {
       const cooldownPeriod = 5000; // 5 seconds in milliseconds
 
       if (timeSinceLastSubmit < cooldownPeriod) {
-        const remainingTime = Math.ceil((cooldownPeriod - timeSinceLastSubmit) / 1000);
-        Notifies('warning', `Por favor espera ${remainingTime} segundo(s) antes de crear otro inventario`);
+        const remainingTime = Math.ceil(
+          (cooldownPeriod - timeSinceLastSubmit) / 1000,
+        );
+        Notifies(
+          'warning',
+          `Por favor espera ${remainingTime} segundo(s) antes de crear otro inventario`,
+        );
         setSubmitting(false);
         return;
       }
@@ -283,14 +327,42 @@ const CreateInventory = () => {
       if (inventory?.id) {
         // Update last submit time
         lastSubmitTimeRef.current = Date.now();
-        
+
         // Limpiar localStorage después del éxito
         clearLocalStorage();
         setSubmitting(false);
-        resetForm({ values: initValues });
+
+        // Update pinned fields with the latest submitted values to ensure persistence of changes
+        const updatedPinnedFields = { ...pinnedFields };
+        Object.keys(updatedPinnedFields).forEach((key) => {
+          // If the field is in the submitted values, update the pinned value
+          // Check for undefined specifically, as null or empty string might be valid (though usually not for pins)
+          if (values[key] !== undefined) {
+            updatedPinnedFields[key] = values[key];
+          }
+        });
+
+        // Ensure purchaseOrderId is captured if it was pinned but maybe not in values in a way we expect?
+        // Actually, values should contain it.
+        // But let's make sure we are using the updatedPinnedFields for the next step.
+
+        // Update state with the potentially new pinned values
+        setPinnedFields(updatedPinnedFields);
+
         // Preserve pinned values correctly (only simple fields, not custom field objects)
-        const simplePinnedValues = extractSimplePinnedValues(pinnedFields);
-        const newInitialValues = { ...initValues, ...simplePinnedValues };
+        const simplePinnedValues =
+          extractSimplePinnedValues(updatedPinnedFields);
+        const pinnedCustomFields =
+          extractPinnedCustomFields(updatedPinnedFields);
+
+        const newInitialValues = {
+          ...initValues,
+          ...simplePinnedValues,
+          customFields: pinnedCustomFields,
+        };
+
+        // Reset form with the new initial values (pinned values)
+        resetForm({ values: newInitialValues });
         setInitialValues(newInitialValues);
         setCurrentFormValues(newInitialValues);
       }
@@ -330,14 +402,14 @@ const CreateInventory = () => {
   const togglePinMode = () => {
     const newPinMode = !isPinMode;
     setIsPinMode(newPinMode);
-    
+
     // Persist pin mode state
     localStorage.setItem('isPinModeActive', JSON.stringify(newPinMode));
 
     // Si se está desactivando el modo pin, limpiar todos los pins
     if (!newPinMode) {
       setPinnedFields({});
-      localStorage.removeItem('pinnedInventoryFields');
+      // localStorage.removeItem('pinnedInventoryFields');
       // Preserve current form values when disabling pin mode
       const preservedValues = { ...initValues, ...currentFormValues };
       setInitialValues(preservedValues);
@@ -348,20 +420,20 @@ const CreateInventory = () => {
   const pinField = (fieldName, value) => {
     const newPinnedFields = { ...pinnedFields, [fieldName]: value };
     setPinnedFields(newPinnedFields);
-    localStorage.setItem(
-      'pinnedInventoryFields',
-      JSON.stringify(newPinnedFields),
-    );
+    // localStorage.setItem(
+    //   'pinnedInventoryFields',
+    //   JSON.stringify(newPinnedFields),
+    // );
   };
 
   const unpinField = (fieldName) => {
     const newPinnedFields = { ...pinnedFields };
     delete newPinnedFields[fieldName];
     setPinnedFields(newPinnedFields);
-    localStorage.setItem(
-      'pinnedInventoryFields',
-      JSON.stringify(newPinnedFields),
-    );
+    // localStorage.setItem(
+    //   'pinnedInventoryFields',
+    //   JSON.stringify(newPinnedFields),
+    // );
   };
 
   // Funciones para manejar cambios sin guardar
@@ -380,7 +452,7 @@ const CreateInventory = () => {
 
   const loadFromLocalStorage = () => {
     const savedForm = localStorage.getItem('unsavedInventoryForm');
-    const savedPinnedFields = localStorage.getItem('pinnedInventoryFields');
+    // const savedPinnedFields = localStorage.getItem('pinnedInventoryFields');
     const savedPinMode = localStorage.getItem('isPinModeActive');
 
     // Restore pin mode state
@@ -388,16 +460,33 @@ const CreateInventory = () => {
       setIsPinMode(JSON.parse(savedPinMode));
     }
 
-    if (savedPinnedFields) {
-      setPinnedFields(JSON.parse(savedPinnedFields));
-    }
+    let loadedPinnedFields = {};
+    // if (savedPinnedFields) {
+    //   loadedPinnedFields = JSON.parse(savedPinnedFields);
+    //   setPinnedFields(loadedPinnedFields);
+    // }
 
     if (savedForm) {
       const parsedForm = JSON.parse(savedForm);
-      const mergedValues = { ...initValues, ...pinnedFields, ...parsedForm };
+      const mergedValues = {
+        ...initValues,
+        ...loadedPinnedFields,
+        ...parsedForm,
+      };
       setInitialValues(mergedValues);
       setCurrentFormValues(mergedValues);
       setShowUnsavedModal(true);
+    } else if (Object.keys(loadedPinnedFields).length > 0) {
+      // If no saved form but we have pinned fields, initialize with them
+      const simplePinnedValues = extractSimplePinnedValues(loadedPinnedFields);
+      const pinnedCustomFields = extractPinnedCustomFields(loadedPinnedFields);
+      const newInitialValues = {
+        ...initValues,
+        ...simplePinnedValues,
+        customFields: pinnedCustomFields,
+      };
+      setInitialValues(newInitialValues);
+      setCurrentFormValues(newInitialValues);
     }
   };
 
@@ -415,9 +504,18 @@ const CreateInventory = () => {
   const discardUnsavedChanges = () => {
     localStorage.removeItem('unsavedInventoryForm');
     setHasUnsavedChanges(false);
-    setHasUnsavedChanges(false);
-    setInitialValues({ ...initValues, ...pinnedFields });
-    setCurrentFormValues({ ...initValues, ...pinnedFields });
+
+    // When discarding changes, the user expects a clean form, even if fields are pinned.
+    // We reset to initValues (empty) but keep the pinned state active in the background.
+    const cleanValues = { ...initValues };
+
+    setInitialValues(cleanValues);
+    setCurrentFormValues(cleanValues);
+
+    if (formRef.current && formRef.current.resetForm) {
+      formRef.current.resetForm({ values: cleanValues });
+    }
+
     setShowUnsavedModal(false);
   };
 
