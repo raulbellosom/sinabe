@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Select from 'react-select/creatable';
 import AsyncSelect from 'react-select/async-creatable';
 import { useFormikContext } from 'formik';
@@ -24,8 +24,27 @@ const CustomFieldManager = ({
   const { setFieldValue, values, errors } = useFormikContext();
 
   const [selectedFields, setSelectedFields] = useState([]);
+  const prevCurrentCustomFieldsRef = useRef([]);
+  const prevCustomFieldsRef = useRef([]);
 
   useEffect(() => {
+    // Check if currentCustomFields or customFields actually changed
+    const currentFieldsChanged =
+      JSON.stringify(prevCurrentCustomFieldsRef.current) !==
+      JSON.stringify(currentCustomFields);
+
+    const catalogChanged =
+      JSON.stringify(prevCustomFieldsRef.current) !==
+      JSON.stringify(customFields);
+
+    // Update refs
+    if (currentFieldsChanged) {
+      prevCurrentCustomFieldsRef.current = currentCustomFields;
+    }
+    if (catalogChanged) {
+      prevCustomFieldsRef.current = customFields;
+    }
+
     // Map currentCustomFields (from parent/initialValues)
     const initialFields = currentCustomFields.map((field) => {
       const id = field.customFieldId || field.id;
@@ -136,8 +155,14 @@ const CustomFieldManager = ({
 
       setSelectedFields(mergedFields);
     } else {
-      // No pin mode - just use initialFields
-      setSelectedFields(initialFields);
+      // No pin mode - use initialFields when there are actual changes
+      if (
+        currentFieldsChanged ||
+        catalogChanged ||
+        selectedFields.length === 0
+      ) {
+        setSelectedFields(initialFields);
+      }
     }
   }, [
     currentCustomFields,
@@ -183,7 +208,6 @@ const CustomFieldManager = ({
         const response = await createCustomField({
           name: selectedOption.label,
         });
-        // Handle response structure (it might be response.data or just response)
         const newFieldData = response?.data || response;
         if (!newFieldData || !newFieldData.id) {
           throw new Error('Invalid response from createCustomField');
@@ -205,9 +229,14 @@ const CustomFieldManager = ({
     const updatedSelectedFields = [...selectedFields, newField];
     setSelectedFields(updatedSelectedFields);
 
+    const currentFormikValues = values[name] || [];
     const updatedFormikValues = [
-      ...values[name],
-      { id: selectedOption.value, value: '' },
+      ...currentFormikValues,
+      {
+        id: selectedOption.value,
+        value: '',
+        customFieldId: selectedOption.value,
+      },
     ];
     setFieldValue(name, updatedFormikValues);
 
@@ -314,11 +343,17 @@ const CustomFieldManager = ({
         isClearable
         isCreatable
         placeholder="Selecciona o crea un campo"
+        isOptionDisabled={(option) =>
+          selectedFields.some((field) => field.value === option.value)
+        }
       />
 
       <div className="grid grid-cols-1 2xl:grid-cols-2 gap-2 mt-2">
         {selectedFields.map((field, index) => (
-          <div key={field.value} className="flex items-center gap-2">
+          <div
+            key={`${field.value}-${index}`}
+            className="flex items-center gap-2"
+          >
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
                 <Label className="text-sm font-medium">{field.label}</Label>
@@ -344,7 +379,7 @@ const CustomFieldManager = ({
                   loadOptions={(inputValue) =>
                     loadFieldValues(inputValue, field.value)
                   }
-                  value={{ label: field.fieldValue, value: field.fieldValue }} // Asignamos el valor actual
+                  value={{ label: field.fieldValue, value: field.fieldValue }}
                   onChange={(selectedValue) =>
                     handleValueChange(selectedValue, index)
                   }

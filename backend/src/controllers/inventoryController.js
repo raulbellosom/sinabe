@@ -1376,19 +1376,7 @@ export const getPurchaseOrdersList = async (req, res) => {
 
     const formattedPurchaseOrders = purchaseOrders.map((po) => ({
       id: po.id,
-      label: `${po.code}${
-        po.supplier
-          ? ` - ${po.supplier.substring(0, 30)}${
-              po.supplier.length > 30 ? "..." : ""
-            }`
-          : ""
-      }${
-        po.description
-          ? ` - ${po.description.substring(0, 40)}${
-              po.description.length > 40 ? "..." : ""
-            }`
-          : ""
-      }`,
+      label: po.code,
       value: po.id,
       code: po.code,
       supplier: po.supplier,
@@ -1418,15 +1406,7 @@ export const getInvoicesList = async (req, res) => {
 
     const formattedInvoices = invoices.map((invoice) => ({
       id: invoice.id,
-      label: `${invoice.code} - ${invoice.concept.substring(0, 40)}${
-        invoice.concept.length > 40 ? "..." : ""
-      }${
-        invoice.supplier
-          ? ` - ${invoice.supplier.substring(0, 30)}${
-              invoice.supplier.length > 30 ? "..." : ""
-            }`
-          : ""
-      }`,
+      label: invoice.code,
       value: invoice.id,
       code: invoice.code,
       concept: invoice.concept,

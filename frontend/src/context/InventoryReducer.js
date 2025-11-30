@@ -60,11 +60,7 @@ const InventoryReducer = (state, action) => {
     case 'CREATE_PURCHASE_ORDER':
       const formattedPO = {
         id: action.payload.id,
-        label: `${action.payload.code}${action.payload.supplier ? ` - ${action.payload.supplier.substring(0, 30)}${action.payload.supplier.length > 30 ? '...' : ''}` : ''}${
-          action.payload.description
-            ? ` - ${action.payload.description.substring(0, 40)}${action.payload.description.length > 40 ? '...' : ''}`
-            : ''
-        }`,
+        label: action.payload.code,
         value: action.payload.id,
         code: action.payload.code,
         supplier: action.payload.supplier,
@@ -78,11 +74,7 @@ const InventoryReducer = (state, action) => {
     case 'CREATE_INVOICE':
       const formattedInvoice = {
         id: action.payload.id,
-        label: `${action.payload.code} - ${(action.payload.concept || '').substring(0, 40)}${(action.payload.concept || '').length > 40 ? '...' : ''}${
-          action.payload.supplier
-            ? ` - ${action.payload.supplier.substring(0, 30)}${action.payload.supplier.length > 30 ? '...' : ''}`
-            : ''
-        }`,
+        label: action.payload.code,
         value: action.payload.id,
         code: action.payload.code,
         concept: action.payload.concept || '',
