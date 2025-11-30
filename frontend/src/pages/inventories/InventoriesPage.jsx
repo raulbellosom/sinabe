@@ -26,6 +26,7 @@ import {
   FaSitemap, // Import FaImages for resources view icon (representing resources)
   FaTh, // Import FaTh for cards view icon
   FaFileInvoice,
+  FaMapMarkerAlt,
 } from 'react-icons/fa';
 import {
   TbLayoutSidebarLeftCollapseFilled,
@@ -95,6 +96,10 @@ const InventoriesPage = () => {
     if (query.purchaseOrderCode && currentPurchaseOrder) {
       baseQuery.purchaseOrderId = currentPurchaseOrder.id;
       delete baseQuery.purchaseOrderCode;
+    }
+    // Keep locationName as is for backend filtering
+    if (query.locationName) {
+      baseQuery.locationName = decodeURIComponent(query.locationName);
     }
 
     return baseQuery;
@@ -703,7 +708,7 @@ const InventoriesPage = () => {
 
         {/* Filtros activos */}
         <div className="w-full">
-          {(currentInvoice || currentPurchaseOrder) && (
+          {(currentInvoice || currentPurchaseOrder || query.locationName) && (
             <div className="flex flex-wrap gap-2">
               {currentInvoice && (
                 <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
@@ -736,6 +741,25 @@ const InventoriesPage = () => {
                       })
                     }
                     className="ml-1 hover:text-green-900"
+                  >
+                    <GrClose size={12} />
+                  </button>
+                </div>
+              )}
+              {query.locationName && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                  <FaMapMarkerAlt size={12} />
+                  <span>
+                    Ubicación: {decodeURIComponent(query.locationName)}
+                  </span>
+                  <button
+                    onClick={() =>
+                      updateQuery({
+                        locationName: null,
+                        page: 1,
+                      })
+                    }
+                    className="ml-1 hover:text-purple-900"
                   >
                     <GrClose size={12} />
                   </button>

@@ -156,7 +156,7 @@ const ViewInventory = () => {
         label: 'Orden de Compra',
         value: inventory.purchaseOrder.code,
         icon: FaClipboardList,
-        route: `/purchase-orders/${inventory.purchaseOrder.id}/invoices`,
+        route: `/purchase-orders?searchTerm=${inventory.purchaseOrder.code}&page=1`,
       });
 
       // Proyecto de la orden de compra directa
@@ -176,7 +176,7 @@ const ViewInventory = () => {
         label: 'Orden de Compra',
         value: inventory.invoice.purchaseOrder.code,
         icon: FaClipboardList,
-        route: `/purchase-orders/${inventory.invoice.purchaseOrder.id}/invoices`,
+        route: `/purchase-orders?searchTerm=${inventory.invoice.purchaseOrder.code}&page=1`,
       });
 
       // Proyecto de la orden de compra a través de factura
@@ -192,15 +192,11 @@ const ViewInventory = () => {
 
     // Factura (si existe)
     if (inventory?.invoice) {
-      const invoiceRoute = inventory.invoice.purchaseOrder
-        ? `/purchase-orders/${inventory.invoice.purchaseOrder.id}/invoices/?modalId=${inventory.invoice.id}`
-        : `/invoices?modalId=${inventory.invoice.id}`;
-
       rels.push({
         label: 'Factura',
         value: inventory.invoice.code,
         icon: FaFileInvoiceDollar,
-        route: invoiceRoute,
+        route: `/invoices?searchTerm=${inventory.invoice.code}&page=1`,
       });
     }
 
@@ -210,6 +206,7 @@ const ViewInventory = () => {
         label: 'Ubicación',
         value: inventory.location.name,
         icon: FaMapMarkerAlt,
+        route: `/inventories?locationName=${encodeURIComponent(inventory.location.name)}`,
       });
     }
 

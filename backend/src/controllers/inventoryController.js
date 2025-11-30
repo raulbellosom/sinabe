@@ -773,9 +773,11 @@ export const searchInventories = async (req, res) => {
       purchaseOrderId,
       invoiceId,
       verticalId,
+      locationName,
       excludeInvoiceId, // Para excluir inventarios ya asignados a una factura
       onlyAvailable, // Para mostrar solo inventarios sin factura asignada
     } = req.query;
+
     // Validaciones de entrada mejoradas
     const isAdvanced = advancedSearch === "true";
     const parsedPage = Math.max(1, parseInt(page, 10) || 1);
@@ -932,6 +934,11 @@ export const searchInventories = async (req, res) => {
         OR: [{ purchaseOrderId }, { invoice: { purchaseOrderId } }],
       }),
       ...(invoiceId && { invoiceId }),
+      ...(locationName && {
+        location: {
+          name: locationName,
+        },
+      }),
       ...(excludeInvoiceId && {
         OR: [
           { invoiceId: null }, // Sin factura asignada

@@ -23,6 +23,7 @@ export const useInventoryQueryParams = () => {
       purchaseOrderId: params.get('purchaseOrderId') || null,
       invoiceCode: params.get('invoiceCode') || null,
       purchaseOrderCode: params.get('purchaseOrderCode') || null,
+      locationName: params.get('locationName') || null,
     };
   }, [location.search]);
 
@@ -54,6 +55,7 @@ export const useInventoryQueryParams = () => {
         'purchaseOrderId',
         'invoiceCode',
         'purchaseOrderCode',
+        'locationName',
       ].forEach((key) => {
         const newValue =
           newParams[key] !== undefined
