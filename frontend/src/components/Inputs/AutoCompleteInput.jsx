@@ -75,23 +75,20 @@ const AutocompleteInput = ({
       if (field.value || field.value === 0) {
         // Use loose equality to match string/number IDs
         const option = options.find((opt) => opt.value == field.value);
-        setSelectedOption(option || null);
-        setInputValue(option ? option.label : '');
-      } else {
-        // If field value is empty/null/undefined, clear the input
-        // This is crucial for form resets
+        if (option) {
+          setSelectedOption(option);
+          // Solo actualiza el inputValue si está vacío o si el valor cambió externamente
+          if (!inputValue || selectedOption?.value !== option.value) {
+            setInputValue(option.label);
+          }
+        }
+      } else if (!inputValue) {
+        // Solo limpia si el inputValue está vacío (evita borrar mientras el usuario escribe)
         setSelectedOption(null);
         setInputValue('');
       }
     }
   }, [field.value, options]);
-
-  useEffect(() => {
-    if (!field.value) {
-      setInputValue('');
-      setSelectedOption(null);
-    }
-  }, [field.value]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -141,8 +138,11 @@ const AutocompleteInput = ({
   const handleInputChange = (e) => {
     const value = e.target.value;
     setInputValue(value);
-    setFieldValue(field.name, '');
-    setSelectedOption(null);
+    // Solo limpia el valor del campo si hay una opción seleccionada previamente
+    if (selectedOption) {
+      setFieldValue(field.name, '');
+      setSelectedOption(null);
+    }
     setShowDropdown(true);
   };
 

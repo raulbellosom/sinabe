@@ -85,6 +85,8 @@ const UpdateInventory = () => {
     typeId: '',
   });
   const [formattedModels, setFormattedModels] = useState([]);
+  const [isPinMode] = useState(false);
+  const [pinnedFields] = useState({});
   const {
     data: inventory,
     refetch,
@@ -153,10 +155,6 @@ const UpdateInventory = () => {
 
   useEffect(() => {
     if (inventory && Object.keys(inventory).length !== 0) {
-      console.log('Inventory data:', inventory);
-      console.log('Inventory location:', inventory.location);
-      console.log('Inventory locationId:', inventory.locationId);
-
       const formatedFiles = inventory?.files?.map((file) => ({
         id: file.id,
         url: file.url,
@@ -280,8 +278,6 @@ const UpdateInventory = () => {
 
   const handleSubmit = (values, { setSubmitting, resetForm }) => {
     try {
-      console.log('Values being sent to backend in UPDATE:', values);
-      console.log('LocationId specifically in UPDATE:', values.locationId);
       updateInventory(values);
       resetForm();
     } catch (error) {
@@ -324,6 +320,9 @@ const UpdateInventory = () => {
       formRef.current.submitForm();
     }
   };
+
+  const pinField = () => {};
+  const unpinField = () => {};
 
   if (isPending) {
     return (
@@ -392,8 +391,6 @@ const UpdateInventory = () => {
           </div>
         ) : (
           <>
-            {console.log('Locations in UpdateInventory:', locations)}
-            {console.log('InitialValues in UpdateInventory:', initialValues)}
             <InventoryForm
               ref={formRef}
               initialValues={initialValues}
@@ -413,6 +410,10 @@ const UpdateInventory = () => {
               currentCustomFields={initialValues.customFields}
               inventoryId={id}
               onFormChange={setCurrentFormValues}
+              isPinMode={isPinMode}
+              pinnedFields={pinnedFields}
+              onPinField={pinField}
+              onUnpinField={unpinField}
             />
           </>
         )}

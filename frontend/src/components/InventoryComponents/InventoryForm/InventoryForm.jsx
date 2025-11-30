@@ -40,7 +40,6 @@ const InventoryForm = forwardRef(
       onSubmit: async (values, actions) => {
         try {
           await onSubmit(values, actions);
-          // actions.resetForm();
         } catch (error) {
           actions.setSubmitting(false);
         }
@@ -62,7 +61,6 @@ const InventoryForm = forwardRef(
         formik.resetForm(nextState);
       },
     }));
-    // console.log(formik.values.modelId);
     return (
       <FormikProvider value={formik}>
         <Form ref={ref} className="space-y-4" onSubmit={formik.handleSubmit}>
