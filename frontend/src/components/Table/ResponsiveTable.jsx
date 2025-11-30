@@ -45,6 +45,8 @@ const ResponsiveTable = ({
   rowActions = [],
   pageSizeOptions = [10, 20, 30, 50, 100, 0],
   viewMode = 'table', // 'table', 'cards', 'resources'
+  // Header filters
+  headerFilters = {}, // { columnKey: { options: [], selected: [], onChange: fn } }
 }) => {
   const getSortIcon = (key) => {
     if (sortConfig.key !== key) return <FaSort className="opacity-30" />;
@@ -321,10 +323,17 @@ const ResponsiveTable = ({
                     col.headerClassName,
                   )}
                 >
-                  <div className="flex items-center">
-                    {col.title}
-                    {col.sortable && (
-                      <span className="ml-1">{getSortIcon(col.key)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center">
+                      {col.title}
+                      {col.sortable && (
+                        <span className="ml-1">{getSortIcon(col.key)}</span>
+                      )}
+                    </span>
+                    {headerFilters[col.key] && (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        {headerFilters[col.key].component}
+                      </div>
                     )}
                   </div>
                 </th>

@@ -16,6 +16,9 @@ export const searchInventories = async ({
   invoiceId = null,
   verticalId = null,
   locationName = null,
+  modelName = null,
+  brandName = null,
+  typeName = null,
   signal,
 }) => {
   try {
@@ -36,6 +39,9 @@ export const searchInventories = async ({
         invoiceId,
         verticalId,
         locationName,
+        modelName,
+        brandName,
+        typeName,
       },
       signal,
     });

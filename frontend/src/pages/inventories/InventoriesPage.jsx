@@ -1,8 +1,15 @@
 // InventoriesPage.jsx
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, {
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+} from 'react';
 import { useSearchInventories } from '../../hooks/useSearchInventories';
 import { useInventoryQueryParams } from '../../hooks/useInventoryQueryParams';
 import { useCatalogContext } from '../../context/CatalogContext';
+import AuthContext from '../../context/AuthContext';
 import { formatInventoriesToCSVString } from '../../utils/inventoriesUtils';
 import { downloadCSV } from '../../utils/DownloadCSV';
 import { parseToLocalDate } from '../../utils/formatValues';
@@ -37,6 +44,7 @@ import ImageViewer from '../../components/ImageViewer/ImageViewer2';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
 import { MdInfo, MdInventory } from 'react-icons/md';
+import { BiCategory } from 'react-icons/bi';
 import { useInventoryContext } from '../../context/InventoryContext';
 import { useInventorySelection } from '../../context/InventorySelectionProvider';
 import classNames from 'classnames';
@@ -46,20 +54,85 @@ import { useVerticals } from '../../hooks/useVerticals';
 import { useSearchAllInvoices } from '../../hooks/useInvoices';
 import { useSearchPurchaseOrders } from '../../hooks/usePurchaseOrders';
 import { GrClose } from 'react-icons/gr';
+import TableHeaderFilter from '../../components/Table/TableHeaderFilter';
+import { getAllInventoryLocations } from '../../services/inventoryLocationService';
+import { useQuery } from '@tanstack/react-query';
+import { PiTrademarkRegisteredBold } from 'react-icons/pi';
+import ColumnCustomizationModal from '../../components/Table/ColumnCustomizationModal';
+import { MdViewColumn } from 'react-icons/md';
 
 const InventoriesPage = () => {
   const [selectedInventory, setSelectedInventory] = useState(null);
   const [isOpenPreview, setIsOpenPreview] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [inventoryToDelete, setInventoryToDelete] = useState(null);
+  const [isColumnCustomizationOpen, setIsColumnCustomizationOpen] =
+    useState(false);
 
   // Estado local para el término de búsqueda (evita cursor jumping)
   const [localSearchTerm, setLocalSearchTerm] = useState('');
+
+  const { user } = useContext(AuthContext);
+
+  // Suppress react-beautiful-dnd warning
+  useEffect(() => {
+    const originalConsoleError = console.error;
+    console.error = (...args) => {
+      if (
+        typeof args[0] === 'string' &&
+        args[0].includes('Support for defaultProps will be removed')
+      ) {
+        return;
+      }
+      originalConsoleError(...args);
+    };
+    return () => {
+      console.error = originalConsoleError;
+    };
+  }, []);
+
+  // Column customization state (localStorage)
+  const [visibleColumns, setVisibleColumns] = useState([]);
+  const [columnOrder, setColumnOrder] = useState([]);
+
+  // Load preferences when user changes
+  useEffect(() => {
+    if (user?.id) {
+      const savedVisible = localStorage.getItem(
+        `inventories-visible-columns-${user.id}`,
+      );
+      const savedOrder = localStorage.getItem(
+        `inventories-column-order-${user.id}`,
+      );
+
+      if (savedVisible) {
+        try {
+          setVisibleColumns(JSON.parse(savedVisible));
+        } catch (e) {
+          console.error('Error parsing visible columns', e);
+        }
+      }
+
+      if (savedOrder) {
+        try {
+          setColumnOrder(JSON.parse(savedOrder));
+        } catch (e) {
+          console.error('Error parsing column order', e);
+        }
+      }
+    }
+  }, [user?.id]);
 
   // Use mainViewMode from query params as the source of truth for view mode
   const { query, updateQuery } = useInventoryQueryParams();
   const { data: verticals } = useVerticals();
   const viewMode = query.mainViewMode || 'table'; // Default to 'table'
+
+  // Fetch locations for filter
+  const { data: locationsData } = useQuery({
+    queryKey: ['inventory-locations'],
+    queryFn: getAllInventoryLocations,
+  });
 
   // Get invoice/purchase order info for filter display
   const { data: invoiceData } = useSearchAllInvoices(
@@ -100,6 +173,16 @@ const InventoriesPage = () => {
     // Keep locationName as is for backend filtering
     if (query.locationName) {
       baseQuery.locationName = decodeURIComponent(query.locationName);
+    }
+    // Keep array filters as is
+    if (query.modelName) {
+      baseQuery.modelName = query.modelName;
+    }
+    if (query.brandName) {
+      baseQuery.brandName = query.brandName;
+    }
+    if (query.typeName) {
+      baseQuery.typeName = query.typeName;
     }
 
     return baseQuery;
@@ -149,6 +232,15 @@ const InventoriesPage = () => {
     pageSize: query.pageSize,
   };
 
+  // Fetch all data without filters to get complete filter options
+  const { data: allDataForFilters } = useSearchInventories({
+    page: 1,
+    pageSize: 10000, // Large number to get all records
+    sortBy: null,
+    order: 'desc',
+  });
+  const allInventoriesForFilters = allDataForFilters?.data || [];
+
   const isEditPermission = useCheckPermissions('edit_inventories');
   const isDeletePermission = useCheckPermissions('delete_inventories');
   const navigate = useNavigate();
@@ -184,6 +276,54 @@ const InventoriesPage = () => {
       })),
     [verticals],
   );
+
+  // Extract unique values for filters from ALL inventory data (not just current page)
+  const filterOptions = useMemo(() => {
+    const models = new Set();
+    const brands = new Set();
+    const types = new Set();
+    const locations = new Set();
+    const invoices = new Set();
+    const purchaseOrders = new Set();
+
+    // Use all data for filters, not just current page
+    allInventoriesForFilters.forEach((inv) => {
+      if (inv.model?.name) models.add(inv.model.name);
+      if (inv.model?.brand?.name) brands.add(inv.model.brand.name);
+      if (inv.model?.type?.name) types.add(inv.model.type.name);
+      if (inv.location?.name) locations.add(inv.location.name);
+      if (inv.invoice?.code) invoices.add(inv.invoice.code);
+      if (inv.purchaseOrder?.code) purchaseOrders.add(inv.purchaseOrder.code);
+    });
+
+    // Also add location options from API
+    if (locationsData) {
+      locationsData.forEach((loc) => {
+        if (loc.name) locations.add(loc.name);
+      });
+    }
+
+    // Also add invoice/PO options from API
+    if (invoiceData?.data) {
+      invoiceData.data.forEach((inv) => {
+        if (inv.code) invoices.add(inv.code);
+      });
+    }
+    if (purchaseOrderData?.data) {
+      purchaseOrderData.data.forEach((po) => {
+        if (po.code) purchaseOrders.add(po.code);
+      });
+    }
+
+    return {
+      models: Array.from(models).sort(),
+      brands: Array.from(brands).sort(),
+      types: Array.from(types).sort(),
+      locations: Array.from(locations).sort(),
+      invoices: Array.from(invoices).sort(),
+      purchaseOrders: Array.from(purchaseOrders).sort(),
+    };
+  }, [allInventoriesForFilters, locationsData, invoiceData, purchaseOrderData]);
 
   const onSelectAllTableRows = () => {
     const allSelected =
@@ -257,7 +397,7 @@ const InventoriesPage = () => {
     },
   ];
 
-  const columns = useMemo(
+  const allColumns = useMemo(
     () => [
       {
         key: 'images',
@@ -304,6 +444,30 @@ const InventoriesPage = () => {
         render: (_, r) => r.model?.brand?.name || '-',
         headerClassName: 'w-24',
         cellClassName: 'w-24',
+      },
+      {
+        key: 'location.name',
+        title: 'Ubicación',
+        sortable: true,
+        render: (_, r) => r.location?.name || '-',
+        headerClassName: 'w-32',
+        cellClassName: 'w-32',
+      },
+      {
+        key: 'purchaseOrder.code',
+        title: 'Orden de Compra',
+        sortable: true,
+        render: (_, r) => r.purchaseOrder?.code || '-',
+        headerClassName: 'w-36',
+        cellClassName: 'w-36',
+      },
+      {
+        key: 'invoice.code',
+        title: 'Factura',
+        sortable: true,
+        render: (_, r) => r.invoice?.code || '-',
+        headerClassName: 'w-32',
+        cellClassName: 'w-32',
       },
       {
         key: 'serialNumber',
@@ -475,8 +639,24 @@ const InventoriesPage = () => {
       isEditPermission.hasPermission,
       isDeletePermission.hasPermission,
       navigate,
+      viewMode,
     ],
   );
+
+  // Apply column customization
+  const columns = useMemo(() => {
+    // If no customization, return all columns
+    if (columnOrder.length === 0 || visibleColumns.length === 0) {
+      return allColumns;
+    }
+
+    // Filter visible columns and apply custom order
+    const orderedColumns = columnOrder
+      .map((key) => allColumns.find((col) => col.key === key))
+      .filter((col) => col && visibleColumns.includes(col.key));
+
+    return orderedColumns;
+  }, [allColumns, columnOrder, visibleColumns]);
 
   const handlePageChange = (newPage) => {
     updateQuery({ ...query, page: newPage });
@@ -546,6 +726,21 @@ const InventoriesPage = () => {
     },
   ];
 
+  const handleSaveColumnCustomization = (newVisibleColumns, newColumnOrder) => {
+    setVisibleColumns(newVisibleColumns);
+    setColumnOrder(newColumnOrder);
+    if (user?.id) {
+      localStorage.setItem(
+        `inventories-visible-columns-${user.id}`,
+        JSON.stringify(newVisibleColumns),
+      );
+      localStorage.setItem(
+        `inventories-column-order-${user.id}`,
+        JSON.stringify(newColumnOrder),
+      );
+    }
+  };
+
   const collapsedActions = [
     { label: 'Exportar CSV', icon: FaFileCsv, action: handleDownloadCSV },
     {
@@ -554,6 +749,11 @@ const InventoriesPage = () => {
         ? TbLayoutSidebarLeftCollapseFilled
         : TbLayoutSidebarLeftExpandFilled,
       action: () => setIsOpenPreview((prev) => !prev),
+    },
+    {
+      label: 'Personalizar Columnas',
+      icon: MdViewColumn,
+      action: () => setIsColumnCustomizationOpen(true),
     },
   ];
 
@@ -708,7 +908,12 @@ const InventoriesPage = () => {
 
         {/* Filtros activos */}
         <div className="w-full">
-          {(currentInvoice || currentPurchaseOrder || query.locationName) && (
+          {(currentInvoice ||
+            currentPurchaseOrder ||
+            query.locationName ||
+            query.modelName?.length > 0 ||
+            query.brandName?.length > 0 ||
+            query.typeName?.length > 0) && (
             <div className="flex flex-wrap gap-2">
               {currentInvoice && (
                 <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
@@ -765,6 +970,65 @@ const InventoriesPage = () => {
                   </button>
                 </div>
               )}
+              {query.modelName?.map((model) => (
+                <div
+                  key={model}
+                  className="flex items-center gap-2 px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm"
+                >
+                  <MdInventory size={12} />
+                  <span>Modelo: {model}</span>
+                  <button
+                    onClick={() =>
+                      updateQuery({
+                        modelName: query.modelName.filter((m) => m !== model),
+                        page: 1,
+                      })
+                    }
+                    className="ml-1 hover:text-indigo-900"
+                  >
+                    <GrClose size={12} />
+                  </button>
+                </div>
+              ))}
+              {query.brandName?.map((brand) => (
+                <div
+                  key={brand}
+                  className="flex items-center gap-2 px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm"
+                >
+                  <span>Marca: {brand}</span>
+                  <button
+                    onClick={() =>
+                      updateQuery({
+                        brandName: query.brandName.filter((b) => b !== brand),
+                        page: 1,
+                      })
+                    }
+                    className="ml-1 hover:text-pink-900"
+                  >
+                    <GrClose size={12} />
+                  </button>
+                </div>
+              ))}
+              {query.typeName?.map((type) => (
+                <div
+                  key={type}
+                  className="flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm"
+                >
+                  <BiCategory size={12} />
+                  <span>Tipo: {type}</span>
+                  <button
+                    onClick={() =>
+                      updateQuery({
+                        typeName: query.typeName.filter((t) => t !== type),
+                        page: 1,
+                      })
+                    }
+                    className="ml-1 hover:text-amber-900"
+                  >
+                    <GrClose size={12} />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -802,6 +1066,96 @@ const InventoriesPage = () => {
             onSelectRow={onSelectTableRow}
             onSelectAllRows={onSelectAllTableRows}
             viewMode={viewMode}
+            headerFilters={{
+              'model.name': {
+                component: (
+                  <TableHeaderFilter
+                    options={filterOptions.models}
+                    selected={query.modelName || []}
+                    onChange={(values) =>
+                      updateQuery({ ...query, modelName: values, page: 1 })
+                    }
+                    placeholder="Filtrar por modelo"
+                  />
+                ),
+              },
+              'model.brand.name': {
+                component: (
+                  <TableHeaderFilter
+                    options={filterOptions.brands}
+                    selected={query.brandName || []}
+                    onChange={(values) =>
+                      updateQuery({ ...query, brandName: values, page: 1 })
+                    }
+                    placeholder="Filtrar por marca"
+                  />
+                ),
+              },
+              'model.type.name': {
+                component: (
+                  <TableHeaderFilter
+                    options={filterOptions.types}
+                    selected={query.typeName || []}
+                    onChange={(values) =>
+                      updateQuery({ ...query, typeName: values, page: 1 })
+                    }
+                    placeholder="Filtrar por tipo"
+                  />
+                ),
+              },
+              'location.name': {
+                component: (
+                  <TableHeaderFilter
+                    options={filterOptions.locations}
+                    selected={query.locationName ? [query.locationName] : []}
+                    onChange={(values) =>
+                      updateQuery({
+                        ...query,
+                        locationName: values.length > 0 ? values[0] : null,
+                        page: 1,
+                      })
+                    }
+                    placeholder="Filtrar por ubicación"
+                  />
+                ),
+              },
+              'purchaseOrder.code': {
+                component: (
+                  <TableHeaderFilter
+                    options={filterOptions.purchaseOrders}
+                    selected={
+                      query.purchaseOrderCode ? [query.purchaseOrderCode] : []
+                    }
+                    onChange={(values) =>
+                      updateQuery({
+                        ...query,
+                        purchaseOrderCode: values.length > 0 ? values[0] : null,
+                        purchaseOrderId: null,
+                        page: 1,
+                      })
+                    }
+                    placeholder="Filtrar por OC"
+                  />
+                ),
+              },
+              'invoice.code': {
+                component: (
+                  <TableHeaderFilter
+                    options={filterOptions.invoices}
+                    selected={query.invoiceCode ? [query.invoiceCode] : []}
+                    onChange={(values) =>
+                      updateQuery({
+                        ...query,
+                        invoiceCode: values.length > 0 ? values[0] : null,
+                        invoiceId: null,
+                        page: 1,
+                      })
+                    }
+                    placeholder="Filtrar por factura"
+                  />
+                ),
+              },
+            }}
           />
         </div>
 
@@ -820,6 +1174,22 @@ const InventoriesPage = () => {
         removeFunction={handleDeleteInventory}
         title="Confirmar Eliminación"
         message={`¿Estás seguro de que deseas eliminar el inventario ${inventoryToDelete?.model?.name || inventoryToDelete?.serialNumber}? Esta acción no se puede deshacer.`}
+      />
+      <ColumnCustomizationModal
+        isOpen={isColumnCustomizationOpen}
+        onClose={() => setIsColumnCustomizationOpen(false)}
+        columns={allColumns}
+        visibleColumns={
+          visibleColumns.length > 0
+            ? visibleColumns
+            : allColumns.map((col) => col.key)
+        }
+        columnOrder={
+          columnOrder.length > 0
+            ? columnOrder
+            : allColumns.map((col) => col.key)
+        }
+        onSave={handleSaveColumnCustomization}
       />
     </div>
   );

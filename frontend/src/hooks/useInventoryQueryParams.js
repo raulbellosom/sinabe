@@ -24,6 +24,9 @@ export const useInventoryQueryParams = () => {
       invoiceCode: params.get('invoiceCode') || null,
       purchaseOrderCode: params.get('purchaseOrderCode') || null,
       locationName: params.get('locationName') || null,
+      modelName: params.getAll('modelName'),
+      brandName: params.getAll('brandName'),
+      typeName: params.getAll('typeName'),
     };
   }, [location.search]);
 
@@ -111,6 +114,48 @@ export const useInventoryQueryParams = () => {
       ) {
         currentParams.delete('verticalId');
         newVerticals.forEach((v) => currentParams.append('verticalId', v));
+        updated = true;
+      }
+
+      // Handle array parameters (modelName)
+      const newModelNames = Array.isArray(newParams.modelName)
+        ? newParams.modelName
+        : [];
+      const currentModelNames = currentParams.getAll('modelName');
+      if (
+        JSON.stringify(currentModelNames.sort()) !==
+        JSON.stringify(newModelNames.sort())
+      ) {
+        currentParams.delete('modelName');
+        newModelNames.forEach((m) => currentParams.append('modelName', m));
+        updated = true;
+      }
+
+      // Handle array parameters (brandName)
+      const newBrandNames = Array.isArray(newParams.brandName)
+        ? newParams.brandName
+        : [];
+      const currentBrandNames = currentParams.getAll('brandName');
+      if (
+        JSON.stringify(currentBrandNames.sort()) !==
+        JSON.stringify(newBrandNames.sort())
+      ) {
+        currentParams.delete('brandName');
+        newBrandNames.forEach((b) => currentParams.append('brandName', b));
+        updated = true;
+      }
+
+      // Handle array parameters (typeName)
+      const newTypeNames = Array.isArray(newParams.typeName)
+        ? newParams.typeName
+        : [];
+      const currentTypeNames = currentParams.getAll('typeName');
+      if (
+        JSON.stringify(currentTypeNames.sort()) !==
+        JSON.stringify(newTypeNames.sort())
+      ) {
+        currentParams.delete('typeName');
+        newTypeNames.forEach((t) => currentParams.append('typeName', t));
         updated = true;
       }
 

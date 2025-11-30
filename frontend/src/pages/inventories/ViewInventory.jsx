@@ -80,16 +80,25 @@ const ViewInventory = () => {
         name: inventory?.model?.name,
         icon: MdInventory,
         label: 'Modelo',
+        route: inventory?.model?.name
+          ? `/inventories?modelName=${encodeURIComponent(inventory.model.name)}`
+          : null,
       },
       'model.brand.name': {
         name: inventory?.model?.brand?.name,
         icon: PiTrademarkRegisteredBold,
         label: 'Marca',
+        route: inventory?.model?.brand?.name
+          ? `/inventories?brandName=${encodeURIComponent(inventory.model.brand.name)}`
+          : null,
       },
       'model.type.name': {
         name: inventory?.model?.type?.name,
         icon: BiCategory,
         label: 'Tipo de Inventario',
+        route: inventory?.model?.type?.name
+          ? `/inventories?typeName=${encodeURIComponent(inventory.model.type.name)}`
+          : null,
       },
       serialNumber: {
         name: inventory?.serialNumber,
@@ -207,6 +216,36 @@ const ViewInventory = () => {
         value: inventory.location.name,
         icon: FaMapMarkerAlt,
         route: `/inventories?locationName=${encodeURIComponent(inventory.location.name)}`,
+      });
+    }
+
+    // Modelo (si existe)
+    if (inventory?.model?.name) {
+      rels.push({
+        label: 'Modelo',
+        value: inventory.model.name,
+        icon: MdInventory,
+        route: `/inventories?modelName=${encodeURIComponent(inventory.model.name)}`,
+      });
+    }
+
+    // Marca (si existe)
+    if (inventory?.model?.brand?.name) {
+      rels.push({
+        label: 'Marca',
+        value: inventory.model.brand.name,
+        icon: PiTrademarkRegisteredBold,
+        route: `/inventories?brandName=${encodeURIComponent(inventory.model.brand.name)}`,
+      });
+    }
+
+    // Tipo (si existe)
+    if (inventory?.model?.type?.name) {
+      rels.push({
+        label: 'Tipo',
+        value: inventory.model.type.name,
+        icon: BiCategory,
+        route: `/inventories?typeName=${encodeURIComponent(inventory.model.type.name)}`,
       });
     }
 
@@ -337,14 +376,16 @@ const ViewInventory = () => {
                   </div>
                 ))
               : Object.entries(inventoryData || {}).map(
-                  ([key, { name, icon, label }]) => (
+                  ([key, { name, icon, label, route }]) => (
                     <div
                       key={key}
                       className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-3 last:col-span-12"
                     >
                       <InventoryProperty
-                        onSearch={() =>
-                          navigate(`/inventories?searchTerm=${name}`)
+                        onSearch={
+                          route
+                            ? () => navigate(route)
+                            : () => navigate(`/inventories?searchTerm=${name}`)
                         }
                         label={label}
                         value={name}

@@ -774,6 +774,9 @@ export const searchInventories = async (req, res) => {
       invoiceId,
       verticalId,
       locationName,
+      modelName,
+      brandName,
+      typeName,
       excludeInvoiceId, // Para excluir inventarios ya asignados a una factura
       onlyAvailable, // Para mostrar solo inventarios sin factura asignada
     } = req.query;
@@ -937,6 +940,31 @@ export const searchInventories = async (req, res) => {
       ...(locationName && {
         location: {
           name: locationName,
+        },
+      }),
+      ...(modelName && {
+        model: {
+          name: {
+            in: Array.isArray(modelName) ? modelName : [modelName],
+          },
+        },
+      }),
+      ...(brandName && {
+        model: {
+          brand: {
+            name: {
+              in: Array.isArray(brandName) ? brandName : [brandName],
+            },
+          },
+        },
+      }),
+      ...(typeName && {
+        model: {
+          type: {
+            name: {
+              in: Array.isArray(typeName) ? typeName : [typeName],
+            },
+          },
         },
       }),
       ...(excludeInvoiceId && {
