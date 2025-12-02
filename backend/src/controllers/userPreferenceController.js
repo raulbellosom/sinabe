@@ -103,12 +103,12 @@ export const uploadSidebarImage = async (req, res) => {
 
     await sharp(filePath)
       .resize({
-        width: 1080,
-        height: 1920,
+        width: 1920,
+        height: 2560,
         fit: "inside",
         withoutEnlargement: true,
       })
-      .jpeg({ quality: 80, mozjpeg: true })
+      .jpeg({ quality: 95, mozjpeg: true })
       .toFile(optimizedPath);
 
     // Delete original upload

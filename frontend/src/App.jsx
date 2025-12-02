@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import SafeAppProvider from './context/SafeAppProvider';
 import AppRouter from './router/AppRouter';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AIAgentModal } from './components/AIAgent';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,6 +27,20 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      const configureStatusBar = async () => {
+        try {
+          await StatusBar.setStyle({ style: Style.Light });
+          await StatusBar.setOverlaysWebView({ overlay: true });
+        } catch (e) {
+          console.error('Error configuring status bar', e);
+        }
+      };
+      configureStatusBar();
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAppProvider>
