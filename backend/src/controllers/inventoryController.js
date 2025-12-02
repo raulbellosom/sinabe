@@ -903,80 +903,37 @@ export const searchInventories = async (req, res) => {
       return orderObj;
     };
 
-    // Condiciones base optimizadas
-    const baseWhereConditions = {
-      enabled: true,
-      ...(status && {
-        status: { in: Array.isArray(status) ? status : [status] },
-      }),
-      ...(conditionName &&
-        !conditionName.includes("ALL") && {
-          conditions: {
-            some: {
-              condition: {
-                name: {
-                  in: Array.isArray(conditionName)
-                    ? conditionName
-                    : [conditionName],
-                },
-              },
-            },
-          },
-        }),
-      ...(deadlineId && {
-        InventoryDeadline: { some: { deadlineId } },
-      }),
-      ...(projectId && {
-        OR: [
-          { InventoryDeadline: { some: { deadline: { projectId } } } },
-          { invoice: { purchaseOrder: { projectId } } },
-          { purchaseOrder: { projectId } },
-        ],
-      }),
-      ...(purchaseOrderId && {
-        OR: [{ purchaseOrderId }, { invoice: { purchaseOrderId } }],
-      }),
-      ...(invoiceId && { invoiceId }),
-      ...(locationName && {
-        location: {
-          name: locationName,
-        },
-      }),
-      ...(modelName && {
+    // Array para condiciones que deben ser OR entre sí (filtros principales)
+    const orConditions = [];
+
+    // 1. Model Conditions (Separated for OR logic)
+    if (modelName) {
+      orConditions.push({
         model: {
-          name: {
-            in: Array.isArray(modelName) ? modelName : [modelName],
-          },
+          name: { in: Array.isArray(modelName) ? modelName : [modelName] },
         },
-      }),
-      ...(brandName && {
+      });
+    }
+    if (brandName) {
+      orConditions.push({
         model: {
           brand: {
-            name: {
-              in: Array.isArray(brandName) ? brandName : [brandName],
-            },
+            name: { in: Array.isArray(brandName) ? brandName : [brandName] },
           },
         },
-      }),
-      ...(typeName && {
+      });
+    }
+    if (typeName) {
+      orConditions.push({
         model: {
           type: {
-            name: {
-              in: Array.isArray(typeName) ? typeName : [typeName],
-            },
+            name: { in: Array.isArray(typeName) ? typeName : [typeName] },
           },
         },
-      }),
-      ...(excludeInvoiceId && {
-        OR: [
-          { invoiceId: null }, // Sin factura asignada
-          { invoiceId: { not: excludeInvoiceId } }, // O tiene otra factura diferente
-        ],
-      }),
-      ...(onlyAvailable === "true" && {
-        invoiceId: null, // Solo inventarios sin factura
-      }),
-      ...(verticalIdsInt.length > 0 && {
+      });
+    }
+    if (verticalIdsInt.length > 0) {
+      orConditions.push({
         model: {
           ModelVertical: {
             some: {
@@ -984,6 +941,80 @@ export const searchInventories = async (req, res) => {
             },
           },
         },
+      });
+    }
+
+    // 2. Status
+    if (status) {
+      orConditions.push({
+        status: { in: Array.isArray(status) ? status : [status] },
+      });
+    }
+
+    // 3. Conditions (InventoryCondition)
+    if (conditionName && !conditionName.includes("ALL")) {
+      orConditions.push({
+        conditions: {
+          some: {
+            condition: {
+              name: {
+                in: Array.isArray(conditionName)
+                  ? conditionName
+                  : [conditionName],
+              },
+            },
+          },
+        },
+      });
+    }
+
+    // 4. Location
+    if (locationName) {
+      orConditions.push({
+        location: {
+          name: locationName,
+        },
+      });
+    }
+
+    // 5. Invoice
+    if (invoiceId) {
+      orConditions.push({ invoiceId });
+    }
+
+    // 6. Purchase Order / Project
+    if (projectId) {
+      orConditions.push({
+        OR: [
+          { InventoryDeadline: { some: { deadline: { projectId } } } },
+          { invoice: { purchaseOrder: { projectId } } },
+          { purchaseOrder: { projectId } },
+        ],
+      });
+    }
+
+    if (purchaseOrderId) {
+      orConditions.push({
+        OR: [{ purchaseOrderId }, { invoice: { purchaseOrderId } }],
+      });
+    }
+
+    // Condiciones base optimizadas
+    const baseWhereConditions = {
+      enabled: true,
+      // Filtros de contexto (siempre AND)
+      ...(excludeInvoiceId && {
+        OR: [{ invoiceId: null }, { invoiceId: { not: excludeInvoiceId } }],
+      }),
+      ...(onlyAvailable === "true" && {
+        invoiceId: null,
+      }),
+      ...(deadlineId && {
+        InventoryDeadline: { some: { deadlineId } },
+      }),
+      // Filtros principales (OR entre ellos si hay varios)
+      ...(orConditions.length > 0 && {
+        AND: [{ OR: orConditions }],
       }),
     };
 

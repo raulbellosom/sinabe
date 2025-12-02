@@ -60,6 +60,7 @@ import { useQuery } from '@tanstack/react-query';
 import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import ColumnCustomizationModal from '../../components/Table/ColumnCustomizationModal';
 import { MdViewColumn } from 'react-icons/md';
+import ActiveFilters from '../../components/InventoryComponents/ActiveFilters';
 
 const InventoriesPage = () => {
   const [selectedInventory, setSelectedInventory] = useState(null);
@@ -446,6 +447,20 @@ const InventoriesPage = () => {
         cellClassName: 'w-24',
       },
       {
+        key: 'serialNumber',
+        title: '# Serie',
+        sortable: true,
+        headerClassName: 'w-32',
+        cellClassName: 'w-32',
+      },
+      {
+        key: 'activeNumber',
+        title: '# Activo',
+        sortable: true,
+        headerClassName: 'w-32',
+        cellClassName: 'w-32',
+      },
+      {
         key: 'location.name',
         title: 'Ubicación',
         sortable: true,
@@ -466,20 +481,6 @@ const InventoriesPage = () => {
         title: 'Factura',
         sortable: true,
         render: (_, r) => r.invoice?.code || '-',
-        headerClassName: 'w-32',
-        cellClassName: 'w-32',
-      },
-      {
-        key: 'serialNumber',
-        title: '# Serie',
-        sortable: true,
-        headerClassName: 'w-32',
-        cellClassName: 'w-32',
-      },
-      {
-        key: 'activeNumber',
-        title: '# Activo',
-        sortable: true,
         headerClassName: 'w-32',
         cellClassName: 'w-32',
       },
@@ -793,7 +794,7 @@ const InventoriesPage = () => {
       {/* Search, Filters, and View Mode Toggle - Always visible */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 mb-4">
         {/* View Mode Toggle */}
-        <div className="flex items-center space-x-2 w-full flex-grow sm:w-auto">
+        <div className="flex flex-col gap-2 md:flex-row items-center w-full flex-grow sm:w-auto">
           <div className="flex items-center space-x-2 border rounded-md p-1">
             <Tooltip content="Vista de Tabla">
               <button
@@ -863,38 +864,8 @@ const InventoriesPage = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          {inventoryConditions.length > 0 && (
-            <FilterDropdown
-              options={inventoryConditions.map((c) => ({
-                id: c.name,
-                name: c.name,
-              }))}
-              selected={query.conditionName}
-              setSelected={(conditions) =>
-                updateQuery({ ...query, conditionName: conditions, page: 1 })
-              }
-              titleDisplay="Condición"
-              label="Filtrar por Condición"
-            />
-          )}
-
-          {/* Corrected: use the hardcoded array directly */}
-          <FilterDropdown
-            options={['ALTA', 'BAJA', 'PROPUESTA'].map((s) => ({
-              id: s,
-              name: s,
-            }))}
-            selected={query.status}
-            setSelected={(statuses) =>
-              updateQuery({ ...query, status: statuses, page: 1 })
-            }
-            titleDisplay="Estatus"
-            label="Filtrar por Estatus"
-            icon={<MdInfo size={18} />}
-          />
-
           {/* Filter by vertical */}
-          <FilterDropdown
+          {/* <FilterDropdown
             options={verticalOptions}
             selected={query.verticalId}
             setSelected={(verticalIds) =>
@@ -903,135 +874,17 @@ const InventoriesPage = () => {
             titleDisplay="Vertical"
             label="Filtrar por Vertical"
             icon={<FaSitemap className="h-4 w-4" />}
-          />
+          /> */}
         </div>
 
         {/* Filtros activos */}
-        <div className="w-full">
-          {(currentInvoice ||
-            currentPurchaseOrder ||
-            query.locationName ||
-            query.modelName?.length > 0 ||
-            query.brandName?.length > 0 ||
-            query.typeName?.length > 0) && (
-            <div className="flex flex-wrap gap-2">
-              {currentInvoice && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                  <FaFileInvoice size={12} />
-                  <span>Factura: {currentInvoice.code}</span>
-                  <button
-                    onClick={() =>
-                      updateQuery({
-                        invoiceId: null,
-                        invoiceCode: null,
-                        page: 1,
-                      })
-                    }
-                    className="ml-1 hover:text-blue-900"
-                  >
-                    <GrClose size={12} />
-                  </button>
-                </div>
-              )}
-              {currentPurchaseOrder && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                  <FaSitemap size={12} />
-                  <span>OC: {currentPurchaseOrder.code}</span>
-                  <button
-                    onClick={() =>
-                      updateQuery({
-                        purchaseOrderId: null,
-                        purchaseOrderCode: null,
-                        page: 1,
-                      })
-                    }
-                    className="ml-1 hover:text-green-900"
-                  >
-                    <GrClose size={12} />
-                  </button>
-                </div>
-              )}
-              {query.locationName && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                  <FaMapMarkerAlt size={12} />
-                  <span>
-                    Ubicación: {decodeURIComponent(query.locationName)}
-                  </span>
-                  <button
-                    onClick={() =>
-                      updateQuery({
-                        locationName: null,
-                        page: 1,
-                      })
-                    }
-                    className="ml-1 hover:text-purple-900"
-                  >
-                    <GrClose size={12} />
-                  </button>
-                </div>
-              )}
-              {query.modelName?.map((model) => (
-                <div
-                  key={model}
-                  className="flex items-center gap-2 px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm"
-                >
-                  <MdInventory size={12} />
-                  <span>Modelo: {model}</span>
-                  <button
-                    onClick={() =>
-                      updateQuery({
-                        modelName: query.modelName.filter((m) => m !== model),
-                        page: 1,
-                      })
-                    }
-                    className="ml-1 hover:text-indigo-900"
-                  >
-                    <GrClose size={12} />
-                  </button>
-                </div>
-              ))}
-              {query.brandName?.map((brand) => (
-                <div
-                  key={brand}
-                  className="flex items-center gap-2 px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm"
-                >
-                  <span>Marca: {brand}</span>
-                  <button
-                    onClick={() =>
-                      updateQuery({
-                        brandName: query.brandName.filter((b) => b !== brand),
-                        page: 1,
-                      })
-                    }
-                    className="ml-1 hover:text-pink-900"
-                  >
-                    <GrClose size={12} />
-                  </button>
-                </div>
-              ))}
-              {query.typeName?.map((type) => (
-                <div
-                  key={type}
-                  className="flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm"
-                >
-                  <BiCategory size={12} />
-                  <span>Tipo: {type}</span>
-                  <button
-                    onClick={() =>
-                      updateQuery({
-                        typeName: query.typeName.filter((t) => t !== type),
-                        page: 1,
-                      })
-                    }
-                    className="ml-1 hover:text-amber-900"
-                  >
-                    <GrClose size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ActiveFilters
+          query={query}
+          updateQuery={updateQuery}
+          currentInvoice={currentInvoice}
+          currentPurchaseOrder={currentPurchaseOrder}
+          verticalOptions={verticalOptions}
+        />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div
@@ -1152,6 +1005,59 @@ const InventoriesPage = () => {
                       })
                     }
                     placeholder="Filtrar por factura"
+                  />
+                ),
+              },
+              vertical: {
+                component: (
+                  <TableHeaderFilter
+                    options={verticalOptions.map((v) => v.name)}
+                    selected={
+                      query.verticalId
+                        ?.map(
+                          (id) =>
+                            verticalOptions.find((v) => v.id === id)?.name,
+                        )
+                        .filter(Boolean) || []
+                    }
+                    onChange={(selectedNames) => {
+                      const selectedIds = selectedNames
+                        .map(
+                          (name) =>
+                            verticalOptions.find((v) => v.name === name)?.id,
+                        )
+                        .filter(Boolean);
+                      updateQuery({
+                        ...query,
+                        verticalId: selectedIds,
+                        page: 1,
+                      });
+                    }}
+                    placeholder="Filtrar por vertical"
+                  />
+                ),
+              },
+              status: {
+                component: (
+                  <TableHeaderFilter
+                    options={['ALTA', 'BAJA', 'PROPUESTA']}
+                    selected={query.status || []}
+                    onChange={(values) =>
+                      updateQuery({ ...query, status: values, page: 1 })
+                    }
+                    placeholder="Filtrar por estatus"
+                  />
+                ),
+              },
+              conditions: {
+                component: (
+                  <TableHeaderFilter
+                    options={inventoryConditions.map((c) => c.name)}
+                    selected={query.conditionName || []}
+                    onChange={(values) =>
+                      updateQuery({ ...query, conditionName: values, page: 1 })
+                    }
+                    placeholder="Filtrar por condición"
                   />
                 ),
               },

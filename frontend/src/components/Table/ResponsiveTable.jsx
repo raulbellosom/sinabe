@@ -78,6 +78,65 @@ const ResponsiveTable = ({
       );
     }
     if (data.length === 0) {
+      if (viewMode === 'table') {
+        return (
+          <div className="overflow-x-auto">
+            <table className="min-w-full w-full text-sm text-left text-gray-500 dark:text-gray-400">
+              <thead className="text-xs text-gray-100 uppercase bg-gray-700 dark:bg-gray-800 whitespace-nowrap">
+                <tr>
+                  {selectable && (
+                    <th className="px-4 py-3 first:rounded-tl-lg last:rounded-tr-lg">
+                      <Checkbox
+                        checked={false}
+                        disabled
+                        className="cursor-pointer w-5 h-5 text-purple-500 focus:ring-purple-500 opacity-50"
+                      />
+                    </th>
+                  )}
+                  {columns.map((col) => (
+                    <th
+                      key={col.key}
+                      onClick={() => col.sortable && onSort && onSort(col.key)}
+                      scope="col"
+                      className={classNames(
+                        'px-4 py-2 first:rounded-tl-lg last:rounded-tr-lg',
+                        {
+                          'cursor-pointer select-none': col.sortable,
+                        },
+                        col.headerClassName,
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center">
+                          {col.title}
+                          {col.sortable && (
+                            <span className="ml-1">{getSortIcon(col.key)}</span>
+                          )}
+                        </span>
+                        {headerFilters[col.key] && (
+                          <div onClick={(e) => e.stopPropagation()}>
+                            {headerFilters[col.key].component}
+                          </div>
+                        )}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td
+                    colSpan={columns.length + (selectable ? 1 : 0)}
+                    className="p-4"
+                  >
+                    <TableResultsNotFound />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        );
+      }
       return <TableResultsNotFound />;
     }
 
