@@ -32,6 +32,8 @@ import ProjectDetailPage from '../pages/projects/ProjectDetailPage';
 import VerticalPage from '../pages/vertical/VerticalPage';
 import PurchaseOrdersPage from '../pages/purchaseOrders/PurchaseOrdersPage';
 import InvoicesPage from '../pages/invoices/InvoicesPage';
+import CreateCustody from '../pages/Custody/CreateCustody';
+import CustodyPage from '../pages/Custody/CustodyPage';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -88,6 +90,8 @@ const AuthorizedRoute = ({ user }) => {
                     path="/inventories/view/:id"
                     element={<ViewInventory />}
                   />
+                  <Route path="/custody" element={<CustodyPage />} />
+                  <Route path="/custody/create" element={<CreateCustody />} />
                   <Route path="/verticals" element={<VerticalPage />} />
                   <Route path="/projects" element={<ProjectsPage />} />
                   <Route

@@ -280,6 +280,18 @@ const Sidebar = ({ children }) => {
                       Inventarios
                     </MenuItem>
                   )}
+                  {isCreateInventoryPermission.hasPermission && (
+                    <MenuItem
+                      icon={<FaFileInvoice size={23} />}
+                      active={isActivePath('/custody')}
+                      component={<Link to={'/custody'} />}
+                      onClick={() => {
+                        setToggled(false);
+                      }}
+                    >
+                      Resguardos TI
+                    </MenuItem>
+                  )}
                   {isCatalogsPermission && (
                     <MenuItem
                       icon={<FaBoxes size={23} />}

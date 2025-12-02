@@ -18,6 +18,7 @@ const AuthProvider = ({ children }) => {
     updatePassword,
     updateProfile,
     updateProfileImage,
+    updateSignature,
   } = useAuthData(dispatch);
 
   useEffect(() => {
@@ -67,6 +68,7 @@ const AuthProvider = ({ children }) => {
         updatePassword,
         updateProfile,
         updateProfileImage,
+        updateSignature,
       }}
     >
       {children}

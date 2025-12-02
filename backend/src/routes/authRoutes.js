@@ -7,9 +7,11 @@ import {
   updatePassword,
   updateProfile,
   updateProfileImage,
+  updateSignature,
 } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { upload, saveProfileImage } from "../utils/saveProfileImage.js";
+import { uploadSignature, saveSignature } from "../utils/saveSignature.js";
 import { verifyRole } from "../middleware/authorization.js";
 
 const router = express.Router();
@@ -25,6 +27,13 @@ router.put(
   upload.single("profileImage"),
   saveProfileImage,
   updateProfileImage
+);
+router.put(
+  "/updateSignature",
+  protect,
+  uploadSignature.single("signature"),
+  saveSignature,
+  updateSignature
 );
 router.put("/updatePassword", protect, updatePassword);
 

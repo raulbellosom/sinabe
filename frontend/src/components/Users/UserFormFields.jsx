@@ -59,6 +59,33 @@ const UserFormFields = ({ roles, editMode }) => {
         className="col-span-2 md:col-span-1"
       />
       <Field
+        name="employeeNumber"
+        id="employeeNumber"
+        component={TextInput}
+        label="Número de Empleado"
+        type="text"
+        icon={BiUser}
+        className="col-span-2 md:col-span-1"
+      />
+      <Field
+        name="jobTitle"
+        id="jobTitle"
+        component={TextInput}
+        label="Puesto"
+        type="text"
+        icon={BiUser}
+        className="col-span-2 md:col-span-1"
+      />
+      <Field
+        name="department"
+        id="department"
+        component={TextInput}
+        label="Departamento"
+        type="text"
+        icon={BiUser}
+        className="col-span-2 md:col-span-1"
+      />
+      <Field
         name="role"
         id="role"
         component={SelectInput}

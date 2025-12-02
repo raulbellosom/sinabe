@@ -113,11 +113,18 @@ const AutocompleteInput = ({
 
   // Filtrar opciones y agregar la opción "Otro" si corresponde
   const filtered = useMemo(() => {
-    const filteredList = options?.filter((option) =>
-      normalizeString(option.label)
+    const normalizedInput = normalizeString(inputValue).toLowerCase();
+    const filteredList = options?.filter((option) => {
+      const labelMatch = normalizeString(option.label)
         .toLowerCase()
-        .includes(inputValue.toLowerCase()),
-    );
+        .includes(normalizedInput);
+      const searchTermsMatch =
+        option.searchTerms &&
+        normalizeString(option.searchTerms)
+          .toLowerCase()
+          .includes(normalizedInput);
+      return labelMatch || searchTermsMatch;
+    });
 
     // Si allowOther es true, se agrega la opción "Otro" al final de la lista
     if (allowOther) {

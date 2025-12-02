@@ -8,16 +8,25 @@ import { LuImageOff } from 'react-icons/lu';
 import AccountFields from '../../components/AccountFields/AccountFields';
 import ModalForm from '../../components/Modals/ModalForm';
 import ChangePasswordForm from '../../components/AccountFields/ChangePassword/ChangePasswordForm';
-import { FaSave } from 'react-icons/fa';
+import { FaSave, FaPenNib } from 'react-icons/fa';
 import { IoMdClose } from 'react-icons/io';
 import { AiFillEdit } from 'react-icons/ai';
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
+import SignatureCanvas from 'react-signature-canvas';
+import { Button, Modal } from 'flowbite-react';
+import { API_URL } from '../../services/api';
 
 const Account = () => {
   const inputRef = useRef(null);
-  const { user, updateProfileImage, updateProfile, updatePassword } =
-    useAuthContext();
+  const sigPad = useRef({});
+  const {
+    user,
+    updateProfileImage,
+    updateProfile,
+    updatePassword,
+    updateSignature,
+  } = useAuthContext();
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [extraActions, setExtraActions] = useState([]);
   const [image, setImage] = useState(user?.photo || '');
@@ -29,6 +38,8 @@ const Account = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState(null);
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+  const [signatureImage, setSignatureImage] = useState(user?.signature || null);
 
   useEffect(() => {
     if (image && image instanceof File && image !== user?.photo) {
@@ -108,7 +119,32 @@ const Account = () => {
         allowEdit: true,
         inputType: 'tel',
       },
+      {
+        id: 'employeeNumber',
+        label: 'Número de Empleado',
+        name: 'employeeNumber',
+        value: user.employeeNumber,
+        onChange: handleFieldChange,
+        allowEdit: true,
+      },
+      {
+        id: 'jobTitle',
+        label: 'Puesto',
+        name: 'jobTitle',
+        value: user.jobTitle,
+        onChange: handleFieldChange,
+        allowEdit: true,
+      },
+      {
+        id: 'department',
+        label: 'Departamento',
+        name: 'department',
+        value: user.department,
+        onChange: handleFieldChange,
+        allowEdit: true,
+      },
     ]);
+    setSignatureImage(user?.signature || null);
   }, [user]);
 
   const handleFieldChange = (e) => {
@@ -270,6 +306,38 @@ const Account = () => {
           </div>
         </form>
         <hr className="my-4" />
+
+        {/* Signature Section */}
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-bold">
+            <span className="inline-block mr-2">
+              <FaPenNib size={20} />
+            </span>
+            Firma Digital
+          </h2>
+          <div className="flex flex-col items-center gap-4">
+            {signatureImage ? (
+              <div className="border p-2 rounded bg-white">
+                <img
+                  src={`${API_URL}/${signatureImage.url}`}
+                  alt="Firma"
+                  className="max-h-32 object-contain"
+                />
+              </div>
+            ) : (
+              <p className="text-gray-500 italic">No hay firma guardada</p>
+            )}
+            <Button
+              color="light"
+              onClick={() => setIsSignatureModalOpen(true)}
+              className="w-fit"
+            >
+              {signatureImage ? 'Actualizar Firma' : 'Crear Firma'}
+            </Button>
+          </div>
+        </div>
+
+        <hr className="my-4" />
         {isChangePassPermission.hasPermission && (
           <div className="flex flex-col gap-4">
             <h2 className="text-lg font-bold">
@@ -305,6 +373,110 @@ const Account = () => {
             )}
           </div>
         )}
+
+        <Modal
+          show={isSignatureModalOpen}
+          onClose={() => setIsSignatureModalOpen(false)}
+          size="lg"
+        >
+          <Modal.Header>
+            {signatureImage ? 'Actualizar Firma' : 'Crear Firma'}
+          </Modal.Header>
+          <Modal.Body>
+            <div className="flex flex-col gap-4">
+              {signatureImage && (
+                <div className="bg-yellow-50 p-3 rounded border border-yellow-200 text-sm text-yellow-800 mb-2">
+                  Ya tienes una firma guardada. Si guardas una nueva, la
+                  anterior será reemplazada.
+                </div>
+              )}
+
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center bg-gray-50">
+                <p className="mb-2 text-sm text-gray-500">
+                  Dibuja tu firma aquí:
+                </p>
+                <div className="border border-gray-400 bg-white">
+                  <SignatureCanvas
+                    ref={sigPad}
+                    penColor="black"
+                    canvasProps={{
+                      width: 500,
+                      height: 200,
+                      className: 'signature-canvas',
+                    }}
+                  />
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    size="xs"
+                    color="gray"
+                    onClick={() => sigPad.current.clear()}
+                  >
+                    Limpiar
+                  </Button>
+                </div>
+              </div>
+
+              <div className="relative flex py-2 items-center">
+                <div className="flex-grow border-t border-gray-300"></div>
+                <span className="flex-shrink-0 mx-4 text-gray-400">O</span>
+                <div className="flex-grow border-t border-gray-300"></div>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <p className="mb-2 text-sm text-gray-500">
+                  Sube una imagen de tu firma:
+                </p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+                />
+              </div>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button
+              onClick={async () => {
+                let fileToUpload = null;
+                const fileInput = document.querySelector(
+                  'input[type="file"][accept="image/*"]',
+                );
+
+                if (fileInput && fileInput.files[0]) {
+                  fileToUpload = fileInput.files[0];
+                } else if (!sigPad.current.isEmpty()) {
+                  const dataUrl = sigPad.current
+                    .getCanvas()
+                    .toDataURL('image/png');
+                  const res = await fetch(dataUrl);
+                  const blob = await res.blob();
+                  fileToUpload = new File([blob], 'signature.png', {
+                    type: 'image/png',
+                  });
+                }
+
+                if (fileToUpload) {
+                  try {
+                    await updateSignature(fileToUpload);
+                    setIsSignatureModalOpen(false);
+                    // Refresh user data is handled by context update
+                  } catch (err) {
+                    console.error(err);
+                  }
+                } else {
+                  // Show error: draw or upload
+                  alert('Por favor dibuja o sube una firma.');
+                }
+              }}
+            >
+              Guardar Firma
+            </Button>
+            <Button color="gray" onClick={() => setIsSignatureModalOpen(false)}>
+              Cancelar
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </section>
     </div>
   );

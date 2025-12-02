@@ -1010,6 +1010,9 @@ export const searchInventories = async (req, res) => {
           },
         },
 
+        // Ubicación
+        { location: { name: { contains: term } } },
+
         // Campos personalizados
         {
           customField: {
@@ -1169,6 +1172,7 @@ export const searchInventories = async (req, res) => {
       purchaseOrder: {
         include: { project: true },
       },
+      location: true,
       InventoryDeadline: {
         include: {
           deadline: {

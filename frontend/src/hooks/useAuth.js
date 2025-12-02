@@ -7,6 +7,7 @@ import {
   updateProfile,
   updatePassword,
   updateProfileImage,
+  updateSignature,
 } from '../services/api';
 import { useLoading } from '../context/LoadingContext';
 import Notifies from '../components/Notifies/Notifies';
@@ -128,6 +129,21 @@ export const useAuthData = (dispatch) => {
     onSettled: () => setLoading(false),
   });
 
+  const updateSignatureMutation = useMutation({
+    mutationFn: updateSignature,
+    onMutate: () => setLoading(true),
+    onSuccess: (data) => {
+      queryClient.setQueryData('user', data);
+      localStorage.setItem('user', JSON.stringify(data));
+      Notifies('success', 'Firma actualizada');
+      dispatch({ type: 'PROFILE_UPDATED', payload: data });
+    },
+    onError: (error) => {
+      Notifies('error', 'Error al actualizar la firma');
+    },
+    onSettled: () => setLoading(false),
+  });
+
   return {
     login: loginMutation.mutateAsync,
     register: registerMutation.mutateAsync,
@@ -141,6 +157,9 @@ export const useAuthData = (dispatch) => {
     },
     updateProfileImage: (values) => {
       return updateProfileImageMutation.mutateAsync(values);
+    },
+    updateSignature: (values) => {
+      return updateSignatureMutation.mutateAsync(values);
     },
   };
 };

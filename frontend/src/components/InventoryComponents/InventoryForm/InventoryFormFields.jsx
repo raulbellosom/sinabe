@@ -288,7 +288,7 @@ const InventoryFormFields = ({
                     id="receptionDate"
                     title="Fecha de Recepción"
                     icon={MdCalendarToday}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={new Date().toLocaleDateString('en-CA')}
                   />
                 </PinnableInputWrapper>
               )}

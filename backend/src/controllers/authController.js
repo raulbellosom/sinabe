@@ -64,7 +64,9 @@ export const login = async (req, res) => {
 
     if (user && (await bcrypt.compare(password, user.password))) {
       user.password = undefined;
-      user.photo = user?.photo?.[0] || null;
+      const photos = user.photo || [];
+      user.photo = photos.find((p) => p.type !== "SIGNATURE") || null;
+      user.signature = photos.find((p) => p.type === "SIGNATURE") || null;
       user.authPermissions = user.role.permissions.map(
         (rolePermission) => rolePermission.permission.name
       );
@@ -116,7 +118,9 @@ export const loadUser = async (req, res) => {
       );
 
       loadedUser.password = undefined;
-      loadedUser.photo = loadedUser?.photo?.[0] || null;
+      const photos = loadedUser.photo || [];
+      loadedUser.photo = photos.find((p) => p.type !== "SIGNATURE") || null;
+      loadedUser.signature = photos.find((p) => p.type === "SIGNATURE") || null;
 
       res.json(loadedUser);
     } else {
@@ -134,7 +138,16 @@ export const logout = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  const { firstName, lastName, email, phone, userId } = req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    userId,
+    employeeNumber,
+    jobTitle,
+    department,
+  } = req.body;
   try {
     const updatedUser = await db.user.update({
       where: { id: userId },
@@ -143,6 +156,9 @@ export const updateProfile = async (req, res) => {
         lastName,
         email,
         phone,
+        employeeNumber,
+        jobTitle,
+        department,
       },
       include: {
         role: {
@@ -165,7 +181,79 @@ export const updateProfile = async (req, res) => {
     });
 
     updatedUser.password = undefined;
-    updatedUser.photo = updatedUser?.photo?.[0] || null;
+    const photos = updatedUser.photo || [];
+    updatedUser.photo = photos.find((p) => p.type !== "SIGNATURE") || null;
+    updatedUser.signature = photos.find((p) => p.type === "SIGNATURE") || null;
+    updatedUser.authPermissions = updatedUser.role.permissions.map(
+      (rolePermission) => rolePermission.permission.name
+    );
+
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateSignature = async (req, res) => {
+  const { user } = req;
+  const { signatureImage } = req;
+  try {
+    if (!signatureImage) {
+      res.status(400).json({ message: "No signature file uploaded" });
+      return;
+    }
+
+    // Find existing signature
+    const currentSignature = await db.userImage.findFirst({
+      where: { userId: user.id, enabled: true, type: "SIGNATURE" },
+    });
+
+    // Disable old signature if exists
+    if (currentSignature) {
+      await db.userImage.update({
+        where: { id: currentSignature.id },
+        data: { enabled: false },
+      });
+    }
+
+    // Create new signature
+    await db.userImage.create({
+      data: {
+        url: signatureImage.url,
+        thumbnail: null,
+        type: "SIGNATURE",
+        metadata: signatureImage.metadata,
+        enabled: true,
+        userId: user.id,
+      },
+    });
+
+    const updatedUser = await db.user.findUnique({
+      where: { id: user.id },
+      include: {
+        role: {
+          include: {
+            permissions: {
+              include: {
+                permission: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        photo: {
+          where: { enabled: true },
+        },
+      },
+    });
+
+    updatedUser.password = undefined;
+    const photos = updatedUser.photo || [];
+    updatedUser.photo = photos.find((p) => p.type !== "SIGNATURE") || null;
+    updatedUser.signature = photos.find((p) => p.type === "SIGNATURE") || null;
     updatedUser.authPermissions = updatedUser.role.permissions.map(
       (rolePermission) => rolePermission.permission.name
     );
@@ -228,7 +316,9 @@ export const updateProfileImage = async (req, res) => {
     });
 
     updatedUser.password = undefined;
-    updatedUser.photo = updatedUser?.photo?.[0] || null;
+    const photos = updatedUser.photo || [];
+    updatedUser.photo = photos.find((p) => p.type !== "SIGNATURE") || null;
+    updatedUser.signature = photos.find((p) => p.type === "SIGNATURE") || null;
     updatedUser.authPermissions = updatedUser.role.permissions.map(
       (rolePermission) => rolePermission.permission.name
     );

@@ -37,6 +37,9 @@ export const getUserById = async (req, res) => {
 
     if (user) {
       user.password = undefined;
+      const photos = user.photo || [];
+      user.photo = photos.find((p) => p.type !== "SIGNATURE") || null;
+      user.signature = photos.find((p) => p.type === "SIGNATURE") || null;
       res.json(user);
     } else {
       res.status(404).json({ message: "Usuario no encontrado." });
@@ -101,6 +104,9 @@ export const createUser = async (req, res) => {
     });
 
     newUser.password = undefined;
+    const photos = newUser.photo || [];
+    newUser.photo = photos.find((p) => p.type !== "SIGNATURE") || null;
+    newUser.signature = photos.find((p) => p.type === "SIGNATURE") || null;
 
     res.status(201).json(newUser);
   } catch (error) {
@@ -114,8 +120,19 @@ export const updateUser = async (req, res) => {
     const { userData } = req.body;
     const { profileImage } = req;
 
-    const { id, firstName, lastName, email, phone, role, status, userName } =
-      JSON.parse(userData);
+    const {
+      id,
+      firstName,
+      lastName,
+      email,
+      phone,
+      role,
+      status,
+      userName,
+      employeeNumber,
+      jobTitle,
+      department,
+    } = JSON.parse(userData);
 
     const userExists = await db.user.findFirst({ where: { id } });
 
@@ -140,6 +157,9 @@ export const updateUser = async (req, res) => {
         userName,
         status: parseStatus(status),
         roleId: parseInt(role),
+        employeeNumber,
+        jobTitle,
+        department,
       },
       include: {
         role: true,
@@ -178,6 +198,9 @@ export const updateUser = async (req, res) => {
     });
 
     newUser.password = undefined;
+    const photos = newUser.photo || [];
+    newUser.photo = photos.find((p) => p.type !== "SIGNATURE") || null;
+    newUser.signature = photos.find((p) => p.type === "SIGNATURE") || null;
 
     return res.json(newUser);
   } catch (error) {
@@ -408,6 +431,9 @@ export const searchUsers = async (req, res) => {
         { phone: { contains: searchTerm } },
         { userName: { contains: searchTerm } },
         { role: { name: { contains: searchTerm } } },
+        { employeeNumber: { contains: searchTerm } },
+        { jobTitle: { contains: searchTerm } },
+        { department: { contains: searchTerm } },
       ];
     }
 

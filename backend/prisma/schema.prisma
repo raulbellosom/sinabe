@@ -53,6 +53,13 @@ model User {
   assignedDeadlines Deadline[]      @relation("DeadlineUsers")
   assignedTasks     DeadlineTask[]  @relation("TaskUsers")
 
+  // Custody Relations
+  employeeNumber    String?
+  jobTitle          String?
+  department        String?
+  receivedCustodies CustodyRecord[] @relation("CustodyReceiver")
+  deliveredCustodies CustodyRecord[] @relation("CustodyDeliverer")
+
   @@index([roleId], map: "User_roleId_fkey")
 }
 
@@ -87,6 +94,7 @@ model Inventory {
   conditions        InventoryCondition[]
   customField       InventoryCustomField[]
   InventoryDeadline InventoryDeadline[]
+  custodyItems      CustodyItem[]
 
   @@index([createdById], map: "Inventory_createdById_fkey")
   @@index([modelId], map: "Inventory_modelId_fkey")
@@ -309,15 +317,16 @@ model ModelVertical {
 }
 
 model File {
-  id          String    @id @default(uuid())
-  inventoryId String
+  id          String          @id @default(uuid())
+  inventoryId String?
   metadata    Json?
-  uploadedAt  DateTime  @default(now())
-  createdAt   DateTime  @default(now())
-  enabled     Boolean   @default(true)
+  uploadedAt  DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+  enabled     Boolean         @default(true)
   type        String
   url         String
-  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+  inventory   Inventory?      @relation(fields: [inventoryId], references: [id])
+  custodyRecords CustodyRecord[]
 
   @@index([inventoryId], map: "File_inventoryId_fkey")
 }
@@ -366,6 +375,44 @@ model UserImage {
   user      User?    @relation("UserImages", fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+model CustodyRecord {
+  id          String        @id @default(uuid())
+  code        String?       @unique
+  date        DateTime
+  receiverId  String
+  receiver    User          @relation("CustodyReceiver", fields: [receiverId], references: [id])
+  delivererId String
+  deliverer   User          @relation("CustodyDeliverer", fields: [delivererId], references: [id])
+  comments    String?       @db.Text
+  fileId      String?
+  file        File?         @relation(fields: [fileId], references: [id])
+  items       CustodyItem[]
+  enabled     Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([receiverId])
+  @@index([delivererId])
+  @@index([fileId])
+}
+
+model CustodyItem {
+  id              String        @id @default(uuid())
+  custodyRecordId String
+  custodyRecord   CustodyRecord @relation(fields: [custodyRecordId], references: [id])
+  inventoryId     String
+  inventory       Inventory     @relation(fields: [inventoryId], references: [id])
+  typeBrand       String
+  model           String
+  serialNumber    String?
+  assetNumber     String?
+  invoiceNumber   String?
+  features        String?
+
+  @@index([custodyRecordId])
+  @@index([inventoryId])
 }
 
 enum Status {

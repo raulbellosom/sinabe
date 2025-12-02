@@ -77,7 +77,9 @@ const FileIcon = ({ file, className, size, onRemove }) => {
     } else if (file.url.startsWith('http') || file.url.startsWith('https')) {
       return file.url;
     } else {
-      return `${API_URL}/${file.url}`;
+      const cleanApiUrl = API_URL.replace(/\/$/, '');
+      const cleanFileUrl = file.url.startsWith('/') ? file.url : `/${file.url}`;
+      return `${cleanApiUrl}${cleanFileUrl}`;
     }
   };
 

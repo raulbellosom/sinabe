@@ -134,6 +134,22 @@ export const updateProfileImage = async (profileImage) => {
   }
 };
 
+export const updateSignature = async (signatureImage) => {
+  try {
+    let data = new FormData();
+    data.append('signature', signatureImage);
+    const response = await api.put(
+      '/auth/updateSignature',
+      data,
+      headerFormData,
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error en updateSignature:', error);
+    throw error;
+  }
+};
+
 export const getUsers = async () => {
   try {
     const response = await api.get(`/users`);
@@ -196,6 +212,9 @@ export const updateUser = async (user) => {
         status: user.status,
         password: user.password,
         repeatPassword: user.repeatPassword,
+        employeeNumber: user.employeeNumber,
+        jobTitle: user.jobTitle,
+        department: user.department,
       }),
     );
     const response = await api.put(`/users/${user.id}`, data, headerFormData);

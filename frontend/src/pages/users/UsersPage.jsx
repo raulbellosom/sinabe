@@ -127,6 +127,9 @@ const UsersPage = () => {
       { key: 'lastName', title: 'Apellido', sortable: true },
       { key: 'email', title: 'Correo', sortable: true },
       { key: 'phone', title: 'Teléfono', sortable: true },
+      { key: 'employeeNumber', title: 'No. Empleado', sortable: true },
+      { key: 'jobTitle', title: 'Puesto', sortable: true },
+      { key: 'department', title: 'Departamento', sortable: true },
       {
         key: 'role',
         title: 'Rol',

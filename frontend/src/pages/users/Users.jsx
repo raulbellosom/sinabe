@@ -62,6 +62,9 @@ const Users = () => {
     status: true,
     password: '',
     repeatPassword: '',
+    employeeNumber: '',
+    jobTitle: '',
+    department: '',
   });
   const [changePasswordModal, setChangePasswordModal] = useState(false);
   const [refreshData, setRefreshData] = useState(false);
@@ -187,6 +190,9 @@ const Users = () => {
       status: item.status,
       password: '',
       repeatPassword: '',
+      employeeNumber: item.employeeNumber || '',
+      jobTitle: item.jobTitle || '',
+      department: item.department || '',
     });
     setIsOpenModal(true);
   };
@@ -207,6 +213,9 @@ const Users = () => {
         status: true,
         password: '',
         repeatPassword: '',
+        employeeNumber: '',
+        jobTitle: '',
+        department: '',
       });
       setEditMode(false);
       setIsOpenModal(false);
@@ -230,6 +239,9 @@ const Users = () => {
       status: true,
       password: '',
       repeatPassword: '',
+      employeeNumber: '',
+      jobTitle: '',
+      department: '',
     });
   };
 

@@ -65,6 +65,16 @@ const BreadcrumbsBuilder = (path) => {
       icon: HiHome,
     },
     {
+      label: 'Resguardos',
+      href: '/custody',
+      icon: FaFileInvoice,
+    },
+    {
+      label: 'Crear',
+      href: '/custody/create',
+      icon: PiStackPlusFill,
+    },
+    {
       label: 'Verticales',
       href: '/verticals',
       icon: FaSitemap,
