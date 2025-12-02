@@ -25,7 +25,7 @@ const Navbar = ({
   const shouldHideNavbar = location.pathname.includes('/inventories');
 
   return (
-    <div className="flex justify-between items-center bg-white shadow-md p-2 w-full h-16 absolute top-0 left-0 z-50">
+    <div className="flex justify-between items-center bg-white shadow-md px-2 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] w-full h-[calc(4rem+env(safe-area-inset-top))] absolute top-0 left-0 z-50">
       <Button
         onClick={broken ? setToggled : setCollapsed}
         color="light"

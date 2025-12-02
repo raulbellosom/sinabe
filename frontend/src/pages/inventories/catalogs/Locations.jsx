@@ -228,11 +228,13 @@ const Locations = () => {
               className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
             />
           </div>
-          <ActionButtons
-            onCreate={handleOpenCreateModal}
-            labelCreate="Nuevo"
-            className="whitespace-nowrap"
-          />
+          <div>
+            <ActionButtons
+              onCreate={handleOpenCreateModal}
+              labelCreate="Nuevo"
+              className="whitespace-nowrap"
+            />
+          </div>
         </div>
       </div>
 

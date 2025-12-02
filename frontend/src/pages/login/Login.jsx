@@ -83,7 +83,7 @@ const Login = () => {
             </div>
           </div>
         </div>
-        <div className="absolute md:relative flex flex-col justify-start bg-purple-900/30 p-8 pt-14 rounded shadow-lg w-full mx-auto md:max-w-md h-dvh">
+        <div className="absolute md:relative flex flex-col justify-start bg-purple-900/30 p-8 pt-[calc(3.5rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))] rounded shadow-lg w-full mx-auto md:max-w-md h-dvh">
           <div className="flex flex-col items-center justify-center">
             <img src={LogoWhite} alt="Logo" className="h-auto w-20 md:hidden" />
             <img

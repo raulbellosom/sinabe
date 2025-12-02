@@ -57,7 +57,7 @@ const SideModal = ({
             exit="exit"
             variants={slideVariants}
             className={classNames(
-              'w-full h-full bg-white dark:bg-gray-900 shadow-lg py-6 px-4 overflow-y-auto rounded-tl-3xl relative',
+              'w-full h-full bg-white dark:bg-gray-900 shadow-lg pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] overflow-y-auto rounded-tl-3xl relative',
               sizeClasses[size],
               className,
             )}
@@ -65,7 +65,7 @@ const SideModal = ({
             {/* Close button */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-gray-500 hover:text-red-500"
+              className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-[calc(1rem+env(safe-area-inset-right))] text-gray-500 hover:text-red-500"
             >
               <FaXmark />
             </button>

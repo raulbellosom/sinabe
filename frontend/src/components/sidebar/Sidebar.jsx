@@ -495,7 +495,7 @@ const Sidebar = ({ children }) => {
           broken={broken}
           user={user}
         />
-        <div className="flex-1 overflow-auto pt-16 h-full">
+        <div className="flex-1 overflow-auto pt-[calc(4rem+env(safe-area-inset-top))] h-full">
           <MainLayout>{children}</MainLayout>
         </div>
       </div>
