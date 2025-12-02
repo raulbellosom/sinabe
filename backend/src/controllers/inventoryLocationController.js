@@ -20,10 +20,19 @@ export const getInventoryLocations = async (req, res) => {
     const locations = await db.inventoryLocation.findMany({
       where,
       orderBy: { name: "asc" },
-      take: 50, // Límite para evitar sobrecarga
+      include: {
+        _count: {
+          select: { inventories: { where: { enabled: true } } },
+        },
+      },
     });
 
-    res.json(locations);
+    const locationsWithCount = locations.map((location) => ({
+      ...location,
+      count: location._count.inventories,
+    }));
+
+    res.json(locationsWithCount);
   } catch (error) {
     console.error("Error fetching inventory locations:", error);
     res.status(500).json({ error: error.message });
