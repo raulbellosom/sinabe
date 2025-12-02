@@ -141,17 +141,24 @@ export const createCustodyRecord = async (req, res) => {
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
-    const fileName = `resguardo_${custodyRecord.id}.pdf`;
+
+    // Construct filename: Resguardo TI - Name - Date.pdf
+    const receiverName = `${receiverUser.firstName} ${receiverUser.lastName}`;
+    // Sanitize name to remove characters invalid in filenames
+    const safeReceiverName = receiverName.replace(/[<>:"/\\|?*]/g, "");
+    const safeDate = formattedDate.replace(/\//g, "-");
+
+    const fileName = `Resguardo TI - ${safeReceiverName} - ${safeDate}.pdf`;
     const filePath = path.join(uploadsDir, fileName);
     fs.writeFileSync(filePath, pdfBytes);
 
     // 6. Create File Record and Link
-    // Assuming we want to store it in File table
+    // Create the main file record for the CustodyRecord
     const fileRecord = await db.file.create({
       data: {
         url: `/uploads/resguardos/${fileName}`,
         type: "application/pdf",
-        inventoryId: null, // Optional now
+        inventoryId: null,
         custodyRecords: {
           connect: { id: custodyRecord.id },
         },
@@ -163,6 +170,24 @@ export const createCustodyRecord = async (req, res) => {
       where: { id: custodyRecord.id },
       data: { fileId: fileRecord.id },
     });
+
+    // Create File records for each inventory involved so it appears in their files list
+    // We use the same URL
+    if (items && items.length > 0) {
+      await Promise.all(
+        items.map((item) =>
+          db.file.create({
+            data: {
+              url: `/uploads/resguardos/${fileName}`,
+              type: "application/pdf",
+              inventoryId: item.inventoryId,
+              // We don't link these copies to the custody record to avoid confusion,
+              // or we could, but the custody record already has a main file.
+            },
+          })
+        )
+      );
+    }
 
     // 7. Send Email
     if (receiverUser.email) {
@@ -234,7 +259,9 @@ export const getCustodyRecords = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(pageSize);
     const take = parseInt(pageSize);
 
-    const where = {};
+    const where = {
+      enabled: true,
+    };
 
     if (searchTerm) {
       where.OR = [
@@ -314,31 +341,19 @@ export const deleteCustodyRecord = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 1. Find record to get file info
+    // 1. Find record
     const record = await db.custodyRecord.findUnique({
       where: { id },
-      include: { file: true },
     });
 
     if (!record) {
       return res.status(404).json({ message: "Resguardo no encontrado" });
     }
 
-    // 2. Delete file from disk if exists
-    if (record.file && record.file.url) {
-      const filePath = path.join(__dirname, "../", record.file.url);
-      if (fs.existsSync(filePath)) {
-        try {
-          fs.unlinkSync(filePath);
-        } catch (err) {
-          console.error("Error deleting file from disk:", err);
-        }
-      }
-    }
-
-    // 3. Delete from DB
-    await db.custodyRecord.delete({
+    // 2. Soft Delete (Logical Delete)
+    await db.custodyRecord.update({
       where: { id },
+      data: { enabled: false },
     });
 
     res.json({ message: "Resguardo eliminado exitosamente" });

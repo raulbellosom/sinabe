@@ -40,6 +40,7 @@ const CreateCustody = () => {
   const [pendingCustodyPayload, setPendingCustodyPayload] = useState(null);
   const [isDelivererSignatureChanged, setIsDelivererSignatureChanged] =
     useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Load saved signature
   useEffect(() => {
@@ -181,6 +182,7 @@ const CreateCustody = () => {
   });
 
   const submitCustody = async (payload) => {
+    setIsSubmitting(true);
     try {
       const res = await createCustodyRecord(payload);
       toast.success('Resguardo creado exitosamente');
@@ -190,10 +192,13 @@ const CreateCustody = () => {
         'Error al crear resguardo: ' +
           (error.response?.data?.message || error.message),
       );
+      setIsSubmitting(false);
     }
   };
 
   const handleSaveSignatureAndSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const dataUrl = delivererSigPad.current
         .getCanvas()
@@ -211,10 +216,12 @@ const CreateCustody = () => {
     } catch (error) {
       console.error(error);
       toast.error('Error al guardar firma');
+      setIsSubmitting(false);
     }
   };
 
   const handleContinueWithoutSaving = async () => {
+    if (isSubmitting) return;
     await submitCustody(pendingCustodyPayload);
     setIsSignatureUpdateModalOpen(false);
   };
@@ -632,7 +639,7 @@ const CreateCustody = () => {
                   label: 'Generar Resguardo',
                   action: formik.handleSubmit,
                   color: 'blue',
-                  disabled: formik.isSubmitting,
+                  disabled: formik.isSubmitting || isSubmitting,
                 },
               ]}
             />
@@ -706,10 +713,18 @@ const CreateCustody = () => {
             </div>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={handleSaveSignatureAndSubmit}>
+            <Button
+              onClick={handleSaveSignatureAndSubmit}
+              isProcessing={isSubmitting}
+              disabled={isSubmitting}
+            >
               Sí, guardar y continuar
             </Button>
-            <Button color="gray" onClick={handleContinueWithoutSaving}>
+            <Button
+              color="gray"
+              onClick={handleContinueWithoutSaving}
+              disabled={isSubmitting}
+            >
               No, solo usar para este resguardo
             </Button>
           </Modal.Footer>

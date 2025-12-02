@@ -197,7 +197,8 @@ export const generateCustodyPDF = async (data) => {
     
     /* --- COMENTARIOS Y LEGAL --- */
     #comments-table tr:first-child .section-title-cell {
-        border-bottom: none; 
+        border-bottom: none;
+        border-top: none;
     }
     .comments-cell {
       height: 70px;

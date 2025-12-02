@@ -12,6 +12,7 @@ import FileIcon from '../../components/FileIcon/FileIcon';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import { parseToLocalDate } from '../../utils/formatValues';
 import ReusableTable from '../../components/Table/ReusableTable';
+import ConfirmDeleteModal from '../../components/Modals/ConfirmDeleteModal';
 
 const CustodyPage = () => {
   const navigate = useNavigate();
@@ -23,6 +24,9 @@ const CustodyPage = () => {
     sortBy: 'createdAt',
     sortOrder: 'desc',
   });
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState(null);
 
   const {
     data: response,
@@ -53,11 +57,16 @@ const CustodyPage = () => {
     },
   });
 
-  const handleDelete = (id) => {
-    if (
-      window.confirm('¿Estás seguro de que deseas eliminar este resguardo?')
-    ) {
-      deleteMutation.mutate(id);
+  const handleDelete = (record) => {
+    setRecordToDelete(record);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (recordToDelete) {
+      deleteMutation.mutate(recordToDelete.id);
+      setIsDeleteModalOpen(false);
+      setRecordToDelete(null);
     }
   };
 
@@ -140,7 +149,7 @@ const CustodyPage = () => {
       key: 'delete',
       label: 'Eliminar',
       icon: FaTrash,
-      action: () => handleDelete(record.id),
+      action: () => handleDelete(record),
       color: 'red',
     },
   ];
@@ -201,6 +210,18 @@ const CustodyPage = () => {
         sortConfig={{ key: query.sortBy, direction: query.sortOrder }}
         onSort={handleSort}
         rowActions={rowActions}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        itemName={
+          recordToDelete
+            ? `Resguardo de ${recordToDelete.receiver?.firstName} ${recordToDelete.receiver?.lastName}`
+            : 'Resguardo'
+        }
+        itemType="resguardo"
       />
     </div>
   );
