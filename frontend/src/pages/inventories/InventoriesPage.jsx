@@ -61,6 +61,7 @@ import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import ColumnCustomizationModal from '../../components/Table/ColumnCustomizationModal';
 import { MdViewColumn } from 'react-icons/md';
 import ActiveFilters from '../../components/InventoryComponents/ActiveFilters';
+import { useUserPreference } from '../../context/UserPreferenceContext';
 
 const InventoriesPage = () => {
   const [selectedInventory, setSelectedInventory] = useState(null);
@@ -74,6 +75,7 @@ const InventoriesPage = () => {
   const [localSearchTerm, setLocalSearchTerm] = useState('');
 
   const { user } = useContext(AuthContext);
+  const { preferences, updateColumnSettings } = useUserPreference();
 
   // Suppress react-beautiful-dnd warning
   useEffect(() => {
@@ -96,9 +98,15 @@ const InventoriesPage = () => {
   const [visibleColumns, setVisibleColumns] = useState([]);
   const [columnOrder, setColumnOrder] = useState([]);
 
-  // Load preferences when user changes
+  // Load preferences when user changes or preferences load
   useEffect(() => {
-    if (user?.id) {
+    if (preferences?.columnSettings?.inventories) {
+      const { visibleColumns: savedVisible, columnOrder: savedOrder } =
+        preferences.columnSettings.inventories;
+      if (savedVisible) setVisibleColumns(savedVisible);
+      if (savedOrder) setColumnOrder(savedOrder);
+    } else if (user?.id) {
+      // Fallback to localStorage for backward compatibility
       const savedVisible = localStorage.getItem(
         `inventories-visible-columns-${user.id}`,
       );
@@ -122,7 +130,7 @@ const InventoriesPage = () => {
         }
       }
     }
-  }, [user?.id]);
+  }, [user?.id, preferences]);
 
   // Use mainViewMode from query params as the source of truth for view mode
   const { query, updateQuery } = useInventoryQueryParams();
@@ -727,9 +735,28 @@ const InventoriesPage = () => {
     },
   ];
 
-  const handleSaveColumnCustomization = (newVisibleColumns, newColumnOrder) => {
+  const handleSaveColumnCustomization = async (
+    newVisibleColumns,
+    newColumnOrder,
+  ) => {
     setVisibleColumns(newVisibleColumns);
     setColumnOrder(newColumnOrder);
+
+    // Save to backend
+    try {
+      await updateColumnSettings({
+        inventories: {
+          visibleColumns: newVisibleColumns,
+          columnOrder: newColumnOrder,
+        },
+      });
+      toast.success('Configuración de columnas guardada');
+    } catch (error) {
+      console.error('Failed to save column settings to backend', error);
+      toast.error('Error al guardar la configuración');
+    }
+
+    // Keep localStorage as backup/cache
     if (user?.id) {
       localStorage.setItem(
         `inventories-visible-columns-${user.id}`,

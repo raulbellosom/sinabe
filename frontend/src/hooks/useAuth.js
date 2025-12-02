@@ -27,7 +27,10 @@ export const useAuthData = (dispatch) => {
       queryClient.setQueryData('user', data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
-      dispatch({ type: 'LOGIN_SUCCESS', payload: data.user });
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: { user: data.user, token: data.token },
+      });
     },
     onError: (error) => {
       dispatch({ type: 'AUTH_ERROR', payload: error });
@@ -43,7 +46,10 @@ export const useAuthData = (dispatch) => {
       queryClient.setQueryData('user', data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
-      dispatch({ type: 'LOGIN_SUCCESS', payload: data.user });
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: { user: data.user, token: data.token },
+      });
     },
     onSettled: () => setLoading(false),
   });

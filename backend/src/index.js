@@ -22,6 +22,7 @@ import verticalRoutes from "./routes/verticalRoutes.js";
 import invoiceRoutes, { purchaseOrderRouter } from "./routes/invoiceRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import custodyRoutes from "./routes/custodyRoutes.js";
+import userPreferenceRoutes from "./routes/userPreferenceRoutes.js";
 
 dotenv.config();
 
@@ -78,6 +79,7 @@ app.use("/api/verticals", verticalRoutes);
 app.use("/api/ping", pingRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/custody-records", custodyRoutes);
+app.use("/api/preferences", userPreferenceRoutes);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 4000;

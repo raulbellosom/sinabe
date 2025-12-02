@@ -11,6 +11,7 @@ import { MdChecklist, MdInventory } from 'react-icons/md';
 import { PiStackPlusFill } from 'react-icons/pi';
 import { BiCategory } from 'react-icons/bi';
 import { AiOutlineProject } from 'react-icons/ai';
+import { TbAdjustmentsHorizontal } from 'react-icons/tb';
 
 const BreadcrumbsBuilder = (path) => {
   // No mostrar breadcrumbs en home o dashboard
@@ -155,9 +156,14 @@ const BreadcrumbsBuilder = (path) => {
       icon: null,
     },
     {
-      label: 'Configuración',
+      label: 'Mi Perfil',
       href: '/account-settings',
       icon: FaUserCog,
+    },
+    {
+      label: 'Preferencias',
+      href: '/preferences',
+      icon: TbAdjustmentsHorizontal,
     },
     {
       label: 'Control de roles',

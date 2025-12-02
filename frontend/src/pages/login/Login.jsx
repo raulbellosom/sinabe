@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import AuthContext from '../../context/AuthContext';
 import Logo from '../../assets/logo/sinabe_icon.png';
 import LogoWhite from '../../assets/logo/sinabe_icon_white.png';
-import BgPattern from '../../assets/bg/login_bg.jpg';
+import BgPattern from '../../assets/bg/bg_login_aeropuerto.jpeg';
 import { FaSignInAlt } from 'react-icons/fa';
 import TextInput from '../../components/Inputs/TextInput';
 import { MdOutlineAlternateEmail, MdOutlinePassword } from 'react-icons/md';
@@ -64,16 +64,16 @@ const Login = () => {
 
   return (
     <FormikProvider value={formik}>
-      <div className="flex h-full text-white md:text-gray-800 relative">
-        <div
-          className="h-dvh shadow-xl max-h-dvh overflow-hidden w-full flex items-center justify-center bg-gray-100 bg"
-          style={{
-            backgroundImage: `url(${BgPattern})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
-        >
+      <div
+        style={{
+          backgroundImage: `url(${BgPattern})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+        className="flex h-full text-white relative"
+      >
+        <div className="h-dvh shadow-xl max-h-dvh overflow-hidden w-full flex items-center justify-center">
           <div className="hidden h-dvh md:flex justify-start items-end bg-gradient-to-b from-transparent w-full to-black">
             <div className="p-2 flex flex-col items-center gap-2">
               <img src={LogoWhite} alt="Logo" className="h-auto w-16" />
@@ -83,15 +83,15 @@ const Login = () => {
             </div>
           </div>
         </div>
-        <div className="absolute md:relative flex flex-col justify-start bg-black/35 md:bg-white p-8 pt-14 rounded shadow-lg w-full mx-auto md:max-w-md h-dvh">
+        <div className="absolute md:relative flex flex-col justify-start bg-purple-900/30 p-8 pt-14 rounded shadow-lg w-full mx-auto md:max-w-md h-dvh">
           <div className="flex flex-col items-center justify-center">
             <img src={LogoWhite} alt="Logo" className="h-auto w-20 md:hidden" />
             <img
-              src={Logo}
+              src={LogoWhite}
               alt="Logo"
               className="h-auto w-20 hidden md:block"
             />
-            <h1 className="text-3xl text-center mb-4 font-black tracking-wider md:text-purple-600">
+            <h1 className="text-3xl text-center mb-4 font-black tracking-wider ">
               SINABE
             </h1>
           </div>

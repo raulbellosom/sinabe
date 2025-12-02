@@ -34,6 +34,7 @@ import PurchaseOrdersPage from '../pages/purchaseOrders/PurchaseOrdersPage';
 import InvoicesPage from '../pages/invoices/InvoicesPage';
 import CreateCustody from '../pages/Custody/CreateCustody';
 import CustodyPage from '../pages/Custody/CustodyPage';
+import Preferences from '../pages/preferences/Preferences';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -67,6 +68,7 @@ const AuthorizedRoute = ({ user }) => {
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/account-settings" element={<Account />} />
+                  <Route path="/preferences" element={<Preferences />} />
                   <Route path="/users" element={<UsersPage />} />
                   {/* <Route path="/inventories" element={<Inventories />} /> */}
                   <Route path="/inventories" element={<InventoriesPage />} />

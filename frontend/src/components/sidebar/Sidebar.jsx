@@ -18,8 +18,12 @@ import {
   FaFileInvoice,
 } from 'react-icons/fa';
 import { useAuthContext } from '../../context/AuthContext';
+import { useUserPreference } from '../../context/UserPreferenceContext';
 import AccountSidebar from './AccountSidebar';
-import BgPattern from '../../assets/bg/bg_pattern_dark.png';
+import BgPattern1 from '../../assets/bg/bg_sidebar_1.png';
+import BgPattern2 from '../../assets/bg/bg_sidebar_2.png';
+import BgPattern3 from '../../assets/bg/bg_sidebar_3.png';
+import BgPattern4 from '../../assets/bg/bg_sidebar_4.png';
 import { Button } from 'flowbite-react';
 import Navbar from '../navbar/Navbar';
 import MainLayout from '../../Layout/MainLayout';
@@ -29,6 +33,7 @@ import { FaDiagramProject, FaSitemap } from 'react-icons/fa6';
 import { LuArchiveRestore } from 'react-icons/lu';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
 import { PiInvoiceBold } from 'react-icons/pi';
+import { TbAdjustmentsHorizontal } from 'react-icons/tb';
 
 const themes = {
   light: {
@@ -82,6 +87,7 @@ const hexToRgba = (hex, alpha) => {
 const Sidebar = ({ children }) => {
   const location = useLocation();
   const { user, logout } = useAuthContext();
+  const { preferences } = useUserPreference();
   const [collapsed, setCollapsed] = useState(false);
   const [toggled, setToggled] = useState(false);
   const [broken, setBroken] = useState(false);
@@ -95,6 +101,30 @@ const Sidebar = ({ children }) => {
 
   const handleThemeChange = (e) => {
     setTheme(e.target.checked ? 'dark' : 'light');
+  };
+
+  const getSidebarImage = () => {
+    if (preferences?.sidebarBgUrl) {
+      const raw = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const apiUrl = raw.endsWith('/api') ? raw : `${raw}/api`;
+      const relativePath = preferences.sidebarBgUrl.replace(/^uploads\//, '');
+      return `${apiUrl}/uploads/${relativePath}`;
+    }
+    if (preferences?.sidebarBgId) {
+      switch (preferences.sidebarBgId) {
+        case 1:
+          return BgPattern1;
+        case 2:
+          return BgPattern2;
+        case 3:
+          return BgPattern3;
+        case 4:
+          return BgPattern4;
+        default:
+          return BgPattern1;
+      }
+    }
+    return BgPattern1;
   };
 
   const handleImageChange = (e) => {
@@ -212,12 +242,12 @@ const Sidebar = ({ children }) => {
         toggled={toggled}
         onBackdropClick={() => setToggled(false)}
         onBreakPoint={setBroken}
-        image={BgPattern}
+        image={getSidebarImage()}
         rtl={rtl}
         breakPoint="lg"
         backgroundColor={hexToRgba(
           themes[theme].sidebar.backgroundColor,
-          hasImage ? 0.2 : 1,
+          hasImage ? 0.1 : 1,
         )}
         rootStyles={{
           color: themes[theme].sidebar.color,
@@ -407,13 +437,28 @@ const Sidebar = ({ children }) => {
                 </SubMenu>
               )}
               {isAccountPermission.hasPermission && (
-                <MenuItem
-                  component={<Link to={'/account-settings'} />}
-                  active={isActivePath('/account-settings')}
-                  icon={<FaUserCog size={23} />}
-                >
-                  Editar Perfil
-                </MenuItem>
+                <SubMenu label="Mi Perfil" icon={<FaUserCog size={23} />}>
+                  <MenuItem
+                    component={<Link to={'/account-settings'} />}
+                    active={isActivePath('/account-settings')}
+                    icon={<FaUserCircle size={23} />}
+                    onClick={() => {
+                      setToggled(false);
+                    }}
+                  >
+                    Editar Perfil
+                  </MenuItem>
+                  <MenuItem
+                    component={<Link to={'/preferences'} />}
+                    active={isActivePath('/preferences')}
+                    icon={<TbAdjustmentsHorizontal size={23} />}
+                    onClick={() => {
+                      setToggled(false);
+                    }}
+                  >
+                    Preferencias
+                  </MenuItem>
+                </SubMenu>
               )}
             </Menu>
           </div>

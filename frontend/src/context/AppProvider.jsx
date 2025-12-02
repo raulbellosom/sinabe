@@ -9,6 +9,7 @@ import RoleProvider from './RoleProvider';
 import PermissionProvider from './PermissionProvider';
 import { BreadcrumbProvider } from './BreadcrumbContext';
 import CustomFieldProvider from './CustomFieldProvider';
+import { UserPreferenceProvider } from './UserPreferenceContext';
 
 import AuthContext from './AuthContext';
 
@@ -33,7 +34,9 @@ const AuthenticatedDataProvider = ({ children }) => {
       <InventoryProvider>
         <CatalogProvider>
           <CustomFieldProvider>
-            <BreadcrumbProvider>{children}</BreadcrumbProvider>
+            <UserPreferenceProvider>
+              <BreadcrumbProvider>{children}</BreadcrumbProvider>
+            </UserPreferenceProvider>
           </CustomFieldProvider>
         </CatalogProvider>
       </InventoryProvider>

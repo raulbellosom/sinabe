@@ -59,6 +59,7 @@ model User {
   department        String?
   receivedCustodies CustodyRecord[] @relation("CustodyReceiver")
   deliveredCustodies CustodyRecord[] @relation("CustodyDeliverer")
+  preference        UserPreference?
 
   @@index([roleId], map: "User_roleId_fkey")
 }
@@ -444,4 +445,15 @@ enum TaskStatus {
   EN_PROGRESO
   COMPLETADO
   CANCELADO
+}
+
+model UserPreference {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  sidebarBgId     Int?
+  sidebarBgUrl    String?
+  columnSettings  Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
