@@ -57,6 +57,7 @@ const CreateCustody = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [allInventories, setAllInventories] = useState([]);
   const [inventorySearchKey, setInventorySearchKey] = useState(0);
+  const [originalDeliverer, setOriginalDeliverer] = useState(null);
 
   // Modal state for missing user data
   const [isMissingDataModalOpen, setIsMissingDataModalOpen] = useState(false);
@@ -105,7 +106,8 @@ const CreateCustody = () => {
   // Load saved signature
   useEffect(() => {
     const loadSignature = async () => {
-      if (user?.signature?.url && delivererSigPad.current) {
+      // Solo cargar si NO estamos en modo edición o si el registro no tiene un entregador aún
+      if (!isEditMode && user?.signature?.url && delivererSigPad.current) {
         try {
           const response = await fetch(`${API_URL}/${user.signature.url}`);
           const blob = await response.blob();
@@ -264,7 +266,8 @@ const CreateCustody = () => {
           receiver: receiverSignature,
           deliverer: delivererSignature,
         },
-        delivererUserId: user?.id,
+        delivererUserId:
+          isEditMode && originalDeliverer ? originalDeliverer.id : user?.id,
       };
 
       await submitCustody(payload, 'COMPLETADO');
@@ -277,6 +280,7 @@ const CreateCustody = () => {
       const loadRecord = async () => {
         try {
           const record = await getCustodyRecord(id);
+          setOriginalDeliverer(record.deliverer);
           formik.setValues({
             date: record.date.split('T')[0],
             receiver: {
@@ -343,7 +347,8 @@ const CreateCustody = () => {
         receiver: receiverSignature,
         deliverer: delivererSignature,
       },
-      delivererUserId: user?.id,
+      delivererUserId:
+        isEditMode && originalDeliverer ? originalDeliverer.id : user?.id,
       status: 'BORRADOR',
     };
 
@@ -585,7 +590,9 @@ const CreateCustody = () => {
                     className="text-xs uppercase tracking-wider text-gray-500"
                   />
                   <p className="mt-1 text-sm font-bold text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-100 dark:border-gray-600">
-                    {user?.firstName} {user?.lastName}
+                    {isEditMode && originalDeliverer
+                      ? `${originalDeliverer.firstName} ${originalDeliverer.lastName}`
+                      : `${user?.firstName} ${user?.lastName}`}
                   </p>
                 </div>
 
@@ -882,40 +889,66 @@ const CreateCustody = () => {
                     <FaUserTie className="text-green-500" /> Firma Responsable
                     TI
                   </h3>
-                  <Button
-                    size="xs"
-                    color={isDelivererLocked ? 'failure' : 'success'}
-                    onClick={() => setIsDelivererLocked(!isDelivererLocked)}
-                    className="flex items-center gap-1"
-                  >
-                    {isDelivererLocked ? (
-                      <HiLockClosed className="h-3 w-3" />
-                    ) : (
-                      <HiLockOpen className="h-3 w-3" />
-                    )}
-                  </Button>
-                </div>
-                <div className="flex gap-1">
-                  {initialDelivererSignature && (
+                  {isEditMode &&
+                  originalDeliverer &&
+                  user &&
+                  originalDeliverer.id === user.id ? (
                     <Button
                       size="xs"
-                      color="purple"
-                      onClick={handleReestablishDelivererSignature}
-                      disabled={isDelivererLocked}
-                      className="!p-1"
-                      title="Papelera/Restablecer"
+                      color={isDelivererLocked ? 'failure' : 'success'}
+                      onClick={() => setIsDelivererLocked(!isDelivererLocked)}
+                      className="flex items-center gap-1"
                     >
-                      <HiRefresh className="h-3 w-3" />
+                      {isDelivererLocked ? (
+                        <HiLockClosed className="h-3 w-3" />
+                      ) : (
+                        <HiLockOpen className="h-3 w-3" />
+                      )}
                     </Button>
-                  )}
-                  <Button
-                    size="xs"
-                    color="light"
-                    onClick={() => delivererSigPad.current.clear()}
-                    disabled={isDelivererLocked}
-                  >
-                    <HiX className="mr-1 h-3 w-3" /> Limpiar
-                  </Button>
+                  ) : !isEditMode ? (
+                    <Button
+                      size="xs"
+                      color={isDelivererLocked ? 'failure' : 'success'}
+                      onClick={() => setIsDelivererLocked(!isDelivererLocked)}
+                      className="flex items-center gap-1"
+                    >
+                      {isDelivererLocked ? (
+                        <HiLockClosed className="h-3 w-3" />
+                      ) : (
+                        <HiLockOpen className="h-3 w-3" />
+                      )}
+                    </Button>
+                  ) : null}
+                </div>
+                <div className="flex gap-1">
+                  {(isEditMode &&
+                    originalDeliverer &&
+                    user &&
+                    originalDeliverer.id === user.id) ||
+                  !isEditMode ? (
+                    <>
+                      {initialDelivererSignature && (
+                        <Button
+                          size="xs"
+                          color="purple"
+                          onClick={handleReestablishDelivererSignature}
+                          disabled={isDelivererLocked}
+                          className="!p-1"
+                          title="Papelera/Restablecer"
+                        >
+                          <HiRefresh className="h-3 w-3" />
+                        </Button>
+                      )}
+                      <Button
+                        size="xs"
+                        color="light"
+                        onClick={() => delivererSigPad.current.clear()}
+                        disabled={isDelivererLocked}
+                      >
+                        <HiX className="mr-1 h-3 w-3" /> Limpiar
+                      </Button>
+                    </>
+                  ) : null}
                 </div>
               </div>
               <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative">

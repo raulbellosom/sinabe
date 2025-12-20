@@ -435,6 +435,20 @@ export const generateCustodyPDF = async (data) => {
              `
                )
                .join("")}
+             ${
+               data.items.length === 1
+                 ? `
+          <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          `
+                 : ""
+             }
         </tbody>
       </table>
 

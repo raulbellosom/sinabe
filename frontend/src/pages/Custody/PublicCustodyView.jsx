@@ -34,6 +34,9 @@ const PublicCustodyView = () => {
       try {
         const data = await getCustodyRecordByToken(token);
         setRecord(data);
+        if (data.receiver) {
+          document.title = `SINABE - Resguardo de ${data.receiver.firstName} ${data.receiver.lastName}`;
+        }
       } catch (err) {
         setError(err.response?.data?.message || 'Error al cargar el resguardo');
       } finally {
@@ -41,6 +44,10 @@ const PublicCustodyView = () => {
       }
     };
     fetchRecord();
+
+    return () => {
+      document.title = 'SINABE - Sistema de Inventarios y Bienes';
+    };
   }, [token]);
 
   const handleSubmitSignature = async () => {
