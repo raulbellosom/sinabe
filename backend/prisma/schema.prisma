@@ -379,20 +379,25 @@ model UserImage {
 }
 
 model CustodyRecord {
-  id          String        @id @default(uuid())
-  code        String?       @unique
-  date        DateTime
-  receiverId  String
-  receiver    User          @relation("CustodyReceiver", fields: [receiverId], references: [id])
-  delivererId String
-  deliverer   User          @relation("CustodyDeliverer", fields: [delivererId], references: [id])
-  comments    String?       @db.Text
-  fileId      String?
-  file        File?         @relation(fields: [fileId], references: [id])
-  items       CustodyItem[]
-  enabled     Boolean       @default(true)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id                 String        @id @default(uuid())
+  code               String?       @unique
+  date               DateTime
+  receiverId         String
+  receiver           User          @relation("CustodyReceiver", fields: [receiverId], references: [id])
+  delivererId        String
+  deliverer          User          @relation("CustodyDeliverer", fields: [delivererId], references: [id])
+  comments           String?       @db.Text
+  fileId             String?
+  file               File?         @relation(fields: [fileId], references: [id])
+  items              CustodyItem[]
+  status             CustodyStatus @default(BORRADOR)
+  publicToken        String?       @unique
+  tokenExpiresAt     DateTime?
+  receiverSignature  String?       @db.LongText
+  delivererSignature String?       @db.LongText
+  enabled            Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
   @@index([receiverId])
   @@index([delivererId])
@@ -420,6 +425,11 @@ enum Status {
   ALTA
   BAJA
   PROPUESTA
+}
+
+enum CustodyStatus {
+  BORRADOR
+  COMPLETADO
 }
 
 enum DeadlineStatus {

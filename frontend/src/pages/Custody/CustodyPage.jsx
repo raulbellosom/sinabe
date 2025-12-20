@@ -1,12 +1,35 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Spinner, TextInput, Badge } from 'flowbite-react';
-import { FaFileInvoice, FaSearch, FaTrash } from 'react-icons/fa';
+import {
+  Spinner,
+  TextInput,
+  Badge,
+  Tooltip,
+  Modal,
+  Label,
+  Button,
+} from 'flowbite-react';
+import {
+  FaFileInvoice,
+  FaSearch,
+  FaTrash,
+  FaEdit,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaEnvelope,
+  FaQrcode,
+  FaShareAlt,
+} from 'react-icons/fa';
+import { HiEye } from 'react-icons/hi';
 import {
   getCustodyRecords,
   deleteCustodyRecord,
+  resendCustodyEmail,
+  getPublicLink,
 } from '../../services/custody.api';
+import { QRCodeSVG } from 'qrcode.react';
+import { toast } from 'react-hot-toast';
 import Breadcrumb from '../../components/Breadcrum/Breadcrumb';
 import FileIcon from '../../components/FileIcon/FileIcon';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
@@ -27,6 +50,11 @@ const CustodyPage = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
+
+  // Share Modal
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareData, setShareData] = useState(null);
+  const [isGettingLink, setIsGettingLink] = useState(false);
 
   const {
     data: response,
@@ -70,6 +98,32 @@ const CustodyPage = () => {
     }
   };
 
+  const handleResendEmail = async (id) => {
+    try {
+      await resendCustodyEmail(id);
+      toast.success('Correo reenviado exitosamente');
+    } catch (error) {
+      toast.error('Error al reenviar correo');
+    }
+  };
+
+  const handleShowShare = async (id) => {
+    setIsGettingLink(true);
+    try {
+      const data = await getPublicLink(id);
+      const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+      const token = data.publicToken || data.publicLink?.split('/').pop();
+      const fixedLink = `${baseUrl}/custody/public/${token}`;
+
+      setShareData({ ...data, publicLink: fixedLink });
+      setShowShareModal(true);
+    } catch (error) {
+      toast.error('Error al obtener enlace público');
+    } finally {
+      setIsGettingLink(false);
+    }
+  };
+
   const breadcrumbs = [
     { label: 'Inicio', path: '/' },
     { label: 'Resguardos', path: '/custody' },
@@ -102,6 +156,24 @@ const CustodyPage = () => {
         sortable: true,
       },
       {
+        key: 'receiverSignature',
+        title: 'Firmado',
+        render: (val) =>
+          val ? (
+            <div className="flex justify-center text-green-500">
+              <Tooltip content="Resguardo firmado">
+                <FaCheckCircle className="h-5 w-5" />
+              </Tooltip>
+            </div>
+          ) : (
+            <div className="flex justify-center text-gray-300">
+              <Tooltip content="Pendiente de firma">
+                <FaTimesCircle className="h-5 w-5" />
+              </Tooltip>
+            </div>
+          ),
+      },
+      {
         key: 'items',
         title: 'Equipos',
         render: (val) => (
@@ -129,6 +201,19 @@ const CustodyPage = () => {
           ),
       },
       {
+        key: 'status',
+        title: 'Estado',
+        render: (val) => {
+          const isDraft = val === 'BORRADOR';
+          return (
+            <Badge color={isDraft ? 'warning' : 'info'} className="w-fit">
+              {isDraft ? 'Borrador' : 'Completado'}
+            </Badge>
+          );
+        },
+        sortable: true,
+      },
+      {
         key: 'actions',
         title: 'Acciones',
       },
@@ -145,6 +230,42 @@ const CustodyPage = () => {
   };
 
   const rowActions = (record) => [
+    {
+      key: 'view',
+      label: 'Ver Detalle',
+      icon: HiEye,
+      action: () => navigate(`/custody/view/${record.id}`),
+      color: 'green',
+    },
+    {
+      key: 'share',
+      label: 'QR / Enlace',
+      icon: FaQrcode,
+      action: () => handleShowShare(record.id),
+      color: 'blue',
+    },
+    ...(record.status === 'BORRADOR'
+      ? [
+          {
+            key: 'edit',
+            label: 'Editar Borrador',
+            icon: FaEdit,
+            action: () => navigate(`/custody/edit/${record.id}`),
+            color: 'yellow',
+          },
+        ]
+      : []),
+    ...(record.status === 'COMPLETADO'
+      ? [
+          {
+            key: 'resend',
+            label: 'Enviar Correo',
+            icon: FaEnvelope,
+            action: () => handleResendEmail(record.id),
+            color: 'green',
+          },
+        ]
+      : []),
     {
       key: 'delete',
       label: 'Eliminar',
@@ -223,6 +344,57 @@ const CustodyPage = () => {
         }
         itemType="resguardo"
       />
+
+      {/* Share Modal */}
+      <Modal
+        show={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        size="md"
+      >
+        <Modal.Header>Verificación Pública</Modal.Header>
+        <Modal.Body>
+          <div className="text-center space-y-4">
+            <p className="text-gray-500 text-sm">
+              Escanea este código o comparte el enlace para la firma digital o
+              verificación externa (24h de validez).
+            </p>
+            {shareData?.publicLink && (
+              <div className="flex flex-col items-center gap-4">
+                <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <QRCodeSVG value={shareData.publicLink} size={180} />
+                </div>
+                <div className="w-full">
+                  <Label htmlFor="shareLink" className="mb-2 block text-left">
+                    Link:
+                  </Label>
+                  <div className="flex gap-2">
+                    <TextInput
+                      id="shareLink"
+                      value={shareData.publicLink}
+                      readOnly
+                      className="flex-1"
+                    />
+                    <Button
+                      color="light"
+                      onClick={() => {
+                        navigator.clipboard.writeText(shareData.publicLink);
+                        toast.success('Copiado');
+                      }}
+                    >
+                      <FaShareAlt />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button color="gray" onClick={() => setShowShareModal(false)}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

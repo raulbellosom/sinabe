@@ -29,11 +29,37 @@ const Dropdown = ({
                 selectedOption?.value !== option.value,
               'hover:bg-purple-800 hover:text-white':
                 selectedOption?.value !== option.value,
+              'bg-green-50 dark:bg-green-900/10 text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/20':
+                option.isSelected && selectedOption?.value !== option.value,
             },
             { [itemsClassName]: itemsClassName },
           )}
         >
-          {option.label}
+          <div className="flex flex-col">
+            <span className="font-medium">{option.label}</span>
+            {option.isSelected && (
+              <span className="text-[10px] font-bold text-green-600 dark:text-green-400 mt-0.5 flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                YA AGREGADO
+              </span>
+            )}
+          </div>
+          {option.isSelected && (
+            <span className="text-green-500 dark:text-green-400">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </span>
+          )}
         </div>
       ))}
     </div>
@@ -54,6 +80,10 @@ const AutocompleteInput = ({
   // Nuevas props para la opción "Otro"
   allowOther, // Boolean: si es true, se muestra la opción "Otro"
   onOtherSelected, // Función a llamar cuando se selecciona "Otro"
+  // Dynamic search props
+  onSearch,
+  isLoading,
+  onFocusSearch,
 }) => {
   // Provide defaults for form properties
   const {
@@ -95,7 +125,7 @@ const AutocompleteInput = ({
       if (inputRef.current && !inputRef.current.contains(event.target)) {
         setShowDropdown(false);
         setFieldTouched(field.name, true);
-        if (!selectedOption && inputValue) {
+        if (!selectedOption && inputValue && !onSearch) {
           setFieldValue(field.name, inputValue);
         }
         setHighlightedIndex(-1);
@@ -106,13 +136,15 @@ const AutocompleteInput = ({
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, []);
+  }, [selectedOption, inputValue, onSearch]);
 
   const normalizeString = (str) =>
     str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
   // Filtrar opciones y agregar la opción "Otro" si corresponde
   const filtered = useMemo(() => {
+    if (onSearch) return options; // Dynamic options are already filtered by backend
+
     const normalizedInput = normalizeString(inputValue).toLowerCase();
     const filteredList = options?.filter((option) => {
       const labelMatch = normalizeString(option.label)
@@ -135,7 +167,7 @@ const AutocompleteInput = ({
       });
     }
     return filteredList;
-  }, [inputValue, options, allowOther]);
+  }, [inputValue, options, allowOther, onSearch]);
 
   useEffect(() => {
     setFilteredOptions(filtered);
@@ -151,6 +183,10 @@ const AutocompleteInput = ({
       setSelectedOption(null);
     }
     setShowDropdown(true);
+
+    if (onSearch) {
+      onSearch(value);
+    }
   };
 
   const handleSelectOption = (option) => {
@@ -174,12 +210,23 @@ const AutocompleteInput = ({
     setFieldValue(field.name, '');
     setFieldTouched(field.name, true);
     setHighlightedIndex(-1);
+    if (onSearch) onSearch('');
   };
 
   const handleToggleDropdown = () => {
-    setShowDropdown((prev) => !prev);
-    // Opcional: resetea el índice resaltado cuando se alterna el dropdown
+    const newState = !showDropdown;
+    setShowDropdown(newState);
     setHighlightedIndex(-1);
+    if (newState && onFocusSearch && onSearch) {
+      onSearch(inputValue);
+    }
+  };
+
+  const handleFocus = () => {
+    if (onFocusSearch && onSearch) {
+      setShowDropdown(true);
+      onSearch(inputValue);
+    }
   };
 
   // Manejador de eventos para navegación por teclado
@@ -188,6 +235,7 @@ const AutocompleteInput = ({
       e.preventDefault();
       if (!showDropdown) {
         setShowDropdown(true);
+        if (onSearch && onFocusSearch) onSearch(inputValue);
         setHighlightedIndex(0);
       } else {
         setHighlightedIndex((prev) => {
@@ -199,6 +247,7 @@ const AutocompleteInput = ({
       e.preventDefault();
       if (!showDropdown) {
         setShowDropdown(true);
+        if (onSearch && onFocusSearch) onSearch(inputValue);
         setHighlightedIndex(filteredOptions.length - 1);
       } else {
         setHighlightedIndex((prev) => {
@@ -261,14 +310,20 @@ const AutocompleteInput = ({
           value={inputValue}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          onFocus={handleFocus}
           autoComplete="off"
           ref={inputRef}
         />
+        {isLoading && (
+          <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+          </div>
+        )}
         {isClearable && inputValue && !disabled && (
           <MdClose
             size={18}
             onClick={handleClearInput}
-            className="hover:text-red-500 absolute right-12 top-1/2 transform -translate-y-1/2 cursor-pointer"
+            className="hover:text-red-500 absolute right-10 top-1/2 transform -translate-y-1/2 cursor-pointer"
           />
         )}
         <MdOutlineKeyboardArrowDown
@@ -280,7 +335,7 @@ const AutocompleteInput = ({
           onClick={handleToggleDropdown}
         />
       </div>
-      {showDropdown && filteredOptions && (
+      {showDropdown && (
         <Dropdown
           options={filteredOptions}
           selectedOption={selectedOption}

@@ -1,6 +1,6 @@
 // src/components/ActionButtons/ActionButtons.jsx
 import React, { forwardRef } from 'react';
-import { FaEdit, FaEye, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaCheckCircle, FaEdit, FaEye, FaPlus, FaTrash } from 'react-icons/fa';
 import { MdCancel, MdOutlinePushPin, MdPushPin } from 'react-icons/md';
 import LinkButton from './LinkButton';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
@@ -14,18 +14,30 @@ const ActionButtons = forwardRef(
       onCreate,
       onCancel,
       onTogglePin,
+      onSave,
       labelShow,
       labelEdit,
       labelRemove,
       labelCreate,
       labelCancel,
       labelPin,
+      labelSave,
+      iconSave,
+      colorSave,
       isPinMode = false,
       extraActions = [],
+      disabledSave = false,
     },
     ref,
   ) => {
     const actions = [
+      {
+        label: labelSave || 'Guardar',
+        action: onSave,
+        color: colorSave || 'blue',
+        icon: iconSave || FaCheckCircle,
+        disabled: disabledSave,
+      },
       ...extraActions.map((action) => ({
         ...action,
       })),

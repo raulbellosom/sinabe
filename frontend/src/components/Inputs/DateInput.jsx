@@ -18,7 +18,8 @@ const DateInput = ({
     <>
       <TextInput
         type="date"
-        language="es-MX"
+        lang="es-MX"
+        placeholder="dd/mm/aaaa"
         color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
         {...field}
         {...props}

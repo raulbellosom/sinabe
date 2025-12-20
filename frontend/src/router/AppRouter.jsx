@@ -34,6 +34,8 @@ import PurchaseOrdersPage from '../pages/purchaseOrders/PurchaseOrdersPage';
 import InvoicesPage from '../pages/invoices/InvoicesPage';
 import CreateCustody from '../pages/Custody/CreateCustody';
 import CustodyPage from '../pages/Custody/CustodyPage';
+import PublicCustodyView from '../pages/Custody/PublicCustodyView';
+import ViewCustody from '../pages/Custody/ViewCustody';
 import Preferences from '../pages/preferences/Preferences';
 
 const AppRouter = () => {
@@ -58,6 +60,7 @@ const AppRouter = () => {
 const AuthorizedRoute = ({ user }) => {
   return (
     <Routes>
+      <Route path="/custody/public/:token" element={<PublicCustodyView />} />
       <Route
         path="*"
         element={
@@ -94,6 +97,8 @@ const AuthorizedRoute = ({ user }) => {
                   />
                   <Route path="/custody" element={<CustodyPage />} />
                   <Route path="/custody/create" element={<CreateCustody />} />
+                  <Route path="/custody/edit/:id" element={<CreateCustody />} />
+                  <Route path="/custody/view/:id" element={<ViewCustody />} />
                   <Route path="/verticals" element={<VerticalPage />} />
                   <Route path="/projects" element={<ProjectsPage />} />
                   <Route
@@ -138,6 +143,7 @@ const AuthorizedRoute = ({ user }) => {
 const UnauthorizedRoute = () => {
   return (
     <Routes>
+      <Route path="/custody/public/:token" element={<PublicCustodyView />} />
       <Route path="*" element={<Login />} />
     </Routes>
   );

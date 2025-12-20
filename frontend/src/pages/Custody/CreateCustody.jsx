@@ -1,24 +1,52 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import * as Yup from 'yup';
 import SignatureCanvas from 'react-signature-canvas';
-import { createCustodyRecord } from '../../services/custody.api';
+import {
+  createCustodyRecord,
+  getCustodyRecord,
+  updateCustodyRecord,
+} from '../../services/custody.api';
 import { searchUsers } from '../../services/searchUsers.api';
 import { searchInventories } from '../../services/searchInventories.api';
 import { updateUser, API_URL } from '../../services/api';
 import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
-import { Button, Label, Card, Checkbox, Table, Modal } from 'flowbite-react';
-import { HiTrash } from 'react-icons/hi';
+import {
+  Button,
+  Label,
+  Card,
+  Checkbox,
+  Table,
+  Modal,
+  Badge,
+  Breadcrumb,
+} from 'flowbite-react';
+import { HiPencilAlt, HiTrash } from 'react-icons/hi';
 import AutoCompleteInput from '../../components/Inputs/AutoCompleteInput';
 import TextInput from '../../components/Inputs/TextInput';
 import TextArea from '../../components/Inputs/TextArea';
 import DateInput from '../../components/Inputs/DateInput';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
+import {
+  HiLockClosed,
+  HiLockOpen,
+  HiRefresh,
+  HiCheckCircle,
+  HiShare,
+  HiChevronRight,
+  HiOutlineSave,
+  HiX,
+} from 'react-icons/hi';
+import { FaFileContract, FaUserTie } from 'react-icons/fa';
+import { IoMdUnlock, IoMdLock } from 'react-icons/io';
+import { QRCodeSVG } from 'qrcode.react';
 
 const CreateCustody = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = !!id;
   const { user, updateSignature } = useAuthContext();
   const receiverSigPad = useRef({});
   const delivererSigPad = useRef({});
@@ -41,6 +69,38 @@ const CreateCustody = () => {
   const [isDelivererSignatureChanged, setIsDelivererSignatureChanged] =
     useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDrafting, setIsDrafting] = useState(false);
+
+  // Success/Share Modal
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdRecordData, setCreatedRecordData] = useState(null);
+
+  // Loading states
+  const [isUsersLoading, setIsUsersLoading] = useState(false);
+  const [isInventoriesLoading, setIsInventoriesLoading] = useState(false);
+
+  // Signature control states
+  const [isReceiverLocked, setIsReceiverLocked] = useState(true);
+  const [isDelivererLocked, setIsDelivererLocked] = useState(true);
+  const [initialDelivererSignature, setInitialDelivererSignature] =
+    useState(null);
+
+  // Canvas dimensions for desync fix
+  const [canvasWidth, setCanvasWidth] = useState(350);
+  const receiverContainerRef = useRef(null);
+  const delivererContainerRef = useRef(null);
+
+  // Resize handler to fix desync
+  useEffect(() => {
+    const handleResize = () => {
+      if (receiverContainerRef.current) {
+        setCanvasWidth(receiverContainerRef.current.offsetWidth);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Load saved signature
   useEffect(() => {
@@ -51,7 +111,9 @@ const CreateCustody = () => {
           const blob = await response.blob();
           const reader = new FileReader();
           reader.onloadend = () => {
-            delivererSigPad.current.fromDataURL(reader.result, {
+            const dataUrl = reader.result;
+            setInitialDelivererSignature(dataUrl);
+            delivererSigPad.current.fromDataURL(dataUrl, {
               ratio: 1,
               width: 350,
               height: 150,
@@ -66,26 +128,60 @@ const CreateCustody = () => {
     loadSignature();
   }, [user]);
 
-  // Fetch all users and inventories
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usersRes = await searchUsers({ searchTerm: '', pageSize: 1000 });
-        setAllUsers(usersRes.data || []);
+  const handleReestablishDelivererSignature = () => {
+    if (initialDelivererSignature) {
+      delivererSigPad.current.clear();
+      delivererSigPad.current.fromDataURL(initialDelivererSignature, {
+        ratio: 1,
+        width: 350,
+        height: 150,
+      });
+      setIsDelivererSignatureChanged(false);
+    }
+  };
 
-        const invRes = await searchInventories({
-          searchTerm: '',
-          pageSize: 1000,
+  // Debounce search functions helper (simplified for use here)
+  const debounce = (func, wait) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), wait);
+    };
+  };
+
+  const handleSearchUsers = useCallback(
+    debounce(async (term) => {
+      setIsUsersLoading(true);
+      try {
+        const res = await searchUsers({ searchTerm: term, pageSize: 20 });
+        setAllUsers(res.data || []);
+      } catch (error) {
+        console.error('Error searching users', error);
+      } finally {
+        setIsUsersLoading(false);
+      }
+    }, 500),
+    [],
+  );
+
+  const handleSearchInventories = useCallback(
+    debounce(async (term) => {
+      setIsInventoriesLoading(true);
+      try {
+        const res = await searchInventories({
+          searchTerm: term,
+          pageSize: 20,
           status: 'ALTA',
         });
-        setAllInventories(invRes.data || []);
+        setAllInventories(res.data || []);
       } catch (error) {
-        console.error('Error fetching data', error);
-        toast.error('Error cargando datos iniciales');
+        console.error('Error searching inventories', error);
+      } finally {
+        setIsInventoriesLoading(false);
       }
-    };
-    fetchData();
-  }, []);
+    }, 500),
+    [],
+  );
 
   const formik = useFormik({
     initialValues: {
@@ -171,27 +267,130 @@ const CreateCustody = () => {
         delivererUserId: user?.id,
       };
 
-      // Check if signature changed and user has existing signature
-      if (isDelivererSignatureChanged) {
-        setPendingCustodyPayload(payload);
-        setIsSignatureUpdateModalOpen(true);
-      } else {
-        await submitCustody(payload);
-      }
+      await submitCustody(payload, 'COMPLETADO');
     },
   });
 
-  const submitCustody = async (payload) => {
+  // Load existing data in edit mode
+  useEffect(() => {
+    if (isEditMode) {
+      const loadRecord = async () => {
+        try {
+          const record = await getCustodyRecord(id);
+          formik.setValues({
+            date: record.date.split('T')[0],
+            receiver: {
+              userId: record.receiverId,
+              isNewInactiveUser: false,
+              name: `${record.receiver.firstName} ${record.receiver.lastName}`,
+              email: record.receiver.email,
+              employeeNumber: record.receiver.employeeNumber,
+              jobTitle: record.receiver.jobTitle,
+              department: record.receiver.department,
+            },
+            comments: record.comments || '',
+          });
+
+          if (record.items) {
+            setSelectedInventories(
+              record.items.map((item) => ({
+                ...item.inventory,
+                id: item.inventoryId,
+                features: item.features || item.inventory?.comments || '',
+              })),
+            );
+          }
+
+          // Load signatures
+          if (record.receiverSignature) {
+            receiverSigPad.current.fromDataURL(record.receiverSignature);
+          }
+          if (record.delivererSignature) {
+            delivererSigPad.current.fromDataURL(record.delivererSignature);
+          }
+        } catch (error) {
+          toast.error('Error al cargar el resguardo para editar');
+          navigate('/custody');
+        }
+      };
+      loadRecord();
+    }
+  }, [id, isEditMode]);
+
+  const handleSaveDraft = async () => {
+    const values = formik.values;
+    setIsDrafting(true);
+
+    const receiverSignature = !receiverSigPad.current.isEmpty()
+      ? receiverSigPad.current.getCanvas().toDataURL('image/png')
+      : null;
+    const delivererSignature = !delivererSigPad.current.isEmpty()
+      ? delivererSigPad.current.getCanvas().toDataURL('image/png')
+      : null;
+
+    const payload = {
+      ...values,
+      items: selectedInventories.map((inv) => ({
+        inventoryId: inv.id,
+        typeBrand: `${inv.model?.type?.name || ''} / ${inv.model?.brand?.name || ''}`,
+        model: inv.model?.name || '',
+        serialNumber: inv.serialNumber || '',
+        assetNumber: inv.activeNumber || '',
+        invoiceNumber: inv.invoice?.code || '',
+        features: inv.features || '',
+      })),
+      signatures: {
+        receiver: receiverSignature,
+        deliverer: delivererSignature,
+      },
+      delivererUserId: user?.id,
+      status: 'BORRADOR',
+    };
+
+    try {
+      await submitCustody(payload, 'BORRADOR');
+    } finally {
+      setIsDrafting(false);
+    }
+  };
+
+  const submitCustody = async (payload, status = 'COMPLETADO') => {
     setIsSubmitting(true);
     try {
-      const res = await createCustodyRecord(payload);
-      toast.success('Resguardo creado exitosamente');
-      navigate('/custody');
+      let res;
+      if (isEditMode) {
+        res = await updateCustodyRecord(id, { ...payload, status });
+      } else {
+        res = await createCustodyRecord({ ...payload, status });
+      }
+
+      const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+      const token =
+        res.custodyRecord.publicToken ||
+        res.custodyRecord.publicLink?.split('/').pop();
+      const fixedLink = `${baseUrl}/custody/public/${token}`;
+
+      setCreatedRecordData({
+        ...res.custodyRecord,
+        publicLink: fixedLink,
+      });
+      toast.success(
+        status === 'BORRADOR'
+          ? 'Borrador guardado exitosamente'
+          : 'Resguardo creado exitosamente',
+      );
+
+      if (status === 'COMPLETADO') {
+        setShowSuccessModal(true);
+      } else {
+        navigate('/custody');
+      }
     } catch (error) {
       toast.error(
-        'Error al crear resguardo: ' +
+        'Error al procesar resguardo: ' +
           (error.response?.data?.message || error.message),
       );
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -247,7 +446,10 @@ const CreateCustody = () => {
 
   const handleAddInventory = (inv) => {
     if (selectedInventories.find((i) => i.id === inv.id)) return;
-    setSelectedInventories([...selectedInventories, { ...inv, features: '' }]);
+    setSelectedInventories([
+      ...selectedInventories,
+      { ...inv, features: inv.comments || '' },
+    ]);
   };
 
   const handleRemoveInventory = (id) => {
@@ -336,120 +538,178 @@ const CreateCustody = () => {
   };
 
   return (
-    <FormikProvider value={formik}>
-      <div className="p-4 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
-          Nuevo Resguardo de Equipo
-        </h1>
+    <div className="space-y-6">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-blue-100 rounded-lg text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+            <FaFileContract size={24} />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+            {isEditMode ? 'Actualizar Resguardo' : 'Nuevo Resguardo'}
+          </h1>
+        </div>
 
+        <div className="flex gap-2">
+          <ActionButtons
+            onSave={formik.handleSubmit}
+            labelSave="Finalizar Resguardo"
+            iconSave={HiCheckCircle}
+            disabledSave={isSubmitting || isDrafting}
+            onCancel={() => navigate('/custody')}
+            extraActions={[
+              {
+                label: 'Guardar Borrador',
+                icon: HiOutlineSave,
+                action: handleSaveDraft,
+                color: 'yellow',
+                disabled: isSubmitting || isDrafting,
+              },
+            ]}
+          />
+        </div>
+      </div>
+
+      <FormikProvider value={formik}>
         <form onSubmit={formik.handleSubmit} className="space-y-6">
-          <div className="w-full md:w-1/3">
-            <DateInput
-              field={formik.getFieldProps('date')}
-              form={formik}
-              label="Fecha"
-              id="date"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Receiver / Deliverer */}
+            <Card>
+              <h3 className="text-lg font-semibold mb-4 border-b pb-2 flex items-center gap-2 dark:text-white">
+                <HiCheckCircle className="text-green-500" /> Sujetos del
+                Resguardo
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <Label
+                    value="Responsable de TI (Entrega)"
+                    className="text-xs uppercase tracking-wider text-gray-500"
+                  />
+                  <p className="mt-1 text-sm font-bold text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-100 dark:border-gray-600">
+                    {user?.firstName} {user?.lastName}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 py-1">
+                  <Checkbox
+                    id="isNewUser"
+                    checked={isNewUserMode}
+                    onChange={(e) => {
+                      setIsNewUserMode(e.target.checked);
+                      formik.setFieldValue(
+                        'receiver.isNewInactiveUser',
+                        e.target.checked,
+                      );
+                      if (e.target.checked)
+                        formik.setFieldValue('receiver.userId', null);
+                    }}
+                  />
+                  <Label htmlFor="isNewUser" className="text-sm font-medium">
+                    Registrar nuevo receptor (externo/inactivo)
+                  </Label>
+                </div>
+
+                {!isNewUserMode ? (
+                  <AutoCompleteInput
+                    field={{
+                      name: 'receiver.userId',
+                      value: formik.values.receiver.userId,
+                    }}
+                    form={userFormWrapper}
+                    options={allUsers.map((u) => ({
+                      label: `${u.firstName} ${u.lastName} (${
+                        u.email || u.employeeNumber
+                      })`,
+                      value: u.id,
+                      searchTerms: `${u.firstName} ${u.lastName} ${u.email} ${u.employeeNumber}`,
+                    }))}
+                    onSearch={handleSearchUsers}
+                    isLoading={isUsersLoading}
+                    onFocusSearch={true}
+                    placeholder="Buscar por nombre, correo o ID..."
+                    label="Receptor del Equipo"
+                  />
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fadeIn">
+                    <TextInput
+                      field={formik.getFieldProps('receiver.firstName')}
+                      form={formik}
+                      label="Nombre"
+                      sizing="sm"
+                    />
+                    <TextInput
+                      field={formik.getFieldProps('receiver.lastName')}
+                      form={formik}
+                      label="Apellido"
+                      sizing="sm"
+                    />
+                    <TextInput
+                      field={formik.getFieldProps('receiver.email')}
+                      form={formik}
+                      label="Email"
+                      sizing="sm"
+                    />
+                    <TextInput
+                      field={formik.getFieldProps('receiver.employeeNumber')}
+                      form={formik}
+                      label="ID/Empleado"
+                      sizing="sm"
+                    />
+                  </div>
+                )}
+
+                {formik.values.receiver?.name && !isNewUserMode && (
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg animate-fadeIn">
+                    <p className="font-bold text-blue-700 dark:text-blue-300">
+                      {formik.values.receiver.name}
+                    </p>
+                    <p className="text-xs text-blue-500 dark:text-blue-400">
+                      {formik.values.receiver.jobTitle} -{' '}
+                      {formik.values.receiver.department}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Header Data */}
+            <Card>
+              <div className="flex flex-col justify-start h-full w-full">
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2 flex items-center w-full gap-2 dark:text-white">
+                  <HiChevronRight className="text-blue-500" /> Datos Generales
+                </h3>
+                <div className="flex flex-col gap-4">
+                  <DateInput
+                    field={formik.getFieldProps('date')}
+                    form={formik}
+                    label="Fecha del Resguardo"
+                    id="date"
+                  />
+                  <TextArea
+                    field={formik.getFieldProps('comments')}
+                    form={formik}
+                    label="Comentarios / Observaciones"
+                    id="comments"
+                    placeholder="Detalles adicionales sobre la entrega..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </Card>
           </div>
 
           <Card>
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-              Datos del Empleado (Receptor)
-            </h2>
-
-            <div className="flex items-center gap-2 mb-4">
-              <Checkbox
-                id="isNewUser"
-                checked={isNewUserMode}
-                onChange={(e) => {
-                  setIsNewUserMode(e.target.checked);
-                  formik.setFieldValue(
-                    'receiver.isNewInactiveUser',
-                    e.target.checked,
-                  );
-                  if (e.target.checked) {
-                    formik.setFieldValue('receiver.userId', null);
-                  }
-                }}
-              />
-              <Label htmlFor="isNewUser">
-                Registrar nuevo usuario (Inactivo)
-              </Label>
+            <div className="flex items-center justify-between mb-4 border-b pb-2">
+              <h3 className="text-lg font-semibold flex items-center gap-2 dark:text-white">
+                <FaFileContract className="text-purple-500" /> Equipos en
+                Resguardo
+              </h3>
+              <Badge color="info">{selectedInventories.length} item(s)</Badge>
             </div>
 
-            {!isNewUserMode ? (
-              <AutoCompleteInput
-                field={{
-                  name: 'receiver.userId',
-                  value: formik.values.receiver.userId,
-                }}
-                form={userFormWrapper}
-                options={allUsers.map((u) => ({
-                  label: `${u.firstName} ${u.lastName} (${u.email})`,
-                  value: u.id,
-                }))}
-                placeholder="Buscar Empleado..."
-                label="Buscar Empleado"
-              />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TextInput
-                  field={formik.getFieldProps('receiver.firstName')}
-                  form={formik}
-                  label="Nombre"
-                />
-                <TextInput
-                  field={formik.getFieldProps('receiver.lastName')}
-                  form={formik}
-                  label="Apellido"
-                />
-                <TextInput
-                  field={formik.getFieldProps('receiver.email')}
-                  form={formik}
-                  label="Correo Electrónico"
-                />
-                <TextInput
-                  field={formik.getFieldProps('receiver.userName')}
-                  form={formik}
-                  label="Nombre de Usuario"
-                />
-                <TextInput
-                  field={formik.getFieldProps('receiver.employeeNumber')}
-                  form={formik}
-                  label="Número de Empleado"
-                />
-                <TextInput
-                  field={formik.getFieldProps('receiver.jobTitle')}
-                  form={formik}
-                  label="Puesto"
-                />
-                <TextInput
-                  field={formik.getFieldProps('receiver.department')}
-                  form={formik}
-                  label="Departamento"
-                />
-              </div>
-            )}
-
-            {!isNewUserMode && formik.values.receiver.userId && (
-              <div className="mt-2 p-2 bg-gray-50 rounded">
-                <p>
-                  <strong>Seleccionado:</strong> {formik.values.receiver.name}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {formik.values.receiver.jobTitle} -{' '}
-                  {formik.values.receiver.department}
-                </p>
-              </div>
-            )}
-          </Card>
-
-          <Card>
-            <h2 className="text-lg font-semibold">Equipos a Resguardar</h2>
-            <div className="mb-4">
+            <div className="mb-6">
               <AutoCompleteInput
                 key={inventorySearchKey}
-                field={{ name: 'inventorySearch', value: '' }}
+                field={{ name: 'search_inventory', value: '' }}
                 form={inventoryFormWrapper}
                 options={allInventories.map((i) => {
                   const searchTerms = [
@@ -460,77 +720,69 @@ const CreateCustody = () => {
                     i.activeNumber,
                     i.comments,
                     i.invoice?.code,
-                    i.invoice?.concept,
-                    i.invoice?.supplier,
                     i.purchaseOrder?.code,
                     i.purchaseOrder?.supplier,
-                    i.purchaseOrder?.description,
-                    i.invoice?.purchaseOrder?.code,
-                    i.invoice?.purchaseOrder?.project?.name,
-                    i.invoice?.purchaseOrder?.project?.code,
-                    i.purchaseOrder?.project?.name,
-                    i.purchaseOrder?.project?.code,
                     i.location?.name,
-                    ...(i.conditions?.map((c) => c.condition?.name) || []),
-                    ...(i.customField?.map((cf) => cf.value) || []),
                   ]
                     .filter(Boolean)
                     .join(' ');
 
+                  const isSelected = selectedInventories.some(
+                    (inv) => inv.id === i.id,
+                  );
+
                   return {
-                    label: `${i.model?.name || 'Sin Modelo'} (${
-                      i.model?.brand?.name || 'Sin Marca'
-                    }) - SN: ${i.serialNumber || 'S/N'}`,
+                    label: `${i.model?.name || 'S/M'} (${
+                      i.model?.brand?.name || 'S/B'
+                    }) - SN: ${i.serialNumber}`,
                     value: i.id,
+                    isSelected,
                     searchTerms,
                   };
                 })}
-                placeholder="Buscar por serie, modelo, factura, OC, proyecto, comentarios..."
-                label="Buscar Inventario"
+                onSearch={handleSearchInventories}
+                isLoading={isInventoriesLoading}
+                onFocusSearch={true}
+                placeholder="Busca por serie, modelo, activo, marca..."
+                label="Buscar y Agregar Equipo"
               />
             </div>
 
             {selectedInventories.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table hoverable>
+              <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                <Table hoverable striped>
                   <Table.Head>
                     <Table.HeadCell>Equipo</Table.HeadCell>
                     <Table.HeadCell>Serie / Activo</Table.HeadCell>
-                    <Table.HeadCell>Factura</Table.HeadCell>
-                    <Table.HeadCell>Características</Table.HeadCell>
-                    <Table.HeadCell>
+                    <Table.HeadCell>Características de Entrega</Table.HeadCell>
+                    <Table.HeadCell className="w-10">
                       <span className="sr-only">Eliminar</span>
                     </Table.HeadCell>
                   </Table.Head>
-                  <Table.Body className="divide-y">
+                  <Table.Body className="divide-y text-sm">
                     {selectedInventories.map((inv) => (
                       <Table.Row
                         key={inv.id}
-                        className="bg-white dark:border-gray-700 dark:bg-gray-800"
+                        className="bg-white dark:bg-gray-800"
                       >
-                        <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                        <Table.Cell className="font-medium text-gray-900 dark:text-white">
                           <div className="flex flex-col">
-                            <span className="font-bold text-lg">
-                              {inv.model?.name || 'Sin Modelo'}
-                            </span>
+                            <span className="font-bold">{inv.model?.name}</span>
                             <span className="text-xs text-gray-500">
-                              {inv.model?.type?.name} - {inv.model?.brand?.name}
+                              {inv.model?.brand?.name} - {inv.model?.type?.name}
                             </span>
                           </div>
                         </Table.Cell>
                         <Table.Cell>
-                          <div className="flex flex-col">
-                            <span className="font-semibold">
+                          <div className="flex flex-col font-mono text-xs">
+                            <span className="font-bold text-blue-600 dark:text-blue-400">
                               SN: {inv.serialNumber}
                             </span>
-                            {inv.activeNumber && (
-                              <span className="text-xs text-gray-500">
-                                Activo: {inv.activeNumber}
-                              </span>
-                            )}
+                            <span className="text-gray-500">
+                              Act: {inv.activeNumber || '—'}
+                            </span>
                           </div>
                         </Table.Cell>
-                        <Table.Cell>{inv.invoice?.code || 'N/A'}</Table.Cell>
                         <Table.Cell>
                           <TextInput
                             field={{
@@ -538,21 +790,19 @@ const CreateCustody = () => {
                               value: inv.features,
                               onChange: (e) =>
                                 handleFeatureChange(inv.id, e.target.value),
-                              onBlur: () => {},
                             }}
                             form={{ touched: {}, errors: {} }}
                             sizing="sm"
-                            placeholder="Cargador, mouse, detalles..."
+                            placeholder="Ej: Cargador, Mouse, Funda..."
                           />
                         </Table.Cell>
                         <Table.Cell>
                           <button
                             onClick={() => handleRemoveInventory(inv.id)}
-                            className="font-medium text-red-600 hover:underline dark:text-red-500 p-2 hover:bg-red-50 rounded-full transition-colors"
-                            title="Eliminar equipo"
+                            className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
                             type="button"
                           >
-                            <HiTrash className="h-5 w-5" />
+                            <HiTrash size={20} />
                           </button>
                         </Table.Cell>
                       </Table.Row>
@@ -561,90 +811,220 @@ const CreateCustody = () => {
                 </Table>
               </div>
             ) : (
-              <p className="text-gray-500 text-center">
-                No hay equipos seleccionados
-              </p>
+              <div className="text-center py-12 bg-gray-50 dark:bg-gray-700/30 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                <FaFileContract
+                  className="mx-auto text-gray-300 dark:text-gray-600 mb-2"
+                  size={40}
+                />
+                <p className="text-gray-500 dark:text-gray-400 font-medium">
+                  No has seleccionado equipos para este resguardo.
+                </p>
+              </div>
             )}
-            {formik.errors.items && (
-              <p className="text-red-500 text-sm">{formik.errors.items}</p>
+            {formik.touched.items && formik.errors.items && (
+              <p className="mt-2 text-sm text-red-600 font-medium">
+                Debe agregar al menos un equipo
+              </p>
             )}
           </Card>
 
-          <div>
-            <TextArea
-              field={formik.getFieldProps('comments')}
-              form={formik}
-              label="Comentarios"
-              id="comments"
-              rows={4}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Signatures */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 !mb-12">
             <Card>
-              <h3 className="font-semibold mb-2">Firma de Recibí (Empleado)</h3>
-              <div className="border border-gray-300 rounded">
+              <div className="flex justify-between items-center mb-4 border-b pb-2">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold dark:text-white flex items-center gap-2">
+                    <HiPencilAlt className="text-blue-500" /> Firma del Receptor
+                  </h3>
+                  <Button
+                    size="xs"
+                    color={isReceiverLocked ? 'failure' : 'success'}
+                    onClick={() => setIsReceiverLocked(!isReceiverLocked)}
+                    className="flex items-center gap-1"
+                  >
+                    {isReceiverLocked ? (
+                      <HiLockClosed className="h-3 w-3" />
+                    ) : (
+                      <HiLockOpen className="h-3 w-3" />
+                    )}
+                  </Button>
+                </div>
+                <Button
+                  size="xs"
+                  color="light"
+                  onClick={() => receiverSigPad.current.clear()}
+                  disabled={isReceiverLocked}
+                >
+                  <HiX className="mr-1 h-3 w-3" /> Limpiar
+                </Button>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative">
+                {isReceiverLocked && (
+                  <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
+                    <HiLockClosed className="text-gray-400 text-4xl" />
+                  </div>
+                )}
                 <SignatureCanvas
                   ref={receiverSigPad}
                   penColor="black"
-                  canvasProps={{
-                    width: 350,
-                    height: 150,
-                    className: 'sigCanvas w-full',
-                  }}
+                  canvasProps={{ className: 'w-full h-40 cursor-crosshair' }}
                 />
               </div>
-              <Button
-                size="xs"
-                color="light"
-                onClick={() => receiverSigPad.current.clear()}
-                className="mt-2"
-              >
-                Limpiar Firma
-              </Button>
+              <p className="mt-2 text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">
+                Firma Digital
+              </p>
             </Card>
 
             <Card>
-              <h3 className="font-semibold mb-2">Firma de Entrega (TI)</h3>
-              <div className="border border-gray-300 rounded">
+              <div className="flex justify-between items-center mb-4 border-b pb-2">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold dark:text-white flex items-center gap-2">
+                    <FaUserTie className="text-green-500" /> Firma Responsable
+                    TI
+                  </h3>
+                  <Button
+                    size="xs"
+                    color={isDelivererLocked ? 'failure' : 'success'}
+                    onClick={() => setIsDelivererLocked(!isDelivererLocked)}
+                    className="flex items-center gap-1"
+                  >
+                    {isDelivererLocked ? (
+                      <HiLockClosed className="h-3 w-3" />
+                    ) : (
+                      <HiLockOpen className="h-3 w-3" />
+                    )}
+                  </Button>
+                </div>
+                <div className="flex gap-1">
+                  {initialDelivererSignature && (
+                    <Button
+                      size="xs"
+                      color="purple"
+                      onClick={handleReestablishDelivererSignature}
+                      disabled={isDelivererLocked}
+                      className="!p-1"
+                      title="Papelera/Restablecer"
+                    >
+                      <HiRefresh className="h-3 w-3" />
+                    </Button>
+                  )}
+                  <Button
+                    size="xs"
+                    color="light"
+                    onClick={() => delivererSigPad.current.clear()}
+                    disabled={isDelivererLocked}
+                  >
+                    <HiX className="mr-1 h-3 w-3" /> Limpiar
+                  </Button>
+                </div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative">
+                {isDelivererLocked && (
+                  <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
+                    <HiLockClosed className="text-gray-400 text-4xl" />
+                  </div>
+                )}
                 <SignatureCanvas
                   ref={delivererSigPad}
                   penColor="black"
                   onBegin={() => setIsDelivererSignatureChanged(true)}
-                  canvasProps={{
-                    width: 350,
-                    height: 150,
-                    className: 'sigCanvas w-full',
-                  }}
+                  canvasProps={{ className: 'w-full h-40 cursor-crosshair' }}
                 />
               </div>
-              <Button
-                size="xs"
-                color="light"
-                onClick={() => delivererSigPad.current.clear()}
-                className="mt-2"
-              >
-                Limpiar Firma
-              </Button>
+              <p className="mt-2 text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">
+                Firma Digital
+              </p>
             </Card>
           </div>
 
-          <div className="flex justify-end gap-4">
-            <ActionButtons
-              onCancel={() => navigate('/custody')}
-              labelCancel="Cancelar"
-              extraActions={[
-                {
-                  key: 'save',
-                  label: 'Generar Resguardo',
-                  action: formik.handleSubmit,
-                  color: 'blue',
-                  disabled: formik.isSubmitting || isSubmitting,
-                },
-              ]}
-            />
-          </div>
+          {/* Footer Actions */}
+          {/* <div className="flex flex-col md:flex-row justify-center items-center gap-4 border-t pt-8 pb-12">
+            <Button
+              type="submit"
+              size="xl"
+              color="info"
+              isProcessing={isSubmitting}
+              className="w-full md:w-80 shadow-xl hover:scale-105 transition-transform"
+            >
+              <HiCheckCircle className="mr-3 h-6 w-6" /> Finalizar y Generar
+              Resguardo
+            </Button>
+            <p className="text-xs text-gray-400 italic font-medium max-w-[200px] text-center">
+              * El resguardo se marcará como completado y se generará el PDF
+              oficial.
+            </p>
+          </div> */}
         </form>
+
+        {/* Success / Share Modal */}
+        <Modal
+          show={showSuccessModal}
+          onClose={() => navigate('/custody')}
+          size="md"
+        >
+          <Modal.Header>Resguardo Creado</Modal.Header>
+          <Modal.Body>
+            <div className="text-center space-y-4">
+              <HiCheckCircle className="mx-auto h-16 w-16 text-green-500" />
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+                ¡Todo listo!
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                El resguardo se ha generado correctamente. Puedes compartir el
+                enlace público para verificación externa (válido por 24h).
+              </p>
+
+              {createdRecordData?.publicLink && (
+                <div className="flex flex-col items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="p-2 bg-white rounded-lg shadow-sm">
+                    <QRCodeSVG
+                      value={createdRecordData.publicLink}
+                      size={150}
+                    />
+                  </div>
+                  <div className="w-full">
+                    <Label
+                      htmlFor="publicLink"
+                      className="mb-2 block text-left"
+                    >
+                      Enlace de Verificación:
+                    </Label>
+                    <div className="flex gap-2">
+                      <TextInput
+                        id="publicLink"
+                        field={{
+                          name: 'publicLink',
+                          value: createdRecordData.publicLink,
+                        }}
+                        form={{ touched: {}, errors: {} }}
+                        readOnly
+                        className="flex-1"
+                      />
+                      <Button
+                        color="light"
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            createdRecordData.publicLink,
+                          );
+                          toast.success('Copiado al portapapeles');
+                        }}
+                      >
+                        <HiShare className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <div className="w-full flex justify-center">
+              <Button onClick={() => navigate('/custody')}>
+                Volver al listado <HiChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </Modal.Footer>
+        </Modal>
 
         {/* Missing Data Modal */}
         <Modal
@@ -729,8 +1109,8 @@ const CreateCustody = () => {
             </Button>
           </Modal.Footer>
         </Modal>
-      </div>
-    </FormikProvider>
+      </FormikProvider>
+    </div>
   );
 };
 
