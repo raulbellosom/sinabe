@@ -195,10 +195,10 @@ export const generateCustodyPDF = async (data) => {
 
       /* Estilo Zebra para JS */
       .equipment-table tbody tr:nth-child(odd) {
-        background-color: #ededed; /* Gris */
+        background-color: white; /* Blanco */
       }
       .equipment-table tbody tr:nth-child(even) {
-        background-color: white; /* Blanco */
+        background-color: #ededed; /* Gris */
       }
 
       .equipment-table td {
