@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -50,6 +50,16 @@ const CustodyPage = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [recordToDelete, setRecordToDelete] = useState(null);
+  const [localSearchTerm, setLocalSearchTerm] = useState(query.searchTerm);
+
+  // Debounce effect for search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setQuery((prev) => ({ ...prev, searchTerm: localSearchTerm, page: 1 }));
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [localSearchTerm]);
 
   // Share Modal
   const [showShareModal, setShowShareModal] = useState(false);
@@ -275,7 +285,7 @@ const CustodyPage = () => {
     },
   ];
 
-  if (isLoading)
+  if (isLoading && !response)
     return (
       <div className="flex justify-center items-center h-64">
         <Spinner size="xl" />
@@ -292,7 +302,7 @@ const CustodyPage = () => {
   return (
     <div className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+        <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
           <FaFileInvoice className="text-purple-500" />
           Resguardos Tecnológicos
         </h1>
@@ -303,14 +313,8 @@ const CustodyPage = () => {
               type="text"
               icon={FaSearch}
               placeholder="Buscar por nombre, empleado, serie, modelo..."
-              value={query.searchTerm}
-              onChange={(e) =>
-                setQuery((prev) => ({
-                  ...prev,
-                  searchTerm: e.target.value,
-                  page: 1,
-                }))
-              }
+              value={localSearchTerm}
+              onChange={(e) => setLocalSearchTerm(e.target.value)}
             />
           </div>
           <ActionButtons

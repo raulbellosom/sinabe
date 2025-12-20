@@ -28,6 +28,7 @@ const PublicCustodyView = () => {
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSignedSuccessfully, setIsSignedSuccessfully] = useState(false);
+  const [hasSignature, setHasSignature] = useState(false);
 
   useEffect(() => {
     const fetchRecord = async () => {
@@ -317,32 +318,42 @@ const PublicCustodyView = () => {
 
               {record.status === 'BORRADOR' ? (
                 <div className="space-y-4">
-                  <div className="bg-white dark:bg-gray-900 rounded-xl border-2 border-dashed border-blue-200 dark:border-blue-900 overflow-hidden shadow-inner relative">
+                  <div className="flex justify-between items-center bg-blue-50/50 dark:bg-blue-900/10 p-3 rounded-t-xl border-x-2 border-t-2 border-dashed border-blue-200 dark:border-blue-900 -mb-4">
+                    <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
+                      Dibuja tu firma abajo
+                    </span>
+                    <Button
+                      size="xs"
+                      color="light"
+                      onClick={() => {
+                        sigPad.current.clear();
+                        setHasSignature(false);
+                      }}
+                      className="!p-1 hover:text-red-600"
+                    >
+                      <HiX className="mr-1 h-3 w-3" /> Limpiar
+                    </Button>
+                  </div>
+                  <div className="bg-white dark:bg-gray-900 rounded-b-xl border-2 border-dashed border-blue-200 dark:border-blue-900 overflow-hidden shadow-inner relative">
                     <SignatureCanvas
                       ref={sigPad}
+                      onEnd={() => setHasSignature(!sigPad.current.isEmpty())}
                       penColor="black"
                       canvasProps={{
-                        className: 'w-full h-40 cursor-crosshair',
+                        className: 'w-full h-64 cursor-crosshair',
                       }}
                     />
-                    <div className="absolute top-2 right-2">
-                      <Button
-                        size="xs"
-                        color="light"
-                        onClick={() => sigPad.current.clear()}
-                      >
-                        <HiX className="mr-1 h-3 w-3" /> Limpiar
-                      </Button>
-                    </div>
                   </div>
 
                   <div className="flex flex-col items-center gap-3 pt-2">
                     <Button
                       size="md"
-                      color="info"
+                      color={hasSignature ? 'info' : 'gray'}
                       className="w-full font-bold shadow-lg hover:scale-[1.02] transition-all"
                       onClick={handleSubmitSignature}
                       isProcessing={isSubmitting}
+                      disabled={!hasSignature || isSubmitting}
                     >
                       <HiCheckCircle className="mr-2 h-5 w-5" /> Firmar y
                       Finalizar

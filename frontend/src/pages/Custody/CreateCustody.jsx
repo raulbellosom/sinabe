@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useFormik, FormikProvider } from 'formik';
 import * as Yup from 'yup';
 import SignatureCanvas from 'react-signature-canvas';
@@ -47,6 +48,7 @@ const CreateCustody = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = !!id;
+  const queryClient = useQueryClient();
   const { user, updateSignature } = useAuthContext();
   const receiverSigPad = useRef({});
   const delivererSigPad = useRef({});
@@ -379,6 +381,9 @@ const CreateCustody = () => {
         ...res.custodyRecord,
         publicLink: fixedLink,
       });
+
+      // Invalidate query to refresh the list table
+      queryClient.invalidateQueries(['custody-records']);
       toast.success(
         status === 'BORRADOR'
           ? 'Borrador guardado exitosamente'
