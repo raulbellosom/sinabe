@@ -14,6 +14,7 @@ import {
   HiXCircle,
   HiMail,
   HiQrcode,
+  HiShare,
 } from 'react-icons/hi';
 import { FaFileContract, FaUserTie } from 'react-icons/fa';
 import { parseToLocalDate } from '../../utils/formatValues';
@@ -169,14 +170,14 @@ const ViewCustody = () => {
             </div>
           </Card>
 
-          {record.status === 'COMPLETADO' && (
-            <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 border-none text-white">
+          {record.status === 'BORRADOR' && (
+            <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 border-none text-white shadow-xl">
               <h3 className="font-bold flex items-center gap-2 mb-2">
-                <HiQrcode /> Verificación Pública
+                <HiQrcode /> Firma Remota
               </h3>
               <p className="text-xs text-indigo-100 mb-4 leading-relaxed font-medium">
-                Este resguardo cuenta con un enlace público de validación para
-                auditorías externas.
+                Comparte este enlace o QR con el receptor para que pueda firmar
+                el resguardo desde su dispositivo.
               </p>
               <Button
                 color="light"

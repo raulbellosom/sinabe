@@ -237,15 +237,15 @@ const CustodyPage = () => {
       action: () => navigate(`/custody/view/${record.id}`),
       color: 'green',
     },
-    {
-      key: 'share',
-      label: 'QR / Enlace',
-      icon: FaQrcode,
-      action: () => handleShowShare(record.id),
-      color: 'blue',
-    },
     ...(record.status === 'BORRADOR'
       ? [
+          {
+            key: 'share',
+            label: 'QR / Enlace',
+            icon: FaQrcode,
+            action: () => handleShowShare(record.id),
+            color: 'blue',
+          },
           {
             key: 'edit',
             label: 'Editar Borrador',

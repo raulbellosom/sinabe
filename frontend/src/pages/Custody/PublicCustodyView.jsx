@@ -17,7 +17,7 @@ import {
   HiPencilAlt,
   HiX,
 } from 'react-icons/hi';
-import sinabeLogo from '../../assets/logo/sinabe.png';
+import sinabeIcon from '../../assets/logo/sinabe_icon.png';
 import gapLogo from '../../assets/logo/gap.png';
 
 const PublicCustodyView = () => {
@@ -80,11 +80,18 @@ const PublicCustodyView = () => {
         <Alert color="failure" icon={HiExclamation}>
           <span className="font-medium">¡Atención!</span> {error}
         </Alert>
-        <div className="mt-6 flex flex-col items-center">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
-            SINABE
-          </h1>
-          <p className="text-sm text-gray-500">
+        <div className="mt-8 flex flex-col items-center">
+          <div className="flex items-center gap-2 mb-2">
+            <img
+              src={sinabeIcon}
+              alt="SINABE Icon"
+              className="h-10 w-auto opacity-50 grayscale"
+            />
+            <span className="text-xl font-black tracking-tighter text-gray-400">
+              SINABE
+            </span>
+          </div>
+          <p className="text-xs text-gray-400 uppercase tracking-widest">
             Sistema de Inventarios y Bienes
           </p>
         </div>
@@ -104,11 +111,16 @@ const PublicCustodyView = () => {
               className="h-12 w-auto object-contain"
             />
             <div className="h-10 w-px bg-gray-200 dark:bg-gray-700 hidden sm:block"></div>
-            <img
-              src={sinabeLogo}
-              alt="SINABE Logo"
-              className="h-14 w-auto object-contain"
-            />
+            <div className="flex items-center gap-2">
+              <img
+                src={sinabeIcon}
+                alt="SINABE Icon"
+                className="h-12 w-auto object-contain"
+              />
+              <span className="text-2xl font-black tracking-tighter text-[#5c2d91]">
+                SINABE
+              </span>
+            </div>
           </div>
           <div className="text-center">
             <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
