@@ -43,6 +43,7 @@ import {
 import { FaFileContract, FaUserTie } from 'react-icons/fa';
 import { IoMdUnlock, IoMdLock } from 'react-icons/io';
 import { QRCodeSVG } from 'qrcode.react';
+import LoadingModal from '../../components/loadingModal/LoadingModal';
 
 const CreateCustody = () => {
   const navigate = useNavigate();
@@ -75,7 +76,6 @@ const CreateCustody = () => {
   const [isDrafting, setIsDrafting] = useState(false);
 
   // Success/Share Modal
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdRecordData, setCreatedRecordData] = useState(null);
 
   // Loading states
@@ -270,9 +270,15 @@ const CreateCustody = () => {
         },
         delivererUserId:
           isEditMode && originalDeliverer ? originalDeliverer.id : user?.id,
+        status: 'COMPLETADO',
       };
 
-      await submitCustody(payload, 'COMPLETADO');
+      if (isDelivererSignatureChanged) {
+        setPendingCustodyPayload(payload);
+        setIsSignatureUpdateModalOpen(true);
+      } else {
+        await submitCustody(payload, 'COMPLETADO');
+      }
     },
   });
 
@@ -325,7 +331,6 @@ const CreateCustody = () => {
 
   const handleSaveDraft = async () => {
     const values = formik.values;
-    setIsDrafting(true);
 
     const receiverSignature = !receiverSigPad.current.isEmpty()
       ? receiverSigPad.current.getCanvas().toDataURL('image/png')
@@ -354,21 +359,30 @@ const CreateCustody = () => {
       status: 'BORRADOR',
     };
 
-    try {
-      await submitCustody(payload, 'BORRADOR');
-    } finally {
-      setIsDrafting(false);
+    if (isDelivererSignatureChanged) {
+      setPendingCustodyPayload(payload);
+      setIsSignatureUpdateModalOpen(true);
+    } else {
+      try {
+        await submitCustody(payload, 'BORRADOR');
+      } finally {
+        setIsDrafting(false);
+      }
     }
   };
 
   const submitCustody = async (payload, status = 'COMPLETADO') => {
+    const finalStatus = payload.status || status;
     setIsSubmitting(true);
     try {
       let res;
       if (isEditMode) {
-        res = await updateCustodyRecord(id, { ...payload, status });
+        res = await updateCustodyRecord(id, {
+          ...payload,
+          status: finalStatus,
+        });
       } else {
-        res = await createCustodyRecord({ ...payload, status });
+        res = await createCustodyRecord({ ...payload, status: finalStatus });
       }
 
       const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
@@ -385,16 +399,12 @@ const CreateCustody = () => {
       // Invalidate query to refresh the list table
       queryClient.invalidateQueries(['custody-records']);
       toast.success(
-        status === 'BORRADOR'
+        finalStatus === 'BORRADOR'
           ? 'Borrador guardado exitosamente'
           : 'Resguardo creado exitosamente',
       );
 
-      if (status === 'COMPLETADO') {
-        setShowSuccessModal(true);
-      } else {
-        navigate('/custody');
-      }
+      navigate('/custody');
     } catch (error) {
       toast.error(
         'Error al procesar resguardo: ' +
@@ -407,6 +417,7 @@ const CreateCustody = () => {
 
   const handleSaveSignatureAndSubmit = async () => {
     if (isSubmitting) return;
+    setIsSignatureUpdateModalOpen(false);
     setIsSubmitting(true);
     try {
       const dataUrl = delivererSigPad.current
@@ -420,8 +431,8 @@ const CreateCustody = () => {
 
       await updateSignature(fileToUpload);
       toast.success('Firma actualizada en perfil');
+      setIsDelivererSignatureChanged(false);
       await submitCustody(pendingCustodyPayload);
-      setIsSignatureUpdateModalOpen(false);
     } catch (error) {
       console.error(error);
       toast.error('Error al guardar firma');
@@ -431,8 +442,9 @@ const CreateCustody = () => {
 
   const handleContinueWithoutSaving = async () => {
     if (isSubmitting) return;
-    await submitCustody(pendingCustodyPayload);
     setIsSignatureUpdateModalOpen(false);
+    setIsDelivererSignatureChanged(false);
+    await submitCustody(pendingCustodyPayload);
   };
 
   const handleSelectUser = (user) => {
@@ -549,6 +561,7 @@ const CreateCustody = () => {
 
   return (
     <div className="space-y-6">
+      <LoadingModal loading={isSubmitting || isDrafting} />
       <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-4">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-blue-100 rounded-lg text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
@@ -879,7 +892,7 @@ const CreateCustody = () => {
                 <SignatureCanvas
                   ref={receiverSigPad}
                   penColor="black"
-                  canvasProps={{ className: 'w-full h-40 cursor-crosshair' }}
+                  canvasProps={{ className: 'w-full h-64 cursor-crosshair' }}
                 />
               </div>
               <p className="mt-2 text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">
@@ -966,7 +979,7 @@ const CreateCustody = () => {
                   ref={delivererSigPad}
                   penColor="black"
                   onBegin={() => setIsDelivererSignatureChanged(true)}
-                  canvasProps={{ className: 'w-full h-40 cursor-crosshair' }}
+                  canvasProps={{ className: 'w-full h-64 cursor-crosshair' }}
                 />
               </div>
               <p className="mt-2 text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">
@@ -993,76 +1006,6 @@ const CreateCustody = () => {
             </p>
           </div> */}
         </form>
-
-        {/* Success / Share Modal */}
-        <Modal
-          show={showSuccessModal}
-          onClose={() => navigate('/custody')}
-          size="md"
-        >
-          <Modal.Header>Resguardo Creado</Modal.Header>
-          <Modal.Body>
-            <div className="text-center space-y-4">
-              <HiCheckCircle className="mx-auto h-16 w-16 text-green-500" />
-              <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-                ¡Todo listo!
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                El resguardo se ha generado correctamente. Puedes compartir el
-                enlace público para verificación externa (válido por 24h).
-              </p>
-
-              {createdRecordData?.publicLink && (
-                <div className="flex flex-col items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className="p-2 bg-white rounded-lg shadow-sm">
-                    <QRCodeSVG
-                      value={createdRecordData.publicLink}
-                      size={150}
-                    />
-                  </div>
-                  <div className="w-full">
-                    <Label
-                      htmlFor="publicLink"
-                      className="mb-2 block text-left"
-                    >
-                      Enlace de Verificación:
-                    </Label>
-                    <div className="flex gap-2">
-                      <TextInput
-                        id="publicLink"
-                        field={{
-                          name: 'publicLink',
-                          value: createdRecordData.publicLink,
-                        }}
-                        form={{ touched: {}, errors: {} }}
-                        readOnly
-                        className="flex-1"
-                      />
-                      <Button
-                        color="light"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            createdRecordData.publicLink,
-                          );
-                          toast.success('Copiado al portapapeles');
-                        }}
-                      >
-                        <HiShare className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <div className="w-full flex justify-center">
-              <Button onClick={() => navigate('/custody')}>
-                Volver al listado <HiChevronRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-          </Modal.Footer>
-        </Modal>
 
         {/* Missing Data Modal */}
         <Modal

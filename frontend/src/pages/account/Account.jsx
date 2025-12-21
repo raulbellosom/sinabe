@@ -395,14 +395,12 @@ const Account = () => {
                 <p className="mb-2 text-sm text-gray-500">
                   Dibuja tu firma aquí:
                 </p>
-                <div className="border border-gray-400 bg-white">
+                <div className="border border-gray-400 bg-white w-full">
                   <SignatureCanvas
                     ref={sigPad}
                     penColor="black"
                     canvasProps={{
-                      width: 500,
-                      height: 200,
-                      className: 'signature-canvas',
+                      className: 'w-full h-64 cursor-crosshair',
                     }}
                   />
                 </div>

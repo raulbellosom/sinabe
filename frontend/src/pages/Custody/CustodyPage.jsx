@@ -30,6 +30,7 @@ import {
 } from '../../services/custody.api';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'react-hot-toast';
+import LoadingModal from '../../components/loadingModal/LoadingModal';
 import Breadcrumb from '../../components/Breadcrum/Breadcrumb';
 import FileIcon from '../../components/FileIcon/FileIcon';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
@@ -65,15 +66,16 @@ const CustodyPage = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareData, setShareData] = useState(null);
   const [isGettingLink, setIsGettingLink] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
 
   const {
     data: response,
-    isLoading,
+    isPending: isLoading,
     error,
   } = useQuery({
     queryKey: ['custody-records', query],
     queryFn: () => getCustodyRecords(query),
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 
   const records = response?.data || [];
@@ -109,11 +111,14 @@ const CustodyPage = () => {
   };
 
   const handleResendEmail = async (id) => {
+    setIsResendingEmail(true);
     try {
       await resendCustodyEmail(id);
       toast.success('Correo reenviado exitosamente');
     } catch (error) {
       toast.error('Error al reenviar correo');
+    } finally {
+      setIsResendingEmail(false);
     }
   };
 
@@ -301,6 +306,9 @@ const CustodyPage = () => {
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
+      <LoadingModal
+        loading={isGettingLink || isResendingEmail || deleteMutation.isPending}
+      />
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
           <FaFileInvoice className="text-purple-500" />

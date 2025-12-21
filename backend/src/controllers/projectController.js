@@ -25,9 +25,16 @@ export const searchProjects = async (req, res) => {
       : [];
 
     const parsedVerticalIds = Array.isArray(verticalIds)
-      ? verticalIds.filter(Boolean).map(id => parseInt(id, 10)).filter(id => !isNaN(id))
+      ? verticalIds
+          .filter(Boolean)
+          .map((id) => parseInt(id, 10))
+          .filter((id) => !isNaN(id))
       : typeof verticalIds === "string"
-      ? verticalIds.split(",").filter(Boolean).map(id => parseInt(id, 10)).filter(id => !isNaN(id))
+      ? verticalIds
+          .split(",")
+          .filter(Boolean)
+          .map((id) => parseInt(id, 10))
+          .filter((id) => !isNaN(id))
       : [];
 
     const where = {
@@ -374,18 +381,18 @@ export const getProjectSummary = async (req, res) => {
             inventoryAssignments: {
               include: {
                 inventory: {
-                  include: { 
-                    model: { 
-                      include: { 
-                        brand: true, 
+                  include: {
+                    model: {
+                      include: {
+                        brand: true,
                         type: true,
                         ModelVertical: {
                           include: {
-                            vertical: true
-                          }
-                        }
-                      } 
-                    } 
+                            vertical: true,
+                          },
+                        },
+                      },
+                    },
                   },
                 },
               },
