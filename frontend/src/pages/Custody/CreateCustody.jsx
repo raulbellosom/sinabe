@@ -89,7 +89,7 @@ const CreateCustody = () => {
     useState(null);
 
   // Canvas dimensions for desync fix
-  const [canvasWidth, setCanvasWidth] = useState(350);
+  const [canvasWidth, setCanvasWidth] = useState(null);
   const receiverContainerRef = useRef(null);
   const delivererContainerRef = useRef(null);
 
@@ -109,7 +109,12 @@ const CreateCustody = () => {
   useEffect(() => {
     const loadSignature = async () => {
       // Solo cargar si NO estamos en modo edición o si el registro no tiene un entregador aún
-      if (!isEditMode && user?.signature?.url && delivererSigPad.current) {
+      if (
+        !isEditMode &&
+        user?.signature?.url &&
+        delivererSigPad.current &&
+        canvasWidth
+      ) {
         try {
           const response = await fetch(`${API_URL}/${user.signature.url}`);
           const blob = await response.blob();
@@ -119,8 +124,8 @@ const CreateCustody = () => {
             setInitialDelivererSignature(dataUrl);
             delivererSigPad.current.fromDataURL(dataUrl, {
               ratio: 1,
-              width: 350,
-              height: 150,
+              width: canvasWidth,
+              height: 256,
             });
           };
           reader.readAsDataURL(blob);
@@ -130,15 +135,15 @@ const CreateCustody = () => {
       }
     };
     loadSignature();
-  }, [user]);
+  }, [user, canvasWidth]);
 
   const handleReestablishDelivererSignature = () => {
-    if (initialDelivererSignature) {
+    if (initialDelivererSignature && canvasWidth) {
       delivererSigPad.current.clear();
       delivererSigPad.current.fromDataURL(initialDelivererSignature, {
         ratio: 1,
-        width: 350,
-        height: 150,
+        width: canvasWidth,
+        height: 256,
       });
       setIsDelivererSignatureChanged(false);
     }
@@ -883,7 +888,11 @@ const CreateCustody = () => {
                   <HiX className="mr-1 h-3 w-3" /> Limpiar
                 </Button>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative">
+              {/* Receiver Signature Pad */}
+              <div
+                ref={receiverContainerRef}
+                className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative"
+              >
                 {isReceiverLocked && (
                   <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
                     <HiLockClosed className="text-gray-400 text-4xl" />
@@ -892,7 +901,11 @@ const CreateCustody = () => {
                 <SignatureCanvas
                   ref={receiverSigPad}
                   penColor="black"
-                  canvasProps={{ className: 'w-full h-64 cursor-crosshair' }}
+                  canvasProps={{
+                    className: 'w-full h-64 cursor-crosshair',
+                    width: canvasWidth,
+                    height: 256,
+                  }}
                 />
               </div>
               <p className="mt-2 text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">
@@ -907,23 +920,11 @@ const CreateCustody = () => {
                     <FaUserTie className="text-green-500" /> Firma Responsable
                     TI
                   </h3>
-                  {isEditMode &&
-                  originalDeliverer &&
-                  user &&
-                  originalDeliverer.id === user.id ? (
-                    <Button
-                      size="xs"
-                      color={isDelivererLocked ? 'failure' : 'success'}
-                      onClick={() => setIsDelivererLocked(!isDelivererLocked)}
-                      className="flex items-center gap-1"
-                    >
-                      {isDelivererLocked ? (
-                        <HiLockClosed className="h-3 w-3" />
-                      ) : (
-                        <HiLockOpen className="h-3 w-3" />
-                      )}
-                    </Button>
-                  ) : !isEditMode ? (
+                  {(isEditMode &&
+                    originalDeliverer &&
+                    user &&
+                    originalDeliverer.id === user.id) ||
+                  (!isEditMode && user) ? (
                     <Button
                       size="xs"
                       color={isDelivererLocked ? 'failure' : 'success'}
@@ -969,7 +970,10 @@ const CreateCustody = () => {
                   ) : null}
                 </div>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative">
+              <div
+                ref={delivererContainerRef}
+                className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative"
+              >
                 {isDelivererLocked && (
                   <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
                     <HiLockClosed className="text-gray-400 text-4xl" />
@@ -979,7 +983,11 @@ const CreateCustody = () => {
                   ref={delivererSigPad}
                   penColor="black"
                   onBegin={() => setIsDelivererSignatureChanged(true)}
-                  canvasProps={{ className: 'w-full h-64 cursor-crosshair' }}
+                  canvasProps={{
+                    className: 'w-full h-64 cursor-crosshair',
+                    width: canvasWidth,
+                    height: 256,
+                  }}
                 />
               </div>
               <p className="mt-2 text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">

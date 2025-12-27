@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuthContext } from '../../context/AuthContext';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
@@ -40,6 +40,7 @@ const Account = () => {
   const [error, setError] = useState(null);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const [signatureImage, setSignatureImage] = useState(user?.signature || null);
+  const [modalCanvasWidth, setModalCanvasWidth] = useState(null);
 
   useEffect(() => {
     if (image && image instanceof File && image !== user?.photo) {
@@ -395,14 +396,29 @@ const Account = () => {
                 <p className="mb-2 text-sm text-gray-500">
                   Dibuja tu firma aquí:
                 </p>
-                <div className="border border-gray-400 bg-white w-full">
-                  <SignatureCanvas
-                    ref={sigPad}
-                    penColor="black"
-                    canvasProps={{
-                      className: 'w-full h-64 cursor-crosshair',
-                    }}
-                  />
+                <div
+                  ref={useCallback((node) => {
+                    if (node !== null) {
+                      setModalCanvasWidth(node.getBoundingClientRect().width);
+                    }
+                  }, [])}
+                  className="border border-gray-400 bg-white w-full min-h-[256px]"
+                >
+                  {modalCanvasWidth ? (
+                    <SignatureCanvas
+                      ref={sigPad}
+                      penColor="black"
+                      canvasProps={{
+                        className: 'w-full h-64 cursor-crosshair',
+                        width: modalCanvasWidth,
+                        height: 256,
+                      }}
+                    />
+                  ) : (
+                    <div className="h-64 w-full bg-gray-50 flex items-center justify-center text-gray-400 text-sm">
+                      Cargando área de firma...
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2 mt-2">
                   <Button
