@@ -27,6 +27,20 @@ const CustomFieldManager = ({
   const prevCurrentCustomFieldsRef = useRef([]);
   const prevCustomFieldsRef = useRef([]);
 
+  // Sync local state when form values are reset (e.g. submit without pin)
+  useEffect(() => {
+    const currentFormValues = values[name];
+    if (
+      Array.isArray(currentFormValues) &&
+      currentFormValues.length === 0 &&
+      selectedFields.length > 0 &&
+      !isPinMode // Don't clear if we are in pin mode (though resetForm should handle values, pin mode logic restores them) - actually, if values are empty in pin mode, it means something is wrong or we haven't restored yet.
+      // But specifically for the user's issue: when NOT pinned, submit clears values. We must clear UI.
+    ) {
+      setSelectedFields([]);
+    }
+  }, [values, name, selectedFields, isPinMode]);
+
   useEffect(() => {
     // Check if currentCustomFields or customFields actually changed
     const currentFieldsChanged =

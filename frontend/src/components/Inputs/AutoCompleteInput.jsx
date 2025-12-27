@@ -99,25 +99,63 @@ const AutocompleteInput = ({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef(null);
 
+  const prevFieldValueRef = useRef(field.value);
+
   useEffect(() => {
+    // Detect change in field.value
+    const prevValue = prevFieldValueRef.current;
+    const valueChanged = prevValue !== field.value;
+
     if (options.length) {
-      // If field has a value (including 0), try to find it in options
+      // Case 1: Field has a value
       if (field.value || field.value === 0) {
-        // Use loose equality to match string/number IDs
         const option = options.find((opt) => opt.value == field.value);
         if (option) {
           setSelectedOption(option);
-          // Solo actualiza el inputValue si está vacío o si el valor cambió externamente
+          // Only update input if it doesn't match, or if value changed externally
           if (!inputValue || selectedOption?.value !== option.value) {
             setInputValue(option.label);
           }
+        } else if (
+          valueChanged &&
+          prevValue !== null &&
+          prevValue !== undefined &&
+          prevValue !== ''
+        ) {
+          // If field.value has a value but no matching option is found, and it changed from a non-empty state,
+          // it means the option might have been removed or is invalid. Clear local state.
+          setSelectedOption(null);
+          setInputValue('');
         }
-      } else if (!inputValue) {
-        // Solo limpia si el inputValue está vacío (evita borrar mientras el usuario escribe)
+      }
+      // Case 2: Field value became empty (Reset detected)
+      else if (
+        valueChanged &&
+        (prevValue || prevValue === 0) &&
+        !field.value &&
+        field.value !== 0
+      ) {
+        // Only clear if the value actually CHANGED from a truthy/0 value to empty
+        // This protects against clearing during typing (where value stays empty)
+        // or initial load (where value starts empty)
+        setSelectedOption(null);
+        setInputValue('');
+      }
+    } else {
+      // Fallback for no options (rare but possible) - Same reset logic
+      if (
+        valueChanged &&
+        (prevValue || prevValue === 0) &&
+        !field.value &&
+        field.value !== 0
+      ) {
         setSelectedOption(null);
         setInputValue('');
       }
     }
+
+    // Update ref for next run
+    prevFieldValueRef.current = field.value;
   }, [field.value, options]);
 
   useEffect(() => {
@@ -223,8 +261,8 @@ const AutocompleteInput = ({
   };
 
   const handleFocus = () => {
+    setShowDropdown(true);
     if (onFocusSearch && onSearch) {
-      setShowDropdown(true);
       onSearch(inputValue);
     }
   };
@@ -311,6 +349,7 @@ const AutocompleteInput = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={handleFocus}
+          onClick={() => setShowDropdown(true)}
           autoComplete="off"
           ref={inputRef}
         />
