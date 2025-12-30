@@ -61,6 +61,10 @@ model User {
   deliveredCustodies CustodyRecord[] @relation("CustodyDeliverer")
   preference        UserPreference?
 
+  // Notification Rules
+  createdNotificationRules NotificationRule[] @relation("CreatedNotificationRules")
+  sentNotifications        InAppNotification[] @relation("NotificationsReceived")
+
   @@index([roleId], map: "User_roleId_fkey")
 }
 
@@ -464,6 +468,153 @@ model UserPreference {
   sidebarBgId     Int?
   sidebarBgUrl    String?
   columnSettings  Json?
+  preferences     Json?    // Preferencias flexibles: { inventoryViewMode: 'list'|'cards', ... }
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// =====================================================
+// SISTEMA DE NOTIFICACIONES PROGRAMABLES
+// =====================================================
+
+enum NotificationChannel {
+  EMAIL
+  IN_APP
+  PUSH_WEB
+  PUSH_MOBILE
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum RecipientKind {
+  USER
+  EMAIL
+}
+
+enum EmailRecipientRole {
+  TO
+  CC
+  BCC
+}
+
+// Reglas de notificación (cabecera)
+model NotificationRule {
+  id              String                      @id @default(uuid())
+  name            String
+  description     String?                     @db.Text
+  ruleType        String                      // Ej: "INCOMPLETE_INVENTORY", "DEADLINE_REMINDER", etc.
+  params          Json?                       // Parámetros específicos del tipo de regla
+  enabled         Boolean                     @default(true)
+  scheduleType    String                      @default("INTERVAL") // "INTERVAL" | "CRON"
+  intervalMinutes Int?                        // Si scheduleType = INTERVAL
+  cronExpression  String?                     // Si scheduleType = CRON
+  lastRunAt       DateTime?
+  nextRunAt       DateTime?
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+  createdById     String
+  createdBy       User                        @relation("CreatedNotificationRules", fields: [createdById], references: [id])
+  channels        NotificationRuleChannel[]
+  recipients      NotificationRuleRecipient[]
+  runs            NotificationRuleRun[]
+
+  @@index([createdById])
+}
+
+// Canales por regla
+model NotificationRuleChannel {
+  id        Int                 @id @default(autoincrement())
+  ruleId    String
+  channel   NotificationChannel
+  enabled   Boolean             @default(true)
+  rule      NotificationRule    @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@unique([ruleId, channel])
+  @@index([ruleId])
+}
+
+// Destinatarios (To/CC/BCC) mixtos: userId o email directo
+model NotificationRuleRecipient {
+  id        Int                @id @default(autoincrement())
+  ruleId    String
+  kind      RecipientKind
+  userId    String?            // Si kind = USER
+  email     String?            // Si kind = EMAIL (correo directo)
+  emailRole EmailRecipientRole @default(TO)
+  rule      NotificationRule   @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([ruleId])
+  @@index([userId])
+}
+
+// Ejecuciones y auditoría
+model NotificationRuleRun {
+  id          String                 @id @default(uuid())
+  ruleId      String
+  startedAt   DateTime               @default(now())
+  finishedAt  DateTime?
+  status      String                 @default("RUNNING") // RUNNING, SUCCESS, PARTIAL, FAILED
+  matchCount  Int                    @default(0)
+  result      Json?                  // Detalle de coincidencias, errores, etc.
+  rule        NotificationRule       @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  deliveries  NotificationDelivery[]
+
+  @@index([ruleId])
+  @@index([startedAt])
+}
+
+// Notificación In-App (bandeja del usuario)
+model InAppNotification {
+  id              String    @id @default(uuid())
+  userId          String
+  title           String
+  body            String    @db.Text
+  link            String?   // URL de acción opcional
+  isRead          Boolean   @default(false)
+  readAt          DateTime?
+  createdAt       DateTime  @default(now())
+  ruleRunId       String?   // Referencia opcional a la ejecución que la generó
+  ruleCreatorId   String?   // ID del usuario que creó la regla que generó esta notificación
+  ruleCreator     User?     @relation("NotificationsReceived", fields: [ruleCreatorId], references: [id])
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([ruleCreatorId])
+}
+
+// Log por canal (email/in-app/push)
+model NotificationDelivery {
+  id          String                     @id @default(uuid())
+  ruleRunId   String
+  channel     NotificationChannel
+  recipientId String?                    // userId si aplica
+  email       String?                    // email si canal es EMAIL
+  status      NotificationDeliveryStatus @default(PENDING)
+  errorMsg    String?                    @db.Text
+  attempts    Int                        @default(0)
+  createdAt   DateTime                   @default(now())
+  sentAt      DateTime?
+  ruleRun     NotificationRuleRun        @relation(fields: [ruleRunId], references: [id], onDelete: Cascade)
+
+  @@index([ruleRunId])
+  @@index([status])
+}
+
+// Subscripciones Push (para PWA/Capacitor - futuro)
+model PushSubscription {
+  id           String   @id @default(uuid())
+  userId       String
+  endpoint     String   @db.Text
+  keys         Json     // { p256dh, auth }
+  deviceType   String?  // "web" | "android" | "ios"
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
 }

@@ -19,6 +19,7 @@ const ActiveFilters = ({
     query.brandName?.length > 0 ||
     query.typeName?.length > 0 ||
     query.verticalId?.length > 0 ||
+    query.verticalName?.length > 0 ||
     query.status?.length > 0 ||
     query.conditionName?.length > 0;
 
@@ -170,6 +171,27 @@ const ActiveFilters = ({
             </div>
           );
         })}
+        {query.verticalName?.map((vName) => (
+          <div
+            key={vName}
+            className="flex items-center gap-2 px-3 py-1 bg-cyan-100 text-cyan-800 rounded-full text-sm"
+          >
+            <FaSitemap size={12} />
+            <span>Vertical: {vName}</span>
+            <button
+              onClick={() =>
+                updateQuery({
+                  ...query,
+                  verticalName: query.verticalName.filter((n) => n !== vName),
+                  page: 1,
+                })
+              }
+              className="ml-1 hover:text-cyan-900"
+            >
+              <GrClose size={12} />
+            </button>
+          </div>
+        ))}
         {query.status?.map((status) => (
           <div
             key={status}

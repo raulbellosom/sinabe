@@ -13,16 +13,17 @@ import { UserPreferenceProvider } from './UserPreferenceContext';
  * 2. AuthProvider - Autenticación y verificación de usuario
  * 3. UserPreferenceProvider - Preferencias de usuario (siempre disponible, maneja su propia carga)
  * 4. ConditionalDataProvider - Solo carga providers de datos si el usuario está autenticado
+ * 5. AIAgentProvider - Dentro de ConditionalDataProvider para que solo se cargue cuando hay usuario
  */
 const SafeAppProvider = ({ children }) => (
   <LoadingProvider>
-    <AIAgentProvider>
-      <AuthProvider>
-        <UserPreferenceProvider>
-          <ConditionalDataProvider>{children}</ConditionalDataProvider>
-        </UserPreferenceProvider>
-      </AuthProvider>
-    </AIAgentProvider>
+    <AuthProvider>
+      <UserPreferenceProvider>
+        <ConditionalDataProvider>
+          <AIAgentProvider>{children}</AIAgentProvider>
+        </ConditionalDataProvider>
+      </UserPreferenceProvider>
+    </AuthProvider>
   </LoadingProvider>
 );
 

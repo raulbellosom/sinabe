@@ -773,12 +773,14 @@ export const searchInventories = async (req, res) => {
       purchaseOrderId,
       invoiceId,
       verticalId,
+      verticalName,
       locationName,
       modelName,
       brandName,
       typeName,
       excludeInvoiceId, // Para excluir inventarios ya asignados a una factura
       onlyAvailable, // Para mostrar solo inventarios sin factura asignada
+      ids, // Para filtrar por IDs específicos (usado por notificaciones)
     } = req.query;
 
     // Validaciones de entrada mejoradas
@@ -943,6 +945,23 @@ export const searchInventories = async (req, res) => {
         },
       });
     }
+    // Vertical por nombre
+    if (verticalName) {
+      const verticalNames = Array.isArray(verticalName)
+        ? verticalName
+        : [verticalName];
+      orConditions.push({
+        model: {
+          ModelVertical: {
+            some: {
+              vertical: {
+                name: { in: verticalNames },
+              },
+            },
+          },
+        },
+      });
+    }
 
     // 2. Status
     if (status) {
@@ -1002,6 +1021,10 @@ export const searchInventories = async (req, res) => {
     // Condiciones base optimizadas
     const baseWhereConditions = {
       enabled: true,
+      // Filtro por IDs específicos (para notificaciones y links directos)
+      ...(ids && {
+        id: { in: Array.isArray(ids) ? ids : ids.split(",") },
+      }),
       // Filtros de contexto (siempre AND)
       ...(excludeInvoiceId && {
         OR: [{ invoiceId: null }, { invoiceId: { not: excludeInvoiceId } }],

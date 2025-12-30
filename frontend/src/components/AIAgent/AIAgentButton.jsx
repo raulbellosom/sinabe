@@ -1,56 +1,39 @@
 import React from 'react';
-import { Button, Tooltip } from 'flowbite-react';
-import { HiSparkles, HiExclamationCircle } from 'react-icons/hi';
+import { Tooltip } from 'flowbite-react';
+import { HiSparkles } from 'react-icons/hi';
 import { useAIAgent } from '../../context/AIAgentContext.jsx';
+import classNames from 'classnames';
 
 const AIAgentButton = ({ className = '' }) => {
   const { openModal, isHealthy, isLoading } = useAIAgent();
 
-  const getButtonColor = () => {
-    if (!isHealthy) return 'failure';
-    if (isLoading) return 'warning';
-    return 'purple';
-  };
-
   const getTooltipText = () => {
     if (!isHealthy) return 'Servicio de IA no disponible';
     if (isLoading) return 'IA procesando...';
-    return 'Buscar con Inteligencia Artificial';
+    return 'Buscar con IA';
   };
 
-  const getIcon = () => {
-    if (!isHealthy) return <HiExclamationCircle className="w-5 h-5" />;
-    return <HiSparkles className="w-5 h-5" />;
-  };
+  // Si no está disponible, ocultamos el botón completamente
+  if (!isHealthy) {
+    return null;
+  }
 
   return (
     <Tooltip content={getTooltipText()} placement="bottom">
-      <Button
-        color={getButtonColor()}
-        size="sm"
+      <button
+        type="button"
         onClick={openModal}
-        disabled={!isHealthy || isLoading}
-        className={`
-          h-10 w-10 
-          flex items-center justify-center 
-          rounded-lg 
-          transition-all duration-200 
-          hover:scale-105 
-          focus:ring-2 focus:ring-purple-300
-          ${!isHealthy ? 'opacity-50 cursor-not-allowed' : ''}
-          ${isLoading ? 'animate-pulse' : ''}
-          ${className}
-        `}
-        style={{
-          borderStyle: 'none',
-          minWidth: '40px',
-          padding: '8px',
-        }}
+        disabled={isLoading}
+        className={classNames(
+          'p-2 rounded-full transition-all duration-200',
+          isLoading
+            ? 'text-purple-400 animate-pulse cursor-wait'
+            : 'text-gray-500 hover:text-purple-600 hover:bg-purple-50',
+          className,
+        )}
       >
-        <div className="flex items-center justify-center w-full h-full">
-          {getIcon()}
-        </div>
-      </Button>
+        <HiSparkles className="w-6 h-6 sm:w-6 sm:h-6" />
+      </button>
     </Tooltip>
   );
 };

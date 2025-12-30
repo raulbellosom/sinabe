@@ -29,10 +29,12 @@ export const useAIAgentOperations = () => {
 
   const [initialized, setInitialized] = useState(false);
 
-  // Initialize AI service on first load
+  // Initialize AI service on first load - only if user is authenticated
   useEffect(() => {
     const initializeAI = async () => {
-      if (!initialized) {
+      // Solo inicializar si hay un token (usuario autenticado)
+      const token = localStorage.getItem('token');
+      if (!initialized && token) {
         await checkHealth();
         await getConfig();
         setInitialized(true);

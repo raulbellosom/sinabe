@@ -8,6 +8,7 @@ import RoleProvider from './RoleProvider';
 import PermissionProvider from './PermissionProvider';
 import { BreadcrumbProvider } from './BreadcrumbContext';
 import CustomFieldProvider from './CustomFieldProvider';
+import { NotificationProvider } from './NotificationContext';
 
 /**
  * ConditionalDataProvider - Solo carga los providers de datos cuando el usuario está autenticado
@@ -37,7 +38,9 @@ const ConditionalDataProvider = ({ children }) => {
             <InventoryProvider>
               <CatalogProvider>
                 <CustomFieldProvider>
-                  <BreadcrumbProvider>{children}</BreadcrumbProvider>
+                  <NotificationProvider>
+                    <BreadcrumbProvider>{children}</BreadcrumbProvider>
+                  </NotificationProvider>
                 </CustomFieldProvider>
               </CatalogProvider>
             </InventoryProvider>

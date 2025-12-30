@@ -1,4 +1,13 @@
 {
+  "name": "Sinabe",
+  "short_name": "Sinabe",
+  "description": "Gestión de proyectos e inventarios",
+  "theme_color": "#7e3af2",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     {
       "src": "../icons/icon-48.webp",

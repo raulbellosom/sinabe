@@ -23,6 +23,9 @@ import invoiceRoutes, { purchaseOrderRouter } from "./routes/invoiceRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import custodyRoutes from "./routes/custodyRoutes.js";
 import userPreferenceRoutes from "./routes/userPreferenceRoutes.js";
+import notificationRuleRoutes from "./routes/notificationRuleRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import { startScheduler } from "./notifications/scheduler.js";
 
 dotenv.config();
 
@@ -80,9 +83,14 @@ app.use("/api/ping", pingRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/custody-records", custodyRoutes);
 app.use("/api/preferences", userPreferenceRoutes);
+app.use("/api/notification-rules", notificationRuleRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+
+  // Iniciar el scheduler de notificaciones
+  startScheduler();
 });

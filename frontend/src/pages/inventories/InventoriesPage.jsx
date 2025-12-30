@@ -193,6 +193,14 @@ const InventoriesPage = () => {
     if (query.typeName) {
       baseQuery.typeName = query.typeName;
     }
+    // Keep verticalName as is for backend filtering
+    if (query.verticalName) {
+      baseQuery.verticalName = query.verticalName;
+    }
+    // Keep ids for direct filtering (from notifications)
+    if (query.ids) {
+      baseQuery.ids = query.ids;
+    }
 
     return baseQuery;
   }, [query, currentInvoice, currentPurchaseOrder]);

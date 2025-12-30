@@ -20,6 +20,7 @@ export const useSearchInventories = ({
   deepSearch,
   status,
   advancedSearch = 'true',
+  ids, // IDs específicos para filtrar (usado por notificaciones)
   signal,
 }) => {
   return useQuery({
@@ -43,6 +44,7 @@ export const useSearchInventories = ({
       deepSearch,
       status,
       advancedSearch,
+      ids,
     ],
     queryFn: () =>
       searchInventories({
@@ -64,6 +66,7 @@ export const useSearchInventories = ({
         deepSearch,
         status,
         advancedSearch,
+        ids,
         signal,
       }),
     enabled: true,

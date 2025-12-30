@@ -33,7 +33,8 @@ export const useAuthData = (dispatch) => {
       });
     },
     onError: (error) => {
-      dispatch({ type: 'AUTH_ERROR', payload: error });
+      // NO dispatchar AUTH_ERROR aquí - eso limpia user/token y causa redirect
+      // Solo mostrar el toast de error
       Notifies('error', 'Usuario o contraseña incorrectos');
     },
     onSettled: () => setLoading(false),

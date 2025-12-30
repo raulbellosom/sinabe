@@ -9,6 +9,7 @@ import AuthContext from '../context/AuthContext';
 import LoadingModal from '../components/loadingModal/LoadingModal';
 import Sidebar from '../components/sidebar/Sidebar';
 import ProtectedRoute from './ProtectedRoute';
+import HardwareBackButtonHandler from '../components/Navigation/HardwareBackButtonHandler';
 
 import Login from '../pages/login/Login';
 import Dashboard from '../pages/dashboard/Dashboard';
@@ -37,6 +38,8 @@ import CustodyPage from '../pages/Custody/CustodyPage';
 import PublicCustodyView from '../pages/Custody/PublicCustodyView';
 import ViewCustody from '../pages/Custody/ViewCustody';
 import Preferences from '../pages/preferences/Preferences';
+import NotificationsPage from '../pages/preferences/NotificationsPage';
+import NotificationRulesPage from '../pages/preferences/NotificationRulesPage';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -49,9 +52,11 @@ const AppRouter = () => {
   return (
     <>
       <Router>
-        <Suspense fallback={<LoadingModal loading={true} />}>
-          {user ? <AuthorizedRoute user={user} /> : <UnauthorizedRoute />}
-        </Suspense>
+        <HardwareBackButtonHandler>
+          <Suspense fallback={<LoadingModal loading={true} />}>
+            {user ? <AuthorizedRoute user={user} /> : <UnauthorizedRoute />}
+          </Suspense>
+        </HardwareBackButtonHandler>
       </Router>
     </>
   );
@@ -72,6 +77,14 @@ const AuthorizedRoute = ({ user }) => {
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/account-settings" element={<Account />} />
                   <Route path="/preferences" element={<Preferences />} />
+                  <Route
+                    path="/preferences/notifications"
+                    element={<NotificationsPage />}
+                  />
+                  <Route
+                    path="/preferences/notification-rules"
+                    element={<NotificationRulesPage />}
+                  />
                   <Route path="/users" element={<UsersPage />} />
                   {/* <Route path="/inventories" element={<Inventories />} /> */}
                   <Route path="/inventories" element={<InventoriesPage />} />

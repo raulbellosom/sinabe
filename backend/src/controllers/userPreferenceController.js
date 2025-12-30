@@ -47,7 +47,7 @@ export const getPreferences = async (req, res) => {
 export const updatePreferences = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { sidebarBgId, columnSettings } = req.body;
+    const { sidebarBgId, columnSettings, preferences } = req.body;
 
     const data = {};
 
@@ -69,6 +69,7 @@ export const updatePreferences = async (req, res) => {
     }
 
     if (columnSettings !== undefined) data.columnSettings = columnSettings;
+    if (preferences !== undefined) data.preferences = preferences;
 
     // Use upsert to handle both create (if new user) and update (if existing)
     // This prevents errors when updating preferences for a user that doesn't have a record yet

@@ -27,6 +27,8 @@ export const useInventoryQueryParams = () => {
       modelName: params.getAll('modelName'),
       brandName: params.getAll('brandName'),
       typeName: params.getAll('typeName'),
+      verticalName: params.getAll('verticalName'),
+      ids: params.get('ids') || null, // IDs específicos (para notificaciones)
     };
   }, [location.search]);
 
@@ -59,6 +61,7 @@ export const useInventoryQueryParams = () => {
         'invoiceCode',
         'purchaseOrderCode',
         'locationName',
+        'ids',
       ].forEach((key) => {
         const newValue =
           newParams[key] !== undefined
@@ -156,6 +159,22 @@ export const useInventoryQueryParams = () => {
       ) {
         currentParams.delete('typeName');
         newTypeNames.forEach((t) => currentParams.append('typeName', t));
+        updated = true;
+      }
+
+      // Handle array parameters (verticalName)
+      const newVerticalNames = Array.isArray(newParams.verticalName)
+        ? newParams.verticalName
+        : [];
+      const currentVerticalNames = currentParams.getAll('verticalName');
+      if (
+        JSON.stringify(currentVerticalNames.sort()) !==
+        JSON.stringify(newVerticalNames.sort())
+      ) {
+        currentParams.delete('verticalName');
+        newVerticalNames.forEach((v) =>
+          currentParams.append('verticalName', v),
+        );
         updated = true;
       }
 

@@ -19,6 +19,7 @@ export const searchInventories = async ({
   modelName = null,
   brandName = null,
   typeName = null,
+  ids = null, // IDs específicos para filtrar (usado por notificaciones)
   signal,
 }) => {
   try {
@@ -42,6 +43,7 @@ export const searchInventories = async ({
         modelName,
         brandName,
         typeName,
+        ids,
       },
       signal,
     });

@@ -28,36 +28,50 @@ const Login = () => {
       ),
       password: Yup.string().required('La contraseña es invalida'),
     }),
-    onSubmit: async (values) => {
-      const res = await login(values);
-      const permissionsMap = {
-        view_dashboard: '/dashboard',
-        view_inventories: '/inventories',
-        view_users: '/users',
-        view_roles: '/roles',
-        view_catalogs: '/catalogs',
-        view_account: '/account-settings',
-      };
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        const res = await login(values);
 
-      // 1. Si la url previa es /inventories y tiene permiso, quédate ahí
-      const currentPath = location.pathname;
-      const canViewInventories =
-        res?.user?.authPermissions?.includes('view_inventories');
-      if (currentPath.startsWith('/inventories') && canViewInventories) {
-        // Mantente en la misma url (incluyendo query params)
-        navigate(location.pathname + location.search, { replace: true });
-        return;
-      }
+        // Si no hay respuesta válida, el login falló (el toast de error ya se muestra en el hook)
+        if (!res || !res.user) {
+          return;
+        }
 
-      // 2. Si no, redirige a la primera ruta que tenga permiso
-      const matchedPermission = Object.keys(permissionsMap).find((permission) =>
-        res?.user?.authPermissions?.some(
-          (userPermission) => userPermission === permission,
-        ),
-      );
+        const permissionsMap = {
+          view_dashboard: '/dashboard',
+          view_inventories: '/inventories',
+          view_users: '/users',
+          view_roles: '/roles',
+          view_catalogs: '/catalogs',
+          view_account: '/account-settings',
+        };
 
-      if (matchedPermission) {
-        navigate(permissionsMap[matchedPermission]);
+        // 1. Si la url previa es /inventories y tiene permiso, quédate ahí
+        const currentPath = location.pathname;
+        const canViewInventories =
+          res?.user?.authPermissions?.includes('view_inventories');
+        if (currentPath.startsWith('/inventories') && canViewInventories) {
+          // Mantente en la misma url (incluyendo query params)
+          navigate(location.pathname + location.search, { replace: true });
+          return;
+        }
+
+        // 2. Si no, redirige a la primera ruta que tenga permiso
+        const matchedPermission = Object.keys(permissionsMap).find(
+          (permission) =>
+            res?.user?.authPermissions?.some(
+              (userPermission) => userPermission === permission,
+            ),
+        );
+
+        if (matchedPermission) {
+          navigate(permissionsMap[matchedPermission]);
+        }
+      } catch (error) {
+        // El error ya se maneja en el hook (muestra toast), aquí solo evitamos que se propague
+        // Los campos del formulario se mantienen para que el usuario pueda corregir
+      } finally {
+        setSubmitting(false);
       }
     },
   });
@@ -96,11 +110,7 @@ const Login = () => {
             </h1>
           </div>
           <h2 className="text-2xl mb-6">Iniciar Sesión</h2>
-          <Form
-            ref={formRef}
-            className="space-y-4"
-            onSubmit={formik.handleSubmit}
-          >
+          <Form ref={formRef} className="space-y-4">
             <Field
               component={TextInput}
               id="email"

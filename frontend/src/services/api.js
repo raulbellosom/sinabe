@@ -23,14 +23,18 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Si es error 401 (no autorizado), limpiar datos de autenticación
+    // Si es error 401 (no autorizado), verificar si es un error de sesión expirada
+    // NO limpiar datos si es un error de login (credenciales incorrectas)
     if (error.response?.status === 401) {
-      console.warn('Token expired or invalid, clearing auth data');
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
+      const requestUrl = error.config?.url || '';
+      const isLoginRequest = requestUrl.includes('/auth/login');
 
-      // Solo recargar si no estamos ya en la página de login
-      if (!window.location.pathname.includes('/login')) {
+      // Solo limpiar datos y recargar si NO es una petición de login
+      // y si NO estamos ya en la página de login
+      if (!isLoginRequest && !window.location.pathname.includes('/login')) {
+        console.warn('Token expired or invalid, clearing auth data');
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
         window.location.reload();
       }
     }

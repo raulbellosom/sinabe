@@ -10,8 +10,6 @@ import {
 import {
   FaTachometerAlt,
   FaUserCircle,
-  FaSignOutAlt,
-  FaUserCog,
   FaUserShield,
   FaBoxes,
   FaClipboardList,
@@ -24,7 +22,6 @@ import BgPattern1 from '../../assets/bg/bg_sidebar_1.png';
 import BgPattern2 from '../../assets/bg/bg_sidebar_2.png';
 import BgPattern3 from '../../assets/bg/bg_sidebar_3.png';
 import BgPattern4 from '../../assets/bg/bg_sidebar_4.png';
-import { Button } from 'flowbite-react';
 import Navbar from '../navbar/Navbar';
 import MainLayout from '../../Layout/MainLayout';
 import { MdAddBox, MdAdminPanelSettings, MdInventory } from 'react-icons/md';
@@ -33,7 +30,6 @@ import { FaDiagramProject, FaSitemap } from 'react-icons/fa6';
 import { LuArchiveRestore } from 'react-icons/lu';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
 import { PiInvoiceBold } from 'react-icons/pi';
-import { TbAdjustmentsHorizontal } from 'react-icons/tb';
 
 const themes = {
   light: {
@@ -86,7 +82,7 @@ const hexToRgba = (hex, alpha) => {
 
 const Sidebar = ({ children }) => {
   const location = useLocation();
-  const { user, logout } = useAuthContext();
+  const { user } = useAuthContext();
   const { preferences } = useUserPreference();
   const [collapsed, setCollapsed] = useState(false);
   const [toggled, setToggled] = useState(false);
@@ -209,7 +205,6 @@ const Sidebar = ({ children }) => {
 
   const isDashBoardPermission = useCheckPermissions('view_dashboard');
   const isUsersPermission = useCheckPermissions('view_users');
-  const isAccountPermission = useCheckPermissions('view_account');
   const isRolesPermission = useCheckPermissions('view_roles');
   const isInventoriesPermission = useCheckPermissions('view_inventories');
   const isSelfInventoriesPermission = useCheckPermissions(
@@ -436,53 +431,7 @@ const Sidebar = ({ children }) => {
                   )}
                 </SubMenu>
               )}
-              {isAccountPermission.hasPermission && (
-                <SubMenu label="Mi Perfil" icon={<FaUserCog size={23} />}>
-                  <MenuItem
-                    component={<Link to={'/account-settings'} />}
-                    active={isActivePath('/account-settings')}
-                    icon={<FaUserCircle size={23} />}
-                    onClick={() => {
-                      setToggled(false);
-                    }}
-                  >
-                    Editar Perfil
-                  </MenuItem>
-                  <MenuItem
-                    component={<Link to={'/preferences'} />}
-                    active={isActivePath('/preferences')}
-                    icon={<TbAdjustmentsHorizontal size={23} />}
-                    onClick={() => {
-                      setToggled(false);
-                    }}
-                  >
-                    Preferencias
-                  </MenuItem>
-                </SubMenu>
-              )}
             </Menu>
-          </div>
-          <div className="p-4">
-            <Button
-              type="button"
-              color={'light'}
-              className="w-full border-none truncate flex justify-start items-center"
-              onClick={logout}
-            >
-              <div
-                className="w-full"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'start',
-                  alignItems: 'center',
-                }}
-              >
-                <i>
-                  <FaSignOutAlt size={18} className="text-lg mt-0.5" />
-                </i>
-                {collapsed ? null : <span className="ml-4">Cerrar Sesión</span>}
-              </div>
-            </Button>
           </div>
         </div>
       </ProSidebar>
