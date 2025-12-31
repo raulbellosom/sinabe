@@ -573,7 +573,7 @@ model InAppNotification {
   userId          String
   title           String
   body            String    @db.Text
-  link            String?   // URL de acción opcional
+  link            String?   @db.Text  // URL de acción opcional - Text para URLs largas
   isRead          Boolean   @default(false)
   readAt          DateTime?
   createdAt       DateTime  @default(now())
