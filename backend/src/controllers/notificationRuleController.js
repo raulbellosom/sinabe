@@ -584,3 +584,151 @@ export const unsubscribeFromRule = async (req, res) => {
     res.status(500).json({ error: "Error al desuscribirse de la regla" });
   }
 };
+
+/**
+ * Obtener estado de lectura de las notificaciones generadas por una regla
+ * Solo el creador de la regla puede ver esta información
+ */
+export const getRuleReadStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = req.user.id;
+
+    // Verificar que la regla existe
+    const rule = await db.notificationRule.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        createdById: true,
+      },
+    });
+
+    if (!rule) {
+      return res.status(404).json({ error: "Regla no encontrada" });
+    }
+
+    // Verificar que el usuario es el propietario de la regla
+    if (rule.createdById !== currentUserId) {
+      return res.status(403).json({
+        error:
+          "Solo el creador de la regla puede ver el estado de lectura de las notificaciones.",
+      });
+    }
+
+    // Obtener todas las notificaciones in-app generadas por esta regla
+    // agrupadas por usuario con su estado de lectura
+    const notifications = await db.inAppNotification.findMany({
+      where: {
+        ruleRunId: {
+          in: (
+            await db.notificationRuleRun.findMany({
+              where: { ruleId: id },
+              select: { id: true },
+            })
+          ).map((r) => r.id),
+        },
+      },
+      select: {
+        id: true,
+        userId: true,
+        title: true,
+        isRead: true,
+        readAt: true,
+        createdAt: true,
+        ruleRunId: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Obtener información de los usuarios
+    const userIds = [...new Set(notifications.map((n) => n.userId))];
+    const users = await db.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        photo: {
+          where: { enabled: true },
+          select: { thumbnail: true, url: true },
+          take: 1,
+        },
+      },
+    });
+
+    // Crear mapa de usuarios
+    const userMap = users.reduce((acc, user) => {
+      acc[user.id] = {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        photoUrl: user.photo?.[0]?.thumbnail || user.photo?.[0]?.url || null,
+      };
+      return acc;
+    }, {});
+
+    // Agrupar notificaciones por usuario con resumen
+    const userSummary = userIds.map((userId) => {
+      const userNotifications = notifications.filter(
+        (n) => n.userId === userId
+      );
+      const totalNotifications = userNotifications.length;
+      const readNotifications = userNotifications.filter(
+        (n) => n.isRead
+      ).length;
+      const unreadNotifications = totalNotifications - readNotifications;
+      const lastReadAt = userNotifications
+        .filter((n) => n.readAt)
+        .sort((a, b) => new Date(b.readAt) - new Date(a.readAt))[0]?.readAt;
+
+      return {
+        user: userMap[userId] || {
+          id: userId,
+          firstName: "Usuario",
+          lastName: "Desconocido",
+        },
+        totalNotifications,
+        readNotifications,
+        unreadNotifications,
+        readPercentage:
+          totalNotifications > 0
+            ? Math.round((readNotifications / totalNotifications) * 100)
+            : 0,
+        lastReadAt,
+      };
+    });
+
+    // Estadísticas generales
+    const totalNotifications = notifications.length;
+    const totalRead = notifications.filter((n) => n.isRead).length;
+    const totalUnread = totalNotifications - totalRead;
+
+    res.json({
+      ruleName: rule.name,
+      summary: {
+        totalNotifications,
+        totalRead,
+        totalUnread,
+        readPercentage:
+          totalNotifications > 0
+            ? Math.round((totalRead / totalNotifications) * 100)
+            : 0,
+        recipientsCount: userIds.length,
+      },
+      recipients: userSummary.sort(
+        (a, b) => b.readNotifications - a.readNotifications
+      ),
+      // Últimas 50 notificaciones con detalle
+      recentNotifications: notifications.slice(0, 50).map((n) => ({
+        ...n,
+        user: userMap[n.userId],
+      })),
+    });
+  } catch (error) {
+    console.error("Error obteniendo estado de lectura:", error);
+    res.status(500).json({ error: "Error al obtener el estado de lectura" });
+  }
+};

@@ -133,3 +133,137 @@ export const deleteReadNotifications = async (req, res) => {
     res.status(500).json({ error: "Error al eliminar las notificaciones" });
   }
 };
+
+/**
+ * Obtener estado de lectura de una notificación específica
+ * Solo el dueño de la regla que generó la notificación puede ver esto
+ */
+export const getNotificationReadStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUserId = req.user.id;
+
+    // Obtener la notificación
+    const notification = await db.inAppNotification.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        ruleRunId: true,
+        ruleCreatorId: true,
+        createdAt: true,
+      },
+    });
+
+    if (!notification) {
+      return res.status(404).json({ error: "Notificación no encontrada" });
+    }
+
+    // Verificar que el usuario es el creador de la regla
+    if (notification.ruleCreatorId !== currentUserId) {
+      return res.status(403).json({
+        error: "Solo el creador de la regla puede ver el estado de lectura",
+      });
+    }
+
+    // Si no hay ruleRunId, no hay otras notificaciones relacionadas
+    if (!notification.ruleRunId) {
+      return res.json({
+        title: notification.title,
+        createdAt: notification.createdAt,
+        summary: {
+          totalRecipients: 1,
+          totalRead: 0,
+          totalUnread: 1,
+          readPercentage: 0,
+        },
+        recipients: [],
+      });
+    }
+
+    // Obtener todas las notificaciones de la misma ejecución (ruleRunId)
+    const allNotifications = await db.inAppNotification.findMany({
+      where: { ruleRunId: notification.ruleRunId },
+      select: {
+        id: true,
+        userId: true,
+        isRead: true,
+        readAt: true,
+        createdAt: true,
+      },
+    });
+
+    // Obtener información de los usuarios
+    const userIds = [...new Set(allNotifications.map((n) => n.userId))];
+    const users = await db.user.findMany({
+      where: { id: { in: userIds } },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        photo: {
+          where: { enabled: true },
+          select: { thumbnail: true, url: true },
+          take: 1,
+        },
+      },
+    });
+
+    // Crear mapa de usuarios
+    const userMap = users.reduce((acc, user) => {
+      acc[user.id] = {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        photoUrl: user.photo?.[0]?.thumbnail || user.photo?.[0]?.url || null,
+      };
+      return acc;
+    }, {});
+
+    // Preparar lista de destinatarios con estado de lectura
+    const recipients = allNotifications.map((n) => ({
+      notificationId: n.id,
+      user: userMap[n.viserId] ||
+        userMap[n.userId] || {
+          id: n.userId,
+          firstName: "Usuario",
+          lastName: "Desconocido",
+        },
+      isRead: n.isRead,
+      readAt: n.readAt,
+      createdAt: n.createdAt,
+    }));
+
+    // Calcular resumen
+    const totalRecipients = recipients.length;
+    const totalRead = recipients.filter((r) => r.isRead).length;
+    const totalUnread = totalRecipients - totalRead;
+
+    res.json({
+      title: notification.title,
+      createdAt: notification.createdAt,
+      summary: {
+        totalRecipients,
+        totalRead,
+        totalUnread,
+        readPercentage:
+          totalRecipients > 0
+            ? Math.round((totalRead / totalRecipients) * 100)
+            : 0,
+      },
+      recipients: recipients.sort((a, b) => {
+        // Ordenar: leídas primero, luego por fecha de lectura
+        if (a.isRead && !b.isRead) return -1;
+        if (!a.isRead && b.isRead) return 1;
+        if (a.readAt && b.readAt)
+          return new Date(b.readAt) - new Date(a.readAt);
+        return 0;
+      }),
+    });
+  } catch (error) {
+    console.error("Error obteniendo estado de lectura:", error);
+    res.status(500).json({ error: "Error al obtener el estado de lectura" });
+  }
+};

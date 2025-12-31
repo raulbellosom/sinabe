@@ -124,7 +124,13 @@ export const getUserNotifications = async (userId, options = {}) => {
     db.inAppNotification.count({ where }),
   ]);
 
-  return { notifications, total };
+  // Agregar flag para indicar si el usuario es el dueño de la regla
+  const notificationsWithMeta = notifications.map((n) => ({
+    ...n,
+    isRuleOwner: n.ruleCreatorId === userId,
+  }));
+
+  return { notifications: notificationsWithMeta, total };
 };
 
 /**

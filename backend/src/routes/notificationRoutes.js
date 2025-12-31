@@ -10,6 +10,7 @@ import {
   markAllNotificationsAsRead,
   deleteNotification,
   deleteReadNotifications,
+  getNotificationReadStatus,
 } from "../controllers/notificationController.js";
 
 const router = express.Router();
@@ -28,6 +29,9 @@ router.post("/read-all", markAllNotificationsAsRead);
 
 // Eliminar todas las leídas
 router.delete("/read", deleteReadNotifications);
+
+// Ver estado de lectura de una notificación (solo dueño de la regla)
+router.get("/:id/read-status", getNotificationReadStatus);
 
 // Marcar una como leída
 router.post("/:id/read", markNotificationAsRead);

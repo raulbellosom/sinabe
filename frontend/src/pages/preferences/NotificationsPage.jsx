@@ -14,6 +14,7 @@ import {
   Modal,
   TextInput,
   Select,
+  Tooltip,
 } from 'flowbite-react';
 import {
   HiBell,
@@ -37,6 +38,7 @@ import {
   HiUsers,
   HiViewGrid,
   HiUserRemove,
+  HiEye,
 } from 'react-icons/hi';
 import { useNotifications } from '../../context/NotificationContext';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -45,6 +47,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import NotificationRuleForm from '../../components/Notifications/NotificationRuleForm';
 import NotificationRuleTestModal from '../../components/Notifications/NotificationRuleTestModal';
+import NotificationReadStatusModal from '../../components/Notifications/NotificationReadStatusModal';
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
@@ -94,6 +97,9 @@ const NotificationsPage = () => {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [unsubscribeModal, setUnsubscribeModal] = useState(null); // Para el modal de desuscripción
   const [unsubscribeLoading, setUnsubscribeLoading] = useState(false);
+
+  // Estado para el modal de ver lecturas de una notificación
+  const [readStatusNotification, setReadStatusNotification] = useState(null);
 
   useEffect(() => {
     fetchNotifications({ limit: 100 });
@@ -851,6 +857,20 @@ const NotificationsPage = () => {
 
                           {/* Acciones */}
                           <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 flex-shrink-0">
+                            {/* Botón Ver lecturas - solo si es dueño de la regla */}
+                            {notification.isRuleOwner &&
+                              notification.ruleRunId && (
+                                <Tooltip content="Ver quién ha leído esta notificación">
+                                  <button
+                                    onClick={() =>
+                                      setReadStatusNotification(notification)
+                                    }
+                                    className="p-2 rounded-lg text-purple-500 hover:text-purple-700 hover:bg-purple-50 transition-all duration-200"
+                                  >
+                                    <HiEye className="w-5 h-5 flex-shrink-0" />
+                                  </button>
+                                </Tooltip>
+                              )}
                             {notification.link && (
                               <button
                                 onClick={() => {
@@ -1853,6 +1873,13 @@ const NotificationsPage = () => {
             </div>
           </Modal.Footer>
         </Modal>
+
+        {/* Modal de estado de lectura de notificación */}
+        <NotificationReadStatusModal
+          show={!!readStatusNotification}
+          onClose={() => setReadStatusNotification(null)}
+          notification={readStatusNotification}
+        />
       </div>
     </div>
   );

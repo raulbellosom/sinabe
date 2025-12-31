@@ -88,6 +88,15 @@ export const getRuleHistory = async (id, limit = 20) => {
 };
 
 /**
+ * Obtener estado de lectura de notificaciones de una regla
+ * Solo disponible para el creador de la regla
+ */
+export const getRuleReadStatus = async (id) => {
+  const response = await api.get(`/notification-rules/${id}/read-status`);
+  return response.data;
+};
+
+/**
  * Obtener tipos de regla disponibles
  */
 export const getRuleTypes = async () => {
@@ -177,6 +186,15 @@ export const deleteReadNotifications = async () => {
 };
 
 /**
+ * Obtener estado de lectura de una notificación específica
+ * Solo disponible para el creador de la regla que generó la notificación
+ */
+export const getNotificationReadStatus = async (id) => {
+  const response = await api.get(`/notifications/${id}/read-status`);
+  return response.data;
+};
+
+/**
  * Desuscribirse de una regla de notificación
  */
 export const unsubscribeFromRule = async (ruleId) => {
@@ -193,6 +211,7 @@ export default {
   deleteNotificationRule,
   testRunRule,
   getRuleHistory,
+  getRuleReadStatus,
   getRuleTypes,
   getInventoryFields,
   getConditions,
@@ -205,4 +224,5 @@ export default {
   markAllAsRead,
   deleteNotification,
   deleteReadNotifications,
+  getNotificationReadStatus,
 };

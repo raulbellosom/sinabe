@@ -191,6 +191,19 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Obtener estado de lectura de una notificación específica
+   * Solo disponible si el usuario es el dueño de la regla
+   */
+  const getNotificationReadStatus = async (id) => {
+    try {
+      return await notificationsApi.getNotificationReadStatus(id);
+    } catch (error) {
+      console.error('Error fetching notification read status:', error);
+      throw error;
+    }
+  };
+
   // ============================================
   // REGLAS DE NOTIFICACIÓN
   // ============================================
@@ -328,6 +341,19 @@ export const NotificationProvider = ({ children }) => {
   };
 
   /**
+   * Obtener estado de lectura de notificaciones de una regla
+   * Solo disponible para el creador de la regla
+   */
+  const getRuleReadStatus = async (id) => {
+    try {
+      return await notificationsApi.getRuleReadStatus(id);
+    } catch (error) {
+      console.error('Error fetching rule read status:', error);
+      throw error;
+    }
+  };
+
+  /**
    * Obtener usuarios disponibles como destinatarios
    */
   const getAvailableRecipients = async () => {
@@ -393,6 +419,7 @@ export const NotificationProvider = ({ children }) => {
         markAllAsRead,
         deleteNotification,
         deleteReadNotifications,
+        getNotificationReadStatus,
         playNotificationSound,
 
         // Reglas de notificación
@@ -407,6 +434,7 @@ export const NotificationProvider = ({ children }) => {
         unsubscribeFromRule,
         testRunRule,
         getRuleHistory,
+        getRuleReadStatus,
         getAvailableRecipients,
         getInventoryFields,
         getConditions,

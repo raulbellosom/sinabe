@@ -28,6 +28,7 @@ import {
   HiUserRemove,
   HiUsers,
   HiViewGrid,
+  HiEye,
 } from 'react-icons/hi';
 import { useNotifications } from '../../context/NotificationContext';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -35,6 +36,7 @@ import { es } from 'date-fns/locale';
 import { toast } from 'react-hot-toast';
 import NotificationRuleForm from '../../components/Notifications/NotificationRuleForm';
 import NotificationRuleTestModal from '../../components/Notifications/NotificationRuleTestModal';
+import RuleReadStatusModal from '../../components/Notifications/RuleReadStatusModal';
 
 const NotificationRulesPage = () => {
   const {
@@ -57,6 +59,7 @@ const NotificationRulesPage = () => {
   const [activeTab, setActiveTab] = useState('mine');
   const [unsubscribeModal, setUnsubscribeModal] = useState(null);
   const [unsubscribeLoading, setUnsubscribeLoading] = useState(false);
+  const [readStatusRule, setReadStatusRule] = useState(null);
 
   useEffect(() => {
     fetchRules();
@@ -347,6 +350,15 @@ const NotificationRulesPage = () => {
                             onClick={() => setTestingRule(rule)}
                           >
                             <HiPlay className="w-4 h-4" />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip content="Ver lecturas">
+                          <Button
+                            color="light"
+                            size="xs"
+                            onClick={() => setReadStatusRule(rule)}
+                          >
+                            <HiEye className="w-4 h-4" />
                           </Button>
                         </Tooltip>
                         <Tooltip content="Ver historial">
@@ -666,6 +678,13 @@ const NotificationRulesPage = () => {
             </div>
           </Modal.Footer>
         </Modal>
+
+        {/* Modal de estado de lectura */}
+        <RuleReadStatusModal
+          show={!!readStatusRule}
+          onClose={() => setReadStatusRule(null)}
+          rule={readStatusRule}
+        />
       </div>
     </div>
   );

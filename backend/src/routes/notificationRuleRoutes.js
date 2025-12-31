@@ -16,6 +16,7 @@ import {
   getInventoryFieldsEndpoint,
   getConditionsEndpoint,
   unsubscribeFromRule,
+  getRuleReadStatus,
 } from "../controllers/notificationRuleController.js";
 
 const router = express.Router();
@@ -47,6 +48,9 @@ router.post("/:id/test-run", testRunRule);
 
 // Historial de ejecuciones
 router.get("/:id/history", getRuleHistory);
+
+// Ver estado de lectura de notificaciones (solo propietario)
+router.get("/:id/read-status", getRuleReadStatus);
 
 // Desuscribirse de una regla
 router.post("/:id/unsubscribe", unsubscribeFromRule);
