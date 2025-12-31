@@ -34,6 +34,9 @@ import {
   HiChevronRight,
   HiX,
   HiUser,
+  HiUsers,
+  HiViewGrid,
+  HiUserRemove,
 } from 'react-icons/hi';
 import { useNotifications } from '../../context/NotificationContext';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -63,12 +66,14 @@ const NotificationsPage = () => {
     updateRule,
     deleteRule,
     getRuleHistory,
+    unsubscribeFromRule,
   } = useNotifications();
 
   const [filter, setFilter] = useState('all'); // 'all' | 'unread'
   const [activeTab, setActiveTab] = useState(
     searchParams.get('tab') === 'rules' ? 1 : 0,
   );
+  const [rulesSubTab, setRulesSubTab] = useState('mine'); // 'mine' | 'subscribed'
 
   // Estados para búsqueda y paginación de notificaciones
   const [searchQuery, setSearchQuery] = useState('');
@@ -87,6 +92,8 @@ const NotificationsPage = () => {
   const [historyModal, setHistoryModal] = useState(null);
   const [ruleHistory, setRuleHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [unsubscribeModal, setUnsubscribeModal] = useState(null); // Para el modal de desuscripción
+  const [unsubscribeLoading, setUnsubscribeLoading] = useState(false);
 
   useEffect(() => {
     fetchNotifications({ limit: 100 });
@@ -191,11 +198,25 @@ const NotificationsPage = () => {
   };
 
   // Búsqueda y paginación de reglas
+  // Separar reglas en "mías" y "suscritas"
+  const { myRules, subscribedRules } = useMemo(() => {
+    const mine = rules.filter((r) => r._meta?.isOwner);
+    const subscribed = rules.filter(
+      (r) => !r._meta?.isOwner && r._meta?.isRecipient,
+    );
+    return { myRules: mine, subscribedRules: subscribed };
+  }, [rules]);
+
+  // Reglas actuales según la sub-tab seleccionada
+  const currentRulesList = useMemo(() => {
+    return rulesSubTab === 'mine' ? myRules : subscribedRules;
+  }, [rulesSubTab, myRules, subscribedRules]);
+
   const searchedRules = useMemo(() => {
-    if (!rulesSearchQuery.trim()) return rules;
+    if (!rulesSearchQuery.trim()) return currentRulesList;
 
     const query = rulesSearchQuery.toLowerCase().trim();
-    return rules.filter((rule) => {
+    return currentRulesList.filter((rule) => {
       const name = rule.name?.toLowerCase() || '';
       const description = rule.description?.toLowerCase() || '';
       const ruleType = getRuleTypeName(rule.ruleType)?.toLowerCase() || '';
@@ -206,7 +227,7 @@ const NotificationsPage = () => {
         ruleType.includes(query)
       );
     });
-  }, [rules, rulesSearchQuery]);
+  }, [currentRulesList, rulesSearchQuery]);
 
   const paginatedRules = useMemo(() => {
     const startIndex = (rulesCurrentPage - 1) * rulesPageSize;
@@ -218,7 +239,7 @@ const NotificationsPage = () => {
 
   useEffect(() => {
     setRulesCurrentPage(1);
-  }, [rulesSearchQuery]);
+  }, [rulesSearchQuery, rulesSubTab]);
 
   const handleRulesPageChange = (page) => {
     if (page >= 1 && page <= totalRulesPages) {
@@ -238,6 +259,10 @@ const NotificationsPage = () => {
 
   // Funciones para gestión de reglas
   const handleToggleEnabled = async (rule) => {
+    if (!rule._meta?.canEdit) {
+      toast.error('No tienes permiso para modificar esta regla');
+      return;
+    }
     try {
       await updateRule(rule.id, { enabled: !rule.enabled });
       toast.success(rule.enabled ? 'Regla deshabilitada' : 'Regla habilitada');
@@ -247,6 +272,10 @@ const NotificationsPage = () => {
   };
 
   const handleDeleteRule = async (rule) => {
+    if (!rule._meta?.canDelete) {
+      toast.error('No tienes permiso para eliminar esta regla');
+      return;
+    }
     if (!window.confirm(`¿Estás seguro de eliminar la regla "${rule.name}"?`)) {
       return;
     }
@@ -255,6 +284,32 @@ const NotificationsPage = () => {
       toast.success('Regla eliminada');
     } catch (error) {
       toast.error('Error al eliminar la regla');
+    }
+  };
+
+  // Abrir modal de desuscripción
+  const openUnsubscribeModal = (rule) => {
+    if (!rule._meta?.canUnsubscribe) {
+      toast.error('No puedes desuscribirte de esta regla');
+      return;
+    }
+    setUnsubscribeModal(rule);
+  };
+
+  // Confirmar desuscripción
+  const confirmUnsubscribe = async () => {
+    if (!unsubscribeModal) return;
+
+    setUnsubscribeLoading(true);
+    try {
+      const result = await unsubscribeFromRule(unsubscribeModal.id);
+      toast.success(result.message || 'Te has desuscrito de la regla');
+      setUnsubscribeModal(null);
+      fetchRules(); // Recargar para actualizar la lista
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Error al desuscribirse');
+    } finally {
+      setUnsubscribeLoading(false);
     }
   };
 
@@ -1045,18 +1100,81 @@ const NotificationsPage = () => {
                     Configura alertas automáticas para eventos del sistema
                   </p>
                 </div>
-                <Button
-                  onClick={() => setShowCreateModal(true)}
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 border-0 shadow-md whitespace-nowrap"
-                >
-                  <HiPlus className="w-4 h-4 mr-2 flex-shrink-0" />
-                  Nueva Regla
-                </Button>
+                {rulesSubTab === 'mine' && (
+                  <Button
+                    onClick={() => setShowCreateModal(true)}
+                    className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 border-0 shadow-md whitespace-nowrap"
+                  >
+                    <HiPlus className="w-4 h-4 mr-2 flex-shrink-0" />
+                    Nueva Regla
+                  </Button>
+                )}
               </div>
             </div>
 
+            {/* Sub-tabs: Mis Reglas / Suscritas */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setRulesSubTab('mine')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    rulesSubTab === 'mine'
+                      ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <HiViewGrid className="w-4 h-4" />
+                  Mis Reglas
+                  {myRules.length > 0 && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                        rulesSubTab === 'mine'
+                          ? 'bg-white/20 text-white'
+                          : 'bg-purple-100 text-purple-700'
+                      }`}
+                    >
+                      {myRules.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setRulesSubTab('subscribed')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    rulesSubTab === 'subscribed'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <HiUsers className="w-4 h-4" />
+                  Suscritas
+                  {subscribedRules.length > 0 && (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                        rulesSubTab === 'subscribed'
+                          ? 'bg-white/20 text-white'
+                          : 'bg-blue-100 text-blue-700'
+                      }`}
+                    >
+                      {subscribedRules.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              {/* Info de la sub-tab */}
+              {rulesSubTab === 'subscribed' && (
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    <strong>Reglas suscritas:</strong> Estas son reglas creadas
+                    por otros usuarios que te incluyen como destinatario. Puedes
+                    desuscribirte si no deseas recibir estas notificaciones.
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* Buscador de reglas */}
-            {!rulesLoading && rules.length > 0 && (
+            {!rulesLoading && currentRulesList.length > 0 && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1124,24 +1242,34 @@ const NotificationsPage = () => {
                   Limpiar búsqueda
                 </Button>
               </div>
-            ) : rules.length === 0 ? (
+            ) : currentRulesList.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
                 <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
-                  <HiCog className="w-10 h-10 text-purple-500" />
+                  {rulesSubTab === 'mine' ? (
+                    <HiCog className="w-10 h-10 text-purple-500" />
+                  ) : (
+                    <HiUsers className="w-10 h-10 text-blue-500" />
+                  )}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  No hay reglas configuradas
+                  {rulesSubTab === 'mine'
+                    ? 'No has creado reglas'
+                    : 'No te han suscrito a ninguna regla'}
                 </h3>
                 <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                  Crea tu primera regla para recibir notificaciones automáticas
+                  {rulesSubTab === 'mine'
+                    ? 'Crea tu primera regla para recibir notificaciones automáticas'
+                    : 'Cuando alguien te agregue a una regla de notificación, aparecerá aquí'}
                 </p>
-                <Button
-                  onClick={() => setShowCreateModal(true)}
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 border-0 shadow-md"
-                >
-                  <HiPlus className="w-4 h-4 mr-2 flex-shrink-0" />
-                  Crear Primera Regla
-                </Button>
+                {rulesSubTab === 'mine' && (
+                  <Button
+                    onClick={() => setShowCreateModal(true)}
+                    className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 border-0 shadow-md"
+                  >
+                    <HiPlus className="w-4 h-4 mr-2 flex-shrink-0" />
+                    Crear Primera Regla
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -1156,6 +1284,11 @@ const NotificationsPage = () => {
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
                           Nombre
                         </th>
+                        {rulesSubTab === 'subscribed' && (
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
+                            Creado por
+                          </th>
+                        )}
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">
                           Tipo
                         </th>
@@ -1180,11 +1313,20 @@ const NotificationsPage = () => {
                           className="group hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-purple-50/50 transition-colors"
                         >
                           <td className="px-4 py-4 whitespace-nowrap">
-                            <ToggleSwitch
-                              checked={rule.enabled}
-                              onChange={() => handleToggleEnabled(rule)}
-                              sizing="sm"
-                            />
+                            {rulesSubTab === 'mine' ? (
+                              <ToggleSwitch
+                                checked={rule.enabled}
+                                onChange={() => handleToggleEnabled(rule)}
+                                sizing="sm"
+                              />
+                            ) : (
+                              <Badge
+                                color={rule.enabled ? 'success' : 'gray'}
+                                size="sm"
+                              >
+                                {rule.enabled ? 'Activa' : 'Inactiva'}
+                              </Badge>
+                            )}
                           </td>
                           <td className="px-4 py-4">
                             <div className="min-w-0 max-w-xs">
@@ -1198,6 +1340,27 @@ const NotificationsPage = () => {
                               )}
                             </div>
                           </td>
+                          {rulesSubTab === 'subscribed' && (
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                  <HiUser className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-gray-900 truncate">
+                                    {rule.createdBy
+                                      ? `${rule.createdBy.firstName} ${rule.createdBy.lastName}`
+                                      : 'Usuario desconocido'}
+                                  </p>
+                                  {rule.createdBy?.email && (
+                                    <p className="text-xs text-gray-500 truncate">
+                                      {rule.createdBy.email}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                          )}
                           <td className="px-4 py-4 whitespace-nowrap">
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700">
                               {getRuleTypeName(rule.ruleType)}
@@ -1239,34 +1402,57 @@ const NotificationsPage = () => {
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-right">
                             <div className="flex items-center justify-end gap-1">
-                              <button
-                                onClick={() => setTestingRule(rule)}
-                                className="p-2 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-all duration-200"
-                                title="Probar regla"
-                              >
-                                <HiPlay className="w-4 h-4 flex-shrink-0" />
-                              </button>
-                              <button
-                                onClick={() => handleViewHistory(rule)}
-                                className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
-                                title="Ver historial"
-                              >
-                                <HiChartBar className="w-4 h-4 flex-shrink-0" />
-                              </button>
-                              <button
-                                onClick={() => setEditingRule(rule)}
-                                className="p-2 rounded-lg text-gray-400 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200"
-                                title="Editar"
-                              >
-                                <HiPencil className="w-4 h-4 flex-shrink-0" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteRule(rule)}
-                                className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
-                                title="Eliminar"
-                              >
-                                <HiTrash className="w-4 h-4 flex-shrink-0" />
-                              </button>
+                              {rulesSubTab === 'mine' ? (
+                                // Acciones para reglas propias
+                                <>
+                                  <button
+                                    onClick={() => setTestingRule(rule)}
+                                    className="p-2 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-all duration-200"
+                                    title="Probar regla"
+                                  >
+                                    <HiPlay className="w-4 h-4 flex-shrink-0" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleViewHistory(rule)}
+                                    className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                                    title="Ver historial"
+                                  >
+                                    <HiChartBar className="w-4 h-4 flex-shrink-0" />
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingRule(rule)}
+                                    className="p-2 rounded-lg text-gray-400 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200"
+                                    title="Editar"
+                                  >
+                                    <HiPencil className="w-4 h-4 flex-shrink-0" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteRule(rule)}
+                                    className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                                    title="Eliminar"
+                                  >
+                                    <HiTrash className="w-4 h-4 flex-shrink-0" />
+                                  </button>
+                                </>
+                              ) : (
+                                // Acciones para reglas suscritas
+                                <>
+                                  <button
+                                    onClick={() => handleViewHistory(rule)}
+                                    className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                                    title="Ver historial"
+                                  >
+                                    <HiChartBar className="w-4 h-4 flex-shrink-0" />
+                                  </button>
+                                  <button
+                                    onClick={() => openUnsubscribeModal(rule)}
+                                    className="p-2 rounded-lg text-gray-400 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
+                                    title="Desuscribirse"
+                                  >
+                                    <HiUserRemove className="w-4 h-4 flex-shrink-0" />
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -1584,6 +1770,88 @@ const NotificationsPage = () => {
               </div>
             )}
           </Modal.Body>
+        </Modal>
+
+        {/* Modal de confirmación de desuscripción */}
+        <Modal
+          show={!!unsubscribeModal}
+          onClose={() => setUnsubscribeModal(null)}
+          size="md"
+        >
+          <Modal.Header>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                <HiUserRemove className="w-5 h-5 text-orange-600" />
+              </div>
+              <span>Desuscribirse de la regla</span>
+            </div>
+          </Modal.Header>
+          <Modal.Body>
+            <div className="space-y-4">
+              <p className="text-gray-600">
+                ¿Estás seguro de que deseas desuscribirte de la regla{' '}
+                <strong className="text-gray-900">
+                  &quot;{unsubscribeModal?.name}&quot;
+                </strong>
+                ?
+              </p>
+
+              {unsubscribeModal?.createdBy && (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <HiUser className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      Creada por: {unsubscribeModal.createdBy.firstName}{' '}
+                      {unsubscribeModal.createdBy.lastName}
+                    </p>
+                    {unsubscribeModal.createdBy.email && (
+                      <p className="text-xs text-gray-500">
+                        {unsubscribeModal.createdBy.email}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <p className="text-sm text-orange-700">
+                  <strong>Importante:</strong> Ya no recibirás notificaciones de
+                  esta alerta. Si deseas volver a recibirlas, el creador de la
+                  regla deberá agregarte nuevamente.
+                </p>
+              </div>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <div className="flex justify-end gap-3 w-full">
+              <Button
+                color="gray"
+                onClick={() => setUnsubscribeModal(null)}
+                disabled={unsubscribeLoading}
+              >
+                Cancelar
+              </Button>
+              <Button
+                color="warning"
+                onClick={confirmUnsubscribe}
+                disabled={unsubscribeLoading}
+              >
+                {unsubscribeLoading ? (
+                  <>
+                    <Spinner size="sm" className="mr-2" />
+                    Procesando...
+                  </>
+                ) : (
+                  <>
+                    <HiUserRemove className="w-4 h-4 mr-2" />
+                    Desuscribirse
+                  </>
+                )}
+              </Button>
+            </div>
+          </Modal.Footer>
         </Modal>
       </div>
     </div>

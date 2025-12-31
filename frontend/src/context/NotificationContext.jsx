@@ -8,9 +8,14 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from 'react';
 import { useAuthContext } from './AuthContext';
+import { useUserPreference } from './UserPreferenceContext';
 import notificationsApi from '../services/notifications.api';
+
+// Importar sonido de notificación
+import notificationSound from '../assets/sounds/preview.mp3';
 
 const NotificationContext = createContext(undefined);
 
@@ -26,6 +31,7 @@ export const useNotifications = () => {
 
 export const NotificationProvider = ({ children }) => {
   const { user, token } = useAuthContext();
+  const { getPreference } = useUserPreference();
 
   // Estado de notificaciones in-app
   const [notifications, setNotifications] = useState([]);
@@ -37,8 +43,33 @@ export const NotificationProvider = ({ children }) => {
   const [ruleTypes, setRuleTypes] = useState([]);
   const [rulesLoading, setRulesLoading] = useState(false);
 
+  // Audio para sonido de notificación
+  const audioRef = useRef(null);
+  const previousUnreadCount = useRef(0);
+
   // Polling interval para actualizar notificaciones (cada 30 segundos)
   const POLLING_INTERVAL = 30000;
+
+  // Inicializar audio
+  useEffect(() => {
+    audioRef.current = new Audio(notificationSound);
+    audioRef.current.volume = 0.5;
+  }, []);
+
+  /**
+   * Reproducir sonido de notificación (respetando preferencias del usuario)
+   */
+  const playNotificationSound = useCallback(() => {
+    const soundEnabled = getPreference('notificationSoundEnabled', true);
+
+    if (soundEnabled && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch((error) => {
+        // El navegador puede bloquear autoplay si no hay interacción previa
+        console.log('No se pudo reproducir sonido:', error);
+      });
+    }
+  }, [getPreference]);
 
   /**
    * Obtener notificaciones del usuario
@@ -64,17 +95,37 @@ export const NotificationProvider = ({ children }) => {
 
   /**
    * Obtener solo el conteo de no leídas (más ligero)
+   * @param {boolean} shouldPlaySound - Si debe reproducir sonido al detectar nuevas notificaciones
    */
-  const fetchUnreadCount = useCallback(async () => {
-    if (!user || !token) return;
+  const fetchUnreadCount = useCallback(
+    async (shouldPlaySound = false) => {
+      if (!user || !token) return;
 
-    try {
-      const data = await notificationsApi.getUnreadCount();
-      setUnreadCount(data.unreadCount || 0);
-    } catch (error) {
-      console.error('Error fetching unread count:', error);
-    }
-  }, [user, token]);
+      try {
+        const data = await notificationsApi.getUnreadCount();
+        const newCount = data.unreadCount || 0;
+
+        // Detectar si hay nuevas notificaciones y reproducir sonido
+        if (
+          shouldPlaySound &&
+          newCount > previousUnreadCount.current &&
+          previousUnreadCount.current !== 0
+        ) {
+          playNotificationSound();
+        }
+
+        previousUnreadCount.current = newCount;
+        setUnreadCount(newCount);
+        return {
+          unreadCount: newCount,
+          hasNew: newCount > previousUnreadCount.current,
+        };
+      } catch (error) {
+        console.error('Error fetching unread count:', error);
+      }
+    },
+    [user, token, playNotificationSound],
+  );
 
   /**
    * Marcar una notificación como leída
@@ -315,11 +366,15 @@ export const NotificationProvider = ({ children }) => {
   // Cargar datos iniciales y configurar polling
   useEffect(() => {
     if (user && token) {
-      fetchUnreadCount();
+      // Carga inicial sin sonido
+      fetchUnreadCount(false);
       fetchRuleTypes();
 
-      // Polling para actualizar el contador de no leídas
-      const interval = setInterval(fetchUnreadCount, POLLING_INTERVAL);
+      // Polling para actualizar el contador de no leídas (con sonido si hay nuevas)
+      const interval = setInterval(
+        () => fetchUnreadCount(true),
+        POLLING_INTERVAL,
+      );
 
       return () => clearInterval(interval);
     }
@@ -338,6 +393,7 @@ export const NotificationProvider = ({ children }) => {
         markAllAsRead,
         deleteNotification,
         deleteReadNotifications,
+        playNotificationSound,
 
         // Reglas de notificación
         rules,

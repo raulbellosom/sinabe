@@ -27,6 +27,7 @@ import { useNotifications } from '../../context/NotificationContext';
 import { toast } from 'react-hot-toast';
 import SearchableSelect from '../common/SearchableSelect';
 import { CronHelpModal, JsonFilterHelpModal } from './HelpModals';
+import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 
 const NotificationRuleForm = ({ show, onClose, rule }) => {
   const {
@@ -329,7 +330,7 @@ const NotificationRuleForm = ({ show, onClose, rule }) => {
     <div className="flex items-center gap-3">
       {option.photoUrl ? (
         <img
-          src={option.photoUrl}
+          src={FormattedUrlImage(option.photoUrl)}
           alt={option.label}
           className="w-8 h-8 rounded-full object-cover flex-shrink-0"
         />
@@ -859,7 +860,7 @@ const NotificationRuleForm = ({ show, onClose, rule }) => {
                       recipient.kind === 'USER'
                         ? users.find((u) => u.id === recipient.userId)
                         : null;
-                    const photoUrl = user?.photoUrl;
+                    const photoUrl = FormattedUrlImage(user?.photoUrl) || null;
                     const initials = user
                       ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()
                       : '';

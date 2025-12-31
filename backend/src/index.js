@@ -25,6 +25,7 @@ import custodyRoutes from "./routes/custodyRoutes.js";
 import userPreferenceRoutes from "./routes/userPreferenceRoutes.js";
 import notificationRuleRoutes from "./routes/notificationRuleRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import pushRoutes from "./routes/pushRoutes.js";
 import { startScheduler } from "./notifications/scheduler.js";
 
 dotenv.config();
@@ -85,6 +86,7 @@ app.use("/api/custody-records", custodyRoutes);
 app.use("/api/preferences", userPreferenceRoutes);
 app.use("/api/notification-rules", notificationRuleRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/push", pushRoutes);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 4000;

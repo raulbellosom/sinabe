@@ -5,8 +5,17 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiBell, HiCheck, HiTrash, HiExternalLink, HiX } from 'react-icons/hi';
+import {
+  HiBell,
+  HiCheck,
+  HiTrash,
+  HiExternalLink,
+  HiX,
+  HiVolumeUp,
+  HiVolumeOff,
+} from 'react-icons/hi';
 import { useNotifications } from '../../context/NotificationContext';
+import { useUserPreference } from '../../context/UserPreferenceContext';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
@@ -24,10 +33,23 @@ const NotificationBell = () => {
     deleteNotification,
   } = useNotifications();
 
+  const {
+    getPreference,
+    updatePreference,
+    loading: preferencesLoading,
+  } = useUserPreference();
+
+  // Obtener preferencia de sonido
+  const notificationSoundEnabled = getPreference(
+    'notificationSoundEnabled',
+    true,
+  );
+
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownStyle, setDropdownStyle] = useState({});
   const [portalRoot, setPortalRoot] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [togglingSound, setTogglingSound] = useState(false);
 
   const buttonRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -153,6 +175,24 @@ const NotificationBell = () => {
     setIsOpen(false);
   };
 
+  // Toggle del sonido de notificaciones
+  const handleToggleSound = async (e) => {
+    e.stopPropagation();
+    if (togglingSound || preferencesLoading) return;
+
+    try {
+      setTogglingSound(true);
+      await updatePreference(
+        'notificationSoundEnabled',
+        !notificationSoundEnabled,
+      );
+    } catch (error) {
+      console.error('Error toggling notification sound:', error);
+    } finally {
+      setTogglingSound(false);
+    }
+  };
+
   return (
     <div className="relative" ref={buttonRef}>
       {/* Botón de campana */}
@@ -206,6 +246,30 @@ const NotificationBell = () => {
                       Notificaciones
                     </h3>
                     <div className="flex items-center gap-2">
+                      {/* Botón de sonido */}
+                      <button
+                        onClick={handleToggleSound}
+                        disabled={togglingSound || preferencesLoading}
+                        className={classNames(
+                          'p-1.5 rounded-lg transition-all duration-200',
+                          notificationSoundEnabled
+                            ? 'text-purple-600 hover:bg-purple-100'
+                            : 'text-gray-400 hover:bg-gray-100',
+                          (togglingSound || preferencesLoading) &&
+                            'opacity-50 cursor-not-allowed',
+                        )}
+                        title={
+                          notificationSoundEnabled
+                            ? 'Silenciar notificaciones'
+                            : 'Activar sonido'
+                        }
+                      >
+                        {notificationSoundEnabled ? (
+                          <HiVolumeUp className="w-5 h-5" />
+                        ) : (
+                          <HiVolumeOff className="w-5 h-5" />
+                        )}
+                      </button>
                       {unreadCount > 0 && (
                         <button
                           onClick={handleMarkAllRead}

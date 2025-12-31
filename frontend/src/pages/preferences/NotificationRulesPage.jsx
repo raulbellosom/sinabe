@@ -55,6 +55,8 @@ const NotificationRulesPage = () => {
   const [ruleHistory, setRuleHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('mine');
+  const [unsubscribeModal, setUnsubscribeModal] = useState(null);
+  const [unsubscribeLoading, setUnsubscribeLoading] = useState(false);
 
   useEffect(() => {
     fetchRules();
@@ -102,30 +104,29 @@ const NotificationRulesPage = () => {
     }
   };
 
-  const handleUnsubscribe = async (rule) => {
+  // Abrir modal de desuscripción
+  const openUnsubscribeModal = (rule) => {
     if (!rule._meta?.canUnsubscribe) {
       toast.error('No puedes desuscribirte de esta regla');
       return;
     }
+    setUnsubscribeModal(rule);
+  };
 
-    const creatorName = rule.createdBy
-      ? `${rule.createdBy.firstName} ${rule.createdBy.lastName}`
-      : 'otro usuario';
+  // Confirmar desuscripción
+  const confirmUnsubscribe = async () => {
+    if (!unsubscribeModal) return;
 
-    if (
-      !window.confirm(
-        `¿Deseas desuscribirte de la regla "${rule.name}" creada por ${creatorName}?\n\nYa no recibirás notificaciones de esta alerta.`,
-      )
-    ) {
-      return;
-    }
-
+    setUnsubscribeLoading(true);
     try {
-      const result = await unsubscribeFromRule(rule.id);
+      const result = await unsubscribeFromRule(unsubscribeModal.id);
       toast.success(result.message || 'Te has desuscrito de la regla');
-      fetchRules(); // Recargar para actualizar la lista
+      setUnsubscribeModal(null);
+      fetchRules();
     } catch (error) {
       toast.error(error.response?.data?.error || 'Error al desuscribirse');
+    } finally {
+      setUnsubscribeLoading(false);
     }
   };
 
@@ -392,7 +393,7 @@ const NotificationRulesPage = () => {
                           <Button
                             color="warning"
                             size="xs"
-                            onClick={() => handleUnsubscribe(rule)}
+                            onClick={() => openUnsubscribeModal(rule)}
                           >
                             <HiUserRemove className="w-4 h-4" />
                           </Button>
@@ -582,6 +583,88 @@ const NotificationRulesPage = () => {
               </div>
             )}
           </Modal.Body>
+        </Modal>
+
+        {/* Modal de confirmación de desuscripción */}
+        <Modal
+          show={!!unsubscribeModal}
+          onClose={() => setUnsubscribeModal(null)}
+          size="md"
+        >
+          <Modal.Header>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                <HiUserRemove className="w-5 h-5 text-orange-600" />
+              </div>
+              <span>Desuscribirse de la regla</span>
+            </div>
+          </Modal.Header>
+          <Modal.Body>
+            <div className="space-y-4">
+              <p className="text-gray-600">
+                ¿Estás seguro de que deseas desuscribirte de la regla{' '}
+                <strong className="text-gray-900">
+                  &quot;{unsubscribeModal?.name}&quot;
+                </strong>
+                ?
+              </p>
+
+              {unsubscribeModal?.createdBy && (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <HiUser className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      Creada por: {unsubscribeModal.createdBy.firstName}{' '}
+                      {unsubscribeModal.createdBy.lastName}
+                    </p>
+                    {unsubscribeModal.createdBy.email && (
+                      <p className="text-xs text-gray-500">
+                        {unsubscribeModal.createdBy.email}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                <p className="text-sm text-orange-700">
+                  <strong>Importante:</strong> Ya no recibirás notificaciones de
+                  esta alerta. Si deseas volver a recibirlas, el creador de la
+                  regla deberá agregarte nuevamente.
+                </p>
+              </div>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <div className="flex justify-end gap-3 w-full">
+              <Button
+                color="gray"
+                onClick={() => setUnsubscribeModal(null)}
+                disabled={unsubscribeLoading}
+              >
+                Cancelar
+              </Button>
+              <Button
+                color="warning"
+                onClick={confirmUnsubscribe}
+                disabled={unsubscribeLoading}
+              >
+                {unsubscribeLoading ? (
+                  <>
+                    <Spinner size="sm" className="mr-2" />
+                    Procesando...
+                  </>
+                ) : (
+                  <>
+                    <HiUserRemove className="w-4 h-4 mr-2" />
+                    Desuscribirse
+                  </>
+                )}
+              </Button>
+            </div>
+          </Modal.Footer>
         </Modal>
       </div>
     </div>

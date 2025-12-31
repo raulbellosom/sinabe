@@ -5,6 +5,7 @@
 import { db } from "../lib/db.js";
 import { sendNotificationEmail } from "./channels/emailChannel.js";
 import { createInAppNotification } from "./channels/inAppChannel.js";
+import { sendPushNotification } from "./channels/pushChannel.js";
 import { evaluateRule } from "./ruleTypes/index.js";
 
 /**
@@ -130,9 +131,25 @@ const processChannel = async (channelType, rule, run, matches, summary) => {
       break;
 
     case "PUSH_WEB":
+      const webPushDeliveries = await sendPushNotification(
+        rule,
+        run,
+        matches,
+        summary,
+        "PUSH_WEB"
+      );
+      deliveries.push(...webPushDeliveries);
+      break;
+
     case "PUSH_MOBILE":
-      // TODO: Implementar Push notifications
-      console.log(`[Engine] Canal ${channelType} pendiente de implementar`);
+      const mobilePushDeliveries = await sendPushNotification(
+        rule,
+        run,
+        matches,
+        summary,
+        "PUSH_MOBILE"
+      );
+      deliveries.push(...mobilePushDeliveries);
       break;
 
     default:

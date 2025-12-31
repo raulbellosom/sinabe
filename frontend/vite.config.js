@@ -7,6 +7,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Usar injectManifest para tener control total del SW
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
+      injectRegister: 'auto',
       includeAssets: ['favicon.svg', 'robots.txt', 'assets/*'],
       manifest: {
         name: 'Sinabe',
@@ -29,16 +34,13 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
-        // sigue incluyendo tus assets habituales
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
-        cleanupOutdatedCaches: true,
-
-        // para navegación SPA:
-        navigateFallback: '/index.html',
-        // ¡nunca hagas fallback en rutas /api/!
-        navigateFallbackDenylist: [/^\/api\//],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024, // 6 MiB
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module',
       },
     }),
   ],
