@@ -187,16 +187,53 @@ JSON OBLIGATORIO (copia esta estructura):
   // Request is authoritative on pagination
   obj.pagination = { page, limit };
 
-  // Normalize intent from camelCase to snake_case if needed (LLM sometimes returns camelCase)
-  const intentMap = {
+  // Normalize intent - LLM can return many variations, map them all to valid values
+  const intentNormalizeMap = {
+    // camelCase variants
     listInventories: "list_inventories",
     countInventories: "count_inventories",
     groupCountInventories: "group_count_inventories",
     missingInventories: "missing_inventories",
     searchInventories: "search_inventories",
+    // Short/creative variants the LLM might return
+    list: "list_inventories",
+    count: "count_inventories",
+    groupBy: "group_count_inventories",
+    group: "group_count_inventories",
+    groupCount: "group_count_inventories",
+    missing: "missing_inventories",
+    search: "search_inventories",
+    find: "search_inventories",
+    query: "list_inventories",
+    get: "list_inventories",
+    fetch: "list_inventories",
+    // PascalCase variants
+    ListInventories: "list_inventories",
+    CountInventories: "count_inventories",
+    GroupCountInventories: "group_count_inventories",
+    MissingInventories: "missing_inventories",
+    SearchInventories: "search_inventories",
   };
-  if (obj.intent && intentMap[obj.intent]) {
-    obj.intent = intentMap[obj.intent];
+
+  if (obj.intent) {
+    const normalizedIntent = intentNormalizeMap[obj.intent];
+    if (normalizedIntent) {
+      obj.intent = normalizedIntent;
+    } else if (
+      ![
+        "list_inventories",
+        "count_inventories",
+        "group_count_inventories",
+        "missing_inventories",
+        "search_inventories",
+      ].includes(obj.intent)
+    ) {
+      // If intent is unknown, default to list_inventories
+      console.warn(
+        `[Planner] Unknown intent "${obj.intent}", defaulting to list_inventories`
+      );
+      obj.intent = "list_inventories";
+    }
   }
 
   // Ensure filters object exists
