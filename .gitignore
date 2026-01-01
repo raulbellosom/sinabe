@@ -3,3 +3,18 @@ backend/node_modules
 backend/.env
 backend/src/uploads
 backend/uploads
+
+# Environment files (all folders)
+.env
+.env.production
+.env.local
+
+# AI specific env files (ensure they're ignored)
+ai/.env
+ai/.env.production
+ai/.env.local
+
+node_modules
+dist
+.DS_Store
+npm-debug.log
