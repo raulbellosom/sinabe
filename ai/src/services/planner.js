@@ -94,10 +94,16 @@ RESPONDE SOLO JSON VÁLIDO. SIN MARKDOWN. SIN EXPLICACIONES. NO USES COMENTARIOS
 
 "Sinabe" es el nombre del SISTEMA, NO una marca/tipo/modelo. Ignóralo.
 
+SINÓNIMOS IMPORTANTES:
+- "equipos", "activos", "items", "artículos" = inventarios
+- "en alta", "de alta", "dados de alta" = status: "ALTA"
+- "en baja", "de baja", "dados de baja" = status: "BAJA"
+- "propuestos", "propuesta" = status: "PROPUESTA"
+
 MARCAS CONOCIDAS (ejemplos): HP, Dell, Lenovo, Cisco, Avigilon, Apple, Samsung, LG, Bosch, Axis, Hikvision, Ubiquiti, Meraki, Fortinet, Juniper, Aruba.
 
 INTENTS:
-- list_inventories: listar inventarios (muéstrame, lista, dame)
+- list_inventories: listar inventarios (muéstrame, lista, dame, equipos)
 - count_inventories: contar total (cuántos hay, total de)
 - group_count_inventories: agrupar conteo (cuántos por, gráfica de, distribución)
 - missing_inventories: faltantes (sin ubicación, sin factura)
@@ -114,6 +120,8 @@ REGLAS CRÍTICAS:
 5. "laptops HP" => filters: {type: "laptop", brand: "HP"}
 6. Para UNA sola marca usa "brand" (string). Para MÚLTIPLES marcas usa "brands" (array).
 7. enabled: SIEMPRE debe ser true (excluir eliminados) a menos que explícitamente pidan "incluir eliminados".
+8. "equipos en alta" = inventarios con status ALTA => intent: list_inventories, filters: {status: "ALTA"}
+9. "equipos en baja" o "inventarios de baja" => filters: {status: "BAJA"}
 
 FILTROS:
 - brand: UN string (ej: "HP") - para una sola marca
@@ -121,7 +129,7 @@ FILTROS:
 - type: UN string (ej: "laptop")
 - model: UN string (ej: "EliteBook")
 - location: UN string
-- status: "ALTA" o "BAJA" o "PROPUESTA"
+- status: "ALTA" o "BAJA" o "PROPUESTA" (detectar de "en alta", "de baja", etc.)
 - enabled: true (SIEMPRE por defecto)
 
 JSON OBLIGATORIO (copia esta estructura):

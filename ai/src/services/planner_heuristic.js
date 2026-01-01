@@ -295,10 +295,24 @@ export function heuristicPlan(q, { page, limit }) {
     }
   }
 
-  // Extract status
-  const statusMatch = original.match(/\b(ALTA|BAJA|PROPUESTA)\b/i);
-  if (statusMatch?.[1]) {
-    filters.status = statusMatch[1].toUpperCase();
+  // Extract status - improved patterns
+  // Handles: "en alta", "en baja", "status ALTA", "equipos de baja", etc.
+  const statusPatterns = [
+    /\b(ALTA|BAJA|PROPUESTA)\b/i, // Explicit status words
+    /\ben\s+(alta|baja|propuesta)\b/i, // "en alta", "en baja"
+    /\bde\s+(alta|baja|propuesta)\b/i, // "de alta", "de baja"
+    /\bstatus\s+(alta|baja|propuesta)\b/i, // "status alta"
+    /\bestado\s+(alta|baja|propuesta)\b/i, // "estado baja"
+    /\bdados?\s+de\s+(alta|baja)\b/i, // "dados de alta", "dado de baja"
+    /\b(alta|baja)s?\b(?!\s+(?:definicion|calidad|gama))/i, // "altas", "bajas" (no "alta definicion")
+  ];
+
+  for (const pattern of statusPatterns) {
+    const statusMatch = original.match(pattern);
+    if (statusMatch?.[1]) {
+      filters.status = statusMatch[1].toUpperCase();
+      break;
+    }
   }
 
   // Extract invoice/PO conditions
