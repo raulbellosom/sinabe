@@ -187,6 +187,18 @@ JSON OBLIGATORIO (copia esta estructura):
   // Request is authoritative on pagination
   obj.pagination = { page, limit };
 
+  // Normalize intent from camelCase to snake_case if needed (LLM sometimes returns camelCase)
+  const intentMap = {
+    listInventories: "list_inventories",
+    countInventories: "count_inventories",
+    groupCountInventories: "group_count_inventories",
+    missingInventories: "missing_inventories",
+    searchInventories: "search_inventories",
+  };
+  if (obj.intent && intentMap[obj.intent]) {
+    obj.intent = intentMap[obj.intent];
+  }
+
   // Ensure filters object exists
   if (!obj.filters) obj.filters = {};
 
