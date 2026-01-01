@@ -958,7 +958,7 @@ const ListResult = ({
         {items.map((item, idx) => (
           <motion.a
             key={item.id}
-            href={`/inventories/${item.id}`}
+            href={`/inventories/view/${item.id}`}
             className="block p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md transition-all"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1073,7 +1073,7 @@ const ListResult = ({
                 </td>
                 <td className="px-4 py-3 text-right">
                   <motion.a
-                    href={`/inventories/${item.id}`}
+                    href={`/inventories/view/${item.id}`}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
