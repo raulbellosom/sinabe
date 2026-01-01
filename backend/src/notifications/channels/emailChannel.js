@@ -236,9 +236,7 @@ const generateHtmlBody = (rule, matches, summary) => {
           summary.link
             ? `
           <div style="margin-top: 20px;">
-            <a href="${appUrl}${summary.link}" style="display: inline-block; background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
-              Ver en Sinabe →
-            </a>
+              Ver en Sinabe →${summary.link}           
           </div>
         `
             : ""
