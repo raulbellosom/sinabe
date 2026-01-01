@@ -96,35 +96,48 @@ export const NotificationProvider = ({ children }) => {
   /**
    * Obtener solo el conteo de no leídas (más ligero)
    * @param {boolean} shouldPlaySound - Si debe reproducir sonido al detectar nuevas notificaciones
+   * @param {boolean} shouldRefreshList - Si debe refrescar la lista de notificaciones cuando hay nuevas
    */
   const fetchUnreadCount = useCallback(
-    async (shouldPlaySound = false) => {
+    async (shouldPlaySound = false, shouldRefreshList = true) => {
       if (!user || !token) return;
 
       try {
         const data = await notificationsApi.getUnreadCount();
         const newCount = data.unreadCount || 0;
+        const hadNewNotifications =
+          newCount > previousUnreadCount.current &&
+          previousUnreadCount.current !== 0;
 
         // Detectar si hay nuevas notificaciones y reproducir sonido
-        if (
-          shouldPlaySound &&
-          newCount > previousUnreadCount.current &&
-          previousUnreadCount.current !== 0
-        ) {
+        if (shouldPlaySound && hadNewNotifications) {
           playNotificationSound();
+        }
+
+        // Si hay nuevas notificaciones y la lista está cargada, refrescar la lista
+        if (
+          shouldRefreshList &&
+          hadNewNotifications &&
+          notifications.length > 0
+        ) {
+          // Refrescar la lista de notificaciones en segundo plano
+          const freshData = await notificationsApi.getMyNotifications({
+            limit: 100,
+          });
+          setNotifications(freshData.notifications || []);
         }
 
         previousUnreadCount.current = newCount;
         setUnreadCount(newCount);
         return {
           unreadCount: newCount,
-          hasNew: newCount > previousUnreadCount.current,
+          hasNew: hadNewNotifications,
         };
       } catch (error) {
         console.error('Error fetching unread count:', error);
       }
     },
-    [user, token, playNotificationSound],
+    [user, token, playNotificationSound, notifications.length],
   );
 
   /**
@@ -217,10 +230,14 @@ export const NotificationProvider = ({ children }) => {
     try {
       setRulesLoading(true);
       const data = await notificationsApi.getNotificationRules();
-      setRules(data || []);
+      if (data) {
+        setRules(data);
+      }
       return data;
     } catch (error) {
       console.error('Error fetching rules:', error);
+      // No limpiar el estado en caso de error para mantener los datos existentes
+      return null;
     } finally {
       setRulesLoading(false);
     }
@@ -247,8 +264,19 @@ export const NotificationProvider = ({ children }) => {
   const createRule = async (data) => {
     try {
       const rule = await notificationsApi.createNotificationRule(data);
-      setRules((prev) => [rule, ...prev]);
-      return rule;
+      // Añadir _meta por defecto para el creador
+      const ruleWithMeta = {
+        ...rule,
+        _meta: rule._meta || {
+          isOwner: true,
+          isRecipient: true,
+          canEdit: true,
+          canDelete: true,
+          canUnsubscribe: false,
+        },
+      };
+      setRules((prev) => [ruleWithMeta, ...prev]);
+      return ruleWithMeta;
     } catch (error) {
       console.error('Error creating rule:', error);
       throw error;
@@ -261,7 +289,25 @@ export const NotificationProvider = ({ children }) => {
   const updateRule = async (id, data) => {
     try {
       const rule = await notificationsApi.updateNotificationRule(id, data);
-      setRules((prev) => prev.map((r) => (r.id === id ? rule : r)));
+      setRules((prev) =>
+        prev.map((r) => {
+          if (r.id === id) {
+            // Preservar _meta existente ya que el backend no lo devuelve en update
+            // Esto es crucial para que la regla siga apareciendo en la lista
+            return {
+              ...rule,
+              _meta: r._meta || {
+                isOwner: true,
+                isRecipient: true,
+                canEdit: true,
+                canDelete: true,
+                canUnsubscribe: false,
+              },
+            };
+          }
+          return r;
+        }),
+      );
       return rule;
     } catch (error) {
       console.error('Error updating rule:', error);

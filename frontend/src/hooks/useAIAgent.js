@@ -1,29 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAIAgent } from '../context/AIAgentContext.jsx';
+import { aiService } from '../services/ai.api';
 
-// Custom hook for AI Agent functionality
+/**
+ * Custom hook for AI Agent functionality
+ * Provides additional utilities and operations on top of the base context
+ */
 export const useAIAgentOperations = () => {
   const {
     isModalOpen,
     isLoading,
     query,
-    searchResults,
-    searchMode,
-    selectedItem,
-    modelSpecs,
     error,
-    suggestions,
     isHealthy,
     config,
     openModal,
     closeModal,
     setQuery,
-    searchInventories,
-    selectItem,
-    getModelSpecs,
     checkHealth,
     getConfig,
-    resetSearch,
     clearError,
   } = useAIAgent();
 
@@ -44,70 +39,41 @@ export const useAIAgentOperations = () => {
     initializeAI();
   }, [initialized, checkHealth, getConfig]);
 
-  // Handle search with debouncing
-  const handleSearch = useCallback(
-    async (searchQuery) => {
-      if (!searchQuery?.trim()) return;
+  // Handle search
+  const handleSearch = useCallback(async (searchQuery, options = {}) => {
+    if (!searchQuery?.trim()) return null;
 
-      await searchInventories(searchQuery);
-    },
-    [searchInventories],
-  );
-
-  // Handle item selection and navigation
-  const handleItemSelect = useCallback(
-    (item) => {
-      selectItem(item);
-    },
-    [selectItem],
-  );
-
-  // Handle model specs request
-  const handleGetSpecs = useCallback(
-    async (inventoryId) => {
-      if (inventoryId) {
-        await getModelSpecs(inventoryId);
-      }
-    },
-    [getModelSpecs],
-  );
+    try {
+      const result = await aiService.query(searchQuery, options);
+      return result;
+    } catch (err) {
+      console.error('Search error:', err);
+      throw err;
+    }
+  }, []);
 
   // Navigate to inventory detail
   const navigateToInventory = useCallback((inventory) => {
-    // Navigate to inventory view page
-    const inventoryUrl = `/inventories/view/${inventory.id}`;
-    window.open(inventoryUrl, '_blank');
-  }, []);
-
-  // Format search results for display
-  const formatSearchResults = useCallback((results) => {
-    if (!results) return [];
-
-    return results.map((item) => ({
-      ...item,
-      displayTitle: `${item.brandName} ${item.modelName}`,
-      displaySubtitle: `Serial: ${item.serialNumber} | Status: ${item.status}`,
-      displayDescription: item.comments || 'Sin comentarios disponibles',
-    }));
+    const inventoryUrl = `/inventories/${inventory.id}`;
+    window.location.href = inventoryUrl;
   }, []);
 
   // Check if query looks like a serial number
-  const isSerialQuery = useCallback((query) => {
-    if (!query) return false;
-    // Basic pattern for serial numbers (alphanumeric, certain length)
+  const isSerialQuery = useCallback((q) => {
+    if (!q) return false;
     const serialPattern = /^[A-Z0-9]{6,}$/i;
-    return serialPattern.test(query.trim());
+    return serialPattern.test(q.trim());
   }, []);
 
   // Get search mode display text
   const getSearchModeText = useCallback((mode) => {
     switch (mode) {
-      case 'hybrid':
-        return 'Búsqueda inteligente';
-      case 'serial-exact':
-        return 'Búsqueda por serial (exacta)';
-      case 'serial-fuzzy':
-        return 'Búsqueda por serial (aproximada)';
+      case 'list':
+        return 'Lista de inventarios';
+      case 'aggregation':
+        return 'Resultado agregado';
+      case 'mixed':
+        return 'Inventarios faltantes';
       default:
         return 'Búsqueda';
     }
@@ -115,21 +81,15 @@ export const useAIAgentOperations = () => {
 
   // Handle modal close with cleanup
   const handleCloseModal = useCallback(() => {
-    resetSearch();
     closeModal();
-  }, [resetSearch, closeModal]);
+  }, [closeModal]);
 
   return {
     // State
     isModalOpen,
     isLoading,
     query,
-    searchResults: formatSearchResults(searchResults),
-    searchMode,
-    selectedItem,
-    modelSpecs,
     error,
-    suggestions,
     isHealthy,
     config,
     initialized,
@@ -139,11 +99,10 @@ export const useAIAgentOperations = () => {
     closeModal: handleCloseModal,
     setQuery,
     handleSearch,
-    handleItemSelect,
-    handleGetSpecs,
     navigateToInventory,
-    resetSearch,
     clearError,
+    checkHealth,
+    getConfig,
 
     // Utilities
     isSerialQuery,

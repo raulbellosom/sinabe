@@ -514,6 +514,10 @@ const NotificationRulesPage = () => {
             setShowCreateModal(false);
             setEditingRule(null);
           }}
+          onSuccess={() => {
+            // Refrescar reglas después de crear/editar exitosamente
+            fetchRules();
+          }}
           rule={editingRule}
         />
 

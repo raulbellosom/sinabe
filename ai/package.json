@@ -1,0 +1,24 @@
+{
+  "name": "sinabe-ai-natural-search-prisma",
+  "version": "1.1.0",
+  "description": "Schema-aware natural language search for Sinabe (Prisma schema) with MySQL + optional Qdrant + Ollama",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "index:bootstrap": "node src/scripts/bootstrap_qdrant.js",
+    "index:sync": "node src/scripts/sync_inventories.js",
+    "health": "node src/scripts/healthcheck.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "mysql2": "^3.11.0",
+    "pino": "^9.3.2",
+    "pino-http": "^10.4.0",
+    "zod": "^3.23.8"
+  }
+}

@@ -29,7 +29,7 @@ import SearchableSelect from '../common/SearchableSelect';
 import { CronHelpModal, JsonFilterHelpModal } from './HelpModals';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 
-const NotificationRuleForm = ({ show, onClose, rule }) => {
+const NotificationRuleForm = ({ show, onClose, onSuccess, rule }) => {
   const {
     ruleTypes,
     createRule,
@@ -290,6 +290,10 @@ const NotificationRuleForm = ({ show, onClose, rule }) => {
         toast.success('Regla creada correctamente');
       }
       onClose();
+      // Llamar callback de éxito después de cerrar para refrescar datos
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       toast.error(error.response?.data?.error || 'Error al guardar la regla');
     } finally {

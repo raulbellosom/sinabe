@@ -1,0 +1,94 @@
+version: "3.8"
+
+# ==============================================
+# SINABE AI - Docker Compose
+# ==============================================
+# Modos de uso:
+#
+# LOCAL (Windows) - Sin LLM (rápido):
+#   docker compose up -d sinabe-ai
+#
+# LOCAL (Windows) - Con LLM:
+#   docker compose up -d
+#   (Esperar a que Ollama descargue el modelo ~2GB)
+#
+# PRODUCCIÓN (8GB RAM) - Sin LLM:
+#   docker compose up -d sinabe-ai
+#
+# PRODUCCIÓN (32GB RAM) - Con todo:
+#   docker compose --profile full up -d
+# ==============================================
+
+services:
+  sinabe-ai:
+    build: .
+    container_name: sinabe-ai
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-4080}:4080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "src/scripts/healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - sinabe-ai-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      ollama:
+        condition: service_started
+        required: false
+
+  # Ollama para LLM (llama3.2:3b usa ~2.5GB RAM)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: sinabe-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - sinabe-ai-net
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+    # Descargar modelo automáticamente al iniciar
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        /bin/ollama serve &
+        sleep 5
+        /bin/ollama pull llama3.2:3b
+        wait
+
+  # Qdrant para búsqueda semántica (opcional, perfil full)
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: sinabe-qdrant
+    profiles:
+      - full
+      - semantic
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+    networks:
+      - sinabe-ai-net
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+volumes:
+  ollama_data:
+  qdrant_data:
+
+networks:
+  sinabe-ai-net:
+    driver: bridge
