@@ -980,21 +980,43 @@ const ListResult = ({
                 {item.status}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+              <div className="flex justify-between">
                 <span className="text-gray-500 dark:text-gray-400">
-                  Serial:
+                  No. Activo:
                 </span>
-                <span className="ml-1 text-gray-700 dark:text-gray-300">
-                  {item.serialNumber || '-'}
+                <span className="text-gray-700 dark:text-gray-300 font-mono">
+                  {item.activeNumber || (
+                    <span className="text-gray-400">-</span>
+                  )}
                 </span>
               </div>
-              <div>
+              <div className="flex justify-between">
+                <span className="text-gray-500 dark:text-gray-400">
+                  No. Serie:
+                </span>
+                <span className="text-gray-700 dark:text-gray-300 font-mono">
+                  {item.serialNumber || (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-gray-500 dark:text-gray-400">
                   Ubicación:
                 </span>
-                <span className="ml-1 text-gray-700 dark:text-gray-300">
-                  {item.locationName || '-'}
+                <span className="text-gray-700 dark:text-gray-300">
+                  {item.locationName || (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500 dark:text-gray-400">Folio:</span>
+                <span className="text-gray-700 dark:text-gray-300 font-mono text-xs">
+                  {item.internalFolio || (
+                    <span className="text-gray-400">-</span>
+                  )}
                 </span>
               </div>
             </div>
@@ -1011,10 +1033,16 @@ const ListResult = ({
                 Marca / Modelo
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                Serial
+                No. Activo
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                No. Serie
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                 Ubicación
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                Folio
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                 Status
@@ -1048,19 +1076,30 @@ const ListResult = ({
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="text-sm text-gray-900 dark:text-gray-300">
-                    {item.serialNumber || '-'}
-                  </div>
-                  {item.activeNumber && (
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      Act: {item.activeNumber}
-                    </div>
-                  )}
+                  <span className="text-sm font-mono text-gray-900 dark:text-gray-300">
+                    {item.activeNumber || (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <span className="text-sm font-mono text-gray-900 dark:text-gray-300">
+                    {item.serialNumber || (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   <span className="text-sm text-gray-900 dark:text-gray-300">
                     {item.locationName || (
-                      <span className="text-gray-400">Sin ubicación</span>
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <span className="text-xs font-mono text-gray-900 dark:text-gray-300">
+                    {item.internalFolio || (
+                      <span className="text-gray-400">-</span>
                     )}
                   </span>
                 </td>
