@@ -65,7 +65,7 @@ export const ruleTypesMeta = {
   INCOMPLETE_INVENTORY: {
     name: "Inventarios Incompletos",
     description:
-      "Detecta inventarios con información faltante (sin factura, orden de compra, ubicación, etc.)",
+      "Detecta inventarios que tengan AL MENOS UNO de los campos seleccionados faltante (sin factura, orden de compra, ubicación, etc.)",
     paramsSchema: {
       lookbackDays: { type: "number", default: 30, label: "Días hacia atrás" },
       status: {
@@ -80,7 +80,7 @@ export const ruleTypesMeta = {
         default: ["purchaseOrderId", "invoiceId"],
         label: "Campos faltantes",
         description:
-          "Selecciona los campos o relaciones que deben estar vacíos/null",
+          "Selecciona los campos a verificar. Se detectarán inventarios que tengan CUALQUIERA de estos campos vacío (con un solo campo faltante es suficiente)",
       },
       conditionNames: {
         type: "multiselect-dynamic",

@@ -39,6 +39,7 @@ export const evaluateIncompleteInventory = async (rule) => {
   const since = subDays(new Date(), lookbackDays);
 
   // Construir filtro de campos faltantes dinámicamente
+  // IMPORTANTE: Usamos OR - con UN SOLO campo faltante el inventario será detectado
   const missingFieldsFilter = [];
 
   for (const field of missingFields) {
@@ -51,11 +52,12 @@ export const evaluateIncompleteInventory = async (rule) => {
     }
   }
 
-  // Construir query
+  // Construir query - OR significa que con CUALQUIER campo faltante se incluye el inventario
   const whereClause = {
     enabled: true,
     status: status,
     createdAt: { gte: since },
+    // Lógica OR: detecta inventarios que tengan AL MENOS UNO de los campos seleccionados como faltante
     OR: missingFieldsFilter.length > 0 ? missingFieldsFilter : undefined,
   };
 

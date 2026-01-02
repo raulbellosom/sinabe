@@ -954,7 +954,7 @@ const ListResult = ({
       </motion.div>
 
       {/* Cards Grid (Mobile) */}
-      <div className="sm:hidden space-y-3 max-h-96 overflow-y-auto pr-2">
+      <div className="sm:hidden space-y-3 max-h-[500px] overflow-y-auto pr-2">
         {items.map((item, idx) => (
           <motion.a
             key={item.id}
@@ -965,7 +965,8 @@ const ListResult = ({
             transition={{ delay: idx * 0.05, type: 'spring', stiffness: 200 }}
             whileHover={{ scale: 1.02, y: -2 }}
           >
-            <div className="flex justify-between items-start mb-2">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-3">
               <div className="flex-1 min-w-0">
                 <h5 className="font-semibold text-gray-900 dark:text-white truncate">
                   {item.brandName} {item.modelName}
@@ -980,44 +981,80 @@ const ListResult = ({
                 {item.status}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">
-                  No. Activo:
-                </span>
-                <span className="text-gray-700 dark:text-gray-300 font-mono">
-                  {item.activeNumber || (
-                    <span className="text-gray-400">-</span>
-                  )}
-                </span>
+
+            {/* Fields Grid */}
+            <div className="space-y-2 text-sm border-t border-gray-100 dark:border-gray-700 pt-3">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400 text-xs">
+                    No. Activo
+                  </span>
+                  <p className="text-gray-900 dark:text-gray-200 font-mono text-sm truncate">
+                    {item.activeNumber || (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400 text-xs">
+                    No. Serie
+                  </span>
+                  <p className="text-gray-900 dark:text-gray-200 font-mono text-sm truncate">
+                    {item.serialNumber || (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400 text-xs">
+                    Folio Interno
+                  </span>
+                  <p className="text-gray-900 dark:text-gray-200 font-mono text-xs truncate">
+                    {item.internalFolio || (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400 text-xs">
+                    Ubicación
+                  </span>
+                  <p className="text-gray-900 dark:text-gray-200 text-sm truncate">
+                    {item.locationName || (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400 text-xs">
+                    Factura
+                  </span>
+                  <p className="text-gray-900 dark:text-gray-200 text-sm truncate">
+                    {item.invoiceCode || (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-gray-400 text-xs">
+                    Orden de Compra
+                  </span>
+                  <p className="text-gray-900 dark:text-gray-200 text-sm truncate">
+                    {item.purchaseOrderCode || (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </p>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">
-                  No. Serie:
+
+              {/* Comments - Full width */}
+              <div className="pt-1">
+                <span className="text-gray-500 dark:text-gray-400 text-xs">
+                  Comentarios
                 </span>
-                <span className="text-gray-700 dark:text-gray-300 font-mono">
-                  {item.serialNumber || (
-                    <span className="text-gray-400">-</span>
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">
-                  Ubicación:
-                </span>
-                <span className="text-gray-700 dark:text-gray-300">
-                  {item.locationName || (
-                    <span className="text-gray-400">-</span>
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Folio:</span>
-                <span className="text-gray-700 dark:text-gray-300 font-mono text-xs">
-                  {item.internalFolio || (
-                    <span className="text-gray-400">-</span>
-                  )}
-                </span>
+                <p className="text-gray-900 dark:text-gray-200 text-sm line-clamp-2">
+                  {item.comments || <span className="text-gray-400">-</span>}
+                </p>
               </div>
             </div>
           </motion.a>
@@ -1025,29 +1062,38 @@ const ListResult = ({
       </div>
 
       {/* Desktop Table */}
-      <div className="hidden sm:block overflow-x-auto max-h-96">
-        <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
+      <div className="hidden sm:block overflow-x-auto max-h-[500px]">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                 Marca / Modelo
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                 No. Activo
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                 No. Serie
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                Ubicación
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                 Folio
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                Ubicación
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                Factura
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                OC
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider max-w-[150px]">
+                Comentarios
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                 Acción
               </th>
             </tr>
@@ -1065,59 +1111,81 @@ const ListResult = ({
                   stiffness: 300,
                 }}
               >
-                <td className="px-4 py-3">
+                <td className="px-3 py-2">
                   <div>
                     <div className="font-medium text-gray-900 dark:text-white">
                       {item.brandName} {item.modelName}
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       {item.typeName}
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2">
                   <span className="text-sm font-mono text-gray-900 dark:text-gray-300">
                     {item.activeNumber || (
                       <span className="text-gray-400">-</span>
                     )}
                   </span>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2">
                   <span className="text-sm font-mono text-gray-900 dark:text-gray-300">
                     {item.serialNumber || (
                       <span className="text-gray-400">-</span>
                     )}
                   </span>
                 </td>
-                <td className="px-4 py-3">
-                  <span className="text-sm text-gray-900 dark:text-gray-300">
-                    {item.locationName || (
-                      <span className="text-gray-400">-</span>
-                    )}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2">
                   <span className="text-xs font-mono text-gray-900 dark:text-gray-300">
                     {item.internalFolio || (
                       <span className="text-gray-400">-</span>
                     )}
                   </span>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-3 py-2">
+                  <span className="text-sm text-gray-900 dark:text-gray-300">
+                    {item.locationName || (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <span className="text-sm text-gray-900 dark:text-gray-300">
+                    {item.invoiceCode || (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <span className="text-sm text-gray-900 dark:text-gray-300">
+                    {item.purchaseOrderCode || (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </span>
+                </td>
+                <td className="px-3 py-2 max-w-[150px]">
+                  <span
+                    className="text-sm text-gray-900 dark:text-gray-300 line-clamp-2"
+                    title={item.comments || ''}
+                  >
+                    {item.comments || <span className="text-gray-400">-</span>}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
                   <span
                     className={`px-2 py-1 text-xs font-medium rounded-full border ${statusColors[item.status] || 'bg-gray-100 text-gray-800'}`}
                   >
                     {item.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-3 py-2 text-right">
                   <motion.a
                     href={`/inventories/view/${item.id}`}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <HiExternalLink className="h-4 w-4" />
+                    <HiExternalLink className="h-3 w-3" />
                     Ver
                   </motion.a>
                 </td>

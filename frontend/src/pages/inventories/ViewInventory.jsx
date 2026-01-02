@@ -91,87 +91,87 @@ const ViewInventory = () => {
     // --- Campos con filtro especial (pillables) - van primero ---
     const pillableFields = [];
 
-    // Estado
+    // Estado (siempre presente)
     pillableFields.push({
       key: 'status',
       name:
         inventory?.status === 'PROPUESTA'
           ? 'PROPUESTA DE BAJA'
-          : inventory?.status,
+          : inventory?.status || '-',
       icon: MdInfo,
       label: 'Estado',
       route: null,
     });
 
-    // Modelo
-    if (inventory?.model?.name) {
-      pillableFields.push({
-        key: 'model',
-        name: inventory.model.name,
-        icon: MdInventory,
-        label: 'Modelo',
-        route: `/inventories?modelName=${encodeURIComponent(inventory.model.name)}`,
-      });
-    }
+    // Modelo (siempre presente)
+    pillableFields.push({
+      key: 'model',
+      name: inventory?.model?.name || '-',
+      icon: MdInventory,
+      label: 'Modelo',
+      route: inventory?.model?.name
+        ? `/inventories?modelName=${encodeURIComponent(inventory.model.name)}`
+        : null,
+    });
 
-    // Marca
-    if (inventory?.model?.brand?.name) {
-      pillableFields.push({
-        key: 'brand',
-        name: inventory.model.brand.name,
-        icon: PiTrademarkRegisteredBold,
-        label: 'Marca',
-        route: `/inventories?brandName=${encodeURIComponent(inventory.model.brand.name)}`,
-      });
-    }
+    // Marca (siempre presente)
+    pillableFields.push({
+      key: 'brand',
+      name: inventory?.model?.brand?.name || '-',
+      icon: PiTrademarkRegisteredBold,
+      label: 'Marca',
+      route: inventory?.model?.brand?.name
+        ? `/inventories?brandName=${encodeURIComponent(inventory.model.brand.name)}`
+        : null,
+    });
 
-    // Tipo de Inventario
-    if (inventory?.model?.type?.name) {
-      pillableFields.push({
-        key: 'type',
-        name: inventory.model.type.name,
-        icon: BiCategory,
-        label: 'Tipo de Inventario',
-        route: `/inventories?typeName=${encodeURIComponent(inventory.model.type.name)}`,
-      });
-    }
+    // Tipo de Inventario (siempre presente)
+    pillableFields.push({
+      key: 'type',
+      name: inventory?.model?.type?.name || '-',
+      icon: BiCategory,
+      label: 'Tipo de Inventario',
+      route: inventory?.model?.type?.name
+        ? `/inventories?typeName=${encodeURIComponent(inventory.model.type.name)}`
+        : null,
+    });
 
-    // Orden de Compra (directa o a través de factura)
+    // Orden de Compra (siempre presente)
     const purchaseOrderCode =
       inventory?.purchaseOrder?.code || inventory?.invoice?.purchaseOrder?.code;
-    if (purchaseOrderCode) {
-      pillableFields.push({
-        key: 'purchaseOrder',
-        name: purchaseOrderCode,
-        icon: FaClipboardList,
-        label: 'Orden de Compra',
-        route: `/inventories?purchaseOrderCode=${encodeURIComponent(purchaseOrderCode)}`,
-      });
-    }
+    pillableFields.push({
+      key: 'purchaseOrder',
+      name: purchaseOrderCode || '-',
+      icon: FaClipboardList,
+      label: 'Orden de Compra',
+      route: purchaseOrderCode
+        ? `/inventories?purchaseOrderCode=${encodeURIComponent(purchaseOrderCode)}`
+        : null,
+    });
 
-    // Factura
-    if (inventory?.invoice?.code) {
-      pillableFields.push({
-        key: 'invoice',
-        name: inventory.invoice.code,
-        icon: FaFileInvoiceDollar,
-        label: 'Factura',
-        route: `/inventories?invoiceCode=${encodeURIComponent(inventory.invoice.code)}`,
-      });
-    }
+    // Factura (siempre presente)
+    pillableFields.push({
+      key: 'invoice',
+      name: inventory?.invoice?.code || '-',
+      icon: FaFileInvoiceDollar,
+      label: 'Factura',
+      route: inventory?.invoice?.code
+        ? `/inventories?invoiceCode=${encodeURIComponent(inventory.invoice.code)}`
+        : null,
+    });
 
-    // Ubicación
-    if (inventory?.location?.name) {
-      pillableFields.push({
-        key: 'location',
-        name: inventory.location.name,
-        icon: FaMapMarkerAlt,
-        label: 'Ubicación',
-        route: `/inventories?locationName=${encodeURIComponent(inventory.location.name)}`,
-      });
-    }
+    // Ubicación (siempre presente)
+    pillableFields.push({
+      key: 'location',
+      name: inventory?.location?.name || '-',
+      icon: FaMapMarkerAlt,
+      label: 'Ubicación',
+      route: inventory?.location?.name
+        ? `/inventories?locationName=${encodeURIComponent(inventory.location.name)}`
+        : null,
+    });
 
-    // Verticales
+    // Verticales (solo si existen, pueden ser múltiples)
     inventory?.model?.ModelVertical?.forEach(({ vertical }, idx) => {
       pillableFields.push({
         key: `vertical-${idx}`,
@@ -182,97 +182,85 @@ const ViewInventory = () => {
       });
     });
 
-    // --- Campos regulares (sin filtro especial) ---
+    // --- Campos regulares (sin filtro especial) - siempre presentes ---
     const regularFields = [];
 
-    // Número de Serie
-    if (inventory?.serialNumber) {
-      regularFields.push({
-        key: 'serialNumber',
-        name: inventory.serialNumber,
-        icon: TbNumber123,
-        label: 'Número de Serie',
-        route: null,
-      });
-    }
+    // Número de Serie (siempre presente)
+    regularFields.push({
+      key: 'serialNumber',
+      name: inventory?.serialNumber || '-',
+      icon: TbNumber123,
+      label: 'Número de Serie',
+      route: null,
+    });
 
-    // Número de Activo
-    if (inventory?.activeNumber) {
-      regularFields.push({
-        key: 'activeNumber',
-        name: inventory.activeNumber,
-        icon: AiOutlineFieldNumber,
-        label: 'Número de Activo',
-        route: null,
-      });
-    }
+    // Número de Activo (siempre presente)
+    regularFields.push({
+      key: 'activeNumber',
+      name: inventory?.activeNumber || '-',
+      icon: AiOutlineFieldNumber,
+      label: 'Número de Activo',
+      route: null,
+    });
 
-    // Folio Interno
-    if (inventory?.internalFolio) {
-      regularFields.push({
-        key: 'internalFolio',
-        name: inventory.internalFolio,
-        icon: FaClipboardList,
-        label: 'Folio Interno',
-        route: null,
-      });
-    }
+    // Folio Interno (siempre presente)
+    regularFields.push({
+      key: 'internalFolio',
+      name: inventory?.internalFolio || '-',
+      icon: FaClipboardList,
+      label: 'Folio Interno',
+      route: null,
+    });
 
-    // Fecha de Recepción
-    if (inventory?.receptionDate) {
-      regularFields.push({
-        key: 'receptionDate',
-        name: parseToLocalDate(inventory.receptionDate),
-        icon: BiSolidCalendarCheck,
-        label: 'Fecha de Recepción',
-        route: null,
-      });
-    }
+    // Fecha de Recepción (siempre presente)
+    regularFields.push({
+      key: 'receptionDate',
+      name: inventory?.receptionDate
+        ? parseToLocalDate(inventory.receptionDate)
+        : '-',
+      icon: BiSolidCalendarCheck,
+      label: 'Fecha de Recepción',
+      route: null,
+    });
 
-    // Última Modificación
-    if (inventory?.updatedAt) {
-      regularFields.push({
-        key: 'lastModification',
-        name: parseToLocalDate(inventory.updatedAt),
-        icon: BiSolidCalendarEdit,
-        label: 'Última Modificación',
-        route: null,
-      });
-    }
+    // Última Modificación (siempre presente)
+    regularFields.push({
+      key: 'lastModification',
+      name: inventory?.updatedAt ? parseToLocalDate(inventory.updatedAt) : '-',
+      icon: BiSolidCalendarEdit,
+      label: 'Última Modificación',
+      route: null,
+    });
 
-    // Fecha de Creación
-    if (inventory?.createdAt) {
-      regularFields.push({
-        key: 'creationDate',
-        name: parseToLocalDate(inventory.createdAt),
-        icon: BiSolidCalendarPlus,
-        label: 'Fecha de Creación',
-        route: null,
-      });
-    }
+    // Fecha de Creación (siempre presente)
+    regularFields.push({
+      key: 'creationDate',
+      name: inventory?.createdAt ? parseToLocalDate(inventory.createdAt) : '-',
+      icon: BiSolidCalendarPlus,
+      label: 'Fecha de Creación',
+      route: null,
+    });
 
-    // Creado por
-    if (inventory?.createdBy) {
-      regularFields.push({
-        key: 'creationUser',
-        name: `${inventory.createdBy.firstName} ${inventory.createdBy.lastName}`,
-        icon: FaUser,
-        label: 'Creado por',
-        route: null,
-      });
-    }
+    // Creado por (siempre presente)
+    regularFields.push({
+      key: 'creationUser',
+      name: inventory?.createdBy
+        ? `${inventory.createdBy.firstName} ${inventory.createdBy.lastName}`
+        : '-',
+      icon: FaUser,
+      label: 'Creado por',
+      route: null,
+    });
 
     // Comentarios (siempre al final y ocupa todo el ancho)
-    if (inventory?.comments) {
-      regularFields.push({
-        key: 'comments',
-        name: inventory.comments,
-        icon: MdOutlineTextsms,
-        label: 'Comentarios',
-        route: null,
-        fullWidth: true,
-      });
-    }
+    regularFields.push({
+      key: 'comments',
+      name: inventory?.comments || '-',
+      icon: MdOutlineTextsms,
+      label: 'Comentarios',
+      route: null,
+      fullWidth: true,
+    });
 
     // Combinar pillables + regulares
     setInventoryData([...pillableFields, ...regularFields]);
