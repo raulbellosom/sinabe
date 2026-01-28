@@ -65,6 +65,11 @@ model User {
   createdNotificationRules NotificationRule[] @relation("CreatedNotificationRules")
   sentNotifications        InAppNotification[] @relation("NotificationsReceived")
 
+  // New Relations
+  createdEvents            Event[]         @relation("EventCreator")
+  eventAttendance          EventAttendee[]
+  auditLogs                AuditLog[]
+
   @@index([roleId], map: "User_roleId_fkey")
 }
 
@@ -307,6 +312,7 @@ model Vertical {
   description   String?         @db.Text
   updatedAt     DateTime        @updatedAt
   ModelVertical ModelVertical[]
+  events        Event[]
 }
 
 model ModelVertical {
@@ -617,4 +623,99 @@ model PushSubscription {
   updatedAt    DateTime @updatedAt
 
   @@index([userId])
+}
+
+// =====================================================
+// GESTION DE EVENTOS (Mantenimiento y Generales)
+// =====================================================
+
+model Event {
+  id            String            @id @default(uuid())
+  title         String
+  description   String?           @db.Text
+  scheduledDate DateTime
+  completedDate DateTime?
+  status        EventStatus       @default(SCHEDULED)
+  provider      String?           // Proveedor para mantenimientos
+
+  // Tipo y Alcance
+  type          EventType         @default(MAINTENANCE)
+  scope         EventScope        @default(GLOBAL) // GLOBAL = Todos, SPECIFIC = Solo attendees
+
+  // Relaciones
+  verticalId    Int?              // Opcional para eventos generales
+  vertical      Vertical?         @relation(fields: [verticalId], references: [id])
+  
+  attendees     EventAttendee[]
+
+  // Recurrencia
+  isRecurring   Boolean           @default(false)
+  recurrence    String?
+  recurrenceEndDate DateTime?
+  seriesId      String?           // UUID to link recurring instances
+
+  // Auditoría básica
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  createdById   String
+  createdBy     User              @relation("EventCreator", fields: [createdById], references: [id])
+
+  @@index([verticalId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@index([seriesId])
+}
+
+model EventAttendee {
+  id        String   @id @default(uuid())
+  eventId   String
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+enum EventStatus {
+  SCHEDULED
+  COMPLETED
+  POSTPONED
+  CANCELLED
+  OVERDUE
+}
+
+enum EventType {
+  MAINTENANCE
+  GENERAL
+}
+
+enum EventScope {
+  GLOBAL
+  SPECIFIC
+}
+
+// =====================================================
+// AUDITORIA / LOGGER
+// =====================================================
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  entityType  String   // "INVENTORY", "VERTICAL", "MODEL", etc.
+  entityId    String   // ID de la entidad (convertir a string si es Int)
+  action      String   // "CREATE", "UPDATE", "DELETE"
+  entityTitle String?  // Titulo o nombre legible de la entidad
+  
+  // Detalles del cambio
+  changes     String?  @db.LongText   // { before: {}, after: {} } o { field: { old: 'a', new: 'b' } }
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
 }

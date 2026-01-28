@@ -1,16 +1,14 @@
 // src/pages/VerticalPage.jsx
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   FaSitemap,
   FaPlus,
-  FaTrash,
-  FaEye,
-  FaChevronDown,
-  FaChevronUp,
-} from 'react-icons/fa6';
-import { BsThreeDots } from 'react-icons/bs';
-import { FaBriefcase, FaEdit, FaFolder } from 'react-icons/fa';
+  FaSearch,
+  FaChevronRight,
+  FaChevronLeft,
+} from 'react-icons/fa';
+import { TextInput } from 'flowbite-react';
 import {
   useVerticals,
   useCreateVertical,
@@ -21,12 +19,12 @@ import {
   useSearchModels,
 } from '../../hooks/useVerticals';
 import ModalVerticalForm from '../../components/Verticals/ModalVerticalForm';
-import VerticalModelsDetail from '../../components/Verticals/VerticalModelsDetail';
-import SideModal from '../../components/Modals/SideModal';
+import VerticalDetailExtended from '../../components/Verticals/VerticalDetailExtended';
 import ConfirmModal from '../../components/Modals/ConfirmModal';
 import Skeleton from 'react-loading-skeleton';
-import { Dropdown } from 'flowbite-react';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
+import classNames from 'classnames';
+import MaintenanceAgendaGlobal from '../../components/Verticals/MaintenanceAgendaGlobal';
 
 const VerticalPage = () => {
   const {
@@ -42,27 +40,29 @@ const VerticalPage = () => {
   const searchModels = useSearchModels();
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const modalId = searchParams.get('modalId');
+  const urlVerticalId = searchParams.get('verticalId');
 
+  const [currentTab, setCurrentTab] = useState('verticals'); // 'verticals' | 'agenda'
   const [selected, setSelected] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [showAssign, setShowAssign] = useState(false);
   const [editData, setEditData] = useState(null);
-  const [expanded, setExpanded] = useState(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [verticalToDelete, setVerticalToDelete] = useState(null);
 
-  // Abrir detalle de vertical si viene en URL
+  // Sync selection with URL or List updates
   useEffect(() => {
-    if (modalId && verticales?.length) {
-      // comparas string contra string
-      const found = verticales.find((v) => v.id.toString() === modalId);
-      if (found) setSelected(found);
+    if (verticales?.length) {
+      if (urlVerticalId) {
+        const found = verticales.find((v) => v.id.toString() === urlVerticalId);
+        if (found) setSelected(found);
+      }
     }
-  }, [modalId, verticales]);
+  }, [urlVerticalId, verticales]);
 
-  // Mantener selected sincronizado si cambian datos
+  // Keep selected object fresh
   useEffect(() => {
     if (selected?.id && verticales?.length) {
       const updated = verticales.find((v) => v.id === selected.id);
@@ -70,23 +70,14 @@ const VerticalPage = () => {
     }
   }, [verticales]);
 
-  const openDetailModal = (vertical) => {
-    setSearchParams((prev) => {
-      const params = new URLSearchParams(prev);
-      params.set('modalId', vertical.id);
-      return params;
-    });
+  const handleSelect = (vertical) => {
     setSelected(vertical);
-  };
-
-  const closeDetailModal = () => {
-    setSelected(null);
+    setShowFullDescription(false);
     setSearchParams((prev) => {
       const params = new URLSearchParams(prev);
-      params.delete('modalId');
+      params.set('verticalId', vertical.id);
       return params;
     });
-    setShowFullDescription(false);
   };
 
   const handleEdit = (vertical) => {
@@ -94,7 +85,8 @@ const VerticalPage = () => {
     setShowForm(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id, e) => {
+    if (e) e.stopPropagation();
     setVerticalToDelete(id);
     setShowConfirmDelete(true);
   };
@@ -106,180 +98,209 @@ const VerticalPage = () => {
           refetchVerticals();
           setShowConfirmDelete(false);
           setVerticalToDelete(null);
+          if (selected?.id === verticalToDelete) {
+            setSelected(null);
+            setSearchParams((prev) => {
+              const params = new URLSearchParams(prev);
+              params.delete('verticalId');
+              return params;
+            });
+          }
         },
       });
     }
   };
 
-  const resumenGlobal = useMemo(() => {
-    const modelos =
-      verticales?.reduce((sum, v) => sum + (v.models?.length || 0), 0) || 0;
-    const inventarios =
-      verticales?.reduce(
-        (sum, v) => sum + (v.models?.flatMap((m) => m.inventories).length || 0),
-        0,
-      ) || 0;
-    return { modelos, inventarios };
-  }, [verticales]);
+  const shouldExpandInModal = (text) =>
+    text?.split('\n').length > 5 || text?.length > 200;
 
-  const shouldCollapse = (text) =>
-    text?.split('\n').length > 3 || text?.length > 200;
-  const shouldExpandInModal = (text) => text?.split('\n').length > 5;
+  const filteredVerticals =
+    verticales?.filter((v) =>
+      v.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    ) || [];
 
   return (
-    <div className="p-4 space-y-6 bg-white dark:bg-gray-900 rounded-lg shadow-md h-full">
+    <div className="h-[calc(100vh-100px)] flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden">
       {/* HEADER */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-sinabe-primary flex items-center gap-2">
-          <FaSitemap /> Verticales
+      {/* HEADER */}
+      <div className="flex-none p-4 bg-white dark:bg-gray-800 shadow-sm border-b flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
+        <h1 className="text-xl font-bold text-sinabe-primary flex items-center gap-2 w-full md:w-auto justify-center md:justify-start">
+          <FaSitemap className="flex-shrink-0 text-2xl md:text-xl" />{' '}
+          <span className="truncate">Gestión de Verticales</span>
         </h1>
-        <div>
-          <ActionButtons
-            extraActions={[
-              {
-                label: 'Nueva Vertical',
-                icon: FaPlus,
-                color: 'indigo',
-                filled: true,
-                action: () => {
-                  setEditData(null);
-                  setShowForm(true);
-                },
-              },
-            ]}
-          />
+        <div className="flex items-center gap-2 w-full md:w-auto justify-center md:justify-end overflow-x-auto">
+          <div className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1 flex-shrink-0">
+            <button
+              onClick={() => setCurrentTab('verticals')}
+              className={classNames(
+                'px-4 py-1.5 text-xs md:text-sm font-medium rounded-md transition-all whitespace-nowrap',
+                currentTab === 'verticals'
+                  ? 'bg-white dark:bg-gray-600 shadow text-sinabe-primary'
+                  : 'text-gray-500 hover:text-gray-700',
+              )}
+            >
+              Verticales
+            </button>
+            <button
+              onClick={() => setCurrentTab('agenda')}
+              className={classNames(
+                'px-4 py-1.5 text-xs md:text-sm font-medium rounded-md transition-all whitespace-nowrap',
+                currentTab === 'agenda'
+                  ? 'bg-white dark:bg-gray-600 shadow text-sinabe-primary'
+                  : 'text-gray-500 hover:text-gray-700',
+              )}
+            >
+              Agenda
+            </button>
+          </div>
+
+          {currentTab === 'verticals' && (
+            <div className="flex-shrink-0">
+              <ActionButtons
+                extraActions={[
+                  {
+                    label: 'Nueva',
+                    icon: FaPlus,
+                    color: 'indigo',
+                    filled: true,
+                    action: () => {
+                      setEditData(null);
+                      setShowForm(true);
+                    },
+                  },
+                ]}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* RESUMEN GLOBAL */}
-      <div className="flex gap-4">
-        <span className="bg-sinabe-primary/10 text-sinabe-primary px-3 py-3 rounded-full text-sm flex items-center gap-2">
-          <FaBriefcase size={20} /> {resumenGlobal.modelos} Modelos asignados
-        </span>
-        <span className="bg-sinabe-info/10 text-sinabe-info px-3 py-1 rounded-full text-sm flex items-center gap-2">
-          <FaFolder size={20} /> {resumenGlobal.inventarios} Inventarios
-          relacionados
-        </span>
-      </div>
-
-      {/* LISTADO DE VERTICALES */}
-      {isLoading ? (
-        <Skeleton count={6} height={80} />
-      ) : verticales?.length ? (
-        <div className="grid grid-cols-1 gap-4">
-          {verticales.map((v) => (
-            <div
-              key={v.id}
-              className="bg-white dark:bg-gray-800 border rounded-xl shadow-sm p-5 relative"
-            >
-              <div className="absolute top-4 right-4 text-nowrap">
-                <Dropdown
-                  inline
-                  renderTrigger={() => (
-                    <button className="p-1 rounded-full hover:bg-gray-100">
-                      <BsThreeDots size={20} className="text-gray-500" />
-                    </button>
-                  )}
-                >
-                  <Dropdown.Item
-                    icon={FaEye}
-                    onClick={() => openDetailModal(v)}
-                  >
-                    Ver detalles
-                  </Dropdown.Item>
-                  <Dropdown.Item icon={FaEdit} onClick={() => handleEdit(v)}>
-                    Editar
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    icon={FaTrash}
-                    className="text-red-500"
-                    onClick={() => handleDelete(v.id)}
-                  >
-                    Eliminar
-                  </Dropdown.Item>
-                </Dropdown>
-              </div>
-
-              <h2 className="font-semibold text-base text-sinabe-blue-dark mb-1">
-                {v.name}
-              </h2>
-              <div className="text-xs lg:text-sm text-gray-600 mb-3 whitespace-pre-line">
-                {expanded === v.id ? (
-                  <>
-                    <p className="mb-1">{v.description}</p>
-                    <button
-                      onClick={() => setExpanded(null)}
-                      className="text-xs text-sinabe-primary hover:underline flex items-center gap-1"
-                    >
-                      Ver menos <FaChevronUp className="text-xs" />
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <p className="line-clamp-2">{v.description}</p>
-                    {shouldCollapse(v.description) && (
-                      <button
-                        onClick={() => setExpanded(v.id)}
-                        className="text-xs text-sinabe-primary hover:underline flex items-center gap-1"
-                      >
-                        Ver más <FaChevronDown className="text-xs" />
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-
-              <div className="flex gap-4 text-xs text-gray-500">
-                <span className="flex items-center gap-1">
-                  <FaBriefcase /> {v.models?.length || 0} modelos
-                </span>
-                <span className="flex items-center gap-1">
-                  <FaFolder />{' '}
-                  {v.models?.flatMap((m) => m.inventories).length || 0}{' '}
-                  inventarios
-                </span>
-              </div>
-            </div>
-          ))}
+      {/* CONTENT SWITCHER */}
+      {currentTab === 'agenda' ? (
+        <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900 m-4 rounded-lg shadow">
+          <MaintenanceAgendaGlobal />
         </div>
       ) : (
-        <div className="text-center mt-20 text-gray-500">
-          <FaSitemap className="text-5xl mb-4 mx-auto" />
-          <h2 className="text-xl font-semibold">
-            No hay verticales registradas
-          </h2>
-          <p className="text-sm">Haz clic en "Nueva Vertical" para comenzar.</p>
+        /* SPLIT VIEW */
+        <div className="flex-1 flex overflow-hidden">
+          {/* LEFT PANEL: LIST */}
+          <div
+            className={classNames(
+              'w-full md:w-1/3 min-w-[300px] max-w-[400px] bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col',
+              selected ? 'hidden md:flex' : 'flex',
+            )}
+          >
+            <div className="p-4 border-b">
+              <TextInput
+                icon={FaSearch}
+                placeholder="Buscar vertical..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {isLoading ? (
+                <div className="p-4">
+                  <Skeleton count={5} height={60} />
+                </div>
+              ) : filteredVerticals.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  No se encontraron verticales.
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {filteredVerticals.map((v) => (
+                    <div
+                      key={v.id}
+                      onClick={() => handleSelect(v)}
+                      className={classNames(
+                        'p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex justify-between items-center group',
+                        selected?.id === v.id
+                          ? 'bg-indigo-50 dark:bg-indigo-900/20 border-l-4 border-indigo-500'
+                          : 'border-l-4 border-transparent',
+                      )}
+                    >
+                      <div>
+                        <h3
+                          className={classNames(
+                            'font-medium',
+                            selected?.id === v.id
+                              ? 'text-indigo-600 dark:text-indigo-400'
+                              : 'text-gray-800 dark:text-gray-200',
+                          )}
+                        >
+                          {v.name}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {v.models?.length || 0} modelos
+                        </p>
+                      </div>
+                      <FaChevronRight
+                        className={classNames(
+                          'text-gray-300',
+                          selected?.id === v.id && 'text-indigo-500',
+                        )}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT PANEL: DETAILS */}
+          <div
+            className={classNames(
+              'flex-1 bg-white dark:bg-gray-900 p-6 overflow-hidden flex flex-col',
+              !selected ? 'hidden md:flex' : 'flex',
+            )}
+          >
+            {selected ? (
+              <>
+                {/* Mobile Back Button */}
+                <button
+                  onClick={() => {
+                    setSelected(null);
+                    setSearchParams((prev) => {
+                      const params = new URLSearchParams(prev);
+                      params.delete('verticalId');
+                      return params;
+                    });
+                  }}
+                  className="md:hidden mb-4 flex items-center text-gray-600 hover:text-indigo-600 font-medium"
+                >
+                  <FaChevronLeft className="mr-2" />
+                  Volver a la lista
+                </button>
+
+                <VerticalDetailExtended
+                  vertical={selected}
+                  removeModel={removeModel}
+                  refetchVerticals={refetchVerticals}
+                  showFullDescription={showFullDescription}
+                  setShowFullDescription={setShowFullDescription}
+                  shouldExpandInModal={shouldExpandInModal}
+                  selectedDescription={selected.description}
+                  showAssign={showAssign}
+                  setShowAssign={setShowAssign}
+                  assignModel={assignModel}
+                  searchModels={searchModels}
+                />
+              </>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                <FaSitemap className="text-6xl mb-4 opacity-20" />
+                <p className="text-lg">
+                  Selecciona una vertical para ver sus detalles
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* DETALLE DE VERTICAL */}
-      <SideModal
-        isOpen={!!selected}
-        onClose={closeDetailModal}
-        title={selected?.name}
-        icon={FaSitemap}
-        size="xl"
-        className="mt-4 ml-4"
-      >
-        {selected && (
-          <VerticalModelsDetail
-            models={selected.models}
-            verticalId={selected.id}
-            removeModel={removeModel}
-            refetchVerticals={refetchVerticals}
-            showFullDescription={showFullDescription}
-            setShowFullDescription={setShowFullDescription}
-            shouldExpandInModal={shouldExpandInModal}
-            selectedDescription={selected.description}
-            showAssign={showAssign}
-            setShowAssign={setShowAssign}
-            assignModel={assignModel}
-            searchModels={searchModels}
-          />
-        )}
-      </SideModal>
-
-      {/* MODALES DE CREAR / ASIGNAR */}
+      {/* MODALES */}
       {showForm && (
         <ModalVerticalForm
           isOpen={showForm}
@@ -297,7 +318,6 @@ const VerticalPage = () => {
         />
       )}
 
-      {/* Modal de Confirmación para Eliminar */}
       <ConfirmModal
         isOpen={showConfirmDelete}
         onClose={() => {

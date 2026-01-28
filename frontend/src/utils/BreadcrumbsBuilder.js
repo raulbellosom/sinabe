@@ -12,6 +12,7 @@ import { PiStackPlusFill } from 'react-icons/pi';
 import { BiCategory } from 'react-icons/bi';
 import { AiOutlineProject } from 'react-icons/ai';
 import { TbAdjustmentsHorizontal } from 'react-icons/tb';
+import { FaHistory } from 'react-icons/fa';
 
 const BreadcrumbsBuilder = (path) => {
   // No mostrar breadcrumbs en home o dashboard
@@ -169,6 +170,16 @@ const BreadcrumbsBuilder = (path) => {
       label: 'Control de roles',
       href: '/roles',
       icon: FaUserShield,
+    },
+    {
+      label: 'Agenda',
+      href: '/agenda',
+      icon: null,
+    },
+    {
+      label: 'Auditoría',
+      href: '/audit-logs',
+      icon: FaHistory,
     },
   ];
 

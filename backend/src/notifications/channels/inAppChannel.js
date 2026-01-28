@@ -12,12 +12,12 @@ export const createInAppNotification = async (rule, run, matches, summary) => {
 
   // Filtrar solo destinatarios tipo USER (IN_APP no tiene sentido para emails externos)
   const userRecipients = rule.recipients.filter(
-    (r) => r.kind === "USER" && r.userId
+    (r) => r.kind === "USER" && r.userId,
   );
 
   if (userRecipients.length === 0) {
     console.log(
-      `[InAppChannel] Regla ${rule.id}: Sin usuarios para notificar in-app`
+      `[InAppChannel] Regla ${rule.id}: Sin usuarios para notificar in-app`,
     );
     return deliveries;
   }
@@ -61,7 +61,7 @@ export const createInAppNotification = async (rule, run, matches, summary) => {
 
       deliveries.push({ ...delivery, status: "SENT" });
       console.log(
-        `[InAppChannel] Notificación creada para usuario ${recipient.userId}`
+        `[InAppChannel] Notificación creada para usuario ${recipient.userId}`,
       );
     } catch (error) {
       console.error(`[InAppChannel] Error creando notificación:`, error);
@@ -174,4 +174,35 @@ export const getUnreadCount = async (userId) => {
   return await db.inAppNotification.count({
     where: { userId, isRead: false },
   });
+};
+
+/**
+ * Crea una notificación directa (para eventos, alertas manuales, etc.)
+ */
+export const createDirectNotification = async ({
+  userId,
+  title,
+  body,
+  link,
+  creatorId,
+}) => {
+  try {
+    const notification = await db.inAppNotification.create({
+      data: {
+        userId,
+        title,
+        body,
+        link,
+        // ruleRunId is optional, leave null
+        ruleCreatorId: creatorId, // Optional: who triggered it
+      },
+    });
+    console.log(
+      `[InAppChannel] Direct notification created for user ${userId}`,
+    );
+    return notification;
+  } catch (error) {
+    console.error(`[InAppChannel] Error creating direct notification:`, error);
+    // Don't throw to avoid blocking the main flow
+  }
 };

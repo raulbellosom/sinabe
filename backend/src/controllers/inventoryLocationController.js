@@ -1,4 +1,5 @@
 import { db } from "../lib/db.js";
+import { logAction } from "../services/logger.service.js";
 
 // 📋 Obtener lista de ubicaciones (con búsqueda opcional)
 export const getInventoryLocations = async (req, res) => {
@@ -94,6 +95,19 @@ export const createInventoryLocation = async (req, res) => {
       },
     });
 
+    try {
+      await logAction({
+        entityType: "LOCATION",
+        entityId: location.id,
+        action: "CREATE",
+        userId: req.user.id,
+        changes: { name: location.name },
+        entityTitle: location.name,
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
+
     res.status(201).json(location);
   } catch (error) {
     console.error("Error creating inventory location:", error);
@@ -128,12 +142,34 @@ export const updateInventoryLocation = async (req, res) => {
         .json({ message: "Ya existe una ubicación con ese nombre" });
     }
 
+    const oldLocation = await db.inventoryLocation.findUnique({
+      where: { id: parseInt(id, 10) },
+    });
+
     const location = await db.inventoryLocation.update({
       where: { id: parseInt(id, 10) },
       data: {
         name: trimmedName,
       },
     });
+
+    try {
+      await logAction({
+        entityType: "LOCATION",
+        entityId: location.id,
+        action: "UPDATE",
+        userId: req.user.id,
+        changes: {
+          name: {
+            old: oldLocation.name,
+            new: location.name,
+          },
+        },
+        entityTitle: location.name,
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
 
     res.json(location);
   } catch (error) {
@@ -158,10 +194,27 @@ export const deleteInventoryLocation = async (req, res) => {
       });
     }
 
+    const locationToDelete = await db.inventoryLocation.findUnique({
+      where: { id: parseInt(id, 10) },
+    });
+
     const location = await db.inventoryLocation.update({
       where: { id: parseInt(id, 10) },
       data: { enabled: false },
     });
+
+    try {
+      await logAction({
+        entityType: "LOCATION",
+        entityId: id,
+        action: "DELETE",
+        userId: req.user.id,
+        changes: { name: locationToDelete.name },
+        entityTitle: locationToDelete.name,
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
 
     res.json(location);
   } catch (error) {

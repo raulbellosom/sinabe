@@ -26,6 +26,8 @@ import userPreferenceRoutes from "./routes/userPreferenceRoutes.js";
 import notificationRuleRoutes from "./routes/notificationRuleRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import pushRoutes from "./routes/pushRoutes.js";
+import eventRoutes from "./routes/eventRoutes.js";
+import auditLogRoutes from "./routes/auditLogRoutes.js";
 import { startScheduler } from "./notifications/scheduler.js";
 
 dotenv.config();
@@ -60,10 +62,11 @@ app.use(
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 
+// Routes registration
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/inventories", inventoryRoutes);
@@ -80,6 +83,7 @@ app.use("/api/invoices", invoiceRoutes);
 app.use("/api/project-team", projectTeamRoutes);
 app.use("/api/inventory-assignments", inventoryAssignmentRoutes);
 app.use("/api/verticals", verticalRoutes);
+app.use("/api/events", eventRoutes);
 app.use("/api/ping", pingRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/custody-records", custodyRoutes);
@@ -87,6 +91,7 @@ app.use("/api/preferences", userPreferenceRoutes);
 app.use("/api/notification-rules", notificationRuleRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/push", pushRoutes);
+app.use("/api/audit-logs", auditLogRoutes);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 4000;

@@ -1,4 +1,6 @@
 import { db } from "../lib/db.js";
+import { logAction } from "../services/logger.service.js";
+import { getInventorySnapshot, generateDiff } from "../utils/auditHelpers.js";
 
 // Función para obtener los permisos del usuario
 
@@ -380,6 +382,21 @@ export const createInventory = async (req, res) => {
     });
 
     if (createdInventory) {
+      // Log Creation
+      try {
+        const snapshot = await getInventorySnapshot(createdInventory.id);
+        await logAction({
+          entityType: "INVENTORY",
+          entityId: createdInventory.id,
+          action: "CREATE",
+          entityTitle: `${createdInventory.model?.name || "Inventario"} - ${createdInventory.internalFolio || ""}`,
+          userId: user.id,
+          changes: snapshot,
+        });
+      } catch (logError) {
+        console.error("Error logging inventory creation:", logError);
+      }
+
       createdInventory.receptionDate
         ? (createdInventory.receptionDate = createdInventory.receptionDate
             .toISOString()
@@ -464,6 +481,8 @@ export const updateInventory = async (req, res) => {
       }
     }
 
+    const oldSnapshot = await getInventorySnapshot(id);
+
     await db.$transaction(async (prisma) => {
       await prisma.inventory.update({
         where: { id },
@@ -500,7 +519,7 @@ export const updateInventory = async (req, res) => {
         const existingCustomFields = await prisma.inventoryCustomField.findMany(
           {
             where: { inventoryId: id },
-          }
+          },
         );
 
         const existingCustomFieldsMap = new Map();
@@ -511,7 +530,7 @@ export const updateInventory = async (req, res) => {
         // Revisión de eliminación de campos que no están en customFields
         for (const [customFieldId, field] of existingCustomFieldsMap) {
           const exists = customFields.some(
-            (field) => field.customFieldId === customFieldId
+            (field) => field.customFieldId === customFieldId,
           );
 
           if (!exists) {
@@ -669,6 +688,25 @@ export const updateInventory = async (req, res) => {
     });
 
     if (updatedInventory) {
+      // Log Update
+      try {
+        const newSnapshot = await getInventorySnapshot(id);
+        const changes = generateDiff(oldSnapshot, newSnapshot);
+
+        if (Object.keys(changes).length > 0) {
+          await logAction({
+            entityType: "INVENTORY",
+            entityId: id,
+            action: "UPDATE",
+            entityTitle: `${updatedInventory.model?.name || "Inventario"} - ${updatedInventory.internalFolio || ""}`,
+            userId: req.user.id,
+            changes: changes,
+          });
+        }
+      } catch (logError) {
+        console.error("Error logging inventory update:", logError);
+      }
+
       updatedInventory.receptionDate
         ? (updatedInventory.receptionDate = updatedInventory.receptionDate
             .toISOString()
@@ -691,10 +729,27 @@ export const deleteInventory = async (req, res) => {
   const { id } = req.params;
 
   try {
+    const snapshot = await getInventorySnapshot(id);
+
     await db.inventory.update({
       where: { id },
       data: { enabled: false },
     });
+
+    if (snapshot) {
+      try {
+        await logAction({
+          entityType: "INVENTORY",
+          entityId: id,
+          action: "DELETE",
+          entityTitle: `${snapshot.model || "Inventario"} - ${snapshot.internalFolio || ""}`,
+          userId: req.user.id,
+          changes: snapshot,
+        });
+      } catch (logError) {
+        console.error("Error logging inventory deletion:", logError);
+      }
+    }
 
     const inventories = await db.inventory.findMany({
       where: { id: { not: id }, enabled: true },
@@ -1167,8 +1222,8 @@ export const searchInventories = async (req, res) => {
               0,
               0,
               0,
-              0
-            )
+              0,
+            ),
           );
 
           const endOfDay = new Date(
@@ -1179,8 +1234,8 @@ export const searchInventories = async (req, res) => {
               23,
               59,
               59,
-              999
-            )
+              999,
+            ),
           );
 
           // Verificar que las fechas estén en un rango razonable
@@ -1193,7 +1248,7 @@ export const searchInventories = async (req, res) => {
               { createdAt: { gte: startOfDay, lte: endOfDay } },
               { updatedAt: { gte: startOfDay, lte: endOfDay } },
               { altaDate: { gte: startOfDay, lte: endOfDay } },
-              { bajaDate: { gte: startOfDay, lte: endOfDay } }
+              { bajaDate: { gte: startOfDay, lte: endOfDay } },
             );
           }
         }
@@ -1370,7 +1425,7 @@ export const assignMissingFolios = async (req, res) => {
       const usedNumbers = new Set();
       for (const inv of existing) {
         const match = inv.internalFolio.match(
-          new RegExp(`^${baseCode}-(\\d+)$`)
+          new RegExp(`^${baseCode}-(\\d+)$`),
         );
         if (match) {
           usedNumbers.add(parseInt(match[1], 10));
@@ -1435,7 +1490,7 @@ export const bulkUpdateStatus = async (req, res) => {
       db.inventory.update({
         where: { id },
         data: { status },
-      })
+      }),
     );
 
     await Promise.all(updatePromises);

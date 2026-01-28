@@ -14,6 +14,8 @@ import {
   FaBoxes,
   FaClipboardList,
   FaFileInvoice,
+  FaCalendarAlt,
+  FaHistory,
 } from 'react-icons/fa';
 import { useAuthContext } from '../../context/AuthContext';
 import { useUserPreference } from '../../context/UserPreferenceContext';
@@ -275,6 +277,13 @@ const Sidebar = ({ children }) => {
                   Dashboard
                 </MenuItem>
               )}
+              <MenuItem
+                component={<Link to={'/agenda'} />}
+                active={isActivePath('/agenda')}
+                icon={<FaCalendarAlt size={23} />}
+              >
+                Agenda
+              </MenuItem>
               {(isCatalogsPermission ||
                 isInventoriesPermission.hasPermission ||
                 isSelfInventoriesPermission.hasPermission) && (
@@ -431,6 +440,13 @@ const Sidebar = ({ children }) => {
                   )}
                 </SubMenu>
               )}
+              <MenuItem
+                icon={<FaHistory size={23} />}
+                active={isActivePath('/audit-logs')}
+                component={<Link to={'/audit-logs'} />}
+              >
+                Auditoría
+              </MenuItem>
             </Menu>
           </div>
         </div>

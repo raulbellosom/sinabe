@@ -40,6 +40,8 @@ import ViewCustody from '../pages/Custody/ViewCustody';
 import Preferences from '../pages/preferences/Preferences';
 import NotificationsPage from '../pages/preferences/NotificationsPage';
 import NotificationRulesPage from '../pages/preferences/NotificationRulesPage';
+import AgendaPage from '../pages/agenda/AgendaPage';
+import AuditPage from '../pages/audit/AuditPage';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -75,6 +77,7 @@ const AuthorizedRoute = ({ user }) => {
                 <Route element={<ProtectedRoute user={user} />}>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/agenda" element={<AgendaPage />} />
                   <Route path="/account-settings" element={<Account />} />
                   <Route path="/preferences" element={<Preferences />} />
                   <Route
@@ -134,6 +137,7 @@ const AuthorizedRoute = ({ user }) => {
                   <Route path="/invoices" element={<InvoicesPage />} />
                   <Route path="/catalogs" element={<Catalogs />} />
                   <Route path="/roles" element={<Roles />} />
+                  <Route path="/audit-logs" element={<AuditPage />} />
                   <Route
                     path="/login"
                     element={

@@ -102,6 +102,7 @@ export const useSearchModels = () => {
     return data.map((m) => ({
       value: m.id,
       label: `${m.name} (${m.brand.name} - ${m.type.name})`,
+      ...m, // Return full object to access ModelVertical
     }));
   };
 };

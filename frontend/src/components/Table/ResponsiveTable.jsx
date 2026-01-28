@@ -351,148 +351,227 @@ const ResponsiveTable = ({
       );
     }
 
+    // Scroll synchronization logic
+    const tableContainerRef = React.useRef(null);
+    const topScrollContainerRef = React.useRef(null);
+    const [scrollWidth, setScrollWidth] = React.useState(0);
+    const isSyncingLeft = React.useRef(false);
+    const isSyncingRight = React.useRef(false);
+
+    // Measure content width for the top scrollbar
+    React.useEffect(() => {
+      const checkScrollWidth = () => {
+        if (tableContainerRef.current) {
+          setScrollWidth(tableContainerRef.current.scrollWidth);
+        }
+      };
+
+      // Initial check
+      checkScrollWidth();
+
+      // Check on resize
+      window.addEventListener('resize', checkScrollWidth);
+
+      // Check whenever data or columns change (rendering might change width)
+      const timeoutId = setTimeout(checkScrollWidth, 100);
+
+      return () => {
+        window.removeEventListener('resize', checkScrollWidth);
+        clearTimeout(timeoutId);
+      };
+    }, [data, columns, viewMode, loading]);
+
+    const handleScrollTable = (e) => {
+      if (isSyncingLeft.current) {
+        isSyncingLeft.current = false;
+        return;
+      }
+      if (topScrollContainerRef.current) {
+        isSyncingRight.current = true;
+        topScrollContainerRef.current.scrollLeft = e.target.scrollLeft;
+      }
+    };
+
+    const handleScrollTop = (e) => {
+      if (isSyncingRight.current) {
+        isSyncingRight.current = false;
+        return;
+      }
+      if (tableContainerRef.current) {
+        isSyncingLeft.current = true;
+        tableContainerRef.current.scrollLeft = e.target.scrollLeft;
+      }
+    };
+
     // Desktop table view
     return (
-      <div className="overflow-x-auto">
-        <table className="min-w-full w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-100 uppercase bg-gray-700 dark:bg-gray-800 whitespace-nowrap">
-            <tr>
-              {selectable && (
-                <th className="px-4 py-3 first:rounded-tl-lg last:rounded-tr-lg">
-                  <Checkbox
-                    checked={
-                      Object.keys(selectedRows).length === data.length &&
-                      data.length > 0
-                    }
-                    onChange={onSelectAllRows}
-                    className="cursor-pointer w-5 h-5 text-purple-500 focus:ring-purple-500"
-                  />
-                </th>
-              )}
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  onClick={() => col.sortable && onSort && onSort(col.key)}
-                  scope="col"
-                  className={classNames(
-                    'px-4 py-2 first:rounded-tl-lg last:rounded-tr-lg',
-                    {
-                      'cursor-pointer select-none': col.sortable,
-                    },
-                    col.headerClassName,
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center">
-                      {col.title}
-                      {col.sortable && (
-                        <span className="ml-1">{getSortIcon(col.key)}</span>
-                      )}
-                    </span>
-                    {headerFilters[col.key] && (
-                      <div onClick={(e) => e.stopPropagation()}>
-                        {headerFilters[col.key].component}
-                      </div>
-                    )}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row) => (
-              <tr
-                key={row.id}
-                className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                onClick={(e) => handleRowClickInternal(row, e)}
-                onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
-              >
+      <div className="flex flex-col">
+        {/* Top Scrollbar */}
+        <div
+          ref={topScrollContainerRef}
+          className="overflow-x-auto w-full mb-1"
+          onScroll={handleScrollTop}
+          style={{
+            height:
+              scrollWidth > (tableContainerRef.current?.clientWidth || 0)
+                ? '12px'
+                : '0px',
+            opacity:
+              scrollWidth > (tableContainerRef.current?.clientWidth || 0)
+                ? 1
+                : 0,
+          }}
+        >
+          <div style={{ width: `${scrollWidth}px`, height: '1px' }}></div>
+        </div>
+
+        <div
+          className="overflow-x-auto"
+          ref={tableContainerRef}
+          onScroll={handleScrollTable}
+        >
+          <table className="min-w-full w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead className="text-xs text-gray-100 uppercase bg-gray-700 dark:bg-gray-800 whitespace-nowrap">
+              <tr>
                 {selectable && (
-                  <td className="px-4 py-2">
+                  <th className="px-4 py-3 first:rounded-tl-lg last:rounded-tr-lg">
                     <Checkbox
-                      checked={!!selectedRows[row.id]}
-                      onChange={() => onSelectRow(row)}
+                      checked={
+                        Object.keys(selectedRows).length === data.length &&
+                        data.length > 0
+                      }
+                      onChange={onSelectAllRows}
                       className="cursor-pointer w-5 h-5 text-purple-500 focus:ring-purple-500"
                     />
-                  </td>
+                  </th>
                 )}
-                {columns.map((col) => {
-                  if (col.key === 'actions') {
+                {columns.map((col) => (
+                  <th
+                    key={col.key}
+                    onClick={() => col.sortable && onSort && onSort(col.key)}
+                    scope="col"
+                    className={classNames(
+                      'px-4 py-2 first:rounded-tl-lg last:rounded-tr-lg',
+                      {
+                        'cursor-pointer select-none': col.sortable,
+                      },
+                      col.headerClassName,
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center">
+                        {col.title}
+                        {col.sortable && (
+                          <span className="ml-1">{getSortIcon(col.key)}</span>
+                        )}
+                      </span>
+                      {headerFilters[col.key] && (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          {headerFilters[col.key].component}
+                        </div>
+                      )}
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row) => (
+                <tr
+                  key={row.id}
+                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                  onClick={(e) => handleRowClickInternal(row, e)}
+                  onDoubleClick={() =>
+                    onRowDoubleClick && onRowDoubleClick(row)
+                  }
+                >
+                  {selectable && (
+                    <td className="px-4 py-2">
+                      <Checkbox
+                        checked={!!selectedRows[row.id]}
+                        onChange={() => onSelectRow(row)}
+                        className="cursor-pointer w-5 h-5 text-purple-500 focus:ring-purple-500"
+                      />
+                    </td>
+                  )}
+                  {columns.map((col) => {
+                    if (col.key === 'actions') {
+                      return (
+                        <td
+                          key={col.key}
+                          className={classNames(
+                            'px-4 py-2 text-right text-nowrap',
+                            col.cellClassName,
+                          )}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Dropdown
+                            arrowIcon={false}
+                            inline
+                            label=""
+                            renderTrigger={() => {
+                              return (
+                                <button
+                                  type="button"
+                                  className="h-10 w-10 p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full cursor-pointer flex items-center justify-center"
+                                >
+                                  <BsThreeDotsVertical />
+                                </button>
+                              );
+                            }}
+                          >
+                            {typeof rowActions === 'function'
+                              ? rowActions(row).map((action, index) =>
+                                  action.action ? (
+                                    <Dropdown.Item
+                                      key={index}
+                                      icon={action.icon}
+                                      onClick={(e) => {
+                                        action.action(row);
+                                      }}
+                                      disabled={action.disabled}
+                                    >
+                                      {action.label}
+                                    </Dropdown.Item>
+                                  ) : null,
+                                )
+                              : rowActions.map((action, index) =>
+                                  action.action ? (
+                                    <Dropdown.Item
+                                      key={index}
+                                      icon={action.icon}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        action.action(row);
+                                      }}
+                                      disabled={action.disabled}
+                                    >
+                                      {action.label}
+                                    </Dropdown.Item>
+                                  ) : null,
+                                )}
+                          </Dropdown>
+                        </td>
+                      );
+                    }
                     return (
                       <td
                         key={col.key}
-                        className={classNames(
-                          'px-4 py-2 text-right text-nowrap',
-                          col.cellClassName,
-                        )}
-                        onClick={(e) => e.stopPropagation()}
+                        className={classNames('px-4 py-2', col.cellClassName, {
+                          'whitespace-nowrap': col.key !== 'comments',
+                        })}
                       >
-                        <Dropdown
-                          arrowIcon={false}
-                          inline
-                          label=""
-                          renderTrigger={() => {
-                            return (
-                              <button
-                                type="button"
-                                className="h-10 w-10 p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full cursor-pointer flex items-center justify-center"
-                              >
-                                <BsThreeDotsVertical />
-                              </button>
-                            );
-                          }}
-                        >
-                          {typeof rowActions === 'function'
-                            ? rowActions(row).map((action, index) =>
-                                action.action ? (
-                                  <Dropdown.Item
-                                    key={index}
-                                    icon={action.icon}
-                                    onClick={(e) => {
-                                      action.action(row);
-                                    }}
-                                    disabled={action.disabled}
-                                  >
-                                    {action.label}
-                                  </Dropdown.Item>
-                                ) : null,
-                              )
-                            : rowActions.map((action, index) =>
-                                action.action ? (
-                                  <Dropdown.Item
-                                    key={index}
-                                    icon={action.icon}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      action.action(row);
-                                    }}
-                                    disabled={action.disabled}
-                                  >
-                                    {action.label}
-                                  </Dropdown.Item>
-                                ) : null,
-                              )}
-                        </Dropdown>
+                        {col.render
+                          ? col.render(row[col.key], row)
+                          : String(row[col.key])}
                       </td>
                     );
-                  }
-                  return (
-                    <td
-                      key={col.key}
-                      className={classNames('px-4 py-2', col.cellClassName, {
-                        'whitespace-nowrap': col.key !== 'comments',
-                      })}
-                    >
-                      {col.render
-                        ? col.render(row[col.key], row)
-                        : String(row[col.key])}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   };

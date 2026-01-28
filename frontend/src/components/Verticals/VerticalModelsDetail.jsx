@@ -1,40 +1,18 @@
-import React, { useState } from 'react';
-import { Badge, Button, Modal } from 'flowbite-react';
+import React, { useState, useEffect } from 'react';
+import { Badge, Button, TextInput } from 'flowbite-react';
 import {
   FaChevronDown,
   FaChevronUp,
-  FaRegTrashAlt,
+  FaTrashAlt,
   FaPlus,
+  FaSearch,
+  FaCheck,
+  FaExchangeAlt,
 } from 'react-icons/fa';
 import classNames from 'classnames';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import Notifies from '../Notifies/Notifies';
-import ModalAssignModel from './ModalAssignModel'; // Ajusta la ruta si es necesario
-
-const ConfirmUnassignModelModal = ({
-  show,
-  modelName,
-  onConfirm,
-  onCancel,
-}) => (
-  <Modal show={show} size="sm" onClose={onCancel}>
-    <Modal.Header>Confirmar desasignación</Modal.Header>
-    <Modal.Body>
-      <p>
-        ¿Seguro que deseas desasignar <strong>{modelName}</strong> de esta
-        vertical?
-      </p>
-    </Modal.Body>
-    <Modal.Footer>
-      <Button color="gray" onClick={onCancel}>
-        Cancelar
-      </Button>
-      <Button color="red" onClick={onConfirm}>
-        Desasignar
-      </Button>
-    </Modal.Footer>
-  </Modal>
-);
+import ConfirmModal from '../Modals/ConfirmModal';
 
 const VerticalModelsDetail = ({
   models = [],
@@ -45,19 +23,41 @@ const VerticalModelsDetail = ({
   setShowFullDescription,
   shouldExpandInModal,
   selectedDescription,
-  showAssign,
-  setShowAssign,
   assignModel,
   searchModels,
 }) => {
   const [modelDetailsOpen, setModelDetailsOpen] = useState(null);
-  const [confirmUnassignModel, setConfirmUnassignModel] = useState(false);
+
+  // Search State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Confirm Modal State
+  const [showConfirmUnassign, setShowConfirmUnassign] = useState(false);
   const [modelToUnassign, setModelToUnassign] = useState(null);
 
-  const handleUnassignInitiate = (model) => {
-    setModelToUnassign(model);
-    setConfirmUnassignModel(true);
-  };
+  // Debounce search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchTerm.length > 2) {
+        setIsSearching(true);
+        try {
+          // Pass NO excludeVerticalId to get all models and check their status ourselves
+          const results = await searchModels(searchTerm, null);
+          setSearchResults(results);
+        } catch (error) {
+          console.error('Search failed', error);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, searchModels]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -72,166 +72,245 @@ const VerticalModelsDetail = ({
     }
   };
 
-  const handleConfirmUnassign = async () => {
+  const handleAssign = (modelId) => {
+    assignModel.mutate(
+      { modelId, verticalIds: [verticalId] },
+      {
+        onSuccess: async () => {
+          await refetchVerticals();
+          Notifies('success', 'Modelo asignado');
+        },
+      },
+    );
+  };
+
+  const handleUnassignClick = (model) => {
+    setModelToUnassign(model);
+    setShowConfirmUnassign(true);
+  };
+
+  const confirmUnassign = () => {
     if (modelToUnassign) {
-      await removeModel.mutateAsync(
+      removeModel.mutate(
         { modelId: modelToUnassign.id, verticalId },
         {
           onSuccess: async () => {
             await refetchVerticals();
-            Notifies('success', 'Modelo desasignado correctamente');
-            setConfirmUnassignModel(false);
-            setModelDetailsOpen(null);
+            Notifies('success', 'Modelo desasignado');
+            setShowConfirmUnassign(false);
+            setModelToUnassign(null);
           },
         },
       );
     }
   };
 
+  const displayedList = searchTerm.length > 2 ? searchResults : models;
+
   return (
-    <>
-      <p className="text-sm text-gray-600 whitespace-pre-line mb-4">
-        {showFullDescription || !shouldExpandInModal(selectedDescription)
-          ? selectedDescription
-          : selectedDescription.split('\n').slice(0, 5).join('\n') + '...'}
-      </p>
-      {shouldExpandInModal(selectedDescription) && (
-        <button
-          onClick={() => setShowFullDescription(!showFullDescription)}
-          className="text-xs text-sinabe-primary hover:underline mb-4"
-        >
-          {showFullDescription ? 'Ver menos' : 'Ver más'}
-        </button>
-      )}
-      <hr className="my-4" />
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold">Modelos asignados</h3>
-        <div>
-          <ActionButtons
-            extraActions={[
-              {
-                label: 'Asignar modelo',
-                icon: FaPlus,
-                color: 'indigo',
-                filled: true,
-                action: () => setShowAssign(true),
-              },
-            ]}
+    <div className="flex flex-col h-full">
+      {/* Description Panel */}
+      <div className="flex-none">
+        <p className="text-sm text-gray-600 whitespace-pre-line mb-4">
+          {showFullDescription || !shouldExpandInModal(selectedDescription)
+            ? selectedDescription
+            : selectedDescription.split('\n').slice(0, 5).join('\n') + '...'}
+        </p>
+        {shouldExpandInModal(selectedDescription) && (
+          <button
+            onClick={() => setShowFullDescription(!showFullDescription)}
+            className="text-xs text-sinabe-primary hover:underline mb-4"
+          >
+            {showFullDescription ? 'Ver menos' : 'Ver más'}
+          </button>
+        )}
+        <hr className="my-4" />
+
+        {/* Integrated Search */}
+        <div className="mb-4">
+          <TextInput
+            icon={FaSearch}
+            placeholder="Buscar modelo para asignar o filtrar..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-      </div>
-      {models.length === 0 ? (
-        <div className="text-center text-gray-500 mb-6 text-sm">
-          No hay modelos asignados.
+
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-semibold">
+            {searchTerm.length > 2
+              ? `Resultados de búsqueda (${displayedList.length})`
+              : `Modelos asignados (${models.length})`}
+          </h3>
         </div>
-      ) : (
-        <div className="space-y-4 h-full overflow-y-auto">
-          {models.map((model) => (
-            <div key={model.id} className="border rounded-md p-3">
+      </div>
+
+      {/* List Area */}
+      <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+        {displayedList.length === 0 ? (
+          <div className="text-center text-gray-500 py-8">
+            {searchTerm.length > 2
+              ? 'No se encontraron modelos.'
+              : 'No hay modelos asignados.'}
+          </div>
+        ) : (
+          displayedList.map((model) => {
+            // Check status
+            const isAssignedToCurrent =
+              models.some((m) => m.id === model.id) ||
+              model.ModelVertical?.some((mv) => mv.verticalId === verticalId);
+            const assignedToOthers =
+              model.ModelVertical?.filter(
+                (mv) => mv.verticalId !== verticalId,
+              ) || [];
+            const isAssignedToOther = assignedToOthers.length > 0;
+
+            return (
               <div
-                className="flex flex-col-reverse gap-2 md:flex-row justify-between items-start cursor-pointer"
-                onClick={() =>
-                  setModelDetailsOpen(
-                    modelDetailsOpen === model.id ? null : model.id,
-                  )
-                }
+                key={model.id}
+                className={classNames(
+                  'border rounded-md p-3 transition-colors',
+                  isAssignedToCurrent
+                    ? 'bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20'
+                    : 'bg-white dark:bg-gray-800',
+                )}
               >
-                <div className="flex items-center gap-2">
-                  {modelDetailsOpen === model.id ? (
-                    <FaChevronUp className="text-xs" />
-                  ) : (
-                    <FaChevronDown className="text-xs" />
-                  )}
-                  <span className="text-sinabe-primary font-semibold">
-                    {model.name} ({model.brand?.name || '-'} -{' '}
-                    {model.type?.name || '-'})
-                  </span>
-                </div>
-                <div className="flex items-center justify-between md:justify-end w-full gap-2">
-                  <Badge
-                    size="sm"
-                    color="indigo"
-                    className="text-xs text-nowrap"
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                  {/* Left Info */}
+                  <div
+                    className="flex-1 cursor-pointer"
+                    onClick={() =>
+                      setModelDetailsOpen(
+                        modelDetailsOpen === model.id ? null : model.id,
+                      )
+                    }
                   >
-                    {model.inventories?.length || 0} inventarios
-                  </Badge>
-                  <div>
-                    <ActionButtons
-                      extraActions={[
-                        {
-                          label: 'Desasignar',
-                          icon: FaRegTrashAlt,
-                          color: 'red',
-                          action: (e) => {
-                            e.stopPropagation();
-                            handleUnassignInitiate(model);
-                          },
-                        },
-                      ]}
-                    />
-                  </div>
-                </div>
-              </div>
-              {modelDetailsOpen === model.id && (
-                <div className="mt-2 max-h-72 overflow-y-auto space-y-2">
-                  {model.inventories.map((inv) => (
-                    <div
-                      key={inv.id}
-                      className={classNames(
-                        'flex justify-between items-center border rounded-md p-2 text-sm',
+                    <div className="flex items-center gap-2">
+                      {modelDetailsOpen === model.id ? (
+                        <FaChevronUp className="text-xs" />
+                      ) : (
+                        <FaChevronDown className="text-xs" />
                       )}
-                    >
-                      <div>
-                        <div className="font-semibold">
-                          SN: {inv.serialNumber || 'Inventario'}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Tipo: {model.type?.name || '-'} | Marca:{' '}
-                          {model.brand?.name || '-'} | # Activo:{' '}
-                          {inv.activeNumber || '-'} | Folio:{' '}
-                          {inv.internalFolio || '-'}
-                        </div>
-                      </div>
                       <span
                         className={classNames(
-                          'mt-1 px-2 py-1 rounded text-xs font-semibold',
-                          getStatusColor(inv.status),
+                          'font-semibold',
+                          isAssignedToCurrent
+                            ? 'text-indigo-700 dark:text-indigo-400'
+                            : 'text-gray-900 dark:text-gray-100',
                         )}
                       >
-                        {inv.status}
+                        {model.name}
                       </span>
                     </div>
-                  ))}
+                    <div className="text-xs text-gray-500 mt-1 ml-5">
+                      {model.brand?.name || '-'} - {model.type?.name || '-'}
+                    </div>
+
+                    {/* Status Chips */}
+                    <div className="ml-5 mt-2 flex flex-wrap gap-2">
+                      {isAssignedToCurrent && (
+                        <Badge color="indigo" icon={FaCheck}>
+                          Asignado aquí
+                        </Badge>
+                      )}
+                      {isAssignedToOther &&
+                        assignedToOthers.map((mv) => (
+                          <Badge
+                            key={mv.verticalId}
+                            color="warning"
+                            icon={FaExchangeAlt}
+                          >
+                            En: {mv.vertical?.name || 'Otra Vertical'}
+                          </Badge>
+                        ))}
+                      <Badge color="gray">
+                        {model.inventories?.length || model.inventoryCount || 0}{' '}
+                        inventarios
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 self-start sm:self-center">
+                    {isAssignedToCurrent ? (
+                      <Button
+                        size="xs"
+                        color="failure"
+                        onClick={() => handleUnassignClick(model)}
+                      >
+                        <FaTrashAlt className="mr-2" /> Desasignar
+                      </Button>
+                    ) : (
+                      <Button
+                        size="xs"
+                        color="indigo"
+                        onClick={() => handleAssign(model.id)}
+                      >
+                        <FaPlus className="mr-2" /> Asignar
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-      <ConfirmUnassignModelModal
-        show={confirmUnassignModel}
-        modelName={`Modelo ${modelToUnassign?.name} (${modelToUnassign?.brand?.name || '-'} - ${modelToUnassign?.type?.name || '-'})`}
-        onConfirm={handleConfirmUnassign}
-        onCancel={() => setConfirmUnassignModel(false)}
+
+                {/* Expandable Inventories */}
+                {modelDetailsOpen === model.id && (
+                  <div className="mt-3 ml-5 max-h-60 overflow-y-auto space-y-2 border-t pt-2">
+                    {(!model.inventories ||
+                      model.inventories.length === 0 ||
+                      !model.inventories[0].serialNumber) && (
+                      <div className="text-xs text-gray-500 italic">
+                        Detalles de inventario no disponibles en búsqueda
+                        rápida.
+                      </div>
+                    )}
+
+                    {model.inventories?.map((inv) =>
+                      inv.serialNumber ? (
+                        <div
+                          key={inv.id}
+                          className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 p-2 rounded text-xs"
+                        >
+                          <div>
+                            <span className="font-bold">
+                              SN: {inv.serialNumber}
+                            </span>
+                            {inv.internalFolio && (
+                              <span className="ml-2 text-gray-500">
+                                Folio: {inv.internalFolio}
+                              </span>
+                            )}
+                          </div>
+                          <span
+                            className={classNames(
+                              'px-2 py-0.5 rounded text-[10px] font-bold',
+                              getStatusColor(inv.status),
+                            )}
+                          >
+                            {inv.status}
+                          </span>
+                        </div>
+                      ) : null,
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <ConfirmModal
+        isOpen={showConfirmUnassign}
+        onClose={() => setShowConfirmUnassign(false)}
+        onConfirm={confirmUnassign}
+        title="Desasignar Modelo"
+        message={`¿Estás seguro de que deseas desasignar el modelo "${modelToUnassign?.name}" de esta vertical?`}
+        confirmText="Desasignar"
+        cancelText="Cancelar"
+        confirmColor="red"
+        isLoading={removeModel.isPending}
       />
-      <ModalAssignModel
-        isOpen={showAssign}
-        onClose={() => setShowAssign(false)}
-        verticalId={verticalId}
-        onAssign={({ modelId, verticalId }) => {
-          assignModel.mutate(
-            { modelId, verticalIds: [verticalId] },
-            {
-              onSuccess: async () => {
-                await refetchVerticals();
-                setShowAssign(false);
-              },
-            },
-          );
-        }}
-        loadModels={(term) => searchModels(term, verticalId)}
-      />
-    </>
+    </div>
   );
 };
 

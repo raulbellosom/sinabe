@@ -24,7 +24,7 @@ export const getInventoryTypes = async (req, res) => {
     const inventoryTypesWithCount = inventoryTypes.map((type) => {
       const inventoryCount = type.models.reduce(
         (acc, model) => acc + model._count.inventories,
-        0
+        0,
       );
       return {
         id: type.id,
@@ -69,7 +69,7 @@ export const getInventoryTypeById = async (req, res) => {
         name: inventoryType.name,
         count: inventoryType.models.reduce(
           (acc, model) => acc + model._count.inventories,
-          0
+          0,
         ),
       };
       res.json(inventoryTypeWithCount);
@@ -106,6 +106,18 @@ export const createInventoryType = async (req, res) => {
       name: newInventoryType.name,
       count: 0,
     };
+
+    try {
+      await logAction({
+        entityType: "INVENTORY_TYPE",
+        entityId: newInventoryType.id,
+        action: "CREATE",
+        userId: req.user.id,
+        changes: { name: newInventoryType.name },
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
 
     res.status(201).json(inventoryTypeWithCount);
   } catch (error) {
@@ -154,9 +166,26 @@ export const updateInventoryType = async (req, res) => {
       name: updatedInventoryType.name,
       count: updatedInventoryType.models.reduce(
         (acc, model) => acc + model._count.inventories,
-        0
+        0,
       ),
     };
+
+    try {
+      await logAction({
+        entityType: "INVENTORY_TYPE",
+        entityId: updatedInventoryType.id,
+        action: "UPDATE",
+        userId: req.user.id,
+        changes: {
+          name: {
+            old: inventoryType.name,
+            new: updatedInventoryType.name,
+          },
+        },
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
 
     res.json(inventoryTypeWithCount);
   } catch (error) {
@@ -184,6 +213,18 @@ export const deleteInventoryType = async (req, res) => {
       },
     });
 
+    try {
+      await logAction({
+        entityType: "INVENTORY_TYPE",
+        entityId: id,
+        action: "DELETE",
+        userId: req.user.id,
+        changes: { name: inventoryType.name },
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
+
     const data = await db.inventoryType.findMany({
       where: { enabled: true },
       orderBy: { name: "asc" },
@@ -209,7 +250,7 @@ export const deleteInventoryType = async (req, res) => {
       name: type.name,
       count: type.models.reduce(
         (acc, model) => acc + model._count.inventories,
-        0
+        0,
       ),
     }));
 
@@ -239,7 +280,7 @@ export const getInventoryBrands = async (req, res) => {
     const inventoryBrandsWithCount = inventoryBrands.map((brand) => {
       const inventoryCount = brand.models.reduce(
         (acc, model) => acc + model._count.inventories,
-        0
+        0,
       );
       return {
         id: brand.id,
@@ -283,7 +324,7 @@ export const getInventoryBrandById = async (req, res) => {
       name: inventoryBrand.name,
       count: inventoryBrand.models.reduce(
         (acc, model) => acc + model._count.inventories,
-        0
+        0,
       ),
     };
 
@@ -370,7 +411,7 @@ export const updateInventoryBrand = async (req, res) => {
       name: updatedInventoryBrand.name,
       count: updatedInventoryBrand.models.reduce(
         (acc, model) => acc + model._count.inventories,
-        0
+        0,
       ),
     };
 
@@ -400,6 +441,18 @@ export const deleteInventoryBrand = async (req, res) => {
       },
     });
 
+    try {
+      await logAction({
+        entityType: "INVENTORY_BRAND",
+        entityId: id,
+        action: "DELETE",
+        userId: req.user.id,
+        changes: { name: inventoryBrand.name },
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
+
     const inventoryBrands = await db.inventoryBrand.findMany({
       where: { enabled: true },
       orderBy: { name: "asc" },
@@ -425,7 +478,7 @@ export const deleteInventoryBrand = async (req, res) => {
       name: brand.name,
       count: brand.models.reduce(
         (acc, model) => acc + model._count.inventories,
-        0
+        0,
       ),
     }));
 
@@ -571,6 +624,23 @@ export const createInventoryModel = async (req, res) => {
       count: inventoryModel.inventories.length,
     };
 
+    try {
+      await logAction({
+        entityType: "MODEL",
+        entityId: inventoryModel.id,
+        action: "CREATE",
+        userId: req.user.id,
+        changes: {
+          name: inventoryModel.name,
+          brand: brand.name,
+          type: type.name,
+        },
+        entityTitle: inventoryModel.name,
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
+
     res.status(201).json(inventoryModelWithCount);
   } catch (error) {
     console.log("error on createInventoryModel", error);
@@ -620,6 +690,23 @@ export const updateInventoryModel = async (req, res) => {
       count: updatedModel.inventories.length,
     };
 
+    try {
+      await logAction({
+        entityType: "MODEL",
+        entityId: updatedModel.id,
+        action: "UPDATE",
+        userId: req.user.id,
+        changes: {
+          name: { old: model.name, new: updatedModel.name },
+          brand: { old: model.brandId, new: updatedModel.brandId },
+          type: { old: model.typeId, new: updatedModel.typeId },
+        },
+        entityTitle: updatedModel.name,
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
+
     res.json(updatedModelWithCount);
   } catch (error) {
     console.log("error on updateInventoryModel", error);
@@ -641,11 +728,23 @@ export const deleteInventoryModel = async (req, res) => {
 
     await db.model.update({
       where: { id: parseInt(id, 10), enabled: true },
-      orderBy: { name: "asc" },
       data: {
         enabled: false,
       },
     });
+
+    try {
+      await logAction({
+        entityType: "MODEL",
+        entityId: id,
+        action: "DELETE",
+        userId: req.user.id,
+        changes: { name: model.name },
+        entityTitle: model.name,
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
 
     const models = await db.model.findMany({
       where: { enabled: true },
@@ -732,6 +831,11 @@ export const searchModels = async (req, res) => {
       include: {
         brand: true,
         type: true,
+        ModelVertical: {
+          include: {
+            vertical: true,
+          },
+        },
         inventories: {
           where: { enabled: true },
           select: { id: true },
@@ -863,6 +967,18 @@ export const createCondition = async (req, res) => {
       count: newCondition.inventories.length,
     };
 
+    try {
+      await logAction({
+        entityType: "CONDITION",
+        entityId: newCondition.id,
+        action: "CREATE",
+        userId: req.user.id,
+        changes: { name: newCondition.name },
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
+
     res.status(201).json(conditionWithCount);
   } catch (error) {
     console.log("error on createCondition", error);
@@ -903,6 +1019,23 @@ export const updateCondition = async (req, res) => {
       count: updatedCondition.inventories.length,
     };
 
+    try {
+      await logAction({
+        entityType: "CONDITION",
+        entityId: updatedCondition.id,
+        action: "UPDATE",
+        userId: req.user.id,
+        changes: {
+          name: {
+            old: condition.name,
+            new: updatedCondition.name,
+          },
+        },
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
+
     res.json(conditionWithCount);
   } catch (error) {
     console.log("error on updateCondition", error);
@@ -928,6 +1061,18 @@ export const deleteCondition = async (req, res) => {
         enabled: false,
       },
     });
+
+    try {
+      await logAction({
+        entityType: "CONDITION",
+        entityId: id,
+        action: "DELETE",
+        userId: req.user.id,
+        changes: { name: condition.name },
+      });
+    } catch (logError) {
+      console.error("Error logging:", logError);
+    }
 
     const data = await db.condition.findMany({
       where: { enabled: true },

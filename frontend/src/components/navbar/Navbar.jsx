@@ -34,10 +34,10 @@ const Navbar = ({
           <InventorySearchCombobox />
           <Link
             to="/inventories/create"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-full text-gray-500 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200"
+            className="flex items-center justify-center p-2 rounded-lg text-gray-500 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200"
+            aria-label="Nuevo inventario"
           >
             <AiFillPlusCircle className="w-6 h-6" />
-            <span className="text-sm font-medium">Nuevo</span>
           </Link>
         </div>
       </div>

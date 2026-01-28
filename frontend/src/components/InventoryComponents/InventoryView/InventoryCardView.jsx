@@ -13,6 +13,7 @@ import { MdInfo } from 'react-icons/md';
 import ImageViewer from '../../ImageViewer/ImageViewer2';
 import Notifies from '../../Notifies/Notifies';
 import { FormattedUrlImage } from '../../../utils/FormattedUrlImage';
+import AuditLogHistory from '../../common/AuditLogHistory';
 const FileIcon = React.lazy(() => import('../../FileIcon/FileIcon'));
 
 // Componente para un campo individual en modo card
@@ -500,9 +501,10 @@ const InventoryCardView = ({
           {activeTab === 'history' && (
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <h3 className="font-semibold text-gray-700 mb-4">Historial</h3>
-              <p className="text-gray-500 text-center py-8">
-                Próximamente: Historial de cambios y movimientos del inventario
-              </p>
+              <AuditLogHistory
+                entityType="INVENTORY"
+                entityId={inventory?.id}
+              />
             </div>
           )}
         </div>
