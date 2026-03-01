@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Badge, Spinner, Tooltip } from '../ui/flowbite';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Pie, Doughnut } from 'react-chartjs-2';
 import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip as ChartTooltip,
-  Legend,
-} from 'chart.js';
+  PieChart as RechartsPieChart,
+  Pie as RechartsPie,
+  Cell,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  Sector,
+} from 'recharts';
 import { useAIAgent } from '../../context/AIAgentContext.jsx';
 import { aiService } from '../../services/ai.api';
 
@@ -36,8 +37,7 @@ import {
   X,
 } from 'lucide-react';
 
-// Register Chart.js components
-ChartJS.register(ArcElement, ChartTooltip, Legend);
+// Recharts — no global registration needed
 
 // ============================================
 // Animation Variants
@@ -553,23 +553,24 @@ const GroupedResult = ({ rows, groupBy, total, filters }) => {
 // Subcomponent: Chart Result (Pie/Doughnut)
 // ============================================
 const CHART_COLORS = [
-  'rgba(147, 51, 234, 0.8)', // Purple
-  'rgba(236, 72, 153, 0.8)', // Pink
-  'rgba(59, 130, 246, 0.8)', // Blue
-  'rgba(34, 197, 94, 0.8)', // Green
-  'rgba(251, 146, 60, 0.8)', // Orange
-  'rgba(6, 182, 212, 0.8)', // Cyan
-  'rgba(249, 115, 22, 0.8)', // Deep Orange
-  'rgba(139, 92, 246, 0.8)', // Violet
-  'rgba(14, 165, 233, 0.8)', // Sky
-  'rgba(168, 85, 247, 0.8)', // Purple Light
-  'rgba(244, 63, 94, 0.8)', // Rose
-  'rgba(34, 211, 238, 0.8)', // Teal
+  '#9333ea', // Purple
+  '#ec4899', // Pink
+  '#3b82f6', // Blue
+  '#22c55e', // Green
+  '#fb923c', // Orange
+  '#06b6d4', // Cyan
+  '#f97316', // Deep Orange
+  '#8b5cf6', // Violet
+  '#0ea5e9', // Sky
+  '#a855f7', // Purple Light
+  '#f43f5e', // Rose
+  '#22d3ee', // Teal
 ];
 
 const ChartResult = ({ rows, groupBy, total, filters, chartType = 'pie' }) => {
-  const chartRef = useRef(null);
+  const chartContainerRef = useRef(null);
   const [copied, setCopied] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(-1);
 
   const groupByConfig = {
     brand: { label: 'Marca', icon: Tag },
@@ -582,102 +583,74 @@ const ChartResult = ({ rows, groupBy, total, filters, chartType = 'pie' }) => {
   const config = groupByConfig[groupBy] || { label: groupBy, icon: Database };
   const Icon = config.icon;
 
-  // Prepare chart data
-  const labels = rows.map((r) => r.key || '(sin valor)');
-  const dataValues = rows.map((r) => Number(r.count) || 0);
+  // Prepare chart data for Recharts
+  const chartData = rows.map((r, idx) => ({
+    name: r.key || '(sin valor)',
+    value: Number(r.count) || 0,
+    fill: CHART_COLORS[idx % CHART_COLORS.length],
+  }));
 
-  const chartData = {
-    labels,
-    datasets: [
-      {
-        data: dataValues,
-        backgroundColor: CHART_COLORS.slice(0, labels.length),
-        borderColor: CHART_COLORS.slice(0, labels.length).map((c) =>
-          c.replace('0.8', '1'),
-        ),
-        borderWidth: 2,
-      },
-    ],
-  };
-
-  // Limit legend items for better display (max 20 visible)
   const MAX_LEGEND_ITEMS = 20;
-  const hasMoreItems = labels.length > MAX_LEGEND_ITEMS;
+  const hasMoreItems = rows.length > MAX_LEGEND_ITEMS;
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: true,
-        position: 'right',
-        labels: {
-          padding: 10,
-          usePointStyle: true,
-          pointStyle: 'circle',
-          font: { size: 11 },
-          color: document.documentElement.classList.contains('dark')
-            ? '#e5e7eb'
-            : '#374151',
-          // Limit the number of legend items shown
-          filter: function (legendItem, chartData) {
-            return legendItem.index < MAX_LEGEND_ITEMS;
-          },
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: function (context) {
-            const value = context.parsed;
-            const percentage =
-              total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-            return `${context.label}: ${value.toLocaleString()} (${percentage}%)`;
-          },
-        },
-      },
-    },
-  };
+  const isDoughnut = chartType === 'doughnut';
 
-  const ChartComponent = chartType === 'doughnut' ? Doughnut : Pie;
+  // Helper: convert SVG inside container to a canvas-based PNG blob
+  const svgToBlob = useCallback(() => {
+    return new Promise((resolve) => {
+      const container = chartContainerRef.current;
+      if (!container) return resolve(null);
+      const svg = container.querySelector('svg');
+      if (!svg) return resolve(null);
+
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const img = new Image();
+      const svgBlob = new Blob([svgData], {
+        type: 'image/svg+xml;charset=utf-8',
+      });
+      const url = URL.createObjectURL(svgBlob);
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = svg.clientWidth * 2;
+        canvas.height = svg.clientHeight * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        canvas.toBlob((blob) => resolve({ blob, canvas }), 'image/png');
+      };
+      img.src = url;
+    });
+  }, []);
 
   // Download chart as PNG image
-  const handleDownloadImage = useCallback(() => {
-    const chart = chartRef.current;
-    if (!chart) return;
-
-    const canvas = chart.canvas;
+  const handleDownloadImage = useCallback(async () => {
+    const result = await svgToBlob();
+    if (!result) return;
     const link = document.createElement('a');
     link.download = `grafica-${groupBy}-${new Date().toISOString().slice(0, 10)}.png`;
-    link.href = canvas.toDataURL('image/png', 1.0);
+    link.href = result.canvas.toDataURL('image/png', 1.0);
     link.click();
-  }, [groupBy]);
+  }, [groupBy, svgToBlob]);
 
   // Copy chart image to clipboard
   const handleCopyImage = useCallback(async () => {
-    const chart = chartRef.current;
-    if (!chart) return;
-
     try {
-      const canvas = chart.canvas;
-      canvas.toBlob(async (blob) => {
-        if (blob) {
-          try {
-            await navigator.clipboard.write([
-              new ClipboardItem({ 'image/png': blob }),
-            ]);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-          } catch (err) {
-            console.error('Error copying to clipboard:', err);
-            // Fallback: try to copy data as text
-            handleCopyDataAsText();
-          }
-        }
-      }, 'image/png');
+      const result = await svgToBlob();
+      if (!result?.blob) return handleCopyDataAsText();
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': result.blob }),
+      ]);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Error creating blob:', err);
+      console.error('Error copying to clipboard:', err);
+      handleCopyDataAsText();
     }
-  }, []);
+  }, [svgToBlob]);
 
   // Fallback: Copy data as CSV text
   const handleCopyDataAsText = useCallback(() => {
@@ -800,18 +773,145 @@ const ChartResult = ({ rows, groupBy, total, filters, chartType = 'pie' }) => {
         className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700"
         variants={scaleIn}
       >
-        <div className="h-80 sm:h-96">
-          <ChartComponent
-            ref={chartRef}
-            data={chartData}
-            options={chartOptions}
-          />
+        <div className="h-80 sm:h-96" ref={chartContainerRef}>
+          <ResponsiveContainer width="100%" height="100%">
+            <RechartsPieChart>
+              <RechartsPie
+                activeIndex={activeIdx >= 0 ? activeIdx : undefined}
+                activeShape={(props) => {
+                  const {
+                    cx,
+                    cy,
+                    innerRadius,
+                    outerRadius,
+                    startAngle,
+                    endAngle,
+                    fill,
+                    payload,
+                    percent,
+                    value,
+                  } = props;
+                  return (
+                    <g>
+                      <text
+                        x={cx}
+                        y={cy}
+                        dy={isDoughnut ? -4 : -4}
+                        textAnchor="middle"
+                        fill={
+                          document.documentElement.classList.contains('dark')
+                            ? '#e5e5e5'
+                            : '#374151'
+                        }
+                        style={{ fontSize: 13, fontWeight: 600 }}
+                      >
+                        {payload.name}
+                      </text>
+                      <text
+                        x={cx}
+                        y={cy}
+                        dy={isDoughnut ? 14 : 14}
+                        textAnchor="middle"
+                        fill={
+                          document.documentElement.classList.contains('dark')
+                            ? '#a3a3a3'
+                            : '#6b7280'
+                        }
+                        style={{ fontSize: 11 }}
+                      >
+                        {`${value.toLocaleString()} (${(percent * 100).toFixed(1)}%)`}
+                      </text>
+                      <Sector
+                        cx={cx}
+                        cy={cy}
+                        innerRadius={innerRadius}
+                        outerRadius={outerRadius + 6}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        fill={fill}
+                        cornerRadius={3}
+                      />
+                      <Sector
+                        cx={cx}
+                        cy={cy}
+                        startAngle={startAngle}
+                        endAngle={endAngle}
+                        innerRadius={outerRadius + 8}
+                        outerRadius={outerRadius + 11}
+                        fill={fill}
+                        opacity={0.35}
+                      />
+                    </g>
+                  );
+                }}
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={isDoughnut ? '35%' : 0}
+                outerRadius="70%"
+                paddingAngle={chartData.length > 1 ? 2 : 0}
+                cornerRadius={3}
+                dataKey="value"
+                onMouseEnter={(_, idx) => setActiveIdx(idx)}
+                onMouseLeave={() => setActiveIdx(-1)}
+                animationBegin={0}
+                animationDuration={800}
+                animationEasing="ease-out"
+              >
+                {chartData.map((entry, idx) => (
+                  <Cell
+                    key={idx}
+                    fill={entry.fill}
+                    stroke="none"
+                    opacity={activeIdx >= 0 && activeIdx !== idx ? 0.35 : 1}
+                    style={{ transition: 'opacity 200ms ease' }}
+                  />
+                ))}
+              </RechartsPie>
+              <RechartsTooltip
+                content={({ active, payload }) => {
+                  if (!active || !payload?.length) return null;
+                  const { name, value } = payload[0].payload;
+                  const pct =
+                    total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                  return (
+                    <div className="bg-white dark:bg-neutral-800 text-gray-800 dark:text-gray-200 px-3 py-2 rounded-lg text-xs shadow-lg border border-gray-200 dark:border-neutral-700">
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        {name}
+                      </p>
+                      <p>
+                        {value.toLocaleString()}{' '}
+                        <span className="text-gray-500 dark:text-gray-400">
+                          ({pct}%)
+                        </span>
+                      </p>
+                    </div>
+                  );
+                }}
+              />
+            </RechartsPieChart>
+          </ResponsiveContainer>
         </div>
-        {/* Indicator for hidden legend items */}
+        {/* Custom Legend (limited to MAX_LEGEND_ITEMS) */}
+        <div className="flex flex-wrap gap-2 mt-3 justify-center">
+          {chartData.slice(0, MAX_LEGEND_ITEMS).map((entry, idx) => (
+            <div
+              key={entry.name}
+              className="flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-400 cursor-pointer hover:opacity-80 transition-opacity"
+              onMouseEnter={() => setActiveIdx(idx)}
+              onMouseLeave={() => setActiveIdx(-1)}
+            >
+              <span
+                className="w-2.5 h-2.5 rounded-full inline-block"
+                style={{ backgroundColor: entry.fill }}
+              />
+              {entry.name}
+            </div>
+          ))}
+        </div>
         {hasMoreItems && (
           <div className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-            +{labels.length - MAX_LEGEND_ITEMS} categorías más (ver detalle
-            abajo)
+            +{rows.length - MAX_LEGEND_ITEMS} categorías más (ver detalle abajo)
           </div>
         )}
       </motion.div>

@@ -2,7 +2,8 @@ import { Package } from 'lucide-react';
 
 const statusStyles = {
   ALTA: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400',
-  PROPUESTA: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400',
+  PROPUESTA:
+    'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400',
   BAJA: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400',
 };
 
@@ -22,7 +23,11 @@ const TableChart = ({
         )}
         <h2 className="font-bold text-lg dark:text-white">{title}</h2>
       </div>
-      {subtitle && <div className="text-gray-500 dark:text-gray-400 text-sm mb-2">{subtitle}</div>}
+      {subtitle && (
+        <div className="text-gray-500 dark:text-gray-400 text-sm mb-2">
+          {subtitle}
+        </div>
+      )}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm mt-2">
           <thead>

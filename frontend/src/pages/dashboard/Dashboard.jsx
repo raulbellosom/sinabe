@@ -23,7 +23,6 @@ import PolarAreaChart from './graphics/PolarAreaChart';
 import AreaChart from './graphics/AreaChart';
 import TableChart from './graphics/TableChart';
 import GradientChart from './graphics/GradientChart';
-import { Dropdown } from '../../components/ui/flowbite';
 import { Link } from 'react-router-dom';
 import { ThreeCircles } from 'react-loader-spinner';
 import Skeleton from 'react-loading-skeleton';
@@ -64,21 +63,6 @@ const Dashboard = () => {
   const userName = getCurrentUser();
   const greeting = getGreeting();
 
-  const collapsedActions = (inventory) => [
-    {
-      label: 'Ver Detalles',
-      href: `/inventories/view/${inventory.id}`,
-      icon: Eye,
-      disabled: true,
-    },
-    {
-      label: 'Editar',
-      href: `/inventories/edit/${inventory.id}`,
-      icon: Pencil,
-      disabled: true,
-    },
-  ];
-
   return (
     <div className="h-full">
       {dashboard && (
@@ -91,7 +75,9 @@ const Dashboard = () => {
               />
             </span>
             <div>
-              <h1 className="text-base md:text-xl font-bold dark:text-white">Dashboard</h1>
+              <h1 className="text-base md:text-xl font-bold dark:text-white">
+                Dashboard
+              </h1>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Aquí puedes ver un resumen de los inventarios y su estado
                 actual.
@@ -125,9 +111,9 @@ const Dashboard = () => {
             icon={<ClipboardList />}
             dataObj={dashboard.distribution.byStatus}
             colors={{
-              ALTA: 'rgba(75, 192, 192, 0.6)',
-              PROPUESTA: 'rgba(255, 206, 86, 0.6)',
-              BAJA: 'rgba(255, 99, 132, 0.6)',
+              ALTA: '#4bc0c0',
+              PROPUESTA: '#fbbf24',
+              BAJA: '#f87171',
             }}
           />
           <PolarAreaChart
@@ -190,31 +176,22 @@ const Dashboard = () => {
               status: inv.status,
               date: inv.createdAt?.slice(0, 10), // yyyy-mm-dd
               actions: (
-                <Dropdown
-                  renderTrigger={() => (
-                    <button className="w-fit bg-white dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border dark:border-neutral-600 text-stone-800 dark:text-white">
-                      <MoreVertical className="text-lg text-neutral-600 dark:text-neutral-300" />
-                    </button>
-                  )}
-                  dismissOnClick={true}
-                  inline
-                  arrowIcon={null}
-                  placement="right"
-                  className="md:w-52"
-                >
-                  {collapsedActions(inv).map(
-                    (action, index) =>
-                      action.disabled && (
-                        <Dropdown.Item
-                          key={index}
-                          className="min-w-36 min-h-12"
-                          icon={action?.icon}
-                        >
-                          <Link to={action?.href}>{action?.label}</Link>
-                        </Dropdown.Item>
-                      ),
-                  )}
-                </Dropdown>
+                <div className="flex items-center gap-1">
+                  <Link
+                    to={`/inventories/view/${inv.id}`}
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-gray-400 hover:text-sinabe-primary dark:hover:text-sinabe-primary transition-colors"
+                    title="Ver Detalles"
+                  >
+                    <Eye size={16} />
+                  </Link>
+                  <Link
+                    to={`/inventories/edit/${inv.id}`}
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-gray-400 hover:text-sinabe-primary dark:hover:text-sinabe-primary transition-colors"
+                    title="Editar"
+                  >
+                    <Pencil size={16} />
+                  </Link>
+                </div>
               ),
             }))}
           />
@@ -231,19 +208,64 @@ const Dashboard = () => {
       {!dashboard && (
         <div className="flex flex-col items-start justify-start h-[80dvh]">
           <div className="mb-4 p-4 w-full">
-            <Skeleton height={138} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
+            <Skeleton
+              height={138}
+              className="w-full"
+              baseColor="var(--skeleton-base)"
+              highlightColor="var(--skeleton-highlight)"
+            />
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4 w-full">
-            <Skeleton height={150} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
-            <Skeleton height={150} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
-            <Skeleton height={150} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
-            <Skeleton height={150} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
+            <Skeleton
+              height={150}
+              className="w-full"
+              baseColor="var(--skeleton-base)"
+              highlightColor="var(--skeleton-highlight)"
+            />
+            <Skeleton
+              height={150}
+              className="w-full"
+              baseColor="var(--skeleton-base)"
+              highlightColor="var(--skeleton-highlight)"
+            />
+            <Skeleton
+              height={150}
+              className="w-full"
+              baseColor="var(--skeleton-base)"
+              highlightColor="var(--skeleton-highlight)"
+            />
+            <Skeleton
+              height={150}
+              className="w-full"
+              baseColor="var(--skeleton-base)"
+              highlightColor="var(--skeleton-highlight)"
+            />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 3xl:grid-cols-4 gap-4 my-4 w-full">
-            <Skeleton height={250} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
-            <Skeleton height={250} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
-            <Skeleton height={250} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
-            <Skeleton height={250} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
+            <Skeleton
+              height={250}
+              className="w-full"
+              baseColor="var(--skeleton-base)"
+              highlightColor="var(--skeleton-highlight)"
+            />
+            <Skeleton
+              height={250}
+              className="w-full"
+              baseColor="var(--skeleton-base)"
+              highlightColor="var(--skeleton-highlight)"
+            />
+            <Skeleton
+              height={250}
+              className="w-full"
+              baseColor="var(--skeleton-base)"
+              highlightColor="var(--skeleton-highlight)"
+            />
+            <Skeleton
+              height={250}
+              className="w-full"
+              baseColor="var(--skeleton-base)"
+              highlightColor="var(--skeleton-highlight)"
+            />
           </div>
         </div>
       )}
