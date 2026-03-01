@@ -111,8 +111,17 @@ const PieChart = ({
   colors = defaultColors,
 }) => {
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [hiddenKeys, setHiddenKeys] = useState(new Set());
   const onPieEnter = useCallback((_, index) => setActiveIndex(index), []);
   const onPieLeave = useCallback(() => setActiveIndex(-1), []);
+
+  const toggleKey = (name) =>
+    setHiddenKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
 
   const labels = Object.keys(dataObj || {});
   const dataValues = Object.values(dataObj || {});
@@ -130,11 +139,15 @@ const PieChart = ({
   }
 
   const total = dataValues.reduce((a, b) => a + b, 0);
-  const chartData = labels.map((label, idx) => ({
+  const allData = labels.map((label, idx) => ({
     name: label,
     value: dataValues[idx],
     _total: total,
+    _color: Array.isArray(colorMap)
+      ? colorMap[idx % colorMap.length]
+      : colorMap[idx],
   }));
+  const chartData = allData.filter((d) => !hiddenKeys.has(d.name));
 
   return (
     <div className="bg-white dark:bg-neutral-800 rounded-xl shadow dark:shadow-neutral-900/50 p-6 flex flex-col min-h-[340px]">
@@ -149,8 +162,8 @@ const PieChart = ({
           {subtitle}
         </div>
       )}
-      <div className="flex-1 min-h-[260px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="flex-1">
+        <ResponsiveContainer width="100%" height={280}>
           <RechartsPie>
             <Pie
               activeIndex={activeIndex >= 0 ? activeIndex : undefined}
@@ -169,14 +182,10 @@ const PieChart = ({
               animationDuration={800}
               animationEasing="ease-out"
             >
-              {chartData.map((_, idx) => (
+              {chartData.map((entry, idx) => (
                 <Cell
                   key={`cell-${idx}`}
-                  fill={
-                    Array.isArray(colorMap)
-                      ? colorMap[idx % colorMap.length]
-                      : colorMap[idx]
-                  }
+                  fill={entry._color}
                   stroke="none"
                   opacity={activeIndex >= 0 && activeIndex !== idx ? 0.4 : 1}
                   style={{ transition: 'opacity 200ms ease' }}
@@ -189,24 +198,30 @@ const PieChart = ({
       </div>
       {/* Legend */}
       <div className="flex flex-wrap gap-3 mt-3 justify-center">
-        {chartData.map((entry, idx) => (
-          <div
-            key={entry.name}
-            className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 cursor-pointer hover:opacity-80 transition-opacity"
-            onMouseEnter={() => setActiveIndex(idx)}
-            onMouseLeave={() => setActiveIndex(-1)}
-          >
-            <span
-              className="inline-block w-2.5 h-2.5 rounded-full"
-              style={{
-                backgroundColor: Array.isArray(colorMap)
-                  ? colorMap[idx % colorMap.length]
-                  : colorMap[idx],
-              }}
-            />
-            {entry.name}
-          </div>
-        ))}
+        {allData.map((entry) => {
+          const hidden = hiddenKeys.has(entry.name);
+          return (
+            <button
+              key={entry.name}
+              type="button"
+              className={`flex items-center gap-1.5 text-xs cursor-pointer transition-all duration-200 ${
+                hidden
+                  ? 'opacity-40 line-through text-gray-400 dark:text-gray-600'
+                  : 'text-gray-600 dark:text-gray-400 hover:opacity-80'
+              }`}
+              onClick={() => toggleKey(entry.name)}
+            >
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-full transition-opacity"
+                style={{
+                  backgroundColor: entry._color,
+                  opacity: hidden ? 0.3 : 1,
+                }}
+              />
+              {entry.name}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

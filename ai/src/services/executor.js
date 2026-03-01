@@ -1,108 +1,175 @@
+import { getPool } from "./mysql.js";
 import {
-  listInventories,
-  countInventories,
-  groupCountInventories,
-  listInventoriesByIds,
-} from "./inventoryRepo.js";
-import { semanticCandidateIds } from "./semantic.js";
+  buildCountQuery,
+  buildGroupCountQuery,
+  buildListQuery,
+  buildSuggestionQuery,
+  serializePlanForMeta,
+} from "./sqlBuilder.js";
 
-/**
- * Execute plan and return results with proper type annotations for frontend
- * @param {Object} plan - The execution plan from planner
- * @returns {Object} Result with type indicator
- */
+const INCLUDE_SQL_META = process.env.AI_INCLUDE_SQL_META !== "false";
+
+async function queryRows(pool, built) {
+  const [rows] = await pool.query(built.sql, built.params);
+  return rows;
+}
+
+function buildMeta(plan, builtMeta, extra = {}) {
+  const meta = {
+    plan: serializePlanForMeta(plan),
+    appliedFilters: builtMeta.appliedFilters || [],
+    joinsUsed: builtMeta.joinsUsed || [],
+    ...extra,
+  };
+
+  if (INCLUDE_SQL_META) {
+    meta.sql = builtMeta.sql;
+    meta.params = builtMeta.params;
+  }
+
+  return meta;
+}
+
+function normalizeSuggestionRows(rows) {
+  return (rows || [])
+    .map((row) => String(row.value || "").trim())
+    .filter(Boolean)
+    .filter((value, idx, arr) => arr.indexOf(value) === idx);
+}
+
+async function getSuggestionsForZeroResult(pool, plan, maxFilters = 2) {
+  const suggestions = [];
+
+  for (const filter of plan.filters || []) {
+    if (suggestions.length >= maxFilters) break;
+
+    const built = buildSuggestionQuery(filter, 8);
+    if (!built) continue;
+
+    const rows = await queryRows(pool, built);
+    const values = normalizeSuggestionRows(rows).slice(0, 5);
+    if (!values.length) continue;
+
+    suggestions.push({
+      path: filter.path,
+      requestedValue: filter.value,
+      options: values,
+    });
+  }
+
+  return suggestions;
+}
+
+function asNeedClarification(message, suggestions, meta) {
+  const options = suggestions.flatMap((item) =>
+    item.options.map((option) => `${item.path}: ${option}`)
+  );
+
+  return {
+    type: "need_clarification",
+    message,
+    options,
+    suggestions,
+    meta,
+  };
+}
+
 export async function executePlan(plan) {
-  const { intent, filters, pagination, sort, groupBy, missing } = plan;
-  const { page, limit } = pagination;
+  const pool = getPool();
+  const page = Number(plan.pagination?.page || 1);
+  const limit = Number(plan.pagination?.limit || 50);
 
   try {
-    // COUNT: Simple total count
-    if (intent === "count_inventories") {
-      const total = await countInventories({ filters, missing: null });
+    if (plan.action === "count") {
+      const built = buildCountQuery(plan);
+      const rows = await queryRows(pool, built);
+      const total = Number(rows?.[0]?.total || 0);
+      const meta = buildMeta(plan, built.meta);
+
+      if (total === 0) {
+        const suggestions = await getSuggestionsForZeroResult(pool, plan);
+        if (suggestions.length > 0) {
+          return asNeedClarification(
+            "No encontré resultados exactos. ¿Quizá quisiste alguno de estos valores?",
+            suggestions,
+            meta
+          );
+        }
+      }
+
       return {
         type: "aggregation",
         metric: "count",
         total,
         message: `Total: ${total} inventarios`,
+        meta,
       };
     }
 
-    // GROUP COUNT: Counts grouped by field
-    if (intent === "group_count_inventories") {
-      const groupField = groupBy || "location";
-      const rows = await groupCountInventories({
-        filters,
-        groupBy: groupField,
-      });
-      const total = rows.reduce((sum, r) => sum + Number(r.count || 0), 0);
+    if (plan.action === "group") {
+      const built = buildGroupCountQuery(plan);
+      const rows = await queryRows(pool, built);
+      const total = rows.reduce((sum, row) => sum + Number(row.count || 0), 0);
+      const groupBy = plan.groupBy?.[0] || null;
+      const meta = buildMeta(plan, built.meta);
+
+      if (rows.length === 0) {
+        const suggestions = await getSuggestionsForZeroResult(pool, plan);
+        if (suggestions.length > 0) {
+          return asNeedClarification(
+            "No encontré grupos con esos filtros. Revisa estos valores parecidos:",
+            suggestions,
+            meta
+          );
+        }
+      }
+
       return {
         type: "aggregation",
         metric: "count",
-        groupBy: groupField,
+        groupBy,
         rows,
         total,
-        message: `${rows.length} grupos encontrados, ${total} inventarios en total`,
+        message: `${rows.length} grupos encontrados`,
+        meta,
       };
     }
 
-    // MISSING: List items with missing field/relation
-    if (intent === "missing_inventories") {
-      const total = await countInventories({ filters, missing });
-      const items = await listInventories({
-        filters,
-        missing,
-        page,
-        limit,
-        sort,
-      });
-      return {
-        type: "mixed",
-        total,
-        items,
-        page,
-        limit,
-        hasMore: total > page * limit,
-        message: `${total} inventarios sin ${
-          missing?.field || "campo especificado"
-        }`,
-      };
-    }
+    const countBuilt = buildCountQuery(plan);
+    const listBuilt = buildListQuery(plan);
+    const [countRows, items] = await Promise.all([
+      queryRows(pool, countBuilt),
+      queryRows(pool, listBuilt),
+    ]);
+    const total = Number(countRows?.[0]?.total || 0);
 
-    // SEMANTIC SEARCH: Vector similarity search
-    if (intent === "search_inventories") {
-      const ids = await semanticCandidateIds(plan);
-      if (ids.length === 0) {
-        return {
-          type: "list",
-          total: 0,
-          items: [],
-          page,
-          limit,
-          hasMore: false,
-          message: "No se encontraron resultados semánticos",
-        };
-      }
-      const items = await listInventoriesByIds({ ids, page, limit, sort });
-      return {
-        type: "list",
-        total: ids.length,
-        items,
-        page,
-        limit,
-        hasMore: ids.length > page * limit,
-        message: `${ids.length} inventarios encontrados por similitud`,
-      };
-    }
-
-    // LIST: Default list with filters
-    const total = await countInventories({ filters, missing: null });
-    const items = await listInventories({
-      filters,
-      missing: null,
-      page,
-      limit,
-      sort,
+    const meta = buildMeta(plan, {
+      ...listBuilt.meta,
+      sql: INCLUDE_SQL_META
+        ? {
+            list: listBuilt.meta.sql,
+            count: countBuilt.meta.sql,
+          }
+        : undefined,
+      params: INCLUDE_SQL_META
+        ? {
+            list: listBuilt.meta.params,
+            count: countBuilt.meta.params,
+          }
+        : undefined,
     });
+
+    if (total === 0) {
+      const suggestions = await getSuggestionsForZeroResult(pool, plan);
+      if (suggestions.length > 0) {
+        return asNeedClarification(
+          "No encontré resultados exactos. ¿Te refieres a alguno de estos valores?",
+          suggestions,
+          meta
+        );
+      }
+    }
+
     return {
       type: "list",
       total,
@@ -111,6 +178,7 @@ export async function executePlan(plan) {
       limit,
       hasMore: total > page * limit,
       message: `${total} inventarios encontrados`,
+      meta,
     };
   } catch (error) {
     console.error("[Executor Error]", error);

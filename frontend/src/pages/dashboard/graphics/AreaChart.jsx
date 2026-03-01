@@ -54,8 +54,8 @@ const AreaChart = ({
           {subtitle}
         </div>
       )}
-      <div style={{ height }}>
-        <ResponsiveContainer width="100%" height="100%">
+      <div>
+        <ResponsiveContainer width="100%" height={height}>
           <RechartsArea
             data={chartData}
             margin={{ top: 10, right: 10, left: -10, bottom: 0 }}

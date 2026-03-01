@@ -424,18 +424,18 @@ const NotificationRulesPage = () => {
   };
 
   return (
-    <div className="p-4 bg-white min-h-screen">
+    <div className="bg-white min-h-screen rounded-lg shadow-md border-gray-100 border overflow-hidden">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 border-b-2 border-neutral-100 pb-4">
-          <div>
-            <h1 className="text-2xl font-bold">Reglas de Notificación</h1>
-            <p className="text-gray-500 text-sm">
+        <div className="w-full flex flex-col-reverse md:flex-row items-center justify-between gap-2 p-3 md:p-4 border-b border-gray-100">
+          <div className="min-w-0">
+            <h1 className="text-base md:text-xl font-bold truncate">Reglas de Notificación</h1>
+            <p className="text-gray-500 text-xs md:text-sm">
               Configura y gestiona tus alertas automáticas
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 shrink-0 w-full md:w-auto justify-end">
             <Button color="light" size="sm" onClick={fetchRules}>
               <RefreshCw className="w-4 h-4 mr-1" />
               Actualizar
@@ -451,7 +451,7 @@ const NotificationRulesPage = () => {
           </div>
         </div>
 
-        {/* Tabs */}
+        <div className="p-3 md:p-4">
         {rulesLoading ? (
           <div className="flex items-center justify-center py-12">
             <Spinner size="xl" />
@@ -690,6 +690,7 @@ const NotificationRulesPage = () => {
           onClose={() => setReadStatusRule(null)}
           rule={readStatusRule}
         />
+        </div>
       </div>
     </div>
   );

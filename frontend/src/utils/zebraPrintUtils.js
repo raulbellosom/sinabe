@@ -6,6 +6,7 @@
  */
 import { LABEL_SIZES, buildQRValue } from '../components/QRGenerator/QRLabel';
 import QRCode from 'qrcode';
+import { jsPDF } from 'jspdf';
 
 /**
  * Genera el valor del QR como dataURL PNG usando la librería `qrcode`
@@ -207,4 +208,153 @@ export async function printZebraLabels(
   printWin.document.open();
   printWin.document.write(html);
   printWin.document.close();
+}
+
+/**
+ * Genera un PDF tamaño carta con todas las etiquetas QR ordenadas en cuadrícula.
+ * Descarga automáticamente el archivo.
+ * @param {Array}  inventories  - Lista de inventarios seleccionados
+ * @param {string} size         - 'sm' | 'md' | 'lg'
+ * @param {string} textPosition - 'right' | 'bottom' | 'none'
+ */
+export async function generateLabelsPDF(
+  inventories,
+  size = 'md',
+  textPosition = 'right',
+) {
+  const cfg = LABEL_SIZES[size] || LABEL_SIZES.md;
+  const qrPx = getEffectiveQrPx(cfg, textPosition);
+
+  // Carta = 215.9 x 279.4 mm  ─  márgenes 10mm
+  const PAGE_W = 215.9;
+  const PAGE_H = 279.4;
+  const MARGIN = 10;
+  const GAP = 3;
+
+  const labelW = cfg.widthMm;
+  const labelH = cfg.heightMm;
+
+  // Cuántas etiquetas caben
+  const cols = Math.floor((PAGE_W - MARGIN * 2 + GAP) / (labelW + GAP));
+  const rows = Math.floor((PAGE_H - MARGIN * 2 + GAP) / (labelH + GAP));
+  const perPage = cols * rows;
+
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'letter',
+  });
+
+  // Generar QR dataURLs
+  const qrDataUrls = await Promise.all(
+    inventories.map((inv) => generateQRDataUrl(buildQRValue(inv), qrPx)),
+  );
+
+  const isDouble = textPosition === 'none';
+  const isRow = textPosition === 'right' || isDouble;
+
+  for (let i = 0; i < inventories.length; i++) {
+    const pageIdx = Math.floor(i / perPage);
+    const posOnPage = i % perPage;
+
+    if (posOnPage === 0 && pageIdx > 0) {
+      doc.addPage('letter', 'portrait');
+    }
+
+    const col = posOnPage % cols;
+    const row = Math.floor(posOnPage / cols);
+
+    const x = MARGIN + col * (labelW + GAP);
+    const y = MARGIN + row * (labelH + GAP);
+
+    const inv = inventories[i];
+    const qrDataUrl = qrDataUrls[i];
+
+    // Borde de etiqueta
+    doc.setDrawColor(180);
+    doc.setLineWidth(0.2);
+    doc.rect(x, y, labelW, labelH);
+
+    const PAD = 1.5;
+    const qrMm = qrPx * 0.264583;
+    const effectiveQrMm = Math.min(qrMm, labelH - PAD * 2);
+
+    if (isDouble) {
+      // Dos QRs centrados
+      const totalW = effectiveQrMm * 2 + 2;
+      const startX = x + (labelW - totalW) / 2;
+      const qrY = y + (labelH - effectiveQrMm) / 2;
+      doc.addImage(qrDataUrl, 'PNG', startX, qrY, effectiveQrMm, effectiveQrMm);
+      doc.addImage(
+        qrDataUrl,
+        'PNG',
+        startX + effectiveQrMm + 2,
+        qrY,
+        effectiveQrMm,
+        effectiveQrMm,
+      );
+    } else if (isRow) {
+      // QR izquierda + texto derecha
+      const qrX = x + PAD;
+      const qrY = y + (labelH - effectiveQrMm) / 2;
+      doc.addImage(qrDataUrl, 'PNG', qrX, qrY, effectiveQrMm, effectiveQrMm);
+
+      const textX = qrX + effectiveQrMm + 1.5;
+      const textMaxW = labelW - (effectiveQrMm + PAD * 2 + 1.5);
+      // Align text vertically with the QR: qrY + one lineH so baseline sits at the top of the QR
+      const _fontSize = Math.max(cfg.fontSizePx * 0.264583 * 2.5, 5);
+      const _lineH = _fontSize * 0.45;
+      drawLabelText(doc, inv, cfg, textX, qrY + _lineH, textMaxW);
+    } else {
+      // QR arriba + texto abajo
+      const qrBottomMm = Math.min(cfg.qrPxBottom * 0.264583, labelH * 0.6);
+      const qrX = x + (labelW - qrBottomMm) / 2;
+      doc.addImage(qrDataUrl, 'PNG', qrX, y + PAD, qrBottomMm, qrBottomMm);
+
+      // Use one full lineH as gap so the text baseline clears the bottom of the QR
+      const _textFontSize = Math.max(cfg.fontSizePx * 0.264583 * 2.5, 5);
+      const _lineH = _textFontSize * 0.45;
+      const textY = y + PAD + qrBottomMm + _lineH;
+      const textMaxW = labelW - PAD * 2;
+      // Center the text block horizontally below the QR
+      drawLabelText(doc, inv, cfg, x + labelW / 2, textY, textMaxW, 'center');
+    }
+  }
+
+  doc.save(`etiquetas_qr_${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
+/**
+ * Dibuja los campos de texto de una etiqueta en el PDF.
+ * @param {string} [align='left'] - 'left' | 'center'
+ */
+function drawLabelText(doc, inv, cfg, x, y, maxW, align = 'left') {
+  const fontSize = Math.max(cfg.fontSizePx * 0.264583 * 2.5, 5);
+  doc.setFont('Courier', 'normal');
+  doc.setFontSize(fontSize);
+  doc.setTextColor(0, 0, 0);
+
+  const lineH = fontSize * 0.45;
+  let curY = y;
+
+  const lines = [];
+  if (inv.internalFolio) lines.push(`Folio: ${inv.internalFolio}`);
+  lines.push(`S/N: ${inv.serialNumber || '—'}`);
+  lines.push(`Activo: ${inv.activeNumber || '—'}`);
+  if (cfg.key !== 'sm' && inv.model?.name)
+    lines.push(`Modelo: ${inv.model.name}`);
+  if (cfg.key === 'lg' && inv.model?.brand?.name)
+    lines.push(`Marca: ${inv.model.brand.name}`);
+  if (cfg.key === 'lg' && inv.model?.type?.name)
+    lines.push(`Tipo: ${inv.model.type.name}`);
+
+  for (const line of lines) {
+    // Truncate if too wide
+    let text = line;
+    while (doc.getTextWidth(text) > maxW && text.length > 3) {
+      text = text.slice(0, -1);
+    }
+    doc.text(text, x, curY, { align });
+    curY += lineH;
+  }
 }

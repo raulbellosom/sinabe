@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts';
 
 const defaultColors = [
@@ -58,11 +57,22 @@ const GradientChart = ({
   colors = defaultColors,
 }) => {
   const [hoveredUser, setHoveredUser] = useState(null);
+  const [hiddenUsers, setHiddenUsers] = useState(new Set());
+
+  const toggleUser = (name) =>
+    setHiddenUsers((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+
+  const visibleUsers = usersData.filter((u) => !hiddenUsers.has(u.user));
 
   // Transform data for Recharts: array of { name: month, user1: val, user2: val, ... }
   const chartData = labels.map((label, monthIdx) => {
     const point = { name: label };
-    usersData.forEach((user) => {
+    visibleUsers.forEach((user) => {
       point[user.user] = user.data[monthIdx] || 0;
     });
     return point;
@@ -84,8 +94,8 @@ const GradientChart = ({
           {subtitle}
         </div>
       )}
-      <div style={{ height }}>
-        <ResponsiveContainer width="100%" height="100%">
+      <div>
+        <ResponsiveContainer width="100%" height={height}>
           <AreaChart
             data={chartData}
             margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
@@ -141,8 +151,9 @@ const GradientChart = ({
                 strokeDasharray: '4 4',
               }}
             />
-            {usersData.map((user, idx) => {
-              const color = colors[idx % colors.length];
+            {visibleUsers.map((user, idx) => {
+              const originalIdx = usersData.indexOf(user);
+              const color = colors[originalIdx % colors.length];
               const isHovered =
                 hoveredUser === null || hoveredUser === user.user;
               return (
@@ -153,7 +164,7 @@ const GradientChart = ({
                   name={user.user}
                   stroke={color}
                   strokeWidth={hoveredUser === user.user ? 3 : 2}
-                  fill={`url(#grad-${idx})`}
+                  fill={`url(#grad-${originalIdx})`}
                   fillOpacity={isHovered ? 1 : 0.15}
                   strokeOpacity={isHovered ? 1 : 0.3}
                   dot={{ r: 3, fill: color, stroke: '#fff', strokeWidth: 2 }}
@@ -169,18 +180,38 @@ const GradientChart = ({
                 />
               );
             })}
-            <Legend
-              wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }}
-              onMouseEnter={(e) => setHoveredUser(e.value)}
-              onMouseLeave={() => setHoveredUser(null)}
-              formatter={(value) => (
-                <span className="text-gray-600 dark:text-gray-400">
-                  {value}
-                </span>
-              )}
-            />
           </AreaChart>
         </ResponsiveContainer>
+      </div>
+      {/* Custom Legend */}
+      <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 justify-center">
+        {usersData.map((user, idx) => {
+          const color = colors[idx % colors.length];
+          const hidden = hiddenUsers.has(user.user);
+          return (
+            <button
+              key={user.user}
+              type="button"
+              className={`flex items-center gap-1.5 text-xs cursor-pointer transition-all duration-200 ${
+                hidden
+                  ? 'opacity-40 line-through text-gray-400 dark:text-gray-600'
+                  : 'text-gray-600 dark:text-gray-400 hover:opacity-80'
+              }`}
+              onClick={() => toggleUser(user.user)}
+              onMouseEnter={() => !hidden && setHoveredUser(user.user)}
+              onMouseLeave={() => setHoveredUser(null)}
+            >
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-full transition-opacity"
+                style={{
+                  backgroundColor: color,
+                  opacity: hidden ? 0.3 : 1,
+                }}
+              />
+              {user.user}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

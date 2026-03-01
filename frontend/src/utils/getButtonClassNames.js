@@ -7,7 +7,7 @@ export const getButtonClassNames = (
   className,
 ) => {
   const baseClasses =
-    'w-full md:w-fit text-xs xl:text-sm transition ease-in-out duration-200 p-2 flex items-center justify-center rounded-lg border font-medium focus:outline-none focus:ring-2 focus:ring-offset-1';
+    'w-fit text-xs xl:text-sm transition ease-in-out duration-200 px-3 py-2 flex items-center justify-center rounded-lg border font-medium focus:outline-none focus:ring-2 focus:ring-offset-1';
 
   // Semantic colors using CSS variables
   const semanticColors = {

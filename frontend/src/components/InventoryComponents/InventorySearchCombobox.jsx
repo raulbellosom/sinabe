@@ -273,7 +273,9 @@ const InventorySearchCombobox = ({ className = '' }) => {
       {isMobile && (
         <div className="p-4 bg-white dark:bg-neutral-800 border-b border-gray-100 dark:border-neutral-700 shrink-0">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Buscar</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Buscar
+            </h3>
             <button
               onClick={handleClose}
               className="p-2 -mr-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
@@ -388,7 +390,9 @@ const InventorySearchCombobox = ({ className = '' }) => {
         {loading ? (
           <div className="py-8 text-center">
             <div className="inline-block w-6 h-6 border-2 border-purple-200 dark:border-purple-800 border-t-purple-600 rounded-full animate-spin mb-2" />
-            <p className="text-xs text-gray-500 dark:text-gray-400">Buscando...</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Buscando...
+            </p>
           </div>
         ) : results.length === 0 ? (
           <div className="py-8 text-center">
@@ -493,7 +497,7 @@ const InventorySearchCombobox = ({ className = '' }) => {
         <div
           className={classNames(
             'relative flex items-center border transition-all duration-200',
-            'min-w-[140px] sm:min-w-[600px] h-11',
+            'min-w-[140px] flex-1 h-11',
             open
               ? 'rounded-t-2xl rounded-b-none border-transparent bg-white dark:bg-neutral-800 shadow-lg z-[60]'
               : 'rounded-2xl bg-gray-50 dark:bg-neutral-700/50 border-gray-200 dark:border-neutral-600 hover:border-gray-300 dark:hover:border-neutral-500 hover:bg-white dark:hover:bg-neutral-700 hover:shadow-sm z-50',
@@ -563,7 +567,11 @@ const InventorySearchCombobox = ({ className = '' }) => {
                 'absolute top-full left-0 right-0 bg-white dark:bg-neutral-800 shadow-lg rounded-b-2xl z-[59] overflow-hidden',
                 '-mt-[1px]',
               )}
-              style={{ maxHeight: '500px', display: 'flex', flexDirection: 'column' }}
+              style={{
+                maxHeight: '500px',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
             >
               {renderDropdownContent()}
             </motion.div>

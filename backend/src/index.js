@@ -29,6 +29,7 @@ import pushRoutes from "./routes/pushRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import auditLogRoutes from "./routes/auditLogRoutes.js";
 import { startScheduler } from "./notifications/scheduler.js";
+import { db } from "./lib/db.js";
 
 dotenv.config();
 
@@ -95,8 +96,16 @@ app.use("/api/audit-logs", auditLogRoutes);
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+
+  // Conectar Prisma antes de iniciar el scheduler
+  try {
+    await db.$connect();
+    console.log("Prisma connected successfully");
+  } catch (err) {
+    console.error("Failed to connect Prisma:", err);
+  }
 
   // Iniciar el scheduler de notificaciones
   startScheduler();

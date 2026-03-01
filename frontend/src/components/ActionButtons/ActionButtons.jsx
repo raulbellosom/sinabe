@@ -1,5 +1,4 @@
 // src/components/ActionButtons/ActionButtons.jsx
-import { forwardRef } from 'react';
 import {
   CheckCircle,
   Pencil,
@@ -13,130 +12,126 @@ import {
 import LinkButton from './LinkButton';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
 
-const ActionButtons = forwardRef(
-  (
+const ActionButtons = ({
+  // Named shorthand props (backward-compatible)
+  onShow,
+  onEdit,
+  onRemove,
+  onCreate,
+  onCancel,
+  onTogglePin,
+  onSave,
+  labelShow,
+  labelEdit,
+  labelRemove,
+  labelCreate,
+  labelCancel,
+  labelPin,
+  labelSave,
+  iconSave,
+  colorSave,
+  isPinMode = false,
+  disabledSave = false,
+  // Free-form extra actions (preferred API)
+  extraActions = [],
+}) => {
+  // Named shorthand actions come first so save/primary is always leftmost
+  const namedActions = [
     {
-      onShow,
-      onEdit,
-      onRemove,
-      onCreate,
-      onCancel,
-      onTogglePin,
-      onSave,
-      labelShow,
-      labelEdit,
-      labelRemove,
-      labelCreate,
-      labelCancel,
-      labelPin,
-      labelSave,
-      iconSave,
-      colorSave,
-      isPinMode = false,
-      extraActions = [],
-      disabledSave = false,
+      label: labelSave || 'Guardar',
+      action: onSave,
+      color: colorSave || 'blue',
+      icon: iconSave || CheckCircle,
+      disabled: disabledSave,
     },
-    ref,
-  ) => {
-    const actions = [
-      {
-        label: labelSave || 'Guardar',
-        action: onSave,
-        color: colorSave || 'blue',
-        icon: iconSave || CheckCircle,
-        disabled: disabledSave,
-      },
-      ...extraActions.map((action) => ({
-        ...action,
-      })),
-      {
-        label: labelShow || 'Ver',
-        action: onShow,
-        color: 'cyan',
-        icon: Eye,
-        disabled: false,
-      },
-      {
-        label: labelEdit || 'Editar',
-        action: onEdit,
-        color: 'yellow',
-        icon: Pencil,
-        disabled: false,
-      },
-      {
-        label: labelRemove || 'Eliminar',
-        action: onRemove,
-        color: 'red',
-        icon: Trash2,
-        disabled: false,
-      },
-      {
-        label: labelCreate || 'Nuevo',
-        action: onCreate,
-        color: 'indigo',
-        icon: Plus,
-        disabled: false,
-      },
-      {
-        label: labelCancel || 'Cancelar',
-        action: onCancel,
-        color: 'red',
-        icon: XCircle,
-        disabled: false,
-      },
-      {
-        label: isPinMode
-          ? labelPin || 'Desactivar Pin'
-          : labelPin || 'Activar Pin',
-        action: onTogglePin,
-        color: isPinMode ? 'green' : 'blue',
-        icon: isPinMode ? Pin : PinOff,
-        disabled: false,
-      },
-    ];
-    const filteredActions = actions.filter(
-      (action) => action.action || action.href,
-    );
+    {
+      label: labelShow || 'Ver',
+      action: onShow,
+      color: 'cyan',
+      icon: Eye,
+    },
+    {
+      label: labelEdit || 'Editar',
+      action: onEdit,
+      color: 'yellow',
+      icon: Pencil,
+    },
+    {
+      label: labelRemove || 'Eliminar',
+      action: onRemove,
+      color: 'red',
+      icon: Trash2,
+    },
+    {
+      label: labelCreate || 'Nuevo',
+      action: onCreate,
+      color: 'indigo',
+      icon: Plus,
+    },
+    {
+      label: labelCancel || 'Cancelar',
+      action: onCancel,
+      color: 'red',
+      icon: XCircle,
+    },
+    {
+      label: isPinMode
+        ? labelPin || 'Desactivar Pin'
+        : labelPin || 'Activar Pin',
+      action: onTogglePin,
+      color: isPinMode ? 'green' : 'blue',
+      icon: isPinMode ? Pin : PinOff,
+    },
+  ];
 
-    if (filteredActions.length === 0) {
-      return null;
-    }
+  const visibleActions = [
+    ...namedActions.filter((a) => a.action),
+    ...extraActions.filter((a) => a.action || a.href),
+  ];
 
-    return filteredActions.map((action, index) =>
-      action?.href ? (
+  if (visibleActions.length === 0) return null;
+
+  return visibleActions.map((action, index) => {
+    const Icon = action.icon;
+    const label = action.label;
+    const disabled = action.disabled || false;
+
+    if (action.href) {
+      return (
         <LinkButton
           key={index}
           route={action.href}
           color={action.color}
-          icon={action.icon}
-          label={action.label}
-          outline={action?.outline}
-          filled={action?.filled}
-          disabled={action?.disabled || false}
-          className={action?.className}
+          icon={Icon}
+          label={label}
+          outline={action.outline}
+          filled={action.filled}
+          disabled={disabled}
+          className={action.className}
         />
-      ) : (
-        <button
-          key={index}
-          ref={ref}
-          onClick={action.action}
-          className={getButtonClassNames(
-            action?.color,
-            action?.filled,
-            action?.disabled,
-            action?.className,
-          )}
-          type={action?.type || 'button'}
-          disabled={action?.disabled || false}
-        >
-          <i>{action.icon && <action.icon className="text-lg md:text-xl" />}</i>
-          <span className={`${action?.label?.length > 0 && 'ml-2'}`}>
-            {action.label}
-          </span>
-        </button>
-      ),
+      );
+    }
+
+    return (
+      <button
+        key={index}
+        type={action.type || 'button'}
+        onClick={action.action}
+        disabled={disabled}
+        className={getButtonClassNames(
+          action.color,
+          action.filled,
+          disabled,
+          action.className,
+        )}
+      >
+        {Icon && <Icon size={16} />}
+        {label && <span className="ml-1.5">{label}</span>}
+      </button>
     );
-  },
-);
+  });
+};
+
+ActionButtons.displayName = 'ActionButtons';
 
 export default ActionButtons;

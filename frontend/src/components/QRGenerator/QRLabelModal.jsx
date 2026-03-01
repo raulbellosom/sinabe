@@ -76,40 +76,40 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
     <Dialog
       open={isOpen}
       onClose={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-3"
     >
       <DialogBackdrop className="fixed inset-0 bg-black/60" />
-      <DialogPanel className="relative bg-[color:var(--surface)] rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[92dvh] overflow-hidden border border-[color:var(--border)]">
+      <DialogPanel className="relative bg-[color:var(--surface)] rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[96dvh] sm:max-h-[92dvh] overflow-hidden border border-[color:var(--border)]">
         {/* Header */}
         <DialogTitle
           as="div"
-          className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-[color:var(--border)]"
+          className="flex-shrink-0 flex items-center justify-between gap-2 px-4 py-2.5 sm:px-6 sm:py-4 border-b border-[color:var(--border)]"
         >
-          <div className="flex items-center gap-2">
-            <QrCode className="text-purple-500" size={22} />
-            <span className="font-bold text-lg text-[color:var(--foreground)]">
-              Imprimir Etiqueta QR
+          <div className="flex items-center gap-2 min-w-0">
+            <QrCode className="text-purple-500 shrink-0" size={18} />
+            <span className="font-bold text-sm sm:text-lg text-[color:var(--foreground)] truncate">
+              Etiqueta QR
             </span>
-            <span className="text-sm text-[color:var(--foreground-muted)] ml-2">
+            <span className="text-xs sm:text-sm text-[color:var(--foreground-muted)] truncate">
               {inventory.internalFolio
-                ? `Folio: ${inventory.internalFolio}`
+                ? inventory.internalFolio
                 : inventory.serialNumber || inventory.id}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-[color:var(--surface-muted)] text-[color:var(--foreground-muted)] transition-colors"
+            className="shrink-0 p-1.5 rounded-lg hover:bg-[color:var(--surface-muted)] text-[color:var(--foreground-muted)] transition-colors"
           >
             <X size={18} />
           </button>
         </DialogTitle>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-6">
+        <div className="flex-1 overflow-y-auto px-4 py-3 sm:px-6 sm:py-5 flex flex-col gap-4 sm:gap-6">
           {/* ── Opciones ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {/* Tamaño */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-[color:var(--foreground-muted)]">
+              <label className="text-xs sm:text-sm font-semibold text-[color:var(--foreground-muted)]">
                 Tamaño de etiqueta
               </label>
               <div className="flex items-center gap-2 bg-[color:var(--surface-muted)] rounded-xl p-1">
@@ -143,10 +143,10 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
 
             {/* Posición del texto */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-[color:var(--foreground-muted)]">
+              <label className="text-xs sm:text-sm font-semibold text-[color:var(--foreground-muted)]">
                 Texto en etiqueta
               </label>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-3 gap-1">
                 {[
                   { key: 'right', icon: PanelRight, label: 'Derecha' },
                   { key: 'bottom', icon: PanelBottom, label: 'Abajo' },
@@ -155,7 +155,7 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
                   <button
                     key={key}
                     onClick={() => setTextPosition(key)}
-                    className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-xs font-semibold transition-all border-2 ${
+                    className={`flex flex-col items-center gap-0.5 py-1.5 sm:py-2.5 px-1.5 rounded-xl text-[10px] sm:text-xs font-semibold transition-all border-2 ${
                       textPosition === key
                         ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
                         : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-purple-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400'
@@ -181,13 +181,13 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
           </div>
 
           {/* ── Preview de la etiqueta ── */}
-          <div className="flex flex-col items-center gap-3">
-            <p className="text-sm font-semibold text-[color:var(--foreground-muted)] self-start">
+          <div className="flex flex-col items-center gap-2 sm:gap-3">
+            <p className="text-xs sm:text-sm font-semibold text-[color:var(--foreground-muted)] self-start">
               Vista previa
             </p>
             <div
               id="qr-label-preview"
-              className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-8 flex items-center justify-center min-h-48 shadow-inner w-full"
+              className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-4 sm:p-8 flex items-center justify-center min-h-32 sm:min-h-48 shadow-inner w-full"
             >
               <div
                 style={{
@@ -215,11 +215,11 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
           </div>
 
           {/* ── Instrucciones Zebra ── */}
-          <div className="border border-blue-200 bg-blue-50 dark:bg-blue-950/40 dark:border-blue-700 rounded-xl p-4">
-            <p className="text-xs font-bold text-blue-700 dark:text-blue-300 mb-1">
+          <div className="hidden sm:block border border-blue-200 bg-blue-50 dark:bg-blue-950/40 dark:border-blue-700 rounded-xl p-3 sm:p-4">
+            <p className="text-[10px] sm:text-xs font-bold text-blue-700 dark:text-blue-300 mb-1">
               💡 Instrucciones para Zebra ZD421
             </p>
-            <ol className="text-xs text-blue-600 dark:text-blue-400 space-y-1 list-decimal list-inside">
+            <ol className="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 space-y-0.5 sm:space-y-1 list-decimal list-inside">
               <li>
                 Asegúrate de que la Zebra esté seleccionada como impresora
                 predeterminada.
@@ -241,29 +241,29 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 flex items-center justify-between gap-3 px-6 py-4 border-t border-[color:var(--border)] bg-[color:var(--surface)]">
+        <div className="flex-shrink-0 flex items-center justify-between gap-2 px-3 py-2.5 sm:px-6 sm:py-4 border-t border-[color:var(--border)] bg-[color:var(--surface)]">
           <button
             onClick={handleDownloadPng}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[color:var(--border)] text-sm font-medium text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)] transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[color:var(--border)] text-xs sm:text-sm font-medium text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)] transition-colors"
           >
-            <Download size={16} />
-            Descargar PNG
+            <Download size={14} />
+            <span className="hidden sm:inline">Descargar</span> PNG
           </button>
 
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-sm font-medium text-[color:var(--foreground-muted)] hover:bg-[color:var(--surface-muted)] transition-colors"
+              className="px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-[color:var(--foreground-muted)] hover:bg-[color:var(--surface-muted)] transition-colors"
             >
               Cancelar
             </button>
             <button
               onClick={handlePrint}
               disabled={isPrinting}
-              className="flex items-center gap-2 px-6 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-sm font-semibold transition-colors shadow-md"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-xs sm:text-sm font-semibold transition-colors shadow-md"
             >
-              <Printer size={16} />
-              {isPrinting ? 'Preparando…' : 'Imprimir en Zebra'}
+              <Printer size={14} />
+              {isPrinting ? '…' : 'Imprimir'}
             </button>
           </div>
         </div>

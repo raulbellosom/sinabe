@@ -171,12 +171,16 @@ const UsersPage = () => {
   ];
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-          <ShieldCheck className="text-purple-500" /> Usuarios
-        </h1>
-        <div className="flex items-center gap-2">
+    <div className="bg-white rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border overflow-hidden">
+      {/* Header */}
+      <div className="w-full flex flex-col-reverse md:flex-row items-center justify-between gap-2 p-3 md:p-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center min-w-0 text-purple-500">
+          <ShieldCheck size={20} className="mr-2 shrink-0" />
+          <h1 className="text-base md:text-xl font-bold truncate text-gray-800 dark:text-white">
+            Usuarios
+          </h1>
+        </div>
+        <div className="flex items-center gap-1 shrink-0 w-full md:w-auto justify-end">
           <ActionButtons
             extraActions={[
               {
@@ -192,6 +196,8 @@ const UsersPage = () => {
           />
         </div>
       </div>
+
+      <div className="p-3 md:p-4">
 
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 mb-4">
         <div className="relative w-full sm:w-auto flex-grow max-w-md">
@@ -302,6 +308,7 @@ const UsersPage = () => {
           removeFunction={confirmRemove}
         />
       )}
+      </div>
     </div>
   );
 };

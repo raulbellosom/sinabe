@@ -30,6 +30,22 @@ export const generateExcelBajaReport = async (inventories) => {
   }
 };
 
+export const exportInventoriesExcel = async (inventoryIds) => {
+  const response = await api.post(
+    '/reports/export-excel',
+    { inventoryIds },
+    {
+      responseType: 'arraybuffer',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      },
+    },
+  );
+  return response;
+};
+
 export const generateWordBajaReport = async (inventories) => {
   try {
     const response = await api.post(

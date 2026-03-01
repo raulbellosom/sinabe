@@ -303,14 +303,39 @@ export const Progress = ({
   );
 };
 
-export const Tooltip = ({ content, children, className }) => (
-  <span className={cn('group relative inline-flex', className)}>
-    {children}
-    <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 hidden -translate-x-1/2 rounded-md bg-black px-2 py-1 text-xs text-white group-hover:block group-focus-within:block">
-      {content}
+export const Tooltip = ({
+  content,
+  children,
+  className,
+  placement = 'top',
+  position,
+}) => {
+  const finalPlacement = position || placement;
+
+  const placementClasses = {
+    top: 'bottom-full left-1/2 mb-2 -translate-x-1/2',
+    bottom: 'top-full left-1/2 mt-2 -translate-x-1/2',
+    left: 'right-full top-1/2 mr-2 -translate-y-1/2',
+    right: 'left-full top-1/2 ml-2 -translate-y-1/2',
+  };
+
+  const tooltipPositionClass =
+    placementClasses[finalPlacement] || placementClasses.top;
+
+  return (
+    <span className={cn('group relative inline-flex', className)}>
+      {children}
+      <span
+        className={cn(
+          'pointer-events-none absolute z-50 hidden rounded-md bg-black px-2 py-1 text-xs text-white group-hover:block group-focus-within:block',
+          tooltipPositionClass,
+        )}
+      >
+        {content}
+      </span>
     </span>
-  </span>
-);
+  );
+};
 
 export const ToggleSwitch = ({
   checked = false,

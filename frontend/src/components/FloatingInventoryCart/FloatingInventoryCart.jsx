@@ -2,13 +2,15 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Package } from 'lucide-react';
 import { useInventorySelection } from '../../context/InventorySelectionProvider';
+import { useLocation } from 'react-router-dom';
 import classNames from 'classnames';
 
 const FloatingInventoryCart = () => {
   const { count, toggleCart, selectedInventories } = useInventorySelection();
+  const { pathname } = useLocation();
 
-  // No mostrar si no hay inventarios seleccionados
-  if (count === 0) return null;
+  // On the inventories page the SelectionFloatingPanel absorbs this button
+  if (count === 0 || pathname.startsWith('/inventories')) return null;
 
   return (
     <AnimatePresence>

@@ -1,0 +1,720 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Permission {
+  id          Int              @id @default(autoincrement())
+  name        String
+  description String?
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  role         Role       @relation(fields: [roleId], references: [id])
+
+  @@unique([roleId, permissionId])
+  @@index([permissionId], map: "RolePermission_permissionId_fkey")
+}
+
+model Role {
+  id          Int              @id @default(autoincrement())
+  name        String
+  permissions RolePermission[]
+  users       User[]
+}
+
+model User {
+  id                String          @id @default(uuid())
+  firstName         String
+  lastName          String
+  email             String          @unique
+  userName          String          @unique
+  phone             String?
+  password          String
+  status            Boolean?
+  roleId            Int
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  enabled           Boolean         @default(true)
+  inventories       Inventory[]
+  ProjectMember     ProjectMember[]
+  role              Role            @relation(fields: [roleId], references: [id])
+  photo             UserImage[]     @relation("UserImages")
+  assignedDeadlines Deadline[]      @relation("DeadlineUsers")
+  assignedTasks     DeadlineTask[]  @relation("TaskUsers")
+
+  // Custody Relations
+  employeeNumber    String?
+  jobTitle          String?
+  department        String?
+  receivedCustodies CustodyRecord[] @relation("CustodyReceiver")
+  deliveredCustodies CustodyRecord[] @relation("CustodyDeliverer")
+  preference        UserPreference?
+
+  // Notification Rules
+  createdNotificationRules NotificationRule[] @relation("CreatedNotificationRules")
+  sentNotifications        InAppNotification[] @relation("NotificationsReceived")
+
+  // New Relations
+  createdEvents            Event[]         @relation("EventCreator")
+  eventAttendance          EventAttendee[]
+  auditLogs                AuditLog[]
+
+  @@index([roleId], map: "User_roleId_fkey")
+}
+
+model Inventory {
+  id                String                 @id @default(uuid())
+  status            Status
+  createdById       String
+  activeNumber      String?
+  serialNumber      String?
+  comments          String?                @db.Text
+  modelId           Int
+  enabled           Boolean                @default(true)
+  receptionDate     DateTime?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  details           Json?
+  altaDate          DateTime?
+  bajaDate          DateTime?
+  internalFolio     String?                @unique
+  invoiceId         String?
+  purchaseOrderId   String?
+
+  locationId        Int?
+  location          InventoryLocation?     @relation(fields: [locationId], references: [id])
+
+  files             File[]
+  images            Image[]                @relation("InventoryImages")
+  createdBy         User                   @relation(fields: [createdById], references: [id])
+  invoice           Invoice?               @relation("InvoiceInventories", fields: [invoiceId], references: [id])
+  purchaseOrder     PurchaseOrder?         @relation("PurchaseOrderInventories", fields: [purchaseOrderId], references: [id])
+  model             Model                  @relation(fields: [modelId], references: [id])
+  conditions        InventoryCondition[]
+  customField       InventoryCustomField[]
+  InventoryDeadline InventoryDeadline[]
+  custodyItems      CustodyItem[]
+
+  @@index([createdById], map: "Inventory_createdById_fkey")
+  @@index([modelId], map: "Inventory_modelId_fkey")
+  @@index([invoiceId], map: "Inventory_invoiceId_fkey")
+  @@index([purchaseOrderId], map: "Inventory_purchaseOrderId_fkey")
+}
+
+model InventoryType {
+  id      Int     @id @default(autoincrement())
+  enabled Boolean @default(true)
+  name    String
+  models  Model[]
+}
+
+model InventoryBrand {
+  id      Int     @id @default(autoincrement())
+  name    String
+  enabled Boolean @default(true)
+  models  Model[]
+}
+
+model Model {
+  id            Int             @id @default(autoincrement())
+  name          String
+  typeId        Int
+  brandId       Int
+  enabled       Boolean         @default(true)
+  inventories   Inventory[]
+  brand         InventoryBrand  @relation(fields: [brandId], references: [id])
+  type          InventoryType   @relation(fields: [typeId], references: [id])
+  ModelVertical ModelVertical[]
+
+  @@index([brandId], map: "Model_brandId_fkey")
+  @@index([typeId], map: "Model_typeId_fkey")
+}
+
+model InventoryLocation {
+  id           Int         @id @default(autoincrement())
+  name         String
+  enabled      Boolean     @default(true)
+  inventories  Inventory[]
+
+  @@unique([name])
+}
+
+model CustomField {
+  id          Int                    @id @default(autoincrement())
+  name        String
+  enabled     Boolean                @default(true)
+  createdAt   DateTime               @default(now())
+  inventories InventoryCustomField[]
+}
+
+model InventoryCustomField {
+  id            Int         @id @default(autoincrement())
+  inventoryId   String
+  customFieldId Int
+  value         String
+  customField   CustomField @relation(fields: [customFieldId], references: [id])
+  inventory     Inventory   @relation(fields: [inventoryId], references: [id])
+
+  @@unique([inventoryId, customFieldId])
+  @@index([customFieldId], map: "InventoryCustomField_customFieldId_fkey")
+}
+
+model Project {
+  id             String            @id @default(uuid())
+  code           String            @unique
+  name           String
+  description    String?           @db.Text
+  provider       String
+  status         ProjectStatus
+  budgetTotal    Float
+  budgetUsed     Float             @default(0)
+  startDate      DateTime
+  endDate        DateTime
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  enabled        Boolean           @default(true)
+  createdById    String
+  deadlines      Deadline[]
+  documents      ProjectDocument[]
+  teamMembers    ProjectMember[]
+  purchaseOrders PurchaseOrder[]
+}
+
+model Deadline {
+  id                   String              @id @default(uuid())
+  name                 String
+  description          String?             @db.Text
+  status               DeadlineStatus
+  dueDate              DateTime
+  projectId            String
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  enabled              Boolean             @default(true)
+  createdById          String
+  order                Int
+  project              Project             @relation(fields: [projectId], references: [id])
+  tasks                DeadlineTask[]
+  inventoryAssignments InventoryDeadline[]
+  users                User[]              @relation("DeadlineUsers")
+
+  @@index([projectId], map: "Deadline_projectId_fkey")
+}
+
+model DeadlineTask {
+  id          String     @id @default(uuid())
+  name        String
+  date        DateTime
+  deadlineId  String
+  enabled     Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  createdById String
+  description String?    @db.Text
+  order       Int
+  status      TaskStatus @default(PENDIENTE)
+  deadline    Deadline   @relation(fields: [deadlineId], references: [id])
+  users       User[]     @relation("TaskUsers")
+
+  @@index([deadlineId], map: "DeadlineTask_deadlineId_fkey")
+}
+
+model InventoryDeadline {
+  id          String    @id @default(uuid())
+  inventoryId String
+  deadlineId  String
+  deadline    Deadline  @relation(fields: [deadlineId], references: [id])
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+
+  @@index([deadlineId], map: "InventoryDeadline_deadlineId_fkey")
+  @@index([inventoryId], map: "InventoryDeadline_inventoryId_fkey")
+}
+
+model PurchaseOrder {
+  id          String      @id @default(uuid())
+  code        String      @unique
+  supplier    String?
+  description String?     @db.Text
+  projectId   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  createdById String
+  invoices    Invoice[]
+  project     Project?    @relation(fields: [projectId], references: [id])
+  inventories Inventory[] @relation("PurchaseOrderInventories")
+
+  @@index([projectId], map: "PurchaseOrder_projectId_fkey")
+}
+
+model Invoice {
+  id              String         @id @default(uuid())
+  code            String         @unique
+  concept         String
+  supplier        String?
+  fileUrl         String?        @db.Text
+  // Hacer purchaseOrderId opcional para mayor flexibilidad
+  purchaseOrderId String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdById     String
+  xmlUrl          String?        @db.Text
+  inventories     Inventory[]    @relation("InvoiceInventories")
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+
+  @@index([purchaseOrderId], map: "Invoice_purchaseOrderId_fkey")
+}
+
+model ProjectMember {
+  id        String  @id @default(uuid())
+  role      String
+  name      String
+  projectId String
+  userId    String
+  project   Project @relation(fields: [projectId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@index([projectId])
+  @@index([userId])
+}
+
+model ProjectDocument {
+  id          String   @id @default(uuid())
+  name        String
+  fileUrl     String
+  description String?  @db.Text
+  metadata    Json?
+  enabled     Boolean  @default(true)
+  uploadDate  DateTime
+  projectId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+  project     Project  @relation(fields: [projectId], references: [id])
+
+  @@index([projectId], map: "ProjectDocument_projectId_fkey")
+}
+
+model Vertical {
+  id            Int             @id @default(autoincrement())
+  name          String          @unique
+  enabled       Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  description   String?         @db.Text
+  updatedAt     DateTime        @updatedAt
+  ModelVertical ModelVertical[]
+  events        Event[]
+}
+
+model ModelVertical {
+  id         Int      @id @default(autoincrement())
+  modelId    Int
+  verticalId Int
+  model      Model    @relation(fields: [modelId], references: [id])
+  vertical   Vertical @relation(fields: [verticalId], references: [id])
+
+  @@unique([modelId, verticalId])
+  @@index([modelId])
+  @@index([verticalId])
+}
+
+model File {
+  id          String          @id @default(uuid())
+  inventoryId String?
+  metadata    Json?
+  uploadedAt  DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+  enabled     Boolean         @default(true)
+  type        String
+  url         String
+  inventory   Inventory?      @relation(fields: [inventoryId], references: [id])
+  custodyRecords CustodyRecord[]
+
+  @@index([inventoryId], map: "File_inventoryId_fkey")
+}
+
+model Condition {
+  id          Int                  @id @default(autoincrement())
+  name        String
+  enabled     Boolean              @default(true)
+  inventories InventoryCondition[]
+}
+
+model InventoryCondition {
+  id          Int       @id @default(autoincrement())
+  inventoryId String
+  conditionId Int
+  condition   Condition @relation(fields: [conditionId], references: [id])
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+
+  @@unique([inventoryId, conditionId])
+  @@index([conditionId], map: "InventoryCondition_conditionId_fkey")
+}
+
+model Image {
+  id          String     @id @default(uuid())
+  url         String
+  thumbnail   String?
+  type        String
+  metadata    Json?
+  createdAt   DateTime   @default(now())
+  enabled     Boolean    @default(true)
+  inventoryId String?
+  inventory   Inventory? @relation("InventoryImages", fields: [inventoryId], references: [id])
+
+  @@index([inventoryId])
+}
+
+model UserImage {
+  id        String   @id @default(uuid())
+  url       String
+  thumbnail String?
+  type      String
+  metadata  Json?
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  userId    String?
+  user      User?    @relation("UserImages", fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model CustodyRecord {
+  id                 String        @id @default(uuid())
+  code               String?       @unique
+  date               DateTime
+  receiverId         String
+  receiver           User          @relation("CustodyReceiver", fields: [receiverId], references: [id])
+  delivererId        String
+  deliverer          User          @relation("CustodyDeliverer", fields: [delivererId], references: [id])
+  comments           String?       @db.Text
+  fileId             String?
+  file               File?         @relation(fields: [fileId], references: [id])
+  items              CustodyItem[]
+  status             CustodyStatus @default(BORRADOR)
+  publicToken        String?       @unique
+  tokenExpiresAt     DateTime?
+  receiverSignature  String?       @db.LongText
+  delivererSignature String?       @db.LongText
+  enabled            Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([receiverId])
+  @@index([delivererId])
+  @@index([fileId])
+}
+
+model CustodyItem {
+  id              String        @id @default(uuid())
+  custodyRecordId String
+  custodyRecord   CustodyRecord @relation(fields: [custodyRecordId], references: [id])
+  inventoryId     String
+  inventory       Inventory     @relation(fields: [inventoryId], references: [id])
+  typeBrand       String
+  model           String
+  serialNumber    String?
+  assetNumber     String?
+  invoiceNumber   String?
+  features        String?
+
+  @@index([custodyRecordId])
+  @@index([inventoryId])
+}
+
+enum Status {
+  ALTA
+  BAJA
+  PROPUESTA
+}
+
+enum CustodyStatus {
+  BORRADOR
+  COMPLETADO
+}
+
+enum DeadlineStatus {
+  PENDIENTE
+  EN_PROGRESO
+  EN_REVISION
+  COMPLETADO
+  CANCELADO
+  BLOQUEADO
+}
+
+enum ProjectStatus {
+  PLANIFICACION
+  EN_EJECUCION
+  EN_REVISION
+  FINALIZADO
+  CANCELADO
+  PAUSADO
+}
+
+enum TaskStatus {
+  PENDIENTE
+  EN_PROGRESO
+  COMPLETADO
+  CANCELADO
+}
+
+model UserPreference {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  sidebarBgId     Int?
+  sidebarBgUrl    String?
+  columnSettings  Json?
+  preferences     Json?    // Preferencias flexibles: { inventoryViewMode: 'list'|'cards', ... }
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// =====================================================
+// SISTEMA DE NOTIFICACIONES PROGRAMABLES
+// =====================================================
+
+enum NotificationChannel {
+  EMAIL
+  IN_APP
+  PUSH_WEB
+  PUSH_MOBILE
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum RecipientKind {
+  USER
+  EMAIL
+}
+
+enum EmailRecipientRole {
+  TO
+  CC
+  BCC
+}
+
+// Reglas de notificación (cabecera)
+model NotificationRule {
+  id              String                      @id @default(uuid())
+  name            String
+  description     String?                     @db.Text
+  ruleType        String                      // Ej: "INCOMPLETE_INVENTORY", "DEADLINE_REMINDER", etc.
+  params          Json?                       // Parámetros específicos del tipo de regla
+  enabled         Boolean                     @default(true)
+  scheduleType    String                      @default("INTERVAL") // "INTERVAL" | "CRON"
+  intervalMinutes Int?                        // Si scheduleType = INTERVAL
+  cronExpression  String?                     // Si scheduleType = CRON
+  lastRunAt       DateTime?
+  nextRunAt       DateTime?
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+  createdById     String
+  createdBy       User                        @relation("CreatedNotificationRules", fields: [createdById], references: [id])
+  channels        NotificationRuleChannel[]
+  recipients      NotificationRuleRecipient[]
+  runs            NotificationRuleRun[]
+
+  @@index([createdById])
+}
+
+// Canales por regla
+model NotificationRuleChannel {
+  id        Int                 @id @default(autoincrement())
+  ruleId    String
+  channel   NotificationChannel
+  enabled   Boolean             @default(true)
+  rule      NotificationRule    @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@unique([ruleId, channel])
+  @@index([ruleId])
+}
+
+// Destinatarios (To/CC/BCC) mixtos: userId o email directo
+model NotificationRuleRecipient {
+  id        Int                @id @default(autoincrement())
+  ruleId    String
+  kind      RecipientKind
+  userId    String?            // Si kind = USER
+  email     String?            // Si kind = EMAIL (correo directo)
+  emailRole EmailRecipientRole @default(TO)
+  rule      NotificationRule   @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([ruleId])
+  @@index([userId])
+}
+
+// Ejecuciones y auditoría
+model NotificationRuleRun {
+  id          String                 @id @default(uuid())
+  ruleId      String
+  startedAt   DateTime               @default(now())
+  finishedAt  DateTime?
+  status      String                 @default("RUNNING") // RUNNING, SUCCESS, PARTIAL, FAILED
+  matchCount  Int                    @default(0)
+  result      Json?                  // Detalle de coincidencias, errores, etc.
+  rule        NotificationRule       @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  deliveries  NotificationDelivery[]
+
+  @@index([ruleId])
+  @@index([startedAt])
+}
+
+// Notificación In-App (bandeja del usuario)
+model InAppNotification {
+  id              String    @id @default(uuid())
+  userId          String
+  title           String
+  body            String    @db.Text
+  link            String?   @db.Text  // URL de acción opcional - Text para URLs largas
+  isRead          Boolean   @default(false)
+  readAt          DateTime?
+  createdAt       DateTime  @default(now())
+  ruleRunId       String?   // Referencia opcional a la ejecución que la generó
+  ruleCreatorId   String?   // ID del usuario que creó la regla que generó esta notificación
+  ruleCreator     User?     @relation("NotificationsReceived", fields: [ruleCreatorId], references: [id])
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([ruleCreatorId])
+}
+
+// Log por canal (email/in-app/push)
+model NotificationDelivery {
+  id          String                     @id @default(uuid())
+  ruleRunId   String
+  channel     NotificationChannel
+  recipientId String?                    // userId si aplica
+  email       String?                    // email si canal es EMAIL
+  status      NotificationDeliveryStatus @default(PENDING)
+  errorMsg    String?                    @db.Text
+  attempts    Int                        @default(0)
+  createdAt   DateTime                   @default(now())
+  sentAt      DateTime?
+  ruleRun     NotificationRuleRun        @relation(fields: [ruleRunId], references: [id], onDelete: Cascade)
+
+  @@index([ruleRunId])
+  @@index([status])
+}
+
+// Subscripciones Push (para PWA/Capacitor - futuro)
+model PushSubscription {
+  id           String   @id @default(uuid())
+  userId       String
+  endpoint     String   @db.Text
+  keys         Json     // { p256dh, auth }
+  deviceType   String?  // "web" | "android" | "ios"
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// =====================================================
+// GESTION DE EVENTOS (Mantenimiento y Generales)
+// =====================================================
+
+model Event {
+  id            String            @id @default(uuid())
+  title         String
+  description   String?           @db.Text
+  scheduledDate DateTime
+  completedDate DateTime?
+  status        EventStatus       @default(SCHEDULED)
+  provider      String?           // Proveedor para mantenimientos
+
+  // Tipo y Alcance
+  type          EventType         @default(MAINTENANCE)
+  scope         EventScope        @default(GLOBAL) // GLOBAL = Todos, SPECIFIC = Solo attendees
+
+  // Relaciones
+  verticalId    Int?              // Opcional para eventos generales
+  vertical      Vertical?         @relation(fields: [verticalId], references: [id])
+  
+  attendees     EventAttendee[]
+
+  // Recurrencia
+  isRecurring   Boolean           @default(false)
+  recurrence    String?
+  recurrenceEndDate DateTime?
+  seriesId      String?           // UUID to link recurring instances
+
+  // Auditoría básica
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  createdById   String
+  createdBy     User              @relation("EventCreator", fields: [createdById], references: [id])
+
+  @@index([verticalId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@index([seriesId])
+}
+
+model EventAttendee {
+  id        String   @id @default(uuid())
+  eventId   String
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+enum EventStatus {
+  SCHEDULED
+  COMPLETED
+  POSTPONED
+  CANCELLED
+  OVERDUE
+}
+
+enum EventType {
+  MAINTENANCE
+  GENERAL
+}
+
+enum EventScope {
+  GLOBAL
+  SPECIFIC
+}
+
+// =====================================================
+// AUDITORIA / LOGGER
+// =====================================================
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  entityType  String   // "INVENTORY", "VERTICAL", "MODEL", etc.
+  entityId    String   // ID de la entidad (convertir a string si es Int)
+  action      String   // "CREATE", "UPDATE", "DELETE"
+  entityTitle String?  // Titulo o nombre legible de la entidad
+  
+  // Detalles del cambio
+  changes     String?  @db.LongText   // { before: {}, after: {} } o { field: { old: 'a', new: 'b' } }
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}

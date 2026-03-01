@@ -406,6 +406,168 @@ export const generateWordReport = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// EXPORT INVENTORIES TO EXCEL  (full fields + embedded images)
+// POST /reports/export-excel
+// ─────────────────────────────────────────────────────────────────────────────
+export const exportInventoriesExcel = async (req, res) => {
+  try {
+    const { inventoryIds } = req.body;
+
+    if (!inventoryIds || !Array.isArray(inventoryIds) || inventoryIds.length === 0) {
+      return res.status(400).json({ error: "Se requiere un array de IDs de inventario" });
+    }
+
+    const STATUS_LABELS = { ALTA: "Alta", BAJA: "Baja", PROPUESTA: "Propuesta" };
+    const fmtDate = (v) => (v ? new Date(v).toLocaleDateString("es-MX") : "");
+
+    // Fetch all data
+    const inventories = await db.inventory.findMany({
+      where: { id: { in: inventoryIds } },
+      include: {
+        model: { include: { brand: true, type: true } },
+        location: true,
+        images: true,
+        conditions: { include: { condition: true } },
+        customField: { include: { customField: true } },
+        invoice: true,
+        purchaseOrder: true,
+        createdBy: { select: { firstName: true, lastName: true, email: true } },
+      },
+    });
+
+    // Collect all unique custom-field names
+    const allCFNames = [
+      ...new Set(
+        inventories.flatMap((inv) =>
+          inv.customField.map((cf) => cf.customField?.name).filter(Boolean)
+        )
+      ),
+    ];
+
+    // Static column definitions
+    const staticColumns = [
+      { header: "ID",                  key: "id",            width: 38 },
+      { header: "Folio Interno",       key: "internalFolio", width: 16 },
+      { header: "Estado",              key: "status",        width: 12 },
+      { header: "Marca",               key: "brand",         width: 16 },
+      { header: "Tipo",                key: "type",          width: 16 },
+      { header: "Modelo",              key: "model",         width: 26 },
+      { header: "# Serie",             key: "serial",        width: 20 },
+      { header: "# Activo",            key: "active",        width: 18 },
+      { header: "Comentarios",         key: "comments",      width: 36 },
+      { header: "Ubicación",           key: "location",      width: 22 },
+      { header: "Factura",             key: "invoice",       width: 16 },
+      { header: "Orden de Compra",     key: "po",            width: 18 },
+      { header: "F. Recepción",        key: "receptionDate", width: 14 },
+      { header: "F. Alta",             key: "altaDate",      width: 14 },
+      { header: "F. Baja",             key: "bajaDate",      width: 14 },
+      { header: "F. Creación",         key: "createdAt",     width: 14 },
+      { header: "Última Modificación", key: "updatedAt",     width: 18 },
+      { header: "Condiciones",         key: "conditions",    width: 28 },
+      { header: "Creado por",          key: "createdBy",     width: 22 },
+      { header: "Imagen",              key: "img",           width: 14 },
+    ];
+
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Inventarios");
+
+    // All columns = static + one per custom field
+    ws.columns = [
+      ...staticColumns,
+      ...allCFNames.map((name) => ({ header: name, key: `cf_${name}`, width: 20 })),
+    ];
+
+    // Style header row
+    const headerRow = ws.getRow(1);
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF6D28D9" } };
+    headerRow.alignment = { vertical: "middle" };
+    headerRow.height = 22;
+
+    // IMAGE column index (1-based)
+    const imgColIdx = staticColumns.length; // "Imagen" is last static col
+
+    let rowIdx = 2;
+    for (const inv of inventories) {
+      const cfMap = Object.fromEntries(allCFNames.map((n) => [n, ""]));
+      for (const cf of inv.customField || []) {
+        if (cf.customField?.name) cfMap[cf.customField.name] = cf.value ?? "";
+      }
+
+      const conditions = (inv.conditions || [])
+        .map((c) => c.condition?.name)
+        .filter(Boolean)
+        .join(" / ");
+
+      const rowData = {
+        id:            inv.id,
+        internalFolio: inv.internalFolio ?? "",
+        status:        STATUS_LABELS[inv.status] || inv.status || "",
+        brand:         inv.model?.brand?.name ?? "",
+        type:          inv.model?.type?.name ?? "",
+        model:         inv.model?.name ?? "",
+        serial:        inv.serialNumber ?? "",
+        active:        inv.activeNumber ?? "",
+        comments:      (inv.comments ?? "").replace(/\n/g, " "),
+        location:      inv.location?.name ?? "",
+        invoice:       inv.invoice?.code ?? "",
+        po:            inv.purchaseOrder?.code ?? "",
+        receptionDate: fmtDate(inv.receptionDate),
+        altaDate:      fmtDate(inv.altaDate),
+        bajaDate:      fmtDate(inv.bajaDate),
+        createdAt:     fmtDate(inv.createdAt),
+        updatedAt:     fmtDate(inv.updatedAt),
+        conditions,
+        createdBy:     [inv.createdBy?.firstName, inv.createdBy?.lastName].filter(Boolean).join(' ') || inv.createdBy?.email || "",
+        ...Object.fromEntries(allCFNames.map((n) => [`cf_${n}`, cfMap[n]])),
+      };
+
+      ws.addRow(rowData);
+      ws.getRow(rowIdx).alignment = { vertical: "middle", wrapText: false };
+
+      // Embed primary image
+      const primaryImg = inv.images?.find((i) => i.isPrimary) ?? inv.images?.[0];
+      if (primaryImg?.url) {
+        try {
+          const imagePath = path.join(__dirname, "..", primaryImg.url);
+          const result = await compressImage(imagePath, 600);
+          if (result) {
+            const imageId = wb.addImage({ buffer: result.buffer, extension: "jpeg" });
+            ws.addImage(imageId, {
+              tl: { col: imgColIdx - 1, row: rowIdx - 1 },
+              ext: { width: 120, height: 120 },
+            });
+            ws.getRow(rowIdx).height = 92;
+          } else {
+            ws.getCell(rowIdx, imgColIdx).value = "Sin imagen";
+          }
+        } catch {
+          ws.getCell(rowIdx, imgColIdx).value = "Error";
+        }
+      } else {
+        ws.getCell(rowIdx, imgColIdx).value = "";
+      }
+
+      rowIdx++;
+    }
+
+    // Freeze header
+    ws.views = [{ state: "frozen", ySplit: 1 }];
+
+    const buffer = await wb.xlsx.writeBuffer();
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=inventarios_${new Date().toISOString().slice(0, 10)}.xlsx`
+    );
+    res.send(buffer);
+  } catch (error) {
+    console.error("Error exportando inventarios a Excel:", error);
+    res.status(500).json({ error: "Error generando el archivo Excel" });
+  }
+};
+
 // Función auxiliar para crear filas de tabla
 function createTableRow(label, value) {
   return new TableRow({

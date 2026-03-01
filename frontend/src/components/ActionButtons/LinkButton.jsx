@@ -5,23 +5,25 @@ const LinkButton = ({
   route,
   color,
   filled,
+  outline,
   icon: Icon,
   label,
-  _outline = false,
   disabled = false,
   className,
 }) => {
   return (
     <Link
-      className={getButtonClassNames(color, filled, disabled, className)}
-      to={!disabled ? route : null}
-    >
-      {Icon && (
-        <i>
-          <Icon size={18} />
-        </i>
+      className={getButtonClassNames(
+        color,
+        filled ?? !outline,
+        disabled,
+        className,
       )}
-      <span className={`${label?.length > 0 && 'ml-2'}`}>{label}</span>
+      to={!disabled ? route : '#'}
+      aria-disabled={disabled}
+    >
+      {Icon && <Icon size={16} />}
+      {label && <span className="ml-1.5">{label}</span>}
     </Link>
   );
 };

@@ -186,15 +186,16 @@ const PurchaseOrdersPage = () => {
   );
 
   return (
-    <section className="space-y-4 bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
-      <div className="flex justify-between items-center">
-        <h1 className="text-lg font-bold text-sinabe-primary flex items-center gap-2">
-          <span>
-            <ClipboardList />
-          </span>
-          Órdenes de Compra
-        </h1>
-        <div>
+    <section className="bg-white rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border overflow-hidden">
+      {/* Header */}
+      <div className="w-full flex flex-col-reverse md:flex-row items-center justify-between gap-2 p-3 md:p-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center min-w-0 text-sinabe-primary">
+          <ClipboardList size={20} className="mr-2 shrink-0" />
+          <h1 className="text-base md:text-xl font-bold truncate">
+            Órdenes de Compra
+          </h1>
+        </div>
+        <div className="flex items-center gap-1 shrink-0 w-full md:w-auto justify-end">
           <ActionButtons
             extraActions={[
               {
@@ -209,6 +210,8 @@ const PurchaseOrdersPage = () => {
           />
         </div>
       </div>
+
+      <div className="p-3 md:p-4 space-y-4">
 
       {/* 🔎 Input de búsqueda */}
       <div className="relative max-w-md">
@@ -316,6 +319,7 @@ const PurchaseOrdersPage = () => {
           setIsModalOpen(true);
         }}
       />
+      </div>
     </section>
   );
 };

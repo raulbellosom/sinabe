@@ -123,22 +123,23 @@ html {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f0f0f0;
+  background: var(--surface-muted);
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #c0c0c0;
+  background: var(--border);
   border-radius: 10px;
+  border: 2px solid var(--surface-muted);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #a0a0a0;
+  background: var(--primary);
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #c0c0c0 #f0f0f0;
+  scrollbar-color: var(--border) var(--surface-muted);
 }
 
 /* Custom styled checkboxes (appearance-none) */
@@ -149,17 +150,7 @@ input[type='checkbox'].sinabe-checkbox:checked {
   background-size: 0.7em 0.7em;
 }
 
-.dark .custom-scrollbar::-webkit-scrollbar-track {
-  background: #172033;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #384b66;
-}
-
-.dark .custom-scrollbar {
-  scrollbar-color: #384b66 #172033;
-}
+/* .dark .custom-scrollbar overrides removed — CSS variables handle theming automatically */
 
 /* Calendar cell expand animation */
 @keyframes expandCell {

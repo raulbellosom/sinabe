@@ -1,30 +1,47 @@
-import { getPool } from './mysql.js';
-import { buildListQuery, buildCountQuery, buildGroupCountQuery, buildListByIdsQuery } from './sqlBuilder.js';
+import { getPool } from "./mysql.js";
+import {
+  buildCountQuery,
+  buildGroupCountQuery,
+  buildListQuery,
+  buildSuggestionQuery,
+} from "./sqlBuilder.js";
 
-export async function listInventories({ filters, missing, page, limit, sort }) {
+async function runQuery(sql, params) {
   const pool = getPool();
-  const { sql, params } = buildListQuery({ filters, missing, page, limit, sort });
   const [rows] = await pool.query(sql, params);
   return rows;
 }
 
-export async function countInventories({ filters, missing }) {
-  const pool = getPool();
-  const { sql, params } = buildCountQuery({ filters, missing });
-  const [rows] = await pool.query(sql, params);
-  return Number(rows?.[0]?.total || 0);
+export async function countInventories(plan) {
+  const built = buildCountQuery(plan);
+  const rows = await runQuery(built.sql, built.params);
+  return {
+    total: Number(rows?.[0]?.total || 0),
+    meta: built.meta,
+  };
 }
 
-export async function groupCountInventories({ filters, groupBy }) {
-  const pool = getPool();
-  const { sql, params } = buildGroupCountQuery({ filters, groupBy });
-  const [rows] = await pool.query(sql, params);
-  return rows;
+export async function listInventories(plan) {
+  const built = buildListQuery(plan);
+  const rows = await runQuery(built.sql, built.params);
+  return {
+    rows,
+    meta: built.meta,
+  };
 }
 
-export async function listInventoriesByIds({ ids, page, limit, sort }) {
-  const pool = getPool();
-  const { sql, params } = buildListByIdsQuery({ ids, page, limit, sort });
-  const [rows] = await pool.query(sql, params);
+export async function groupCountInventories(plan) {
+  const built = buildGroupCountQuery(plan);
+  const rows = await runQuery(built.sql, built.params);
+  return {
+    rows,
+    meta: built.meta,
+  };
+}
+
+export async function suggestFilterValues(filter, limit = 5) {
+  const built = buildSuggestionQuery(filter, limit);
+  if (!built) return [];
+  const rows = await runQuery(built.sql, built.params);
   return rows;
 }

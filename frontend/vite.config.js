@@ -57,8 +57,7 @@ export default defineConfig({
       'react-loading-skeleton',
       'react-loader-spinner',
       // Charts
-      'chart.js',
-      'react-chartjs-2',
+      'recharts',
       // Documents & QR
       'react-pdf',
       'qrcode.react',

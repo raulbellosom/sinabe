@@ -593,19 +593,21 @@ export const updateInventory = async (req, res) => {
         },
       });
 
-      if (conditions && conditions.length > 0) {
+      if (conditions !== undefined) {
         await prisma.inventoryCondition.deleteMany({
           where: { inventoryId: id },
         });
 
-        const conditionData = conditions.map((conditionId) => ({
-          inventoryId: id,
-          conditionId: parseInt(conditionId, 10),
-        }));
+        if (conditions.length > 0) {
+          const conditionData = conditions.map((conditionId) => ({
+            inventoryId: id,
+            conditionId: parseInt(conditionId, 10),
+          }));
 
-        await prisma.inventoryCondition.createMany({
-          data: conditionData,
-        });
+          await prisma.inventoryCondition.createMany({
+            data: conditionData,
+          });
+        }
       }
 
       if (customFields && customFields.length > 0) {

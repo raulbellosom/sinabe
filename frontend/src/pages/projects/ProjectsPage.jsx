@@ -275,12 +275,13 @@ const ProjectsPage = () => {
   ];
 
   return (
-    <section className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-lg md:text-xl font-bold text-sinabe-primary">
+    <section className="bg-white rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border overflow-hidden">
+      {/* Header */}
+      <div className="w-full flex flex-col-reverse md:flex-row items-center justify-between gap-2 p-3 md:p-4 border-b border-gray-100 dark:border-gray-700">
+        <h1 className="text-base md:text-xl font-bold text-sinabe-primary truncate">
           Proyectos
         </h1>
-        <div>
+        <div className="flex items-center gap-1 shrink-0 w-full md:w-auto justify-end">
           <ActionButtons
             extraActions={[
               {
@@ -293,6 +294,8 @@ const ProjectsPage = () => {
           />
         </div>
       </div>
+
+      <div className="p-3 md:p-4">
 
       <ProjectSummaryCards projects={projects} />
 
@@ -396,6 +399,7 @@ const ProjectsPage = () => {
         }
         onSubmit={handleSubmit}
       />
+      </div>
     </section>
   );
 };

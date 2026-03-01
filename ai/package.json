@@ -9,7 +9,8 @@
     "start": "node src/index.js",
     "index:bootstrap": "node src/scripts/bootstrap_qdrant.js",
     "index:sync": "node src/scripts/sync_inventories.js",
-    "health": "node src/scripts/healthcheck.js"
+    "health": "node src/scripts/healthcheck.js",
+    "dev:queries": "node src/scripts/dev_queries.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

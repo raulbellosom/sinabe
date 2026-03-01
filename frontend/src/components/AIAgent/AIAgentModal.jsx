@@ -223,7 +223,7 @@ const SearchInput = ({
       <button
         type="submit"
         disabled={!value.trim() || loading || disabled}
-        className="h-10 px-5 inline-flex items-center justify-center gap-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        className="h-10 w-full sm:w-auto px-4 sm:px-5 inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
         {loading ? (
           <>
@@ -406,10 +406,11 @@ const CountResult = ({ total, message, filters }) => {
           boxShadow: '0 10px 40px rgba(147, 51, 234, 0.3)',
         }}
         whileTap={{ scale: 0.98 }}
-        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full hover:from-purple-700 hover:to-pink-700 transition-all shadow-md"
+        className="inline-flex items-center gap-2 whitespace-nowrap px-5 sm:px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-sm sm:text-base text-white rounded-full hover:from-purple-700 hover:to-pink-700 transition-all shadow-md"
       >
         <ExternalLink className="h-5 w-5" />
-        Ver todos los inventarios
+        <span className="hidden sm:inline">Ver todos los inventarios</span>
+        <span className="sm:hidden">Ver inventarios</span>
         <motion.span
           animate={{ x: [0, 4, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
@@ -1045,7 +1046,7 @@ const ListResult = ({
         </div>
         <motion.a
           href={filterUrl}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors self-start sm:self-auto"
+          className="inline-flex w-full sm:w-auto justify-center sm:justify-start items-center gap-2 whitespace-nowrap px-4 py-2 text-sm font-medium text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors self-start sm:self-auto"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -1667,157 +1668,171 @@ const AIAgentModal = () => {
       onClose={closeModal}
       size="6xl"
       popup={false}
-      className="ai-agent-modal"
+      className="ai-agent-modal mx-1 sm:mx-4 flex w-full max-w-[calc(100vw-0.5rem)] sm:max-w-6xl h-[92dvh] max-h-[92dvh] sm:h-[90dvh] sm:max-h-[90dvh] flex-col rounded-xl sm:rounded-2xl"
     >
-      {/* Custom Header */}
-      <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl shadow-lg">
-            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+      <div className="flex h-full min-h-0 flex-col">
+        {/* Custom Header */}
+        <div className="shrink-0 flex items-center justify-between gap-2 p-3 sm:p-6 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+          <div className="min-w-0 flex items-center gap-2 sm:gap-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl shadow-lg shrink-0">
+              <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="truncate text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
+                Búsqueda Inteligente
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
+                Busca inventarios usando lenguaje natural
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-              Búsqueda Inteligente
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
-              Busca inventarios usando lenguaje natural
-            </p>
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+            {isHealthy ? (
+              <Tooltip content="Servicio de IA activo">
+                <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 bg-green-100 dark:bg-green-900/40 rounded-full">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-medium text-green-700 dark:text-green-400 hidden sm:inline whitespace-nowrap">
+                    Activo
+                  </span>
+                </div>
+              </Tooltip>
+            ) : (
+              <Tooltip content="Servicio de IA no disponible">
+                <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 bg-red-100 dark:bg-red-900/40 rounded-full">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-xs font-medium text-red-700 dark:text-red-400 hidden sm:inline whitespace-nowrap">
+                    Offline
+                  </span>
+                </div>
+              </Tooltip>
+            )}
+            <button
+              onClick={closeModal}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            </button>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {isHealthy ? (
-            <Tooltip content="Servicio de IA activo">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 dark:bg-green-900/40 rounded-full">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-xs font-medium text-green-700 dark:text-green-400 hidden sm:inline">
-                  Activo
-                </span>
-              </div>
-            </Tooltip>
-          ) : (
-            <Tooltip content="Servicio de IA no disponible">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-red-100 dark:bg-red-900/40 rounded-full">
-                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                <span className="text-xs font-medium text-red-700 dark:text-red-400 hidden sm:inline">
-                  Offline
-                </span>
-              </div>
-            </Tooltip>
-          )}
-          <button
-            onClick={closeModal}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-          </button>
+
+        {/* Body */}
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-6 dark:bg-gray-800">
+          {/* Search Input */}
+          <div className="mb-6">
+            <SearchInput
+              value={localQuery}
+              onChange={setLocalQuery}
+              onSubmit={handleSubmit}
+              onClear={handleClear}
+              loading={loading}
+              disabled={!isHealthy}
+            />
+          </div>
+
+          {/* Error */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                className="mb-6"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <ErrorAlert message={error} onRetry={() => handleSearch()} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Loading */}
+          <AnimatePresence>{loading && <LoadingState />}</AnimatePresence>
+
+          {/* Results */}
+          <AnimatePresence mode="wait">
+            {!loading && result && isResultReady && (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+              >
+                {/* Debug info (collapsible) */}
+                {(result.meta?.plan || result.plan) && (
+                  <details className="mb-4 text-xs">
+                    <summary className="cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                      Ver detalles técnicos ({result.elapsed})
+                    </summary>
+                    <pre className="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg overflow-x-auto text-gray-600 dark:text-gray-400">
+                      {JSON.stringify(
+                        {
+                          plan: result.meta?.plan || result.plan,
+                          appliedFilters: result.meta?.appliedFilters,
+                          joinsUsed: result.meta?.joinsUsed,
+                          sql: result.meta?.sql,
+                          params: result.meta?.params,
+                        },
+                        null,
+                        2,
+                      )}
+                    </pre>
+                  </details>
+                )}
+                {renderResult()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Suggestions */}
+          <AnimatePresence>
+            {!loading && !result && showSuggestions && (
+              <motion.div
+                key="suggestions"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <SuggestionsGrid
+                  suggestions={suggestions}
+                  onSelect={handleUseSuggestion}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
 
-      {/* Body */}
-      <div className="p-4 sm:p-6 min-h-[400px] sm:min-h-[500px] max-h-[calc(100vh-250px)] overflow-y-auto dark:bg-gray-800">
-        {/* Search Input */}
-        <div className="mb-6">
-          <SearchInput
-            value={localQuery}
-            onChange={setLocalQuery}
-            onSubmit={handleSubmit}
-            onClear={handleClear}
-            loading={loading}
-            disabled={!isHealthy}
-          />
-        </div>
-
-        {/* Error */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              className="mb-6"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
-              <ErrorAlert message={error} onRetry={() => handleSearch()} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Loading */}
-        <AnimatePresence>{loading && <LoadingState />}</AnimatePresence>
-
-        {/* Results */}
-        <AnimatePresence mode="wait">
-          {!loading && result && isResultReady && (
-            <motion.div
-              key="results"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-            >
-              {/* Debug info (collapsible) */}
-              {result.plan && (
-                <details className="mb-4 text-xs">
-                  <summary className="cursor-pointer text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                    Ver detalles técnicos ({result.elapsed})
-                  </summary>
-                  <pre className="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg overflow-x-auto text-gray-600 dark:text-gray-400">
-                    {JSON.stringify(result.plan, null, 2)}
-                  </pre>
-                </details>
+        {/* Footer */}
+        <div className="shrink-0 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-3 sm:p-6">
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="order-2 sm:order-1 min-h-[1.25rem] text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
+              {result && (
+                <span>
+                  Consulta procesada en{' '}
+                  <span className="font-medium">{result.elapsed || '~'}</span>
+                </span>
               )}
-              {renderResult()}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Suggestions */}
-        <AnimatePresence>
-          {!loading && !result && showSuggestions && (
-            <motion.div
-              key="suggestions"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <SuggestionsGrid
-                suggestions={suggestions}
-                onSelect={handleUseSuggestion}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Footer */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 sm:p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-        <div className="text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left">
-          {result && (
-            <span>
-              Consulta procesada en{' '}
-              <span className="font-medium">{result.elapsed || '~'}</span>
-            </span>
-          )}
-        </div>
-        <div className="flex gap-2">
-          {result && (
-            <motion.button
-              onClick={handleClear}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <RefreshCw className="h-4 w-4" />
-              Nueva búsqueda
-            </motion.button>
-          )}
-          <motion.button
-            onClick={closeModal}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            Cerrar
-          </motion.button>
+            </div>
+            <div className="order-1 sm:order-2 flex w-full sm:w-auto flex-col sm:flex-row gap-2">
+              {result && (
+                <motion.button
+                  onClick={handleClear}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 whitespace-nowrap px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Nueva búsqueda
+                </motion.button>
+              )}
+              <motion.button
+                onClick={closeModal}
+                className="w-full sm:w-auto whitespace-nowrap px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Cerrar
+              </motion.button>
+            </div>
+          </div>
         </div>
       </div>
 

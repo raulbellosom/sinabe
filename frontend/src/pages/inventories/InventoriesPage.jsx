@@ -4,8 +4,8 @@ import { useSearchInventories } from '../../hooks/useSearchInventories';
 import { useInventoryQueryParams } from '../../hooks/useInventoryQueryParams';
 import { useCatalogContext } from '../../context/CatalogContext';
 import AuthContext from '../../context/AuthContext';
-import { formatInventoriesToCSVString } from '../../utils/inventoriesUtils';
-import { downloadCSV } from '../../utils/DownloadCSV';
+import { exportInventoriesToExcel } from '../../utils/inventoriesUtils';
+import SelectionFloatingPanel from '../../components/SelectionFloatingPanel/SelectionFloatingPanel';
 import { parseToLocalDate } from '../../utils/formatValues';
 import { useNavigate } from 'react-router-dom';
 
@@ -543,13 +543,13 @@ const InventoriesPage = () => {
               {visibleVerticals.map((modelVertical) => (
                 <span
                   key={modelVertical.id}
-                  className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                  className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
                 >
                   {modelVertical.vertical?.name}
                 </span>
               ))}
               {remainingCount > 0 && (
-                <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">
                   +{remainingCount}
                 </span>
               )}
@@ -566,7 +566,7 @@ const InventoriesPage = () => {
             {row.conditions?.map((condition) => (
               <span
                 key={condition.id}
-                className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700"
+                className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700 dark:bg-gray-700/60 dark:text-gray-300"
               >
                 {condition?.condition?.name}
               </span>
@@ -720,15 +720,26 @@ const InventoriesPage = () => {
     window.open(`/inventories/view/${row.id}`, '_blank');
   };
 
-  const handleDownloadCSV = () => {
-    if (Object.keys(selectedForDownload).length > 0) {
-      const csv = formatInventoriesToCSVString(
-        Object.values(selectedForDownload),
-      );
-      downloadCSV({ data: csv, fileName: 'inventarios' });
-    } else {
-      console.log('Por favor, selecciona al menos un elemento para descargar.');
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleDownloadExcel = async () => {
+    if (Object.keys(selectedForDownload).length === 0) {
+      toast.info('Selecciona al menos un inventario para exportar.');
+      return;
     }
+    setIsExporting(true);
+    try {
+      await exportInventoriesToExcel(Object.values(selectedForDownload));
+    } catch (err) {
+      toast.error('Error al exportar el archivo Excel.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedForDownload({});
+    setSelectedTableRows({});
   };
 
   const pageActions = [
@@ -776,7 +787,7 @@ const InventoriesPage = () => {
   };
 
   const collapsedActions = [
-    { label: 'Exportar CSV', icon: FileSpreadsheet, action: handleDownloadCSV },
+    { label: 'Exportar Excel', icon: FileSpreadsheet, action: handleDownloadExcel },
     {
       label: isOpenPreview ? 'Ocultar Preview' : 'Mostrar Preview',
       icon: isOpenPreview ? PanelLeftClose : PanelLeftOpen,
@@ -790,32 +801,22 @@ const InventoriesPage = () => {
   ];
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <Package className="text-purple-500" /> Inventarios
+    <div className="bg-white rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border overflow-hidden">
+      {/* Header — matches ViewInventory card pattern */}
+      <div className="w-full flex flex-col-reverse md:flex-row items-center justify-between gap-2 p-3 md:p-4 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center min-w-0 text-purple-500">
+          <Package size={20} className="mr-2 shrink-0" />
+          <h1 className="text-base md:text-xl font-bold truncate text-gray-800 dark:text-white">
+            Inventarios
           </h1>
         </div>
 
-        <div className="flex gap-2 items-center flex-wrap">
-          {Object.keys(selectedForDownload).length > 0 && (
-            <button
-              onClick={() => setIsBatchQRPrintOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm font-medium transition-colors"
-            >
-              <Printer size={15} />
-              <span className="hidden sm:inline">Etiquetas QR</span>
-              <span className="inline-flex items-center justify-center bg-white text-purple-700 font-bold rounded-full px-2 py-0.5 text-xs">
-                {Object.keys(selectedForDownload).length}
-              </span>
-            </button>
-          )}
+        <div className="flex items-center gap-1 shrink-0 w-full md:w-auto justify-end">
           <ActionButtons extraActions={pageActions} />
           <Dropdown
             renderTrigger={() => (
-              <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 flex items-center justify-center">
-                <MoreVertical />
+              <button className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 flex items-center justify-center">
+                <MoreVertical size={16} />
               </button>
             )}
             placement="bottom-end"
@@ -833,6 +834,8 @@ const InventoriesPage = () => {
           </Dropdown>
         </div>
       </div>
+
+      <div className="p-3 md:p-4">
 
       {/* Search, Filters, and View Mode Toggle - Always visible */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 mb-4">
@@ -1145,6 +1148,16 @@ const InventoriesPage = () => {
         isOpen={isBatchQRPrintOpen}
         onClose={() => setIsBatchQRPrintOpen(false)}
       />
+
+      {/* ── Floating selection action panel ── */}
+      <SelectionFloatingPanel
+        count={Object.keys(selectedForDownload).length}
+        onExportExcel={handleDownloadExcel}
+        onOpenQR={() => setIsBatchQRPrintOpen(true)}
+        onClearSelection={handleClearSelection}
+        isExporting={isExporting}
+      />
+      </div>
     </div>
   );
 };

@@ -1,9 +1,9 @@
+import { useState } from 'react';
 import {
   RadialBarChart,
   RadialBar,
   ResponsiveContainer,
   Tooltip,
-  Legend,
 } from 'recharts';
 
 const defaultColors = [
@@ -44,6 +44,16 @@ const PolarAreaChart = ({
   dataObj,
   colors = defaultColors,
 }) => {
+  const [hiddenKeys, setHiddenKeys] = useState(new Set());
+
+  const toggleKey = (name) =>
+    setHiddenKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+
   const labels = Object.keys(dataObj || {});
   const dataValues = Object.values(dataObj || {}).map((v) => Number(v) || 0);
   const total = dataValues.reduce((a, b) => a + b, 0);
@@ -60,16 +70,41 @@ const PolarAreaChart = ({
     colorMap = defaultColors;
   }
 
-  // Sort data descending so the largest bar is outermost (Recharts renders last item outermost)
-  const chartData = labels
+  // Build full dataset sorted by value, group beyond top 7 into "Otros"
+  const TOP_N = 7;
+  const sorted = labels
     .map((label, idx) => ({
       name: label,
       value: dataValues[idx],
-      percent: total ? ((dataValues[idx] / total) * 100).toFixed(1) : '0',
       fill: Array.isArray(colorMap)
         ? colorMap[idx % colorMap.length]
         : colorMap[idx],
     }))
+    .sort((a, b) => b.value - a.value);
+
+  const topItems = sorted.slice(0, TOP_N);
+  const rest = sorted.slice(TOP_N);
+  const othersValue = rest.reduce((sum, d) => sum + d.value, 0);
+
+  const allData = [
+    ...topItems.map((d) => ({
+      ...d,
+      percent: total ? ((d.value / total) * 100).toFixed(1) : '0',
+    })),
+    ...(othersValue > 0
+      ? [
+          {
+            name: 'Otros',
+            value: othersValue,
+            percent: total ? ((othersValue / total) * 100).toFixed(1) : '0',
+            fill: '#9ca3af',
+          },
+        ]
+      : []),
+  ];
+
+  const chartData = allData
+    .filter((d) => !hiddenKeys.has(d.name))
     .sort((a, b) => b.value - a.value);
 
   return (
@@ -85,8 +120,8 @@ const PolarAreaChart = ({
           {subtitle}
         </div>
       )}
-      <div className="flex-1 min-h-[260px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="flex-1">
+        <ResponsiveContainer width="100%" height={280}>
           <RadialBarChart
             cx="50%"
             cy="50%"
@@ -111,21 +146,33 @@ const PolarAreaChart = ({
       </div>
       {/* Legend */}
       <div className="flex flex-wrap gap-3 mt-3 justify-center">
-        {chartData.map((entry) => (
-          <div
-            key={entry.name}
-            className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400"
-          >
-            <span
-              className="inline-block w-2.5 h-2.5 rounded-full"
-              style={{ backgroundColor: entry.fill }}
-            />
-            {entry.name}{' '}
-            <span className="text-gray-400 dark:text-gray-500">
-              ({entry.percent}%)
-            </span>
-          </div>
-        ))}
+        {allData.map((entry) => {
+          const hidden = hiddenKeys.has(entry.name);
+          return (
+            <button
+              key={entry.name}
+              type="button"
+              className={`flex items-center gap-1.5 text-xs cursor-pointer transition-all duration-200 ${
+                hidden
+                  ? 'opacity-40 line-through text-gray-400 dark:text-gray-600'
+                  : 'text-gray-600 dark:text-gray-400 hover:opacity-80'
+              }`}
+              onClick={() => toggleKey(entry.name)}
+            >
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-full transition-opacity"
+                style={{
+                  backgroundColor: entry.fill,
+                  opacity: hidden ? 0.3 : 1,
+                }}
+              />
+              {entry.name}{' '}
+              <span className={hidden ? 'text-gray-400 dark:text-gray-600' : 'text-gray-400 dark:text-gray-500'}>
+                ({entry.percent}%)
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

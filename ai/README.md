@@ -4,11 +4,12 @@ Motor de búsqueda en lenguaje natural para inventarios de Sinabe.
 
 ## 🎯 Características
 
-- ✅ **Listar inventarios** con filtros (marca/tipo/modelo/ubicación/fechas/status)
-- ✅ **Conteos simples** (total de inventarios)
-- ✅ **Conteos agrupados** (por marca/tipo/ubicación/status)
-- ✅ **Inventarios faltantes** (sin ubicación, sin factura, sin serie, etc.)
-- ✅ **LLM (Ollama)** para interpretación avanzada de consultas
+- ✅ **Planner schema-driven** (deriva rutas de filtros/joins desde `schema.prisma`)
+- ✅ **Listar inventarios** con filtros en rutas relacionales validadas
+- ✅ **Conteos deterministas** con `COUNT(DISTINCT Inventory.id)`
+- ✅ **Conteos agrupados** por cualquier ruta válida (ej. `Condition.name`)
+- ✅ **Respuesta explicable**: `meta.plan`, `meta.appliedFilters`, `meta.joinsUsed`
+- ✅ **Clarificación estricta** cuando hay ambigüedad o valores inválidos
 - ✅ **(Opcional)** Búsqueda semántica con Qdrant
 
 ## 📊 Modos de Operación
@@ -20,6 +21,38 @@ Motor de búsqueda en lenguaje natural para inventarios de Sinabe.
 | **Semántico**         | 6-8GB  | Agrega Qdrant para búsqueda por similitud |
 
 > **Servidor 8GB RAM**: Usa modo **Heurístico** o **LLM** con modelos pequeños (llama3.2:3b ~2.5GB)
+
+---
+
+## 🧭 Schema-Driven (V2)
+
+El servicio ahora valida filtros y agrupaciones contra rutas reales del esquema Prisma.
+
+Formato de plan interno:
+
+```json
+{
+  "entity": "Inventory",
+  "action": "count",
+  "filters": [
+    { "path": "InventoryType.name", "op": "contains", "value": "switch" },
+    { "path": "Condition.name", "op": "contains", "value": "sin usar" }
+  ],
+  "groupBy": [],
+  "pagination": { "page": 1, "limit": 50 },
+  "sort": [{ "path": "Inventory.createdAt", "dir": "desc" }]
+}
+```
+
+Si no se puede mapear de forma determinista, responde:
+
+```json
+{
+  "type": "need_clarification",
+  "message": "No pude identificar por qué dimensión agrupar.",
+  "options": ["Agrupar por Condition.name", "Agrupar por InventoryBrand.name"]
+}
+```
 
 ---
 
@@ -308,7 +341,7 @@ Consulta principal en lenguaje natural.
 {
   "ok": true,
   "query": "...",
-  "plan": { "intent": "list_inventories", ... },
+  "plan": { "entity": "Inventory", "action": "list", "...": "..." },
   "type": "list",
   "total": 150,
   "items": [...],
@@ -316,6 +349,13 @@ Consulta principal en lenguaje natural.
   "limit": 50,
   "hasMore": true,
   "message": "150 inventarios encontrados",
+  "meta": {
+    "plan": { "entity": "Inventory", "action": "list", "...": "..." },
+    "appliedFilters": [{ "path": "Inventory.enabled", "op": "eq", "value": true }],
+    "joinsUsed": [{ "from": "Inventory", "to": "Model", "kind": "many-to-one" }],
+    "sql": "...",
+    "params": ["..."]
+  },
   "elapsed": "45ms"
 }
 ```
@@ -375,8 +415,8 @@ Ejemplos de consultas para la UI.
 ### Agrupaciones
 
 - "Cuántos inventarios hay por ubicación"
-- "Conteo por marca (solo ALTA)"
-- "Cuántos por tipo de inventario"
+- "Cuántos inventarios por condición"
+- "Cuántos inventarios en resguardo activo"
 
 ### Faltantes
 
@@ -450,6 +490,22 @@ ENABLE_QDRANT=true
 docker exec sinabe-ai npm run index:bootstrap
 docker exec sinabe-ai npm run index:sync
 ```
+
+---
+
+## 🧪 Smoke Test (dev)
+
+```bash
+cd ai
+npm run dev:queries
+```
+
+Ejecuta consultas objetivo y muestra para cada una:
+- `plan`
+- `joinsUsed`
+- `sql`
+- `params`
+- `result`
 
 ---
 

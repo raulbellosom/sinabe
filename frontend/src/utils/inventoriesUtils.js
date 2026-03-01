@@ -1,5 +1,30 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { exportInventoriesExcel as exportInventoriesExcelService } from '../services/reportServices';
+
+// ─────────────────────────────────────────────────────────
+// EXCEL EXPORT — delegates to backend (ExcelJS, images in cells)
+// ─────────────────────────────────────────────────────────
+export const exportInventoriesToExcel = async (inventoriesInput) => {
+  const inventories = Array.isArray(inventoriesInput)
+    ? inventoriesInput
+    : Object.values(inventoriesInput);
+
+  if (!inventories || inventories.length === 0) return;
+
+  const inventoryIds = inventories.map((inv) => inv.id);
+  const response = await exportInventoriesExcelService(inventoryIds);
+
+  const blob = new Blob([response.data], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const filename =
+    response.headers?.['content-disposition']
+      ?.split('filename=')[1]
+      ?.replace(/[\'"]/g, '') ||
+    `inventarios_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  saveAs(blob, filename);
+};
 
 export const formatInventoriesToCSVString = (inventoriesObj) => {
   const inventories = Object.values(inventoriesObj);

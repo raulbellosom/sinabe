@@ -192,6 +192,36 @@ const ResponsiveTable = ({
     onRowClick?.(row);
   };
 
+  // ── Dual horizontal scrollbar (top mirror + table in sync) ──
+  const topScrollRef = useRef(null);
+  const tableScrollRef = useRef(null);
+  const phantomRef = useRef(null);
+
+  useEffect(() => {
+    const tableEl = tableScrollRef.current;
+    if (!tableEl || !phantomRef.current) return;
+    const update = () => {
+      if (phantomRef.current)
+        phantomRef.current.style.width = `${tableEl.scrollWidth}px`;
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(tableEl);
+    return () => ro.disconnect();
+  });
+
+  useEffect(() => {
+    const top = topScrollRef.current;
+    const tbl = tableScrollRef.current;
+    if (!top || !tbl) return;
+    let syncing = false;
+    const onTop = () => { if (!syncing) { syncing = true; tbl.scrollLeft = top.scrollLeft; syncing = false; } };
+    const onTbl = () => { if (!syncing) { syncing = true; top.scrollLeft = tbl.scrollLeft; syncing = false; } };
+    top.addEventListener('scroll', onTop);
+    tbl.addEventListener('scroll', onTbl);
+    return () => { top.removeEventListener('scroll', onTop); tbl.removeEventListener('scroll', onTbl); };
+  });
+
   const renderCell = (row, column) => {
     if (column.key === 'actions') {
       return <RowActionsMenu row={row} rowActions={rowActions} />;
@@ -401,7 +431,21 @@ const ResponsiveTable = ({
           })}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)]">
+        <div className="flex flex-col">
+          {/* ── Top scrollbar mirror (synced with table bottom scrollbar) ── */}
+          <div
+            ref={topScrollRef}
+            className="custom-scrollbar overflow-x-auto rounded-t-xl border-x border-t border-[color:var(--border)]"
+            style={{ height: 10 }}
+          >
+            <div ref={phantomRef} style={{ height: 1 }} />
+          </div>
+
+          {/* ── Actual scrollable table ── */}
+          <div
+            ref={tableScrollRef}
+            className="custom-scrollbar overflow-x-auto rounded-b-xl border border-[color:var(--border)] bg-[color:var(--surface)]"
+          >
           <table className="min-w-full text-left text-sm">
             <thead className="bg-[color:var(--surface-muted)] text-xs uppercase tracking-wide text-[color:var(--foreground-muted)]">
               <tr>
@@ -489,6 +533,7 @@ const ResponsiveTable = ({
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

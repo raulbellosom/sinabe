@@ -39,6 +39,8 @@ export const startScheduler = () => {
   setTimeout(async () => {
     console.log("[Scheduler] Ejecutando verificación inicial...");
     try {
+      // Asegurar que Prisma esté conectado antes de la primera query
+      await db.$connect();
       await processScheduledRules();
     } catch (error) {
       console.error("[Scheduler] Error en verificación inicial:", error);
