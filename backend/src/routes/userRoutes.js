@@ -1,5 +1,5 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, checkPermission } from "../middleware/authMiddleware.js";
 import {
   getUsers,
   getUserById,
@@ -15,14 +15,30 @@ const router = express.Router();
 
 router
   .route("/")
-  .get(protect, getUsers)
-  .post(protect, upload.single("profileImage"), saveProfileImage, createUser);
-router.route("/search").get(protect, searchUsers);
+  .get(protect, checkPermission("view_users"), getUsers)
+  .post(
+    protect,
+    checkPermission("create_users"),
+    upload.single("profileImage"),
+    saveProfileImage,
+    createUser,
+  );
+router
+  .route("/search")
+  .get(protect, checkPermission("view_users"), searchUsers);
 router
   .route("/:id")
-  .get(protect, getUserById)
-  .put(protect, upload.single("profileImage"), saveProfileImage, updateUser)
-  .delete(protect, deleteUser);
-router.route("/changePassword/:id").put(protect, changeUserPassword);
+  .get(protect, checkPermission("view_users"), getUserById)
+  .put(
+    protect,
+    checkPermission("edit_users"),
+    upload.single("profileImage"),
+    saveProfileImage,
+    updateUser,
+  )
+  .delete(protect, checkPermission("delete_users"), deleteUser);
+router
+  .route("/changePassword/:id")
+  .put(protect, checkPermission("edit_users"), changeUserPassword);
 
 export default router;

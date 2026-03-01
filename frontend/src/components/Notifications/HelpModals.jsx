@@ -1,6 +1,6 @@
 
-import { Modal, Button } from 'flowbite-react';
-import { toast } from 'react-hot-toast';
+import { Modal, Button } from '../ui/flowbite';
+import { toast } from 'sonner';
 
 import {
   Copy,

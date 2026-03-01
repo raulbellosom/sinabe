@@ -14,8 +14,9 @@ import {
   X,
   Printer,
   Download,
-  Eye,
-  EyeOff,
+  PanelRight,
+  PanelBottom,
+  LayoutGrid,
   ChevronLeft,
   ChevronRight,
   QrCode,
@@ -30,25 +31,22 @@ import { printZebraLabels } from '../../utils/zebraPrintUtils';
  */
 function QRLabelModal({ inventory, isOpen, onClose }) {
   const [labelSize, setLabelSize] = useState('md');
-  const [showText, setShowText] = useState(true);
+  const [textPosition, setTextPosition] = useState('right');
   const [isPrinting, setIsPrinting] = useState(false);
 
   const handlePrint = useCallback(async () => {
     if (!inventory) return;
     setIsPrinting(true);
     try {
-      await printZebraLabels([inventory], labelSize, showText);
+      await printZebraLabels([inventory], labelSize, textPosition);
     } finally {
       setIsPrinting(false);
     }
-  }, [inventory, labelSize, showText]);
+  }, [inventory, labelSize, textPosition]);
 
   const handleDownloadPng = useCallback(() => {
     if (!inventory) return;
-    // Buscar el canvas renderizado en el preview
-    const canvas = document.querySelector(
-      `canvas[data-label-canvas="${inventory.id}"]`,
-    );
+    const canvas = document.querySelector('#qr-label-preview canvas');
     if (!canvas) return;
     const url = canvas.toDataURL('image/png');
     const a = document.createElement('a');
@@ -143,22 +141,31 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Texto */}
+            {/* Posición del texto */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-[color:var(--foreground-muted)]">
-                Contenido visible
+                Texto en etiqueta
               </label>
-              <button
-                onClick={() => setShowText((p) => !p)}
-                className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all border-2 ${
-                  showText
-                    ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
-                    : 'border-gray-300 bg-gray-50 text-gray-600 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                }`}
-              >
-                {showText ? <Eye size={16} /> : <EyeOff size={16} />}
-                {showText ? 'Con texto (folio, S/N, activo)' : 'Solo código QR'}
-              </button>
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { key: 'right', icon: PanelRight, label: 'Derecha' },
+                  { key: 'bottom', icon: PanelBottom, label: 'Abajo' },
+                  { key: 'none', icon: LayoutGrid, label: 'Doble QR' },
+                ].map(({ key, icon: Icon, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setTextPosition(key)}
+                    className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-xs font-semibold transition-all border-2 ${
+                      textPosition === key
+                        ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
+                        : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-purple-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                    }`}
+                  >
+                    <Icon size={16} />
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -178,14 +185,17 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
             <p className="text-sm font-semibold text-[color:var(--foreground-muted)] self-start">
               Vista previa
             </p>
-            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-8 flex items-center justify-center min-h-48 shadow-inner w-full">
+            <div
+              id="qr-label-preview"
+              className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-8 flex items-center justify-center min-h-48 shadow-inner w-full"
+            >
               <div
                 style={{
                   transform:
                     labelSize === 'sm'
-                      ? 'scale(1.8)'
+                      ? 'scale(1.6)'
                       : labelSize === 'md'
-                        ? 'scale(1.2)'
+                        ? 'scale(1.1)'
                         : 'scale(1)',
                   transformOrigin: 'center center',
                 }}
@@ -193,7 +203,7 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
                 <QRLabel
                   inventory={inventory}
                   size={labelSize}
-                  showText={showText}
+                  textPosition={textPosition}
                 />
               </div>
             </div>

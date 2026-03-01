@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, Suspense } from 'react';
-import { Tabs } from 'flowbite-react';
+import React, { useEffect, useRef } from 'react';
+import { Tabs } from '../../../components/ui/flowbite';
 import useCheckPermissions from '../../../hooks/useCheckPermissions';
 import NotFound from '../../notFound/NotFound';
 
@@ -12,12 +12,12 @@ import {
   Tag,
 } from 'lucide-react';
 
-const Models = React.lazy(() => import('./Models'));
-const Brands = React.lazy(() => import('./Brands'));
-const Types = React.lazy(() => import('./Types'));
-const Conditions = React.lazy(() => import('./Conditions'));
-const CustomFields = React.lazy(() => import('./CustomFields'));
-const Locations = React.lazy(() => import('./Locations'));
+import Models from './Models';
+import Brands from './Brands';
+import Types from './Types';
+import Conditions from './Conditions';
+import CustomFields from './CustomFields';
+import Locations from './Locations';
 
 const Catalogs = () => {
   const tabsRef = useRef(null);
@@ -25,7 +25,7 @@ const Catalogs = () => {
   useEffect(() => {
     const tab = localStorage.getItem('selectedTab');
     if (tab && tabsRef.current) {
-      tabsRef.current.setActiveTab(parseInt(tab));
+      tabsRef.current.setActiveTab(parseInt(tab, 10));
     }
   }, []);
 
@@ -69,80 +69,32 @@ const Catalogs = () => {
       >
         {isViewModelPermission.hasPermission && (
           <Tabs.Item title="Modelos" icon={Box}>
-            <Suspense
-              fallback={
-                <div className=" text-center dark:text-white">
-                  Cargando modelos...
-                </div>
-              }
-            >
-              <Models />
-            </Suspense>
+            <Models />
           </Tabs.Item>
         )}
         {isViewBrandPermission.hasPermission && (
           <Tabs.Item title="Marcas" icon={Tag}>
-            <Suspense
-              fallback={
-                <div className=" text-center dark:text-white">
-                  Cargando marcas...
-                </div>
-              }
-            >
-              <Brands />
-            </Suspense>
+            <Brands />
           </Tabs.Item>
         )}
         {isViewTypePermission.hasPermission && (
           <Tabs.Item title="Tipos" icon={Layers}>
-            <Suspense
-              fallback={
-                <div className=" text-center dark:text-white">
-                  Cargando tipos...
-                </div>
-              }
-            >
-              <Types />
-            </Suspense>
+            <Types />
           </Tabs.Item>
         )}
         {isViewLocationPermission.hasPermission && (
           <Tabs.Item title="Ubicaciones" icon={MapPin}>
-            <Suspense
-              fallback={
-                <div className=" text-center dark:text-white">
-                  Cargando ubicaciones...
-                </div>
-              }
-            >
-              <Locations />
-            </Suspense>
+            <Locations />
           </Tabs.Item>
         )}
         {isViewConditionPermission.hasPermission && (
           <Tabs.Item title="Condición" icon={List}>
-            <Suspense
-              fallback={
-                <div className=" text-center dark:text-white">
-                  Cargando condiciones...
-                </div>
-              }
-            >
-              <Conditions />
-            </Suspense>
+            <Conditions />
           </Tabs.Item>
         )}
         {isCreateCustomFieldPermission.hasPermission && (
           <Tabs.Item title="Campos" icon={FormInput}>
-            <Suspense
-              fallback={
-                <div className=" text-center dark:text-white">
-                  Cargando campos personalizados...
-                </div>
-              }
-            >
-              <CustomFields />
-            </Suspense>
+            <CustomFields />
           </Tabs.Item>
         )}
       </Tabs>

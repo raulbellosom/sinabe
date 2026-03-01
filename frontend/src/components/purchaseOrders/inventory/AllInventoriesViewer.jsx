@@ -1,6 +1,6 @@
 // components/purchaseOrders/inventory/AllInventoriesViewer.jsx
 import { useState, useMemo, useCallback } from 'react';
-import { Button, Badge } from 'flowbite-react';
+import { Button, Badge } from '../../ui/flowbite';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   useGetAllInventoriesByPurchaseOrder,

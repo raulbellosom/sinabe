@@ -1,14 +1,11 @@
-
 import { QRCodeCanvas } from 'qrcode.react';
 import Logo from '../../assets/logo/sinabe_icon.png';
-import { Badge } from 'flowbite-react';
-import {
-  Info,
-} from 'lucide-react';
+import { Badge } from '../ui/flowbite';
+import { Info } from 'lucide-react';
 import { APP_URL } from '../../config/env';
 
 function QRCodeGenerator({ inventoryInfo, type, qrSize }) {
-  const inventoryUrl = `${APP_URL.replace(/\/$/, '')}/inventory/${inventoryInfo.id}`;
+  const inventoryUrl = `${APP_URL.replace(/\/$/, '')}/inventory/public/${inventoryInfo.id}`;
 
   const formatInventory = (inventory) => {
     return JSON.stringify({
@@ -19,7 +16,7 @@ function QRCodeGenerator({ inventoryInfo, type, qrSize }) {
       activo: inventory.activeNumber,
       estado: inventory.status,
       recepcion: inventory.receptionDate,
-      url: `${APP_URL.replace(/\/$/, '')}/inventory/${inventory.id}`,
+      url: `${APP_URL.replace(/\/$/, '')}/inventory/public/${inventory.id}`,
     });
   };
 

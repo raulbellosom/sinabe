@@ -2,7 +2,7 @@
 import { FormikProvider, useFormik, Form } from 'formik';
 import TypeFormFields from './TypeFormFields';
 
-import { Button } from 'flowbite-react';
+import { Button } from '../../ui/flowbite';
 import { Trash2, Save } from 'lucide-react';
 import { TypeFormSchema } from './TypeFormSchema';
 

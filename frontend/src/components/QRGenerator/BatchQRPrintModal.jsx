@@ -13,8 +13,8 @@ import {
 import {
   X,
   Printer,
-  Eye,
-  EyeOff,
+  PanelRight,
+  PanelBottom,
   QrCode,
   Layers,
   Trash2,
@@ -30,7 +30,7 @@ import { printZebraLabels } from '../../utils/zebraPrintUtils';
  */
 function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
   const [labelSize, setLabelSize] = useState('md');
-  const [showText, setShowText] = useState(true);
+  const [textPosition, setTextPosition] = useState('right');
   const [isPrinting, setIsPrinting] = useState(false);
   const [localList, setLocalList] = useState(null); // null = use props
 
@@ -55,11 +55,11 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
     if (list.length === 0) return;
     setIsPrinting(true);
     try {
-      await printZebraLabels(list, labelSize, showText);
+      await printZebraLabels(list, labelSize, textPosition);
     } finally {
       setIsPrinting(false);
     }
-  }, [list, labelSize, showText]);
+  }, [list, labelSize, textPosition]);
 
   const sizeEntries = Object.values(LABEL_SIZES);
 
@@ -123,22 +123,31 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Texto */}
+            {/* Posición del texto */}
             <div className="flex flex-col gap-2">
               <label className="text-xs font-bold uppercase tracking-wide text-[color:var(--foreground-muted)]">
-                Contenido visible
+                Texto en etiqueta
               </label>
-              <button
-                onClick={() => setShowText((p) => !p)}
-                className={`flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all border-2 ${
-                  showText
-                    ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
-                    : 'border-gray-300 bg-gray-50 text-gray-600 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                }`}
-              >
-                {showText ? <Eye size={16} /> : <EyeOff size={16} />}
-                {showText ? 'Con texto' : 'Solo QR'}
-              </button>
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { key: 'right', icon: PanelRight, label: 'Derecha' },
+                  { key: 'bottom', icon: PanelBottom, label: 'Abajo' },
+                  { key: 'none', icon: LayoutGrid, label: 'Doble QR' },
+                ].map(({ key, icon: Icon, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setTextPosition(key)}
+                    className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-xs font-semibold transition-all border-2 ${
+                      textPosition === key
+                        ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
+                        : 'border-transparent bg-[color:var(--surface-muted)] text-[color:var(--foreground-muted)] hover:border-purple-300'
+                    }`}
+                  >
+                    <Icon size={16} />
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Instrucciones */}
@@ -234,7 +243,7 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
                       <QRLabel
                         inventory={inv}
                         size={labelSize}
-                        showText={showText}
+                        textPosition={textPosition}
                       />
                     </div>
                     <span

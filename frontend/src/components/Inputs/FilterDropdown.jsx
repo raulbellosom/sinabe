@@ -1,5 +1,5 @@
 // frontend/src/components/Inputs/FilterDropdown.jsx
-import { Dropdown } from 'flowbite-react';
+import { Dropdown } from '../ui/flowbite';
 import classNames from 'classnames';
 
 import {

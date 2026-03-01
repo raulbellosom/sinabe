@@ -1,8 +1,9 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, checkPermission } from "../middleware/authMiddleware.js";
 import {
   getInventories,
   getInventoryById,
+  getPublicInventoryById,
   createInventory,
   updateInventory,
   deleteInventory,
@@ -57,95 +58,228 @@ import { processFiles } from "../controllers/uploadFilesController.js";
 const router = express.Router();
 // router.route("/assignMissingFolios").get(assignMissingFolios);
 
+// ── Ruta pública (sin autenticación) para consulta por QR / handheld ──
+router.route("/public/:id").get(getPublicInventoryById);
+
 router
   .route("/")
-  .get(protect, getInventories)
+  .get(
+    protect,
+    checkPermission("view_inventories", "view_self_inventories"),
+    getInventories,
+  )
   .post(
     protect,
+    checkPermission("create_inventories"),
     upload.fields([{ name: "images" }, { name: "files" }]),
     processImages,
     processFiles,
-    createInventory
+    createInventory,
   );
-router.route("/migrate").post(protect, migrateInventory);
-router.route("/checkSerialNumber").post(protect, checkSerialNumber);
+router
+  .route("/migrate")
+  .post(protect, checkPermission("create_inventories"), migrateInventory);
+router
+  .route("/checkSerialNumber")
+  .post(
+    protect,
+    checkPermission("view_inventories", "create_inventories"),
+    checkSerialNumber,
+  );
 router
   .route("/inventoryTypes")
-  .get(protect, getInventoryTypes)
-  .post(protect, createInventoryType);
+  .get(protect, checkPermission("view_inventories_types"), getInventoryTypes)
+  .post(
+    protect,
+    checkPermission("create_inventories_types"),
+    createInventoryType,
+  );
 router
   .route("/inventoryBrands")
-  .get(protect, getInventoryBrands)
-  .post(protect, createInventoryBrand);
+  .get(protect, checkPermission("view_inventories_brands"), getInventoryBrands)
+  .post(
+    protect,
+    checkPermission("create_inventories_brands"),
+    createInventoryBrand,
+  );
 router
   .route("/inventoryModels")
-  .get(protect, getInventoryModels)
-  .post(protect, createInventoryModel);
+  .get(protect, checkPermission("view_inventories_models"), getInventoryModels)
+  .post(
+    protect,
+    checkPermission("create_inventories_models"),
+    createInventoryModel,
+  );
 router
   .route("/inventoryConditions")
-  .get(protect, getConditions)
-  .post(protect, createCondition);
-router.route("/search").get(protect, searchInventories);
+  .get(protect, checkPermission("view_inventories_conditions"), getConditions)
+  .post(
+    protect,
+    checkPermission("create_inventories_conditions"),
+    createCondition,
+  );
+router
+  .route("/search")
+  .get(
+    protect,
+    checkPermission("view_inventories", "view_self_inventories"),
+    searchInventories,
+  );
 router
   .route("/createMultipleInventories")
-  .post(protect, upload.single("csvFile"), createMultipleInventories);
-router.route("/inventoryModels/search").get(protect, searchModels);
+  .post(
+    protect,
+    checkPermission("create_inventories"),
+    upload.single("csvFile"),
+    createMultipleInventories,
+  );
+router
+  .route("/inventoryModels/search")
+  .get(protect, checkPermission("view_inventories_models"), searchModels);
 router
   .route("/inventoryModels/createMultipleModels")
-  .post(protect, upload.single("csvFile"), createMultipleModels);
+  .post(
+    protect,
+    checkPermission("create_inventories_models"),
+    upload.single("csvFile"),
+    createMultipleModels,
+  );
 router
   .route("/customFields")
-  .get(protect, getCustomFields)
-  .post(protect, createCustomField);
-router.route("/customFields/values").post(protect, addCustomFieldValue);
+  .get(
+    protect,
+    checkPermission("view_inventories_custom_fields"),
+    getCustomFields,
+  )
+  .post(
+    protect,
+    checkPermission("create_inventories_custom_fields"),
+    createCustomField,
+  );
+router
+  .route("/customFields/values")
+  .post(protect, checkPermission("edit_inventories"), addCustomFieldValue);
 
 // Rutas para obtener listas de Purchase Orders e Invoices para autocomplete
 // IMPORTANTE: Estas rutas deben estar ANTES de /:id para evitar conflictos
-router.route("/purchase-orders-list").get(protect, getPurchaseOrdersList);
-router.route("/invoices-list").get(protect, getInvoicesList);
-router.route("/locations-list").get(protect, getInventoryLocationsList);
+router
+  .route("/purchase-orders-list")
+  .get(
+    protect,
+    checkPermission("view_inventories", "view_self_inventories"),
+    getPurchaseOrdersList,
+  );
+router
+  .route("/invoices-list")
+  .get(
+    protect,
+    checkPermission("view_inventories", "view_self_inventories"),
+    getInvoicesList,
+  );
+router
+  .route("/locations-list")
+  .get(
+    protect,
+    checkPermission("view_inventories", "view_self_inventories"),
+    getInventoryLocationsList,
+  );
 
 router
   .route("/:id")
-  .get(protect, getInventoryById)
+  .get(
+    protect,
+    checkPermission("view_inventories", "view_self_inventories"),
+    getInventoryById,
+  )
   .put(
     protect,
+    checkPermission("edit_inventories"),
     upload.fields([{ name: "images" }, { name: "files" }]),
     processImages,
     processFiles,
-    updateInventory
+    updateInventory,
   )
-  .delete(protect, deleteInventory);
+  .delete(protect, checkPermission("delete_inventories"), deleteInventory);
 router
   .route("/inventoryTypes/:id")
-  .get(protect, getInventoryTypeById)
-  .put(protect, updateInventoryType)
-  .delete(protect, deleteInventoryType);
+  .get(protect, checkPermission("view_inventories_types"), getInventoryTypeById)
+  .put(protect, checkPermission("edit_inventories_types"), updateInventoryType)
+  .delete(
+    protect,
+    checkPermission("delete_inventories_types"),
+    deleteInventoryType,
+  );
 router
   .route("/inventoryBrands/:id")
-  .get(protect, getInventoryBrandById)
-  .put(protect, updateInventoryBrand)
-  .delete(protect, deleteInventoryBrand);
+  .get(
+    protect,
+    checkPermission("view_inventories_brands"),
+    getInventoryBrandById,
+  )
+  .put(
+    protect,
+    checkPermission("edit_inventories_brands"),
+    updateInventoryBrand,
+  )
+  .delete(
+    protect,
+    checkPermission("delete_inventories_brands"),
+    deleteInventoryBrand,
+  );
 router
   .route("/inventoryModels/:id")
-  .get(protect, getInventoryModelById)
-  .put(protect, updateInventoryModel)
-  .delete(protect, deleteInventoryModel);
+  .get(
+    protect,
+    checkPermission("view_inventories_models"),
+    getInventoryModelById,
+  )
+  .put(
+    protect,
+    checkPermission("edit_inventories_models"),
+    updateInventoryModel,
+  )
+  .delete(
+    protect,
+    checkPermission("delete_inventories_models"),
+    deleteInventoryModel,
+  );
 router
   .route("/inventoryConditions/:id")
-  .get(protect, getConditionById)
-  .put(protect, updateCondition)
-  .delete(protect, deleteCondition);
+  .get(
+    protect,
+    checkPermission("view_inventories_conditions"),
+    getConditionById,
+  )
+  .put(protect, checkPermission("edit_inventories_conditions"), updateCondition)
+  .delete(
+    protect,
+    checkPermission("delete_inventories_conditions"),
+    deleteCondition,
+  );
 
 router
   .route("/customFields/:id")
-  .put(protect, updateCustomField)
-  .delete(protect, deleteCustomField);
+  .put(
+    protect,
+    checkPermission("edit_inventories_custom_fields"),
+    updateCustomField,
+  )
+  .delete(
+    protect,
+    checkPermission("delete_inventories_custom_fields"),
+    deleteCustomField,
+  );
 router
   .route("/customFields/:customFieldId/values")
-  .get(protect, getCustomFieldValues);
+  .get(
+    protect,
+    checkPermission("view_inventories_custom_fields"),
+    getCustomFieldValues,
+  );
 
 // Ruta para actualización masiva de estados
-router.route("/bulk-status").patch(protect, bulkUpdateStatus);
+router
+  .route("/bulk-status")
+  .patch(protect, checkPermission("edit_inventories"), bulkUpdateStatus);
 
 export default router;

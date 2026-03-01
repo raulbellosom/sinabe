@@ -10,7 +10,7 @@ import {
   Progress,
   Table,
   Tooltip,
-} from 'flowbite-react';
+} from '../ui/flowbite';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNotifications } from '../../context/NotificationContext';

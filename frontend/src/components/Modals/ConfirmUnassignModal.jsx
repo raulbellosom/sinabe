@@ -1,6 +1,6 @@
 // components/Modals/ConfirmUnassignModal.jsx
 import { useState, useEffect } from 'react';
-import { Label, TextInput } from 'flowbite-react';
+import { Label, TextInput } from '../ui/flowbite';
 import { AlertCircle, Unlink } from 'lucide-react';
 import ReusableModal from './ReusableModal';
 

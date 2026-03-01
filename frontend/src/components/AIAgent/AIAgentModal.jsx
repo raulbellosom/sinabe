@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Modal, Badge, Spinner, Tooltip } from 'flowbite-react';
+import { Modal, Badge, Spinner, Tooltip } from '../ui/flowbite';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Pie, Doughnut } from 'react-chartjs-2';
 import {

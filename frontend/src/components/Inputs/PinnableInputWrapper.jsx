@@ -1,5 +1,5 @@
 import { Children, isValidElement, cloneElement } from 'react';
-import { Label } from 'flowbite-react';
+import { Label } from '../ui/flowbite';
 import { ErrorMessage } from 'formik';
 import classNames from 'classnames';
 import PinIcon from '../PinIcon/PinIcon';

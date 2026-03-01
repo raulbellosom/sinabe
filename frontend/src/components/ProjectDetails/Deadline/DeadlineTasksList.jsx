@@ -1,6 +1,6 @@
 // src/components/ProjectDetails/DeadlineTasksList.jsx
 
-import { Tooltip } from 'flowbite-react';
+import { Tooltip } from '../../ui/flowbite';
 import { parseToLocalDate } from '../../../utils/formatValues';
 import ImageViewer2 from '../../ImageViewer/ImageViewer2';
 import {

@@ -1,6 +1,6 @@
 // components/invoices/AssignToPurchaseOrderModal.jsx
 import { useState, useMemo } from 'react';
-import { Badge, TextInput } from 'flowbite-react';
+import { Badge, TextInput } from '../ui/flowbite';
 import { Search, X, ClipboardList } from 'lucide-react';
 import { useSearchPurchaseOrders } from '../../hooks/usePurchaseOrders';
 import { useAssignInvoiceToPurchaseOrder } from '../../hooks/useInvoices';

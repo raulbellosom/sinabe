@@ -1,5 +1,5 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, checkPermission } from "../middleware/authMiddleware.js";
 import {
   getDeadlinesByProjectId,
   createDeadline,
@@ -22,29 +22,52 @@ const router = express.Router();
 // 🔄 Deadlines de un proyecto
 router
   .route("/projects/:projectId")
-  .get(protect, getDeadlinesByProjectId)
-  .post(protect, createDeadline);
+  .get(protect, checkPermission("view_deadlines"), getDeadlinesByProjectId)
+  .post(protect, checkPermission("create_deadlines"), createDeadline);
 
 // 📝 Actualizar y eliminar deadline
 router
   .route("/:id")
-  .put(protect, updateDeadline)
-  .delete(protect, deleteDeadline);
+  .put(protect, checkPermission("edit_deadlines"), updateDeadline)
+  .delete(protect, checkPermission("delete_deadlines"), deleteDeadline);
 
 // 📦 Asignar y desasignar inventarios
-router.route("/:deadlineId/assign").post(protect, assignInventoryToDeadline);
+router
+  .route("/:deadlineId/assign")
+  .post(protect, checkPermission("edit_deadlines"), assignInventoryToDeadline);
 
 router
   .route("/:deadlineId/unassign/:inventoryId")
-  .delete(protect, unassignInventoryFromDeadline);
+  .delete(
+    protect,
+    checkPermission("edit_deadlines"),
+    unassignInventoryFromDeadline,
+  );
 
 // 🔍 Obtener inventarios asignados
-router.route("/:deadlineId/inventories").get(protect, getInventoriesByDeadline);
+router
+  .route("/:deadlineId/inventories")
+  .get(protect, checkPermission("view_deadlines"), getInventoriesByDeadline);
 
 // Tareas
-router.post("/:deadlineId/task", createTask);
-router.put("/task/:id", updateTask);
-router.delete("/task/:id", deleteTask);
-router.post("/task/reorder", reorderTasks);
+router.post(
+  "/:deadlineId/task",
+  protect,
+  checkPermission("edit_deadlines"),
+  createTask,
+);
+router.put("/task/:id", protect, checkPermission("edit_deadlines"), updateTask);
+router.delete(
+  "/task/:id",
+  protect,
+  checkPermission("edit_deadlines"),
+  deleteTask,
+);
+router.post(
+  "/task/reorder",
+  protect,
+  checkPermission("edit_deadlines"),
+  reorderTasks,
+);
 
 export default router;

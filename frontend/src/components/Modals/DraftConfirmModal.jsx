@@ -1,5 +1,5 @@
 
-import { Modal, Button } from 'flowbite-react';
+import { Modal, Button } from '../ui/flowbite';
 import { AlertTriangle } from 'lucide-react';
 
 const DraftConfirmModal = ({

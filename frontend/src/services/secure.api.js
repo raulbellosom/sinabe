@@ -101,6 +101,16 @@ export const deletePermission = async (id) => {
   }
 };
 
+export const syncPermissions = async (permissions) => {
+  try {
+    const { data } = await api.post('/permissions/sync', { permissions });
+    return data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
+
 export const getRolePermissions = async () => {
   try {
     const { data } = await api.get('/role-permissions');

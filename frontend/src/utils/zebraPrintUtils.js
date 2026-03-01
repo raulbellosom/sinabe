@@ -26,16 +26,43 @@ export async function generateQRDataUrl(
 }
 
 /**
+ * Devuelve el tamaño en px del QR según la posición de texto elegida.
+ * @param {object} cfg
+ * @param {string} textPosition - 'right' | 'bottom' | 'none'
+ */
+function getEffectiveQrPx(cfg, textPosition) {
+  if (textPosition === 'none') {
+    // Dos QRs lado a lado: cada uno ocupa ~la mitad del ancho
+    return Math.min(
+      Math.floor((cfg.widthMm - 3) / 2 / 0.264583),
+      Math.floor((cfg.heightMm - 2) / 0.264583),
+    );
+  }
+  if (textPosition === 'bottom') return cfg.qrPxBottom;
+  return cfg.qrPx; // 'right'
+}
+
+/**
  * Construye el HTML interno de una etiqueta para el print window.
- * @param {object}  inventory
- * @param {string}  qrDataUrl  - PNG en base64
- * @param {object}  cfg        - Config del tamaño (LABEL_SIZES[size])
- * @param {boolean} showText
+ * @param {object} inventory
+ * @param {string} qrDataUrl    - PNG en base64
+ * @param {object} cfg          - Config del tamaño (LABEL_SIZES[size])
+ * @param {string} textPosition - 'right' | 'bottom' | 'none'
  * @returns {string} HTML string
  */
-export function buildLabelHtml(inventory, qrDataUrl, cfg, showText) {
-  const isRow = cfg.direction === 'row';
-  const qrMm = cfg.qrPx * 0.264583; // px → mm  @96dpi
+export function buildLabelHtml(inventory, qrDataUrl, cfg, textPosition) {
+  const isDouble = textPosition === 'none';
+  const isRow = textPosition === 'right' || isDouble;
+  const qrPx = getEffectiveQrPx(cfg, textPosition);
+  const qrMm = (qrPx * 0.264583).toFixed(2);
+
+  if (isDouble) {
+    return `
+    <div class="label label--${cfg.key}" style="flex-direction:row;justify-content:center;align-items:center;gap:2mm;">
+      <img src="${qrDataUrl}" style="width:${qrMm}mm;height:${qrMm}mm;flex-shrink:0;" alt="QR"/>
+      <img src="${qrDataUrl}" style="width:${qrMm}mm;height:${qrMm}mm;flex-shrink:0;" alt="QR"/>
+    </div>`;
+  }
 
   const textFields = [];
   if (inventory.internalFolio)
@@ -49,24 +76,23 @@ export function buildLabelHtml(inventory, qrDataUrl, cfg, showText) {
   if (cfg.key === 'lg' && inventory.model?.type?.name)
     textFields.push(`<div><b>Tipo:</b> ${inventory.model.type.name}</div>`);
 
-  const textHtml = showText
-    ? `<div class="label-text">${textFields.join('')}</div>`
-    : '';
-
   return `
-    <div class="label label--${cfg.key}" style="flex-direction:${isRow ? 'row' : 'column'}">
+    <div class="label label--${cfg.key}" style="flex-direction:${isRow ? 'row' : 'column'};${!isRow ? 'align-items:center;' : ''}">
       <img class="label-qr" src="${qrDataUrl}" style="width:${qrMm}mm;height:${qrMm}mm;" alt="QR"/>
-      ${textHtml}
+      <div class="label-text">${textFields.join('')}</div>
     </div>`;
 }
 
 /**
  * CSS para el documento de impresión.
- * @param {object} cfg - Config del tamaño
+ * @param {object} cfg          - Config del tamaño
+ * @param {string} textPosition - 'right' | 'bottom' | 'none'
  */
-function buildPrintCss(cfg) {
-  const isRow = cfg.direction === 'row';
-  const qrMm = cfg.qrPx * 0.264583;
+function buildPrintCss(cfg, textPosition) {
+  const isDouble = textPosition === 'none';
+  const isRow = textPosition === 'right' || isDouble;
+  const qrPx = getEffectiveQrPx(cfg, textPosition);
+  const qrMm = (qrPx * 0.264583).toFixed(2);
 
   return `
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -111,8 +137,8 @@ function buildPrintCss(cfg) {
 
     .label-text {
       font-family: "Courier New", Courier, monospace;
-      font-size: ${cfg.fontSizePx * 0.264583}mm;
-      line-height: 1.5;
+      font-size: ${(cfg.fontSizePx * 0.264583).toFixed(3)}mm;
+      line-height: 1.6;
       color: #000;
       overflow: hidden;
       flex: 1;
@@ -125,28 +151,29 @@ function buildPrintCss(cfg) {
 
 /**
  * Abre un nuevo window de impresión con las etiquetas listas para Zebra ZD421.
- * @param {Array}   inventories  - Lista de inventarios seleccionados
- * @param {string}  size         - 'sm' | 'md' | 'lg'
- * @param {boolean} showText     - Mostrar texto junto al QR
+ * @param {Array}  inventories  - Lista de inventarios seleccionados
+ * @param {string} size         - 'sm' | 'md' | 'lg'
+ * @param {string} textPosition - 'right' | 'bottom' | 'none'
  */
 export async function printZebraLabels(
   inventories,
   size = 'md',
-  showText = true,
+  textPosition = 'right',
 ) {
   const cfg = LABEL_SIZES[size] || LABEL_SIZES.md;
+  const qrPx = getEffectiveQrPx(cfg, textPosition);
 
   // Generar QR data URLs para todos los inventarios en paralelo
   const qrDataUrls = await Promise.all(
-    inventories.map((inv) => generateQRDataUrl(buildQRValue(inv), cfg.qrPx)),
+    inventories.map((inv) => generateQRDataUrl(buildQRValue(inv), qrPx)),
   );
 
   // Construir HTML de etiquetas
   const labelsHtml = inventories
-    .map((inv, i) => buildLabelHtml(inv, qrDataUrls[i], cfg, showText))
+    .map((inv, i) => buildLabelHtml(inv, qrDataUrls[i], cfg, textPosition))
     .join('');
 
-  const css = buildPrintCss(cfg);
+  const css = buildPrintCss(cfg, textPosition);
 
   const html = `<!DOCTYPE html>
 <html lang="es">

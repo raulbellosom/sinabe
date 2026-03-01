@@ -10,7 +10,7 @@ import {
   Checkbox,
   Select,
   Dropdown,
-} from 'flowbite-react';
+} from '../ui/flowbite';
 import {
   useEvents,
   useCreateEvent,

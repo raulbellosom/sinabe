@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Tabs } from 'flowbite-react';
+import { Tabs } from '../../components/ui/flowbite';
 import Notifies from '../../components/Notifies/Notifies';
 import { parseToLocalDate } from '../../utils/formatValues';
 import InventoryProperty from '../../components/InventoryComponents/InventoryView/InventoryProperty';

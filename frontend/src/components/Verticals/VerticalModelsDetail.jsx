@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Badge, Button, TextInput } from 'flowbite-react';
+import { Badge, Button, TextInput } from '../ui/flowbite';
 import classNames from 'classnames';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import Notifies from '../Notifies/Notifies';

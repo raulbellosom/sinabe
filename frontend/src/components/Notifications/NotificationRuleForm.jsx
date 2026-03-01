@@ -12,9 +12,9 @@ import {
   ToggleSwitch,
   Badge,
   Spinner,
-} from 'flowbite-react';
+} from '../ui/flowbite';
 import { useNotifications } from '../../context/NotificationContext';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import SearchableSelect from '../common/SearchableSelect';
 import { CronHelpModal, JsonFilterHelpModal } from './HelpModals';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';

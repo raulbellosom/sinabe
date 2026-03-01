@@ -1,5 +1,5 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, checkPermission } from "../middleware/authMiddleware.js";
 import {
   getPurchaseOrdersByProjectId,
   createPurchaseOrder,
@@ -23,63 +23,69 @@ const router = express.Router();
 // Todas las rutas de OC requieren auth
 router.use(protect);
 
+const canView = checkPermission("view_purchase_orders");
+const canCreate = checkPermission("create_purchase_orders");
+const canEdit = checkPermission("edit_purchase_orders");
+const canDelete = checkPermission("delete_purchase_orders");
+
 // 🔎 Buscador general sin proyecto
-router.get("/search", searchPurchaseOrders);
+router.get("/search", canView, searchPurchaseOrders);
 
 // 🔎 Buscador por proyecto
-router.get("/projects/:projectId/search", searchPurchaseOrders);
+router.get("/projects/:projectId/search", canView, searchPurchaseOrders);
 
 // 🔍 Obtener OC sin asignar
-router.get("/without-project", getUnassignedPurchaseOrders);
+router.get("/without-project", canView, getUnassignedPurchaseOrders);
 
 // 🔍 Buscar OC sin asignar
-router.get("/without-project/search", searchUnassignedPurchaseOrders);
+router.get("/without-project/search", canView, searchUnassignedPurchaseOrders);
 
 // ➕ Crear OC sin proyecto asignado
-router.post("/without-project", createPurchaseOrderWithoutProject);
+router.post("/without-project", canCreate, createPurchaseOrderWithoutProject);
 
 // 📦 Obtener y crear OC por proyecto
 router
   .route("/projects/:projectId")
-  .get(getPurchaseOrdersByProjectId)
-  .post(createPurchaseOrder);
+  .get(canView, getPurchaseOrdersByProjectId)
+  .post(canCreate, createPurchaseOrder);
 
 // 🔗 Asignar/remover órdenes de compra a/de proyectos
 router.put(
   "/projects/:projectId/orders/:orderId/assign",
-  assignPurchaseOrderToProject
+  canEdit,
+  assignPurchaseOrderToProject,
 );
 router.delete(
   "/projects/:projectId/orders/:orderId/remove",
-  removePurchaseOrderFromProject
+  canDelete,
+  removePurchaseOrderFromProject,
 );
 
 // 📦 Inventarios asociados a una orden de compra
-// GET  /purchase-orders/:orderId/inventories
-// POST /purchase-orders/:orderId/inventories
 router
   .route("/:orderId/inventories")
-  .get(getInventoriesByPurchaseOrder)
-  .post(assignInventoriesToPurchaseOrder);
+  .get(canView, getInventoriesByPurchaseOrder)
+  .post(canEdit, assignInventoriesToPurchaseOrder);
 
 // 📦 Obtener TODOS los inventarios de una OC (directos + de facturas)
-// GET /purchase-orders/:orderId/all-inventories
-router.get("/:orderId/all-inventories", getAllInventoriesByPurchaseOrder);
+router.get(
+  "/:orderId/all-inventories",
+  canView,
+  getAllInventoriesByPurchaseOrder,
+);
 
 // 🗑️ Desasignar un inventario de la orden de compra
-// DELETE /purchase-orders/:orderId/inventories/:inventoryId
 router
   .route("/:orderId/inventories/:inventoryId")
-  .delete(removeInventoryFromPurchaseOrder);
-
-// 📦 Obtener TODOS los inventarios de una OC (directos + de facturas)
-// GET /purchase-orders/:orderId/all-inventories
-router.get("/:orderId/all-inventories", getAllInventoriesByPurchaseOrder);
+  .delete(canEdit, removeInventoryFromPurchaseOrder);
 
 // ✏️ Actualizar / ❌ Eliminar OC por ID
-router.route("/:id").put(updatePurchaseOrder).delete(deletePurchaseOrder);
+router
+  .route("/:id")
+  .put(canEdit, updatePurchaseOrder)
+  .delete(canDelete, deletePurchaseOrder);
 
-// 🎫 Sub‐rutas de facturas anidadas
+// 🎫 Sub‑rutas de facturas anidadas
 router.use("/:orderId/invoices", purchaseOrderRouter);
 
 export default router;

@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { FormikProvider, useFormik, Form } from 'formik';
 import { ChangePasswordSchema } from './ChangePasswordSchema';
 import ChangePasswordFormFields from './ChangePasswordFormFields';
-import { Badge } from 'flowbite-react';
+import { Badge } from '../../ui/flowbite';
 import ResetPassowrd from '../../../assets/images/Reset-Password.svg';
 import ActionButtons from '../../ActionButtons/ActionButtons';
 

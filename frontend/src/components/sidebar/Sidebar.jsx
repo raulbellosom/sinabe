@@ -164,13 +164,20 @@ const Sidebar = ({ children }) => {
     [preferences],
   );
 
-  const isActiveRoute = (path) => {
+  const isActiveRoute = (path, options = {}) => {
+    const { exact = false } = options;
     const current = location.pathname;
 
     if (path === '/dashboard') {
       return current === '/' || current === '/dashboard';
     }
 
+    // Exact match only
+    if (exact) {
+      return current === path;
+    }
+
+    // Default: exact match OR starts with path/
     return current === path || current.startsWith(`${path}/`);
   };
 
@@ -336,7 +343,7 @@ const Sidebar = ({ children }) => {
                   icon={FolderArchive}
                   label="Nuevo Inventario"
                   collapsed={false}
-                  active={isActiveRoute('/inventories/create')}
+                  active={isActiveRoute('/inventories/create', { exact: true })}
                 />
               ) : null}
 
@@ -347,7 +354,7 @@ const Sidebar = ({ children }) => {
                   icon={ClipboardList}
                   label="Inventarios"
                   collapsed={false}
-                  active={isActiveRoute('/inventories')}
+                  active={isActiveRoute('/inventories', { exact: true })}
                 />
               ) : null}
 
@@ -378,7 +385,9 @@ const Sidebar = ({ children }) => {
                   icon={FolderArchive}
                   label="Bajas"
                   collapsed={false}
-                  active={isActiveRoute('/inventories/decommissioning')}
+                  active={isActiveRoute('/inventories/decommissioning', {
+                    exact: true,
+                  })}
                 />
               ) : null}
             </SidebarSubmenu>

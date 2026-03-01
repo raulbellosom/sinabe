@@ -9,7 +9,7 @@ import {
   useUploadProjectDocument,
   useUpdateProjectDocument,
 } from '../../../hooks/useProjectDocuments';
-import { FileInput, Label } from 'flowbite-react';
+import { FileInput, Label } from '../../ui/flowbite';
 import TextInput from '../../Inputs/TextInput';
 import TextArea from '../../Inputs/TextArea';
 

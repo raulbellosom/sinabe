@@ -1,6 +1,6 @@
 // src/components/ProjectDetails/PO/POCard.jsx
 import { useState } from 'react';
-import { Badge, Dropdown } from 'flowbite-react';
+import { Badge, Dropdown } from '../../ui/flowbite';
 import ActionButtons from '../../ActionButtons/ActionButtons';
 import InvoiceModal from './InvoiceModal';
 import ConfirmRemovePurchaseOrderModal from './ConfirmRemovePurchaseOrderModal';

@@ -1,6 +1,6 @@
 // components/purchaseOrders/invoices/POInvoiceInventoryManager.jsx
 import { useState } from 'react';
-import { Badge } from 'flowbite-react';
+import { Badge } from '../../ui/flowbite';
 import {
   useInvoiceInventories,
   useAssignInventoriesToInvoice,

@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import classNames from 'classnames';
 
-import { Select, Tooltip } from 'flowbite-react';
+import { Select, Tooltip } from '../ui/flowbite';
 
 const TableFooter = ({
   pagination,

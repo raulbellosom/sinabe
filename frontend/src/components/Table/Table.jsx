@@ -1,4 +1,4 @@
-import { Checkbox, Table as T } from 'flowbite-react';
+import { Checkbox, Table as T } from '../ui/flowbite';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import classNames from 'classnames';
 

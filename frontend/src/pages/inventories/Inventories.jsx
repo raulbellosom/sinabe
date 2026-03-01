@@ -20,7 +20,7 @@ import {
   PanelLeftOpen,
   FolderOpen,
 } from 'lucide-react';
-import { Checkbox, Dropdown, Table as T } from 'flowbite-react';
+import { Checkbox, Dropdown, Table as T } from '../../components/ui/flowbite';
 import { useQuery } from '@tanstack/react-query';
 import { searchInventories } from '../../services/api';
 import Card from '../../components/Card/Card';
@@ -32,16 +32,10 @@ import { inventoryColumns } from '../../utils/InventoryFields';
 import TableResultsNotFound from '../../components/Table/TableResultsNotFound';
 import { useCatalogContext } from '../../context/CatalogContext';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
-const Table = React.lazy(() => import('../../components/Table/Table'));
-const TableHeader = React.lazy(
-  () => import('../../components/Table/TableHeader'),
-);
-const TableActions = React.lazy(
-  () => import('../../components/Table/TableActions'),
-);
-const TableFooter = React.lazy(
-  () => import('../../components/Table/TableFooter'),
-);
+import Table from '../../components/Table/Table';
+import TableHeader from '../../components/Table/TableHeader';
+import TableActions from '../../components/Table/TableActions';
+import TableFooter from '../../components/Table/TableFooter';
 import LinkButton from '../../components/ActionButtons/LinkButton';
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
@@ -777,3 +771,5 @@ const ProtectedInventoriesView = withPermission(Inventories, [
 ]);
 
 export default ProtectedInventoriesView;
+
+

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Badge } from 'flowbite-react';
+import { Badge } from '../../ui/flowbite';
 import { formatConditionColor } from '../../../utils/formatValues';
 import Skeleton from 'react-loading-skeleton';
 import ImageViewer from '../../ImageViewer/ImageViewer2';

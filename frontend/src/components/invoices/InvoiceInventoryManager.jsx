@@ -1,6 +1,6 @@
 // components/invoices/InvoiceInventoryManager.jsx
 import { useState } from 'react';
-import { Badge } from 'flowbite-react';
+import { Badge } from '../ui/flowbite';
 import {
   useIndependentInvoiceInventories,
   useAssignInventoriesToIndependentInvoice,

@@ -15,12 +15,12 @@ import {
   TextInput,
   Select,
   Tooltip,
-} from 'flowbite-react';
+} from '../../components/ui/flowbite';
 import { useNotifications } from '../../context/NotificationContext';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import NotificationRuleForm from '../../components/Notifications/NotificationRuleForm';
 import NotificationRuleTestModal from '../../components/Notifications/NotificationRuleTestModal';
 import NotificationReadStatusModal from '../../components/Notifications/NotificationReadStatusModal';

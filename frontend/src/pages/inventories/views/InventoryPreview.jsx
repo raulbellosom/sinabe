@@ -1,4 +1,4 @@
-import { Badge } from 'flowbite-react';
+import { Badge } from '../../../components/ui/flowbite';
 import { useEffect, useState } from 'react';
 import { API_URL } from '../../../services/api';
 import ImageViewer from '../../../components/ImageViewer/ImageViewer';

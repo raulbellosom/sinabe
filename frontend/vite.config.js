@@ -2,16 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { fileURLToPath, URL } from 'node:url';
-
-const flowbiteCompat = fileURLToPath(
-  new URL('./src/lib/compat/flowbite-react.jsx', import.meta.url),
-).replace(/\\/g, '/');
-
-const hotToastCompat = fileURLToPath(
-  new URL('./src/lib/compat/react-hot-toast.jsx', import.meta.url),
-).replace(/\\/g, '/');
-
 export default defineConfig({
   // Use a non-default cache dir so Vite generates completely new chunk names
   // that the browser has never seen before, bypassing any stale HTTP cache.
@@ -24,22 +14,13 @@ export default defineConfig({
   resolve: {
     dedupe: ['react', 'react-dom', '@headlessui/react'],
     conditions: ['module', 'browser', 'development|production'],
-    alias: [
-      {
-        find: 'flowbite-react',
-        replacement: flowbiteCompat,
-      },
-      {
-        find: 'react-hot-toast',
-        replacement: hotToastCompat,
-      },
-    ],
   },
   optimizeDeps: {
-    // force: single consistent pass on cold start (no stale cache).
     // All known deps are listed in `include` so Vite pre-bundles everything
     // up-front and never needs to re-optimize mid-session (no ?v= hash churn).
-    force: true,
+    // NOTE: `force` removed — with an explicit include list Vite already avoids
+    // mid-session re-optimization, and force:true caused ~3-5s of unnecessary
+    // re-bundling on every cold start.
     include: [
       // React core
       'react',
@@ -136,5 +117,8 @@ export default defineConfig({
   ],
   build: {
     target: 'esnext',
+    // Temporary: allow larger bundles while we avoid dynamic imports to
+    // prioritize runtime stability over granular code splitting.
+    chunkSizeWarningLimit: 2500,
   },
 });

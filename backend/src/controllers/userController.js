@@ -55,8 +55,18 @@ export const createUser = async (req, res) => {
     const { userData } = req.body;
     const { profileImage } = req;
 
-    const { firstName, lastName, email, password, phone, role, userName } =
-      JSON.parse(userData);
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      role,
+      userName,
+      employeeNumber,
+      jobTitle,
+      department,
+    } = JSON.parse(userData);
 
     const userExists = await db.user.findFirst({
       where: { email, enabled: true },
@@ -77,6 +87,9 @@ export const createUser = async (req, res) => {
         roleId: parseInt(role),
         enabled: true,
         status: true,
+        employeeNumber: employeeNumber || null,
+        jobTitle: jobTitle || null,
+        department: department || null,
       },
     });
 

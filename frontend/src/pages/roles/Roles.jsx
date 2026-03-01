@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useRoleContext } from '../../context/RoleContext';
 import TableHeader from '../../components/Table/TableHeader';
-import { Plus, ChevronRight, ShieldCheck, Pencil, Shield, MoreVertical, ShieldOff } from 'lucide-react';
+import {
+  Plus,
+  ChevronRight,
+  ShieldCheck,
+  Pencil,
+  Shield,
+  MoreVertical,
+  ShieldOff,
+  Settings2,
+} from 'lucide-react';
 import Accordion from '../../components/Accordion/Accordion';
 import classNames from 'classnames';
 import { PermissionsByGroup } from '../../utils/Permissions';
 import { usePermissionContext } from '../../context/PermissionContext';
-import { Dropdown, TextInput } from 'flowbite-react';
+import { Dropdown, TextInput } from '../../components/ui/flowbite';
 import ModalFormikForm from '../../components/Modals/ModalFormikForm';
 import { RoleFormSchema } from '../../components/Roles/RoleFormSchema';
 import RoleFormFields from '../../components/Roles/RoleFormFields';
@@ -14,6 +23,7 @@ import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
+import PermissionsManagerModal from '../../components/Roles/PermissionsManagerModal';
 
 const Roles = () => {
   const {
@@ -37,6 +47,7 @@ const Roles = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isPermsModalOpen, setIsPermsModalOpen] = useState(false);
 
   const isCreateRolesPermission = useCheckPermissions('create_roles');
   const isEditRolesPermission = useCheckPermissions('edit_roles');
@@ -156,7 +167,12 @@ const Roles = () => {
                 {group.permissions.map((permission) => (
                   <label
                     key={permission.id || permission.name}
-                    className="flex items-center gap-2 hover:bg-neutral-100 group-hover:bg-neutral-100 p-2 rounded-md cursor-pointer"
+                    className={classNames(
+                      'flex items-center gap-2 p-2 rounded-md',
+                      permission.id
+                        ? 'hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer'
+                        : 'opacity-50 cursor-not-allowed',
+                    )}
                   >
                     {isDeleteRolesPermission.hasPermission ? (
                       <TextInput
@@ -193,9 +209,14 @@ const Roles = () => {
                         onChange={null}
                       />
                     )}
-                    <span className="text-sm lg:text-base">
+                    <span className="text-sm lg:text-base text-neutral-700 dark:text-neutral-200">
                       {permission.description}
                     </span>
+                    {!permission.id && (
+                      <span className="text-xs text-amber-500 dark:text-amber-400 ml-auto">
+                        Sin sincronizar
+                      </span>
+                    )}
                   </label>
                 ))}
               </div>
@@ -203,16 +224,28 @@ const Roles = () => {
           ),
         };
       })
+      .filter(Boolean)
       .sort((a, b) => a.title.localeCompare(b.title));
   };
 
   return (
     <>
-      <section className="flex flex-col gap-3 min-h-full h-full bg-white shadow-md rounded-md dark:bg-neutral-900 p-3 pb-0 antialiased">
+      <section className="flex flex-col gap-3 min-h-full h-full bg-white dark:bg-neutral-900 shadow-md rounded-md p-3 pb-0 antialiased">
         <TableHeader
           title="Control de Roles"
           icon={ShieldCheck}
           actions={[
+            ...(isEditRolesPermission.hasPermission
+              ? [
+                  {
+                    label: 'Gestionar Permisos',
+                    action: () => setIsPermsModalOpen(true),
+                    color: 'violet',
+                    icon: Settings2,
+                    filled: false,
+                  },
+                ]
+              : []),
             {
               label: 'Agregar Rol',
               action: isCreateRolesPermission.hasPermission
@@ -227,8 +260,10 @@ const Roles = () => {
         <div className="h-full grid grid-cols-3 gap-8 p-2 pt-4 pb-0">
           <div className="col-span-3 lg:col-span-1">
             <div className="mb-4">
-              <h3 className="text-sm lg:text-lg font-semibold">Roles</h3>
-              <p className="text-sm text-neutral-500">
+              <h3 className="text-sm lg:text-lg font-semibold text-neutral-800 dark:text-neutral-100">
+                Roles
+              </h3>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 Selecciona un rol para ver sus permisos
               </p>
             </div>
@@ -239,36 +274,47 @@ const Roles = () => {
                   key={role.id}
                   onClick={() => changeActiveTab(role)}
                   className={classNames(
-                    'group p-4 hover:bg-neutral-100 text-neutral-700 border-b border-neutral-100 cursor-pointer flex justify-between items-center',
-                    activeTab == role.id
-                      ? 'bg-neutral-50 '
-                      : 'text-neutral-500',
+                    'group p-4 border-b border-neutral-100 dark:border-neutral-700 cursor-pointer flex justify-between items-center transition-colors',
+                    activeTab === role.id
+                      ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+                      : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800',
                   )}
                 >
                   <div className="flex gap-4 items-center">
-                    <Shield size={20} />
-                    <h3 className="text-sm lg:text-lg font-semibold">
+                    <Shield
+                      size={20}
+                      className={classNames(
+                        activeTab === role.id
+                          ? 'text-violet-500'
+                          : 'text-neutral-400 dark:text-neutral-500',
+                      )}
+                    />
+                    <h3 className="text-sm lg:text-base font-semibold">
                       {role.name}
                     </h3>
                   </div>
-                  <i
+                  <ChevronRight
+                    size={18}
                     className={classNames(
-                      'group-hover:text-neutral-800 transition-all duration-200',
-                      activeTab == role?.id ? '' : 'text-white',
+                      'transition-all duration-200',
+                      activeTab === role.id
+                        ? 'text-violet-500'
+                        : 'text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-600 dark:group-hover:text-neutral-400',
                     )}
-                  >
-                    <ChevronRight size={18} className="text-lg mt-0.5" />
-                  </i>
+                  />
                 </div>
               ))}
           </div>
           <div className="col-span-3 lg:col-span-2 h-full lg:max-h-[76dvh] overflow-hidden">
-            <div className="mb-4 flex justify-between">
+            <div className="mb-4 flex justify-between items-start">
               <div>
-                <h3 className="text-sm lg:text-lg font-semibold">
-                  Permisos del rol&nbsp;{roleName}
+                <h3 className="text-sm lg:text-lg font-semibold text-neutral-800 dark:text-neutral-100">
+                  Permisos del rol&nbsp;
+                  <span className="text-violet-600 dark:text-violet-400">
+                    {roleName}
+                  </span>
                 </h3>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   Selecciona una vista para administrar los permisos del rol
                   seleccionado
                 </p>
@@ -279,7 +325,7 @@ const Roles = () => {
                   label={
                     <MoreVertical
                       size={36}
-                      className="p-2 rounded-full hover:bg-neutral-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+                      className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                     />
                   }
                   dismissOnClick={false}
@@ -298,7 +344,7 @@ const Roles = () => {
                           color: 'transparent',
                           icon: Pencil,
                           className:
-                            'md:min-w-full border-none hover:bg-neutral-100',
+                            'md:min-w-full border-none hover:bg-neutral-100 dark:hover:bg-neutral-700',
                         },
                       ]}
                     />
@@ -313,7 +359,7 @@ const Roles = () => {
                           filled: true,
                           icon: ShieldOff,
                           className:
-                            'md:min-w-full border-none hover:bg-neutral-100',
+                            'md:min-w-full border-none hover:bg-neutral-100 dark:hover:bg-neutral-700',
                         },
                       ]}
                     />
@@ -357,6 +403,12 @@ const Roles = () => {
           removeFunction={handleDeleteRole}
         />
       )}
+
+      {/* Permissions Manager modal */}
+      <PermissionsManagerModal
+        isOpen={isPermsModalOpen}
+        onClose={() => setIsPermsModalOpen(false)}
+      />
     </>
   );
 };

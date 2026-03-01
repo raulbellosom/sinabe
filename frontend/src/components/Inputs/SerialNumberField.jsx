@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
-import { useFormikContext } from 'formik';
+import { useFormikContext, ErrorMessage } from 'formik';
 import { checkSerialNumber } from '../../services/api';
-import { ErrorMessage } from 'formik';
-import { TextInput as Input, Label } from 'flowbite-react';
 import classNames from 'classnames';
+import PinnableInputWrapper from './PinnableInputWrapper';
+import { Hash } from 'lucide-react';
 
 const SerialNumberField = ({
   className,
   field,
   form = {},
   inventoryId,
+  label,
+  id,
+  name,
+  // Props del sistema de pin
+  isPinMode = false,
+  isPinned = false,
+  onTogglePin,
   ...props
 }) => {
-  // Provide defaults for form properties
   const { touched = {}, errors = {} } = form;
   const { setFieldError } = useFormikContext();
   const [error, setError] = useState(null);
+  const hasError = (touched[field?.name] && errors[field?.name]) || error;
+
   const handleBlur = async (e) => {
     field.onBlur(e);
     const serial = e.target.value;
@@ -29,42 +37,58 @@ const SerialNumberField = ({
         } else {
           setError(null);
         }
-      } catch (error) {
-        console.error('Error al validar el serial:', error);
+      } catch (err) {
+        console.error('Error al validar el serial:', err);
       }
     }
   };
 
   return (
-    <div className={classNames('relative w-full', className)}>
-      <Label
-        htmlFor={props.id || props.name}
-        className={'block text-sm font-medium'}
-        color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
-        value={props.label}
-      />
+    <PinnableInputWrapper
+      className={className}
+      field={field}
+      form={form}
+      label={label}
+      id={id}
+      name={name}
+      isPinMode={isPinMode}
+      isPinned={isPinned}
+      onTogglePin={onTogglePin}
+    >
       <div className="relative">
-        <Input
+        <div
+          className={classNames(
+            'absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none',
+            hasError
+              ? 'text-[color:var(--danger)]'
+              : 'text-[color:var(--foreground-muted)]',
+          )}
+        >
+          <Hash size={18} />
+        </div>
+        <input
           {...field}
           {...props}
-          color={
-            (touched[field?.name] && errors[field?.name]) || error
-              ? 'failure'
-              : ''
-          }
-          className="mt-1 text-neutral-800"
           onBlur={handleBlur}
+          className={classNames(
+            'w-full min-h-[42px] text-sm py-2.5 px-3 pl-10 rounded-lg',
+            'border bg-[color:var(--surface)] text-[color:var(--foreground)]',
+            'placeholder:text-[color:var(--foreground-muted)]',
+            'transition-all duration-200',
+            'focus:outline-none focus:ring-2',
+            hasError
+              ? 'border-[color:var(--danger)] focus:ring-[color:var(--danger)]/30 focus:border-[color:var(--danger)]'
+              : 'border-[color:var(--border)] focus:ring-[color:var(--primary)]/30 focus:border-[color:var(--primary)]',
+          )}
         />
       </div>
-      <div className="text-red-500 text-sm">
-        <ErrorMessage
-          name={field?.name}
-          component="div"
-          className="text-red-500 text-sm"
-        />
-        {error && <div className="text-red-500 text-sm">{error}</div>}
-      </div>
-    </div>
+      {hasError && (
+        <div className="text-[color:var(--danger)] text-sm mt-1">
+          <ErrorMessage name={field?.name} component="span" />
+          {error && !errors[field?.name] && <span>{error}</span>}
+        </div>
+      )}
+    </PinnableInputWrapper>
   );
 };
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ImageViewer from '../../../components/ImageViewer/ImageViewer2';
 import { Link } from 'react-router-dom';
-import { Checkbox } from 'flowbite-react';
+import { Checkbox } from '../../../components/ui/flowbite';
 import ActionButtons from '../../../components/ActionButtons/ActionButtons';
 import FileIcon from '../../../components/FileIcon/FileIcon';
 import Notifies from '../../../components/Notifies/Notifies';

@@ -1,7 +1,7 @@
 // src/components/ProjectDetails/Document/ConfirmDeleteProjectDocumentModal.jsx
 import { useState, useEffect } from 'react';
 import ReusableModal from '../../Modals/ReusableModal';
-import { Label, TextInput } from 'flowbite-react';
+import { Label, TextInput } from '../../ui/flowbite';
 import Notifies from '../../Notifies/Notifies';
 import { useDeleteProjectDocument } from '../../../hooks/useProjectDocuments';
 

@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   Trash2,
 } from 'lucide-react';
-import { Dropdown, Table as T } from 'flowbite-react';
+import { Dropdown, Table as T } from '../../components/ui/flowbite';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import { searchUsers } from '../../services/api';
 import usersColumns from '../../utils/usersColumns';
@@ -25,20 +25,12 @@ import {
   UserFormUpdateSchema,
 } from '../../components/Users/UserFormSchema';
 import UserFormFields from '../../components/Users/UserFormFields';
-const Card = React.lazy(() => import('../../components/Card/Card'));
-const TableHeader = React.lazy(
-  () => import('../../components/Table/TableHeader'),
-);
-const TableFooter = React.lazy(
-  () => import('../../components/Table/TableFooter'),
-);
-const TableActions = React.lazy(
-  () => import('../../components/Table/TableActions'),
-);
-const TableResultsNotFound = React.lazy(
-  () => import('../../components/Table/TableResultsNotFound'),
-);
-const Table = React.lazy(() => import('../../components/Table/Table'));
+import Card from '../../components/Card/Card';
+import TableHeader from '../../components/Table/TableHeader';
+import TableFooter from '../../components/Table/TableFooter';
+import TableActions from '../../components/Table/TableActions';
+import TableResultsNotFound from '../../components/Table/TableResultsNotFound';
+import Table from '../../components/Table/Table';
 import classNames from 'classnames';
 import UserChangePasswordFormFields from '../../components/Users/UserChangePasswordFormFields';
 import withPermission from '../../utils/withPermissions';
@@ -605,3 +597,5 @@ const Users = () => {
 const ProtectedUserView = withPermission(Users, 'view_users');
 
 export default ProtectedUserView;
+
+

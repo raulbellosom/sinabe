@@ -24,6 +24,9 @@ export const UserFormSchema = Yup.object().shape({
   photo: Yup.array().of(Yup.mixed()),
   role: Yup.string().required('El rol es requerido'),
   status: Yup.boolean(),
+  employeeNumber: Yup.string().nullable(),
+  jobTitle: Yup.string().nullable(),
+  department: Yup.string().nullable(),
   id: Yup.string(),
 });
 
@@ -38,6 +41,9 @@ export const UserFormInitialValues = {
   role: '',
   status: true,
   photo: [],
+  employeeNumber: '',
+  jobTitle: '',
+  department: '',
   id: '',
 };
 
@@ -54,6 +60,9 @@ export const UserFormUpdateSchema = Yup.object().shape({
   ),
   role: Yup.string().required('El rol es requerido'),
   status: Yup.boolean(),
+  employeeNumber: Yup.string().nullable(),
+  jobTitle: Yup.string().nullable(),
+  department: Yup.string().nullable(),
   id: Yup.string(),
 });
 

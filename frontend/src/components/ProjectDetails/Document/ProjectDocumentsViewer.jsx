@@ -12,7 +12,7 @@ import {
 import ProjectDocumentFormModal from './ProjectDocumentFormModal';
 import ConfirmDeleteProjectDocumentModal from './ConfirmDeleteProjectDocumentModal';
 import ProjectBulkUploadModal from './ProjectBulkUploadModal';
-import { Tooltip } from 'flowbite-react';
+import { Tooltip } from '../../ui/flowbite';
 import classNames from 'classnames';
 import { useMediaQuery } from 'react-responsive';
 import { useDeleteProjectDocument } from '../../../hooks/useProjectDocuments';

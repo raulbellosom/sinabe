@@ -1,13 +1,13 @@
-import { Dropdown } from 'flowbite-react';
+import { Dropdown } from '../ui/flowbite';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import { MoreVertical } from 'lucide-react';
 
 const TableHeader = ({ title, icon: Icon, actions, collapsedActions }) => {
   return (
-    <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between text-start bg-white gap-4">
+    <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between text-start bg-transparent gap-4">
       <div className="flex items-center gap-2 text-purple-500 w-full">
         {Icon && <Icon size={24} className="inline-block" />}
-        <h1 className="text-xl xl:text-2xl font-bold">{title}</h1>
+        <h1 className="text-xl xl:text-2xl font-bold text-neutral-900 dark:text-neutral-100">{title}</h1>
       </div>
       <div className="w-full flex gap-2 justify-end">
         <ActionButtons extraActions={actions} />

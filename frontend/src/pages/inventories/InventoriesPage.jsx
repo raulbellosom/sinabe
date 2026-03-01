@@ -13,7 +13,7 @@ import ResponsiveTable from '../../components/Table/ResponsiveTable';
 import InventoryPreview from './views/InventoryPreview';
 import ModalRemove from '../../components/Modals/ModalRemove';
 
-import { Dropdown, ToggleSwitch, Tooltip } from 'flowbite-react';
+import { Dropdown, ToggleSwitch, Tooltip } from '../../components/ui/flowbite';
 import {
   BadgeCheck,
   Columns,

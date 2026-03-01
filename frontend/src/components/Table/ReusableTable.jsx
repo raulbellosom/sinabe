@@ -8,7 +8,7 @@ import {
   ChevronRight,
   MoreVertical,
 } from 'lucide-react';
-import { Spinner, Dropdown, Checkbox } from 'flowbite-react';
+import { Spinner, Dropdown, Checkbox } from '../ui/flowbite';
 import classNames from 'classnames';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import TableResultsNotFound from './TableResultsNotFound';

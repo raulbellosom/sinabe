@@ -1,6 +1,6 @@
 // routes/invoiceRoutes.js - UNIFIED VERSION
 import { Router } from "express";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, checkPermission } from "../middleware/authMiddleware.js";
 import {
   uploadInvoiceFiles,
   processInvoiceFiles,
@@ -27,31 +27,40 @@ import {
 const independentRouter = Router();
 independentRouter.use(protect);
 
-// 🔎 Buscar facturas independientes
+const canView = checkPermission("view_invoices");
+const canCreate = checkPermission("create_invoices");
+const canEdit = checkPermission("edit_invoices");
+const canDelete = checkPermission("delete_invoices");
+
+// Buscar facturas independientes
 // GET /api/invoices/search/independent
-independentRouter.get("/search/independent", searchIndependentInvoices);
+independentRouter.get(
+  "/search/independent",
+  canView,
+  searchIndependentInvoices,
+);
 
 // 🔎 Buscar TODAS las facturas (independientes + con OC)
 // GET /api/invoices/search
-independentRouter.get("/search", searchAllInvoices);
+independentRouter.get("/search", canView, searchAllInvoices);
 
 // 🔗 Asignar factura a orden de compra
 // PUT /api/invoices/:invoiceId/assign-purchase-order
 independentRouter.put(
   "/:invoiceId/assign-purchase-order",
-  assignInvoiceToPurchaseOrder
+  canEdit,
+  assignInvoiceToPurchaseOrder,
 );
 
-// 🔓 Remover factura de orden de compra
-// PUT /api/invoices/:invoiceId/remove-purchase-order
 independentRouter.put(
   "/:invoiceId/remove-purchase-order",
-  removeInvoiceFromPurchaseOrder
+  canEdit,
+  removeInvoiceFromPurchaseOrder,
 );
 
 // 📄 Crear factura independiente (ruta específica para frontend)
 // POST /api/invoices/independent
-independentRouter.post("/independent", createIndependentInvoice);
+independentRouter.post("/independent", canCreate, createIndependentInvoice);
 
 // 📄 CRUD facturas independientes
 // POST /api/invoices - Crear factura independiente
@@ -59,14 +68,15 @@ independentRouter.post("/independent", createIndependentInvoice);
 independentRouter
   .route("/")
   .post(
+    canCreate,
     uploadInvoiceFiles.fields([
       { name: "factura", maxCount: 1 },
       { name: "xml", maxCount: 1 },
     ]),
     processInvoiceFiles,
-    createIndependentInvoice
+    createIndependentInvoice,
   )
-  .get(getIndependentInvoices);
+  .get(canView, getIndependentInvoices);
 
 // 📄 Operaciones sobre factura específica
 // GET    /api/invoices/:invoiceId
@@ -74,38 +84,40 @@ independentRouter
 // DELETE /api/invoices/:invoiceId
 independentRouter
   .route("/:invoiceId")
-  .get(getInvoiceById)
+  .get(canView, getInvoiceById)
   .put(
+    canEdit,
     uploadInvoiceFiles.fields([
       { name: "factura", maxCount: 1 },
       { name: "xml", maxCount: 1 },
     ]),
     processInvoiceFiles,
-    updateInvoice
+    updateInvoice,
   )
-  .delete(deleteInvoice);
+  .delete(canDelete, deleteInvoice);
 
 // 📦 Inventarios asociados a facturas independientes
 // GET  /api/invoices/:invoiceId/inventories
 // POST /api/invoices/:invoiceId/inventories
 independentRouter
   .route("/:invoiceId/inventories")
-  .get(getInventoriesByInvoice)
-  .post(assignInventoriesToInvoice);
+  .get(canView, getInventoriesByInvoice)
+  .post(canEdit, assignInventoriesToInvoice);
 
-// �️ Desasignar inventario de factura independiente
-// DELETE /api/invoices/:invoiceId/inventories/:inventoryId
 independentRouter
   .route("/:invoiceId/inventories/:inventoryId")
-  .delete(removeInventoryFromInvoice);
+  .delete(canEdit, removeInventoryFromInvoice);
 
 // === FACTURACIÓN LIGADA A ÓRDENES DE COMPRA (Sub-rutas) ===
 const purchaseOrderRouter = Router({ mergeParams: true });
 purchaseOrderRouter.use(protect);
 
-// 🔎 Buscar facturas de una orden de compra específica
-// GET /purchase-orders/:orderId/invoices/search
-purchaseOrderRouter.get("/search", searchInvoicesByOrderId);
+const poView = checkPermission("view_invoices");
+const poCreate = checkPermission("create_invoices");
+const poEdit = checkPermission("edit_invoices");
+const poDelete = checkPermission("delete_invoices");
+
+purchaseOrderRouter.get("/search", poView, searchInvoicesByOrderId);
 
 // 📄 CRUD facturas de orden de compra
 // POST /purchase-orders/:orderId/invoices - Crear factura para orden
@@ -113,14 +125,15 @@ purchaseOrderRouter.get("/search", searchInvoicesByOrderId);
 purchaseOrderRouter
   .route("/")
   .post(
+    poCreate,
     uploadInvoiceFiles.fields([
       { name: "factura", maxCount: 1 },
       { name: "xml", maxCount: 1 },
     ]),
     processInvoiceFiles,
-    createInvoice
+    createInvoice,
   )
-  .get(getInvoicesByOrderId);
+  .get(poView, getInvoicesByOrderId);
 
 // 📄 Operaciones sobre factura específica de orden
 // GET    /purchase-orders/:orderId/invoices/:invoiceId
@@ -128,30 +141,29 @@ purchaseOrderRouter
 // DELETE /purchase-orders/:orderId/invoices/:invoiceId
 purchaseOrderRouter
   .route("/:invoiceId")
-  .get(getInvoiceById)
+  .get(poView, getInvoiceById)
   .put(
+    poEdit,
     uploadInvoiceFiles.fields([
       { name: "factura", maxCount: 1 },
       { name: "xml", maxCount: 1 },
     ]),
     processInvoiceFiles,
-    updateInvoice
+    updateInvoice,
   )
-  .delete(deleteInvoice);
+  .delete(poDelete, deleteInvoice);
 
 // 📦 Inventarios asociados a factura de orden
 // GET  /purchase-orders/:orderId/invoices/:invoiceId/inventories
 // POST /purchase-orders/:orderId/invoices/:invoiceId/inventories
 purchaseOrderRouter
   .route("/:invoiceId/inventories")
-  .get(getInventoriesByInvoice)
-  .post(assignInventoriesToInvoice);
+  .get(poView, getInventoriesByInvoice)
+  .post(poEdit, assignInventoriesToInvoice);
 
-// 🗑️ Desasignar inventario de factura de orden
-// DELETE /purchase-orders/:orderId/invoices/:invoiceId/inventories/:inventoryId
 purchaseOrderRouter
   .route("/:invoiceId/inventories/:inventoryId")
-  .delete(removeInventoryFromInvoice);
+  .delete(poEdit, removeInventoryFromInvoice);
 
 // Export both routers
 export { independentRouter as default, purchaseOrderRouter };

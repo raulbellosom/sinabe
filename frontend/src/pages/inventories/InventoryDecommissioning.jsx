@@ -17,8 +17,11 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { searchInventories, updateInventoriesStatus } from '../../services/api';
 import { parseToLocalDate } from '../../utils/formatValues';
-// Los generadores se importarán dinámicamente cuando se necesiten
 import Notifies from '../../components/Notifies/Notifies';
+import {
+  generateExcelReport,
+  generateWordReport,
+} from '../../utils/reportGenerators';
 
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
@@ -241,8 +244,6 @@ const InventoryDecommissioning = () => {
 
     setIsGeneratingExcel(true);
     try {
-      const { generateExcelReport } =
-        await import('../../utils/reportGenerators');
       await generateExcelReport(itemsToProcess);
       Notifies('success', 'Reporte Excel generado correctamente');
     } catch (error) {
@@ -258,8 +259,6 @@ const InventoryDecommissioning = () => {
 
     setIsGeneratingWord(true);
     try {
-      const { generateWordReport } =
-        await import('../../utils/reportGenerators');
       await generateWordReport(itemsToProcess);
       Notifies('success', 'Reporte Word generado correctamente');
     } catch (error) {

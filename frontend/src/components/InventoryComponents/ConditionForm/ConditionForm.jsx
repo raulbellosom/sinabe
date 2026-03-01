@@ -2,7 +2,7 @@
 import { FormikProvider, useFormik, Form } from 'formik';
 import ConditionFormFields from './ConditionFormFields';
 
-import { Button } from 'flowbite-react';
+import { Button } from '../../ui/flowbite';
 import { Trash2, Save } from 'lucide-react';
 import { ConditionFormSchema } from './ConditionFormSchema';
 

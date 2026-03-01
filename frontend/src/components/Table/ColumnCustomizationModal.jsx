@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Modal, Button, Checkbox } from 'flowbite-react';
+import { Modal, Button, Checkbox } from '../ui/flowbite';
 import { DragDropContext, Draggable } from 'react-beautiful-dnd';
 import { StrictModeDroppable } from '../DragAndDrop/StrictModeDroppable';
 import classNames from 'classnames';

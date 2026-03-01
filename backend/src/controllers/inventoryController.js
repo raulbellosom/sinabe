@@ -116,6 +116,99 @@ export const getInventories = async (req, res) => {
   }
 };
 
+/**
+ * Endpoint público: devuelve datos del inventario sin autenticación.
+ * Busca por UUID, folio interno, número de serie o número de activo (en ese orden de prioridad).
+ * Ideal para escaneo QR con handhelds o páginas públicas.
+ */
+export const getPublicInventoryById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const includeClause = {
+      createdBy: {
+        select: { id: true, firstName: true, lastName: true },
+      },
+      model: {
+        include: {
+          brand: true,
+          type: true,
+          ModelVertical: {
+            include: { vertical: true },
+          },
+        },
+      },
+      conditions: {
+        include: { condition: true },
+      },
+      customField: {
+        include: { customField: true },
+      },
+      images: {
+        where: { enabled: true },
+        select: {
+          id: true,
+          url: true,
+          type: true,
+          thumbnail: true,
+        },
+      },
+      location: true,
+    };
+
+    // UUID pattern check
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id,
+      );
+
+    let inventory = null;
+
+    if (isUUID) {
+      // 1. Búsqueda directa por UUID
+      inventory = await db.inventory.findUnique({
+        where: { id, enabled: true },
+        include: includeClause,
+      });
+    }
+
+    if (!inventory) {
+      // 2. Búsqueda por folio interno (prioridad alta)
+      inventory = await db.inventory.findFirst({
+        where: { internalFolio: id, enabled: true },
+        include: includeClause,
+      });
+    }
+
+    if (!inventory) {
+      // 3. Búsqueda por número de serie
+      inventory = await db.inventory.findFirst({
+        where: { serialNumber: id, enabled: true },
+        include: includeClause,
+      });
+    }
+
+    if (!inventory) {
+      // 4. Búsqueda por número de activo
+      inventory = await db.inventory.findFirst({
+        where: { activeNumber: id, enabled: true },
+        include: includeClause,
+      });
+    }
+
+    if (!inventory) {
+      return res.status(404).json({ message: "Inventario no encontrado" });
+    }
+
+    inventory.receptionDate =
+      inventory.receptionDate?.toISOString().split("T")[0] || null;
+
+    res.json(inventory);
+  } catch (error) {
+    console.log("Error fetching public inventory:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getInventoryById = async (req, res) => {
   const { id } = req.params;
   try {

@@ -23,7 +23,7 @@ import PolarAreaChart from './graphics/PolarAreaChart';
 import AreaChart from './graphics/AreaChart';
 import TableChart from './graphics/TableChart';
 import GradientChart from './graphics/GradientChart';
-import { Dropdown } from 'flowbite-react';
+import { Dropdown } from '../../components/ui/flowbite';
 import { Link } from 'react-router-dom';
 import { ThreeCircles } from 'react-loader-spinner';
 import Skeleton from 'react-loading-skeleton';

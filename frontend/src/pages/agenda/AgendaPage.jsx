@@ -8,7 +8,7 @@ import {
   Select,
   Checkbox,
   Badge,
-} from 'flowbite-react';
+} from '../../components/ui/flowbite';
 import {
   useEvents,
   useCreateEvent,
@@ -27,12 +27,19 @@ import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 
 import {
   Calendar,
+  CalendarDays,
+  CalendarRange,
   CheckCircle,
   List,
   Pencil,
   Plus,
   Trash2,
   User,
+  Clock,
+  Users,
+  Building,
+  Repeat,
+  Info,
 } from 'lucide-react';
 
 // Helpers
@@ -53,17 +60,14 @@ const getStatusBadge = (status) => {
 const AgendaPage = () => {
   const { user } = useAuthStatus();
   const [currentDate, setCurrentDate] = useState(dayjs());
-  // Initialize viewMode from localStorage or default to 'month'
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('agendaViewMode') || 'month';
   });
 
-  // Persist viewMode changes
   React.useEffect(() => {
     localStorage.setItem('agendaViewMode', viewMode);
   }, [viewMode]);
 
-  // Filters
   const [filters, setFilters] = useState({});
 
   const { data: events, isLoading, refetch } = useEvents(filters);
@@ -80,7 +84,6 @@ const AgendaPage = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingEvent, setViewingEvent] = useState(null);
 
-  // User Options for Select
   const userOptions =
     users?.map((u) => {
       const fullName = `${u.firstName} ${u.lastName || ''}`.trim();
@@ -103,17 +106,17 @@ const AgendaPage = () => {
           className="w-8 h-8 rounded-full object-cover flex-shrink-0"
         />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-          <span className="text-xs font-semibold text-white">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[color:var(--primary)] to-[color:var(--primary)]/70 flex items-center justify-center flex-shrink-0">
+          <span className="text-xs font-semibold text-[color:var(--primary-foreground)]">
             {option.initials}
           </span>
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+        <p className="text-sm font-medium text-[color:var(--foreground)] truncate">
           {option.label}
         </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+        <p className="text-xs text-[color:var(--foreground-muted)] truncate">
           {option.description}
         </p>
       </div>
@@ -132,10 +135,10 @@ const AgendaPage = () => {
     scheduledDate: '',
     provider: '',
     verticalId: '',
-    status: 'SCHEDULED', // SCHEDULED, COMPLETED, etc.
-    type: 'MAINTENANCE', // MAINTENANCE | GENERAL
-    scope: 'GLOBAL', // GLOBAL | SPECIFIC
-    attendeeIds: [], // array of user IDs
+    status: 'SCHEDULED',
+    type: 'MAINTENANCE',
+    scope: 'GLOBAL',
+    attendeeIds: [],
     isRecurring: false,
     recurrence: '',
     recurrenceEndDate: '',
@@ -187,7 +190,6 @@ const AgendaPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validations
     if (formData.type === 'MAINTENANCE' && !formData.verticalId) {
       return Notifies('error', 'El mantenimiento requiere una vertical.');
     }
@@ -218,7 +220,7 @@ const AgendaPage = () => {
     try {
       await deleteEvent.mutateAsync(id);
       Notifies('success', 'Evento eliminado');
-      setShowModal(false); // If called from modal
+      setShowModal(false);
       refetch();
     } catch (error) {
       Notifies('error', 'Error al eliminar');
@@ -237,38 +239,42 @@ const AgendaPage = () => {
     });
   };
 
+  const viewOptions = [
+    { key: 'month', label: 'Mes', icon: CalendarDays },
+    { key: 'week', label: 'Semana', icon: CalendarRange },
+    { key: 'list', label: 'Lista', icon: List },
+  ];
+
   return (
-    <div className="p-4 space-y-4 max-w-[1600px] mx-auto">
+    <div className="p-4 space-y-5 max-w-[1600px] mx-auto">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[color:var(--surface)] p-5 rounded-2xl shadow-sm border border-[color:var(--border)]">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+          <h1 className="text-2xl font-bold text-[color:var(--foreground)] flex items-center gap-2">
+            <Calendar className="text-[color:var(--primary)]" size={24} />
             Agenda & Eventos
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-[color:var(--foreground-muted)] text-sm mt-1">
             Calendario global de mantenimientos y actividades
           </p>
         </div>
-        <div className="flex gap-2 mt-2 md:mt-0 items-center">
-          <div className="flex bg-gray-100 rounded-lg p-1 gap-1 mr-2">
-            <button
-              onClick={() => setViewMode('month')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded transition-all ${viewMode === 'month' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              Mes
-            </button>
-            <button
-              onClick={() => setViewMode('week')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded transition-all ${viewMode === 'week' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              Semana
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded transition-all ${viewMode === 'list' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              Lista
-            </button>
+        <div className="flex gap-3 items-center w-full md:w-auto">
+          {/* View Mode Toggle */}
+          <div className="flex bg-[color:var(--surface-muted)] rounded-xl p-1 gap-0.5">
+            {viewOptions.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setViewMode(key)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  viewMode === key
+                    ? 'bg-[color:var(--surface)] shadow-sm text-[color:var(--primary)] border border-[color:var(--border)]'
+                    : 'text-[color:var(--foreground-muted)] hover:text-[color:var(--foreground)]'
+                }`}
+              >
+                <Icon size={14} />
+                <span className="hidden sm:inline">{label}</span>
+              </button>
+            ))}
           </div>
           <ActionButtons
             extraActions={[
@@ -284,17 +290,19 @@ const AgendaPage = () => {
         </div>
       </div>
 
-      {/* Helper Legend */}
-      <div className="flex gap-4 text-xs px-2">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-blue-100 border-l-2 border-blue-500 rounded-sm"></div>
-          <span className="text-gray-600 dark:text-gray-400">
+      {/* Legend */}
+      <div className="flex gap-5 text-xs px-1">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3.5 h-3.5 rounded bg-[color:var(--info-soft)] border-l-[3px] border-l-[color:var(--info)]" />
+          <span className="text-[color:var(--foreground-muted)] font-medium">
             Mantenimiento
           </span>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-red-100 border-l-2 border-purple-500 rounded-sm"></div>
-          <span className="text-gray-600 dark:text-gray-400">General</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3.5 h-3.5 rounded bg-purple-100 dark:bg-purple-900/30 border-l-[3px] border-l-purple-500" />
+          <span className="text-[color:var(--foreground-muted)] font-medium">
+            General
+          </span>
         </div>
       </div>
 
@@ -314,26 +322,54 @@ const AgendaPage = () => {
           {editingEvent ? 'Editar Evento' : 'Nuevo Evento'}
         </Modal.Header>
         <Modal.Body>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Type Selection */}
-            <div className="flex gap-4 mb-4">
+            <div className="flex gap-3">
               <div
                 onClick={() =>
                   setFormData({ ...formData, type: 'MAINTENANCE' })
                 }
-                className={`flex-1 p-3 rounded-lg border cursor-pointer transition-all text-center ${formData.type === 'MAINTENANCE' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-gray-200 hover:bg-gray-50'}`}
+                className={`flex-1 p-4 rounded-xl border-2 cursor-pointer transition-all text-center ${
+                  formData.type === 'MAINTENANCE'
+                    ? 'bg-[color:var(--info-soft)] border-[color:var(--info)] text-[color:var(--info)]'
+                    : 'border-[color:var(--border)] text-[color:var(--foreground-muted)] hover:border-[color:var(--foreground-muted)]/50 hover:bg-[color:var(--surface-muted)]'
+                }`}
               >
-                <span className="font-semibold block">Mantenimiento</span>
-                <span className="text-xs opacity-75">Vinculado a Vertical</span>
+                <Building
+                  className={`mx-auto mb-1 ${
+                    formData.type === 'MAINTENANCE'
+                      ? 'text-[color:var(--info)]'
+                      : 'text-[color:var(--foreground-muted)]'
+                  }`}
+                  size={20}
+                />
+                <span className="font-semibold block text-sm">
+                  Mantenimiento
+                </span>
+                <span className="text-[11px] opacity-75">
+                  Vinculado a Vertical
+                </span>
               </div>
               <div
                 onClick={() =>
                   setFormData({ ...formData, type: 'GENERAL', verticalId: '' })
                 }
-                className={`flex-1 p-3 rounded-lg border cursor-pointer transition-all text-center ${formData.type === 'GENERAL' ? 'bg-purple-50 border-purple-500 text-purple-700' : 'border-gray-200 hover:bg-gray-50'}`}
+                className={`flex-1 p-4 rounded-xl border-2 cursor-pointer transition-all text-center ${
+                  formData.type === 'GENERAL'
+                    ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-500 text-purple-700 dark:text-purple-300'
+                    : 'border-[color:var(--border)] text-[color:var(--foreground-muted)] hover:border-[color:var(--foreground-muted)]/50 hover:bg-[color:var(--surface-muted)]'
+                }`}
               >
-                <span className="font-semibold block">General</span>
-                <span className="text-xs opacity-75">Evento General</span>
+                <CalendarDays
+                  className={`mx-auto mb-1 ${
+                    formData.type === 'GENERAL'
+                      ? 'text-purple-500'
+                      : 'text-[color:var(--foreground-muted)]'
+                  }`}
+                  size={20}
+                />
+                <span className="font-semibold block text-sm">General</span>
+                <span className="text-[11px] opacity-75">Evento General</span>
               </div>
             </div>
 
@@ -412,7 +448,7 @@ const AgendaPage = () => {
 
             {/* Recurrence Section */}
             {(!editingEvent || (editingEvent && !editingEvent.isRecurring)) && (
-              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <div className="bg-[color:var(--surface-muted)] p-4 rounded-xl border border-[color:var(--border)]">
                 <div className="flex items-center gap-2 mb-2">
                   <Checkbox
                     id="isRecurring"
@@ -424,13 +460,14 @@ const AgendaPage = () => {
                       })
                     }
                   />
-                  <Label htmlFor="isRecurring" className="cursor-pointer">
+                  <Label htmlFor="isRecurring" className="cursor-pointer flex items-center gap-1.5">
+                    <Repeat size={14} className="text-[color:var(--foreground-muted)]" />
                     ¿Repetir evento?
                   </Label>
                 </div>
 
                 {formData.isRecurring && (
-                  <div className="grid grid-cols-2 gap-4 mt-2">
+                  <div className="grid grid-cols-2 gap-4 mt-3">
                     <div>
                       <Label value="Periodicidad" />
                       <Select
@@ -474,14 +511,16 @@ const AgendaPage = () => {
             )}
 
             {editingEvent && editingEvent.isRecurring && (
-              <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 text-sm text-yellow-800">
-                Este evento es parte de una serie recurrente.
+              <div className="bg-[color:var(--warning-soft)] p-4 rounded-xl border border-[color:var(--warning)]/30 text-sm text-[color:var(--warning)]">
+                <div className="flex items-center gap-2 font-medium mb-2">
+                  <Info size={16} />
+                  Este evento es parte de una serie recurrente.
+                </div>
                 <div className="flex items-center gap-2 mt-2">
                   <Checkbox
                     id="removeRecurrence"
                     checked={!formData.isRecurring}
                     onChange={(e) => {
-                      // If checked (remove recurrence), set isRecurring false
                       setFormData({
                         ...formData,
                         isRecurring: !e.target.checked,
@@ -509,10 +548,10 @@ const AgendaPage = () => {
             </div>
 
             {/* SCOPE & ATTENDEES */}
-            <div className="border-t pt-4 mt-2">
+            <div className="border-t border-[color:var(--border)] pt-4 mt-2">
               <Label
                 value="Alcance y Notificaciones"
-                className="text-sm font-bold text-gray-700 mb-2 block"
+                className="text-sm font-bold text-[color:var(--foreground)] mb-3 flex items-center gap-1.5"
               />
 
               <div className="flex gap-4 mb-3">
@@ -524,7 +563,10 @@ const AgendaPage = () => {
                       setFormData({ ...formData, scope: 'GLOBAL' })
                     }
                   />
-                  <Label htmlFor="scope-global">Global (Todos)</Label>
+                  <Label htmlFor="scope-global" className="flex items-center gap-1">
+                    <Users size={14} className="text-[color:var(--foreground-muted)]" />
+                    Global (Todos)
+                  </Label>
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox
@@ -534,7 +576,10 @@ const AgendaPage = () => {
                       setFormData({ ...formData, scope: 'SPECIFIC' })
                     }
                   />
-                  <Label htmlFor="scope-specific">Específico</Label>
+                  <Label htmlFor="scope-specific" className="flex items-center gap-1">
+                    <User size={14} className="text-[color:var(--foreground-muted)]" />
+                    Específico
+                  </Label>
                 </div>
               </div>
 
@@ -559,19 +604,20 @@ const AgendaPage = () => {
             </div>
 
             {/* ACTIONS */}
-            <div className="flex justify-between mt-6 pt-4 border-t">
+            <div className="flex justify-between mt-6 pt-4 border-t border-[color:var(--border)]">
               {editingEvent && (
                 <Button
                   color="failure"
                   size="sm"
                   onClick={() => handleDelete(editingEvent.id)}
                 >
-                  Eliminar Evento
+                  <Trash2 size={14} className="mr-1" />
+                  Eliminar
                 </Button>
               )}
               <div className="flex gap-2 ml-auto">
                 <Button color="gray" onClick={() => setShowModal(false)}>
-                  Cancel
+                  Cancelar
                 </Button>
                 <Button type="submit" gradientDuoTone="purpleToBlue">
                   {editingEvent ? 'Actualizar' : 'Crear Evento'}
@@ -586,9 +632,9 @@ const AgendaPage = () => {
       <Modal show={showViewModal} onClose={() => setShowViewModal(false)}>
         <Modal.Header>Detalles del Evento</Modal.Header>
         <Modal.Body>
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div>
-              <h4 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h4 className="text-xl font-bold text-[color:var(--foreground)]">
                 {viewingEvent?.title}
               </h4>
               <div className="flex items-center gap-2 mt-2">
@@ -600,23 +646,23 @@ const AgendaPage = () => {
             </div>
 
             {viewingEvent?.description && (
-              <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-                <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+              <div className="bg-[color:var(--surface-muted)] p-4 rounded-xl border border-[color:var(--border)]">
+                <p className="text-sm text-[color:var(--foreground-muted)] whitespace-pre-wrap">
                   {viewingEvent.description}
                 </p>
               </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                  <Calendar />
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-[color:var(--surface-muted)] border border-[color:var(--border)]">
+                <div className="p-2 bg-[color:var(--info-soft)] text-[color:var(--info)] rounded-lg">
+                  <Clock size={18} />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold">
+                  <p className="text-[10px] text-[color:var(--foreground-muted)] uppercase font-bold tracking-wider">
                     Fecha y Hora
                   </p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text-sm font-medium text-[color:var(--foreground)]">
                     {dayjs(viewingEvent?.scheduledDate).format(
                       'ddd D MMM, YYYY - h:mm A',
                     )}
@@ -625,15 +671,15 @@ const AgendaPage = () => {
               </div>
 
               {viewingEvent?.provider && (
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                    <List />
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[color:var(--surface-muted)] border border-[color:var(--border)]">
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg">
+                    <Building size={18} />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 uppercase font-semibold">
+                    <p className="text-[10px] text-[color:var(--foreground-muted)] uppercase font-bold tracking-wider">
                       Proveedor
                     </p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-[color:var(--foreground)]">
                       {viewingEvent.provider}
                     </p>
                   </div>
@@ -644,17 +690,18 @@ const AgendaPage = () => {
             {viewingEvent?.scope === 'SPECIFIC' && (
               <div>
                 <Label
-                  className="mb-2 block text-xs uppercase text-gray-500"
+                  className="mb-2 block text-[10px] uppercase text-[color:var(--foreground-muted)] font-bold tracking-wider"
                   value="Participantes"
                 />
                 {viewingEvent.attendees && viewingEvent.attendees.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     <Badge color="indigo">
+                      <Users size={12} className="mr-1" />
                       {viewingEvent.attendees.length} Usuarios seleccionados
                     </Badge>
                   </div>
                 ) : (
-                  <span className="text-sm text-gray-500 italic">
+                  <span className="text-sm text-[color:var(--foreground-muted)] italic">
                     Sin participantes asignados
                   </span>
                 )}

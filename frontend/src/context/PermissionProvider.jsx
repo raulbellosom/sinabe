@@ -15,6 +15,7 @@ const PermissionProvider = ({ children }) => {
     useUpdatePermission,
     useGetPermissionById,
     useGetPermissions,
+    useSyncPermissions,
   } = usePermission(dispatch);
 
   return (
@@ -27,6 +28,7 @@ const PermissionProvider = ({ children }) => {
         useUpdatePermission,
         useGetPermissionById,
         useGetPermissions,
+        useSyncPermissions,
       }}
     >
       {children}

@@ -8,7 +8,7 @@ import InvoiceModal from '../../components/ProjectDetails/PO/InvoiceModal';
 import SideModal from '../../components/Modals/SideModal';
 import POInvoiceInventoryManager from '../../components/purchaseOrders/invoices/POInvoiceInventoryManager';
 import { parseToLocalDate } from '../../utils/formatValues';
-import { Badge } from 'flowbite-react';
+import { Badge } from '../../components/ui/flowbite';
 import { useDebounce } from '../../hooks/useDebounce';
 import { getFileUrl } from '../../utils/getFileUrl';
 import { useMediaQuery } from 'react-responsive';

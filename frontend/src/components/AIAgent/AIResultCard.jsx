@@ -1,5 +1,5 @@
 
-import { Card, Badge, Button, Tooltip } from 'flowbite-react';
+import { Card, Badge, Button, Tooltip } from '../ui/flowbite';
 
 import {
   Box,

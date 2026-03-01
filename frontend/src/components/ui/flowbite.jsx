@@ -24,8 +24,8 @@ import {
   Badge as UIBadge,
   Card as UICard,
   Pagination as UIPagination,
-} from '../../components/ui';
-import cn from '../../components/ui/cn';
+} from './index';
+import cn from './cn';
 
 const sizeMap = {
   xs: 'text-xs px-2 py-1.5',

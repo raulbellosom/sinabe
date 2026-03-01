@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Combobox from '../common/Combobox';
 import { useFormikContext } from 'formik';
 import { getCustomFieldValues } from '../../services/api';
-import { Label } from 'flowbite-react';
+import { Label } from '../ui/flowbite';
 import Notifies from '../Notifies/Notifies';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import PinIcon from '../PinIcon/PinIcon';

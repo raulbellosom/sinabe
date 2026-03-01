@@ -160,3 +160,17 @@ input[type='checkbox'].sinabe-checkbox:checked {
 .dark .custom-scrollbar {
   scrollbar-color: #384b66 #172033;
 }
+
+/* Calendar cell expand animation */
+@keyframes expandCell {
+  from {
+    opacity: 0.8;
+    transform: scaleY(0.95);
+    transform-origin: top;
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}

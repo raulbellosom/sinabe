@@ -3,7 +3,7 @@ import { memo, useCallback, useEffect } from 'react';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import classNames from 'classnames';
-import { Checkbox } from 'flowbite-react';
+import { Checkbox } from '../ui/flowbite';
 
 import { CustomToolbar } from './CustomToolbar';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';

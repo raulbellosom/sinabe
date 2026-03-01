@@ -10,7 +10,7 @@ import {
 import { PurchaseOrderFormModal } from '../../components/ProjectDetails/PO/PurchaseOrderModals';
 import { parseToLocalDate } from '../../utils/formatValues';
 import { useProjectQueryParams } from '../../hooks/useProjectQueryParams';
-import { Badge } from 'flowbite-react';
+import { Badge } from '../../components/ui/flowbite';
 import ConfirmDeleteModal from '../../components/Modals/ConfirmDeleteModal';
 import PurchaseOrderDetailModal from '../../components/purchaseOrders/PurchaseOrderDetailModal';
 import Notifies from '../../components/Notifies/Notifies';

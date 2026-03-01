@@ -1,6 +1,6 @@
 // components/purchaseOrders/invoices/PurchaseOrderInvoicesManager.jsx
 import { useState, useMemo, useCallback } from 'react';
-import { Button, Badge } from 'flowbite-react';
+import { Button, Badge } from '../../ui/flowbite';
 import {
   useGetInvoicesByOrderId,
   useAssignInvoiceToPurchaseOrder,

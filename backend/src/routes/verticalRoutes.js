@@ -1,4 +1,5 @@
 import express from "express";
+import { protect, checkPermission } from "../middleware/authMiddleware.js";
 import {
   getVerticals,
   createVertical,
@@ -11,13 +12,33 @@ import {
 
 const router = express.Router();
 
-router.get("/", getVerticals); // con modelos e inventarios
-router.post("/", createVertical);
-router.put("/:id", updateVertical);
-router.delete("/:id", deleteVertical);
+router.get("/", protect, checkPermission("view_verticals"), getVerticals);
+router.post("/", protect, checkPermission("create_verticals"), createVertical);
+router.put("/:id", protect, checkPermission("edit_verticals"), updateVertical);
+router.delete(
+  "/:id",
+  protect,
+  checkPermission("delete_verticals"),
+  deleteVertical,
+);
 
-router.get("/model/:modelId", getModelVerticals);
-router.post("/model/:modelId", assignVerticalsToModel);
-router.delete("/model/:modelId/:verticalId", removeVerticalFromModel);
+router.get(
+  "/model/:modelId",
+  protect,
+  checkPermission("view_verticals"),
+  getModelVerticals,
+);
+router.post(
+  "/model/:modelId",
+  protect,
+  checkPermission("edit_verticals"),
+  assignVerticalsToModel,
+);
+router.delete(
+  "/model/:modelId/:verticalId",
+  protect,
+  checkPermission("edit_verticals"),
+  removeVerticalFromModel,
+);
 
 export default router;

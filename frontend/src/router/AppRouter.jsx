@@ -1,4 +1,4 @@
-﻿import React, { Suspense, lazy, useContext } from 'react';
+import React, { useContext } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -11,39 +11,32 @@ import LoadingModal from '../components/loadingModal/LoadingModal';
 import Sidebar from '../components/sidebar/Sidebar';
 import ProtectedRoute from './ProtectedRoute';
 import HardwareBackButtonHandler from '../components/Navigation/HardwareBackButtonHandler';
-
-const Login = lazy(() => import('../pages/login/Login'));
-const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
-const InventoriesPage = lazy(() => import('../pages/inventories/InventoriesPage'));
-const CreateInventory = lazy(() => import('../pages/inventories/CreateInventory'));
-const UpdateInventory = lazy(() => import('../pages/inventories/UpdateInventory'));
-const ViewInventory = lazy(() => import('../pages/inventories/ViewInventory'));
-const InventoryDecommissioning = lazy(
-  () => import('../pages/inventories/InventoryDecommissioning'),
-);
-const Catalogs = lazy(() => import('../pages/inventories/catalogs/Catalogs'));
-const Account = lazy(() => import('../pages/account/Account'));
-const UsersPage = lazy(() => import('../pages/users/UsersPage'));
-const NotFound = lazy(() => import('../pages/notFound/NotFound'));
-const Roles = lazy(() => import('../pages/roles/Roles'));
-const VerticalPage = lazy(() => import('../pages/vertical/VerticalPage'));
-const PurchaseOrdersPage = lazy(
-  () => import('../pages/purchaseOrders/PurchaseOrdersPage'),
-);
-const InvoicesPage = lazy(() => import('../pages/invoices/InvoicesPage'));
-const CreateCustody = lazy(() => import('../pages/Custody/CreateCustody'));
-const CustodyPage = lazy(() => import('../pages/Custody/CustodyPage'));
-const PublicCustodyView = lazy(() => import('../pages/Custody/PublicCustodyView'));
-const ViewCustody = lazy(() => import('../pages/Custody/ViewCustody'));
-const Preferences = lazy(() => import('../pages/preferences/Preferences'));
-const NotificationsPage = lazy(
-  () => import('../pages/preferences/NotificationsPage'),
-);
-const NotificationRulesPage = lazy(
-  () => import('../pages/preferences/NotificationRulesPage'),
-);
-const AgendaPage = lazy(() => import('../pages/agenda/AgendaPage'));
-const AuditPage = lazy(() => import('../pages/audit/AuditPage'));
+import ChunkErrorBoundary from '../components/ChunkErrorBoundary';
+import Login from '../pages/login/Login';
+import Dashboard from '../pages/dashboard/Dashboard';
+import InventoriesPage from '../pages/inventories/InventoriesPage';
+import CreateInventory from '../pages/inventories/CreateInventory';
+import UpdateInventory from '../pages/inventories/UpdateInventory';
+import ViewInventory from '../pages/inventories/ViewInventory';
+import InventoryDecommissioning from '../pages/inventories/InventoryDecommissioning';
+import Catalogs from '../pages/inventories/catalogs/Catalogs';
+import Account from '../pages/account/Account';
+import UsersPage from '../pages/users/UsersPage';
+import NotFound from '../pages/notFound/NotFound';
+import Roles from '../pages/roles/Roles';
+import VerticalPage from '../pages/vertical/VerticalPage';
+import PurchaseOrdersPage from '../pages/purchaseOrders/PurchaseOrdersPage';
+import InvoicesPage from '../pages/invoices/InvoicesPage';
+import CreateCustody from '../pages/Custody/CreateCustody';
+import CustodyPage from '../pages/Custody/CustodyPage';
+import PublicCustodyView from '../pages/Custody/PublicCustodyView';
+import ViewCustody from '../pages/Custody/ViewCustody';
+import Preferences from '../pages/preferences/Preferences';
+import NotificationsPage from '../pages/preferences/NotificationsPage';
+import NotificationRulesPage from '../pages/preferences/NotificationRulesPage';
+import AgendaPage from '../pages/agenda/AgendaPage';
+import AuditPage from '../pages/audit/AuditPage';
+import PublicInventoryView from '../pages/inventories/PublicInventoryView';
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
@@ -55,9 +48,9 @@ const AppRouter = () => {
   return (
     <Router>
       <HardwareBackButtonHandler>
-        <Suspense fallback={<LoadingModal loading={true} />}>
+        <ChunkErrorBoundary>
           {user ? <AuthorizedRoute user={user} /> : <UnauthorizedRoute />}
-        </Suspense>
+        </ChunkErrorBoundary>
       </HardwareBackButtonHandler>
     </Router>
   );
@@ -67,6 +60,8 @@ const AuthorizedRoute = ({ user }) => {
   return (
     <Routes>
       <Route path="/custody/public/:token" element={<PublicCustodyView />} />
+      <Route path="/inventory/public/:id" element={<PublicInventoryView />} />
+      <Route path="/inventory/public" element={<PublicInventoryView />} />
       <Route
         path="*"
         element={
@@ -88,24 +83,39 @@ const AuthorizedRoute = ({ user }) => {
                 />
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/inventories" element={<InventoriesPage />} />
-                <Route path="/inventories/create" element={<CreateInventory />} />
+                <Route
+                  path="/inventories/create"
+                  element={<CreateInventory />}
+                />
                 <Route
                   path="/inventories/decommissioning"
                   element={<InventoryDecommissioning />}
                 />
-                <Route path="/inventories/edit/:id" element={<UpdateInventory />} />
-                <Route path="/inventories/view/:id" element={<ViewInventory />} />
+                <Route
+                  path="/inventories/edit/:id"
+                  element={<UpdateInventory />}
+                />
+                <Route
+                  path="/inventories/view/:id"
+                  element={<ViewInventory />}
+                />
                 <Route path="/custody" element={<CustodyPage />} />
                 <Route path="/custody/create" element={<CreateCustody />} />
                 <Route path="/custody/edit/:id" element={<CreateCustody />} />
                 <Route path="/custody/view/:id" element={<ViewCustody />} />
                 <Route path="/verticals" element={<VerticalPage />} />
-                <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+                <Route
+                  path="/purchase-orders"
+                  element={<PurchaseOrdersPage />}
+                />
                 <Route path="/invoices" element={<InvoicesPage />} />
                 <Route path="/catalogs" element={<Catalogs />} />
                 <Route path="/roles" element={<Roles />} />
                 <Route path="/audit-logs" element={<AuditPage />} />
-                <Route path="/login" element={<Navigate to={'/'} replace={true} />} />
+                <Route
+                  path="/login"
+                  element={<Navigate to={'/'} replace={true} />}
+                />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
@@ -120,6 +130,8 @@ const UnauthorizedRoute = () => {
   return (
     <Routes>
       <Route path="/custody/public/:token" element={<PublicCustodyView />} />
+      <Route path="/inventory/public/:id" element={<PublicInventoryView />} />
+      <Route path="/inventory/public" element={<PublicInventoryView />} />
       <Route path="*" element={<Login />} />
     </Routes>
   );

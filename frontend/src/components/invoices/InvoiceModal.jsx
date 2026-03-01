@@ -1,6 +1,6 @@
 // components/invoices/InvoiceModal.jsx
 import { useState, useEffect } from 'react';
-import { Label, TextInput, FileInput, Textarea } from 'flowbite-react';
+import { Label, TextInput, FileInput, Textarea } from '../ui/flowbite';
 import {
   useCreateIndependentInvoice,
   useUpdateIndependentInvoice,

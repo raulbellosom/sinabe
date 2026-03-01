@@ -4,8 +4,8 @@ import BgPattern1 from '../../assets/bg/bg_sidebar_1.png';
 import BgPattern2 from '../../assets/bg/bg_sidebar_2.png';
 import BgPattern3 from '../../assets/bg/bg_sidebar_3.png';
 import BgPattern4 from '../../assets/bg/bg_sidebar_4.png';
-import { FileInput, Label, Card } from 'flowbite-react';
-import { toast } from 'react-hot-toast';
+import { FileInput, Label, Card } from '../../components/ui/flowbite';
+import { toast } from 'sonner';
 import ThemeToggle from '../../components/settings/ThemeToggle';
 import { API_URL } from '../../config/env';
 

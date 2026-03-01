@@ -2,7 +2,7 @@
 import { FormikProvider, useFormik, Form } from 'formik';
 import BrandFormFields from './BrandFormFields';
 
-import { Button } from 'flowbite-react';
+import { Button } from '../../ui/flowbite';
 import { Trash2, Save } from 'lucide-react';
 import { BrandFormSchema } from './BrandFormSchema';
 

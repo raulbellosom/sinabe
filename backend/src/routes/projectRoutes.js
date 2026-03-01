@@ -1,5 +1,5 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, checkPermission } from "../middleware/authMiddleware.js";
 
 import {
   getProjects,
@@ -13,16 +13,29 @@ import {
 
 const router = express.Router();
 
-router.get("/search", protect, searchProjects);
+router.get(
+  "/search",
+  protect,
+  checkPermission("view_projects"),
+  searchProjects,
+);
 
-router.route("/").get(protect, getProjects).post(protect, createProject);
+router
+  .route("/")
+  .get(protect, checkPermission("view_projects"), getProjects)
+  .post(protect, checkPermission("create_projects"), createProject);
 
 router
   .route("/:id")
-  .get(protect, getProjectById)
-  .put(protect, updateProject)
-  .delete(protect, deleteProject);
+  .get(protect, checkPermission("view_projects"), getProjectById)
+  .put(protect, checkPermission("edit_projects"), updateProject)
+  .delete(protect, checkPermission("delete_projects"), deleteProject);
 
-router.get("/:id/summary", protect, getProjectSummary);
+router.get(
+  "/:id/summary",
+  protect,
+  checkPermission("view_projects"),
+  getProjectSummary,
+);
 
 export default router;

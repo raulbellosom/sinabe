@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import classNames from 'classnames';
-import { Label } from 'flowbite-react';
+import { Label } from '../ui/flowbite';
 
 import { ChevronDown, X } from 'lucide-react';
 

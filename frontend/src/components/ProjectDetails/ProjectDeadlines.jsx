@@ -5,7 +5,7 @@ import Skeleton from 'react-loading-skeleton';
 import DeadlineFormModal from './DeadlineFormModal';
 import { parseToLocalDate } from '../../utils/formatValues';
 import ConfirmDeleteDeadlineModal from './ConfirmDeleteDeadlineModal.jsx';
-import { Tooltip } from 'flowbite-react';
+import { Tooltip } from '../ui/flowbite';
 import AssignInventoryModal from './Inventory/AssignInventoryModal.jsx';
 import DeadlineTasksList from './Deadline/DeadlineTasksList.jsx';
 import ImageViewer2 from '../ImageViewer/ImageViewer2.jsx';

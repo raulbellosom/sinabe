@@ -1,7 +1,7 @@
 // src/pages/VerticalPage.jsx
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { TextInput } from 'flowbite-react';
+import { TextInput } from '../../components/ui/flowbite';
 import {
   useVerticals,
   useCreateVertical,

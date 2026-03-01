@@ -32,7 +32,7 @@ import {
   User,
 } from 'lucide-react';
 
-import { Badge, Tooltip } from 'flowbite-react';
+import { Badge, Tooltip } from '../../components/ui/flowbite';
 import classNames from 'classnames';
 import { useInventoryContext } from '../../context/InventoryContext';
 import formatFileData from '../../utils/fileDataFormatter';
@@ -43,7 +43,7 @@ import QRLabelModal from '../../components/QRGenerator/QRLabelModal';
 import NotFound from '../notFound/NotFound';
 import { ThreeCircles } from 'react-loader-spinner';
 import { useUserPreference } from '../../context/UserPreferenceContext';
-const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
+import FileIcon from '../../components/FileIcon/FileIcon';
 
 const ViewInventory = () => {
   const { id } = useParams();
@@ -722,3 +722,4 @@ const ProtectedInventoriesView = withPermission(ViewInventory, [
 ]);
 
 export default ProtectedInventoriesView;
+

@@ -1,6 +1,6 @@
 
 import ImageViewer from '../ImageViewer/ImageViewer2';
-import { Badge, Card as FlowbiteCard } from 'flowbite-react';
+import { Badge, Card as FlowbiteCard } from '../ui/flowbite';
 import classNames from 'classnames';
 
 const Card = ({ data = {}, showImage = false }) => {

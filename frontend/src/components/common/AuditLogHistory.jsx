@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Timeline, Pagination } from 'flowbite-react';
+import { Timeline, Pagination } from '../ui/flowbite';
 import { useAuditLogs } from '../../hooks/useAuditLogs';
 import dayjs from 'dayjs';
 

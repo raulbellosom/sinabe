@@ -1,5 +1,5 @@
 
-import { Tooltip } from 'flowbite-react';
+import { Tooltip } from '../ui/flowbite';
 import { useAIAgent } from '../../context/AIAgentContext.jsx';
 import classNames from 'classnames';
 

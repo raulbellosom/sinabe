@@ -5,15 +5,15 @@ import {
   updateEvent,
   deleteEvent,
 } from "../controllers/eventController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, checkPermission } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.use(protect); // All routes protected
 
-router.get("/", getEvents);
-router.post("/", createEvent);
-router.put("/:id", updateEvent);
-router.delete("/:id", deleteEvent);
+router.get("/", checkPermission("view_events"), getEvents);
+router.post("/", checkPermission("create_events"), createEvent);
+router.put("/:id", checkPermission("edit_events"), updateEvent);
+router.delete("/:id", checkPermission("delete_events"), deleteEvent);
 
 export default router;

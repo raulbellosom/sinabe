@@ -5,6 +5,7 @@ import {
   getPermissions,
   deletePermission,
   updatePermission,
+  syncPermissions,
 } from '../services/secure.api';
 import { useLoading } from '../context/LoadingContext';
 import Notifies from '../components/Notifies/Notifies';
@@ -106,12 +107,31 @@ const usePermission = (dispatch) => {
     },
   });
 
+  const useSyncPermissions = useMutation({
+    mutationFn: syncPermissions,
+    onMutate: () => {
+      setLoading(true);
+    },
+    onSuccess: (data) => {
+      Notifies('success', data.message || 'Permisos sincronizados correctamente');
+    },
+    onError: (error) => {
+      console.log('error on syncPermissions', error);
+      setLoading(false);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries('permissions');
+      setLoading(false);
+    },
+  });
+
   return {
     useCreatePermission: (role) => useCreatePermission.mutateAsync(role),
     useUpdatePermission: (role) => useUpdatePermission.mutateAsync(role),
     useDeletePermission: (role) => useDeletePermission.mutateAsync(role),
     useGetPermissions: () => useGetPermissions.mutateAsync(),
     useGetPermissionById: (id) => useGetPermissionById.mutateAsync(id),
+    useSyncPermissions: (perms) => useSyncPermissions.mutateAsync(perms),
   };
 };
 

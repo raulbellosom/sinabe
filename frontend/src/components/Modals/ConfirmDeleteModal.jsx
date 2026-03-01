@@ -1,6 +1,6 @@
 // components/Modals/ConfirmDeleteModal.jsx
 import { useState, useEffect } from 'react';
-import { Label, TextInput } from 'flowbite-react';
+import { Label, TextInput } from '../ui/flowbite';
 import ReusableModal from './ReusableModal';
 
 import {

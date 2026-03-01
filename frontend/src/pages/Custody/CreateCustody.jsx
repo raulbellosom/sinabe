@@ -10,20 +10,26 @@ import {
 } from '../../services/custody.api';
 import { searchUsers } from '../../services/searchUsers.api';
 import { searchInventories } from '../../services/searchInventories.api';
-import { updateUser, API_URL } from '../../services/api';
-import { toast } from 'react-hot-toast';
+import { updateUser, createUser, API_URL } from '../../services/api';
+import { useRoleContext } from '../../context/RoleContext';
+import ModalFormikForm from '../../components/Modals/ModalFormikForm';
+import UserFormFields from '../../components/Users/UserFormFields';
+import {
+  UserFormSchema,
+  UserFormInitialValues,
+} from '../../components/Users/UserFormSchema';
+import { toast } from 'sonner';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
 import {
   Button,
   Label,
   Card,
-  Checkbox,
   Table,
   Modal,
   Badge,
   Breadcrumb,
-} from 'flowbite-react';
+} from '../../components/ui/flowbite';
 import AutoCompleteInput from '../../components/Inputs/AutoCompleteInput';
 import TextInput from '../../components/Inputs/TextInput';
 import TextArea from '../../components/Inputs/TextArea';
@@ -52,11 +58,12 @@ const CreateCustody = () => {
   const isEditMode = !!id;
   const queryClient = useQueryClient();
   const { user, updateSignature } = useAuthContext();
+  const { roles } = useRoleContext();
   const receiverSigPad = useRef({});
   const delivererSigPad = useRef({});
 
   const [selectedInventories, setSelectedInventories] = useState([]);
-  const [isNewUserMode, setIsNewUserMode] = useState(false);
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
 
   const [allUsers, setAllUsers] = useState([]);
   const [allInventories, setAllInventories] = useState([]);
@@ -198,14 +205,6 @@ const CreateCustody = () => {
       date: new Date().toLocaleDateString('en-CA'),
       receiver: {
         userId: null,
-        isNewInactiveUser: false,
-        firstName: '',
-        lastName: '',
-        userName: '',
-        email: '',
-        employeeNumber: '',
-        jobTitle: '',
-        department: '',
       },
       delivererUserId: 'current-user-id',
       comments: '',
@@ -214,31 +213,9 @@ const CreateCustody = () => {
     validationSchema: Yup.object({
       date: Yup.date().required('Fecha requerida'),
       receiver: Yup.object().shape({
-        isNewInactiveUser: Yup.boolean(),
         userId: Yup.string()
           .nullable()
-          .when('isNewInactiveUser', {
-            is: false,
-            then: (schema) => schema.required('Seleccione un usuario receptor'),
-          }),
-        firstName: Yup.string().when('isNewInactiveUser', {
-          is: true,
-          then: (schema) => schema.required('Nombre requerido'),
-        }),
-        lastName: Yup.string().when('isNewInactiveUser', {
-          is: true,
-          then: (schema) => schema.required('Apellido requerido'),
-        }),
-        userName: Yup.string().when('isNewInactiveUser', {
-          is: true,
-          then: (schema) => schema.required('Usuario requerido'),
-        }),
-        email: Yup.string()
-          .email('Email inválido')
-          .when('isNewInactiveUser', {
-            is: true,
-            then: (schema) => schema.required('Email requerido'),
-          }),
+          .required('Seleccione un usuario receptor'),
       }),
       items: Yup.array().min(1, 'Debe agregar al menos un equipo'),
     }),
@@ -604,8 +581,7 @@ const CreateCustody = () => {
             {/* Receiver / Deliverer */}
             <Card>
               <h3 className="text-lg font-semibold mb-4 border-b pb-2 flex items-center gap-2 dark:text-white">
-                <CheckCircle className="text-green-500" /> Sujetos del
-                Resguardo
+                <CheckCircle className="text-green-500" /> Sujetos del Resguardo
               </h3>
               <div className="space-y-4">
                 <div>
@@ -620,75 +596,38 @@ const CreateCustody = () => {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 py-1">
-                  <Checkbox
-                    id="isNewUser"
-                    checked={isNewUserMode}
-                    onChange={(e) => {
-                      setIsNewUserMode(e.target.checked);
-                      formik.setFieldValue(
-                        'receiver.isNewInactiveUser',
-                        e.target.checked,
-                      );
-                      if (e.target.checked)
-                        formik.setFieldValue('receiver.userId', null);
-                    }}
-                  />
-                  <Label htmlFor="isNewUser" className="text-sm font-medium">
-                    Registrar nuevo receptor (externo/inactivo)
-                  </Label>
-                </div>
+                <AutoCompleteInput
+                  field={{
+                    name: 'receiver.userId',
+                    value: formik.values.receiver.userId,
+                  }}
+                  form={userFormWrapper}
+                  options={allUsers.map((u) => ({
+                    label: `${u.firstName} ${u.lastName} (${
+                      u.email || u.employeeNumber
+                    })`,
+                    value: u.id,
+                    searchTerms: `${u.firstName} ${u.lastName} ${u.email} ${u.employeeNumber}`,
+                  }))}
+                  onSearch={handleSearchUsers}
+                  isLoading={isUsersLoading}
+                  onFocusSearch={true}
+                  placeholder="Buscar por nombre, correo o ID..."
+                  label="Receptor del Equipo"
+                />
 
-                {!isNewUserMode ? (
-                  <AutoCompleteInput
-                    field={{
-                      name: 'receiver.userId',
-                      value: formik.values.receiver.userId,
-                    }}
-                    form={userFormWrapper}
-                    options={allUsers.map((u) => ({
-                      label: `${u.firstName} ${u.lastName} (${
-                        u.email || u.employeeNumber
-                      })`,
-                      value: u.id,
-                      searchTerms: `${u.firstName} ${u.lastName} ${u.email} ${u.employeeNumber}`,
-                    }))}
-                    onSearch={handleSearchUsers}
-                    isLoading={isUsersLoading}
-                    onFocusSearch={true}
-                    placeholder="Buscar por nombre, correo o ID..."
-                    label="Receptor del Equipo"
-                  />
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fadeIn">
-                    <TextInput
-                      field={formik.getFieldProps('receiver.firstName')}
-                      form={formik}
-                      label="Nombre"
-                      sizing="sm"
-                    />
-                    <TextInput
-                      field={formik.getFieldProps('receiver.lastName')}
-                      form={formik}
-                      label="Apellido"
-                      sizing="sm"
-                    />
-                    <TextInput
-                      field={formik.getFieldProps('receiver.email')}
-                      form={formik}
-                      label="Email"
-                      sizing="sm"
-                    />
-                    <TextInput
-                      field={formik.getFieldProps('receiver.employeeNumber')}
-                      form={formik}
-                      label="ID/Empleado"
-                      sizing="sm"
-                    />
-                  </div>
-                )}
+                <Button
+                  type="button"
+                  size="sm"
+                  color="light"
+                  onClick={() => setIsCreateUserModalOpen(true)}
+                  className="w-full"
+                >
+                  <UserRound className="h-4 w-4 mr-2" />
+                  Crear nuevo receptor
+                </Button>
 
-                {formik.values.receiver?.name && !isNewUserMode && (
+                {formik.values.receiver?.name && (
                   <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg animate-fadeIn">
                     <p className="font-bold text-blue-700 dark:text-blue-300">
                       {formik.values.receiver.name}
@@ -731,8 +670,7 @@ const CreateCustody = () => {
           <Card>
             <div className="flex items-center justify-between mb-4 border-b pb-2">
               <h3 className="text-lg font-semibold flex items-center gap-2 dark:text-white">
-                <FileCheck className="text-purple-500" /> Equipos en
-                Resguardo
+                <FileCheck className="text-purple-500" /> Equipos en Resguardo
               </h3>
               <Badge color="info">{selectedInventories.length} item(s)</Badge>
             </div>
@@ -1099,6 +1037,43 @@ const CreateCustody = () => {
             </Button>
           </Modal.Footer>
         </Modal>
+
+        {/* Modal para crear nuevo receptor */}
+        {isCreateUserModalOpen && (
+          <ModalFormikForm
+            onClose={() => setIsCreateUserModalOpen(false)}
+            isOpenModal={isCreateUserModalOpen}
+            title="Crear Nuevo Receptor"
+            schema={UserFormSchema}
+            initialValues={{
+              ...UserFormInitialValues,
+              status: false,
+              role: String(
+                roles?.find((r) => r.name === 'Resguardos')?.id || '',
+              ),
+            }}
+            onSubmit={async (values, helpers) => {
+              try {
+                const newUser = await createUser(values);
+                toast.success('Usuario receptor creado exitosamente');
+                helpers.setSubmitting(false);
+                helpers.resetForm();
+                setIsCreateUserModalOpen(false);
+
+                // Add to allUsers and auto-select
+                setAllUsers((prev) => [newUser, ...prev]);
+                setUserDataInForm(newUser);
+              } catch (e) {
+                const msg =
+                  e.response?.data?.message || 'Error al crear usuario';
+                toast.error(msg);
+                helpers.setSubmitting(false);
+              }
+            }}
+            formFields={<UserFormFields editMode={false} roles={roles} />}
+            saveLabel="Crear Receptor"
+          />
+        )}
       </FormikProvider>
     </div>
   );

@@ -1,5 +1,5 @@
 
-import { Card, Button, Badge, Spinner, Alert } from 'flowbite-react';
+import { Card, Button, Badge, Spinner, Alert } from '../ui/flowbite';
 import { useAIAgent } from '../../context/AIAgentContext.jsx';
 
 import {

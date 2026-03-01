@@ -1,8 +1,8 @@
 import { memo } from 'react';
-import { TextInput, Dropdown, Tooltip } from 'flowbite-react';
+import { TextInput, Dropdown, Tooltip } from '../ui/flowbite';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
 import ActionButtons from '../ActionButtons/ActionButtons';
-import { ToggleSwitch } from 'flowbite-react';
+import { ToggleSwitch } from '../ui/flowbite';
 import {
   Filter,
   Info,

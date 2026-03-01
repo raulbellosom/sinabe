@@ -77,3 +77,38 @@ export const deletePermission = async (req, res) => {
     res.status(500).json({ error: "Error al eliminar permiso." });
   }
 };
+
+// Sincronizar / upsert permisos en lote
+// Body: { permissions: [{ name, description }] }
+export const syncPermissions = async (req, res) => {
+  const { permissions } = req.body;
+
+  if (!Array.isArray(permissions) || permissions.length === 0) {
+    return res
+      .status(400)
+      .json({ error: "Se requiere un arreglo de permisos." });
+  }
+
+  try {
+    const results = await Promise.all(
+      permissions.map(async ({ name, description }) => {
+        const existing = await db.permission.findFirst({ where: { name } });
+        if (existing) {
+          return db.permission.update({
+            where: { id: existing.id },
+            data: { description },
+          });
+        }
+        return db.permission.create({ data: { name, description } });
+      })
+    );
+
+    res.status(200).json({
+      message: `${results.length} permisos sincronizados.`,
+      permissions: results,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al sincronizar permisos." });
+  }
+};

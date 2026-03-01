@@ -7,7 +7,7 @@
  * - Background Sync (futuro)
  */
 
-import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 import {
   NetworkFirst,
@@ -58,15 +58,25 @@ registerRoute(
 );
 
 // Cache para JS y CSS
-// Excluir Vite pre-bundled deps (/node_modules/.vite/deps/) ya que tienen
-// versiones con hash que cambian entre sesiones de dev y causarían duplicados de React.
+// Use NetworkFirst so the browser always gets the real JS/CSS from the server.
+// StaleWhileRevalidate could serve a stale HTML fallback (from a previous
+// navigation response that ended up in cache) which would cause MIME-type errors
+// when the browser expects a JS module.
+// Exclude Vite pre-bundled deps (/node_modules/.vite/) as they have unstable hashes.
 registerRoute(
   ({ request, url }) =>
     (request.destination === 'script' || request.destination === 'style') &&
     !url.pathname.includes('/node_modules/.vite/'),
-  new StaleWhileRevalidate({
+  new NetworkFirst({
     cacheName: 'static-resources',
-    plugins: [new CacheableResponsePlugin({ statuses: [0, 200] })],
+    networkTimeoutSeconds: 5,
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({
+        maxEntries: 100,
+        maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+      }),
+    ],
   }),
 );
 
@@ -86,22 +96,15 @@ registerRoute(
   }),
 );
 
-// Navegación SPA - devolver index.html
-const navigationHandler = new NavigationRoute(
-  async ({ request }) => {
-    try {
-      return await fetch(request);
-    } catch (error) {
-      const cache = await caches.open('offline-cache');
-      return await cache.match('/index.html');
-    }
-  },
-  {
+// Navegación SPA - devolver index.html desde precache
+// Usamos createHandlerBoundToURL para que el SW siempre devuelva el index.html
+// precacheado en lugar de hacer fetch. Esto evita que se devuelva HTML por error
+// para JS modules y es más confiable offline.
+registerRoute(
+  new NavigationRoute(createHandlerBoundToURL('/index.html'), {
     denylist: [/^\/api\//],
-  },
+  }),
 );
-
-registerRoute(navigationHandler);
 
 // ========================================
 // PUSH NOTIFICATIONS

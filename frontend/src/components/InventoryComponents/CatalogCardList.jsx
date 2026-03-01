@@ -1,4 +1,4 @@
-import { Dropdown } from 'flowbite-react';
+import { Dropdown } from '../ui/flowbite';
 import { useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import ActionButtons from '../ActionButtons/ActionButtons';

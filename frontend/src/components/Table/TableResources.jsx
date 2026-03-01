@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import ImageViewer from '../ImageViewer/ImageViewer2';
-import { Checkbox } from 'flowbite-react';
+import { Checkbox } from '../ui/flowbite';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import FileIcon from '../FileIcon/FileIcon';
 import formatFileData from '../../utils/fileDataFormatter';

@@ -5,7 +5,7 @@ import ProjectStatusBadge from './ProjectStatusBadge';
 import ProjectProgressBar from './ProjectProgressBar';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import { Dropdown } from 'flowbite-react';
+import { Dropdown } from '../ui/flowbite';
 import ActionButtons from '../ActionButtons/ActionButtons';
 
 import { useNavigate } from 'react-router-dom';

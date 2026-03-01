@@ -3,7 +3,7 @@
  * Solo visible para el creador de la regla que generó la notificación
  */
 import { useState, useEffect } from 'react';
-import { Modal, Badge, Spinner, Progress, Tooltip } from 'flowbite-react';
+import { Modal, Badge, Spinner, Progress, Tooltip } from '../ui/flowbite';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNotifications } from '../../context/NotificationContext';

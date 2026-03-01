@@ -9,9 +9,9 @@ import {
   Table,
   Badge,
   ToggleSwitch,
-} from 'flowbite-react';
+} from '../ui/flowbite';
 import { useNotifications } from '../../context/NotificationContext';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import {
   AlertTriangle,

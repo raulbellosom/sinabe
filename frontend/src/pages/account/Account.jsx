@@ -9,7 +9,7 @@ import ChangePasswordForm from '../../components/AccountFields/ChangePassword/Ch
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
 import SignatureCanvas from 'react-signature-canvas';
-import { Button, Modal } from 'flowbite-react';
+import { Button, Modal } from '../../components/ui/flowbite';
 import { API_URL } from '../../services/api';
 
 const Account = () => {

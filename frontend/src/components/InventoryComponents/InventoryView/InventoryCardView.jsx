@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Badge } from 'flowbite-react';
+import { Badge } from '../../ui/flowbite';
 import classNames from 'classnames';
 import {
   Search,
@@ -13,7 +13,7 @@ import ImageViewer from '../../ImageViewer/ImageViewer2';
 import Notifies from '../../Notifies/Notifies';
 import { FormattedUrlImage } from '../../../utils/FormattedUrlImage';
 import AuditLogHistory from '../../common/AuditLogHistory';
-const FileIcon = React.lazy(() => import('../../FileIcon/FileIcon'));
+import FileIcon from '../../FileIcon/FileIcon';
 
 // Componente para un campo individual en modo card
 const CardField = ({
@@ -463,14 +463,7 @@ const InventoryCardView = ({
               {files && files.length > 0 ? (
                 <div className="flex flex-col gap-2">
                   {files.map((file, idx) => (
-                    <React.Suspense
-                      key={idx}
-                      fallback={
-                        <div className="h-10 bg-[color:var(--surface-muted)] animate-pulse rounded" />
-                      }
-                    >
-                      <FileIcon file={file} />
-                    </React.Suspense>
+                    <FileIcon key={idx} file={file} />
                   ))}
                 </div>
               ) : (
@@ -513,3 +506,4 @@ const InventoryCardView = ({
 };
 
 export default InventoryCardView;
+

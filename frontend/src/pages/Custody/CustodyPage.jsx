@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -9,18 +9,19 @@ import {
   Modal,
   Label,
   Button,
-} from 'flowbite-react';
+} from '../../components/ui/flowbite';
 import {
   getCustodyRecords,
   deleteCustodyRecord,
   resendCustodyEmail,
   getPublicLink,
 } from '../../services/custody.api';
+import { downloadFile } from '../../services/api';
+import { getFileUrl } from '../../utils/getFileUrl';
 import { QRCodeSVG } from 'qrcode.react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import LoadingModal from '../../components/loadingModal/LoadingModal';
 import Breadcrumb from '../../components/Breadcrum/Breadcrumb';
-import FileIcon from '../../components/FileIcon/FileIcon';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import { parseToLocalDate } from '../../utils/formatValues';
 import ReusableTable from '../../components/Table/ReusableTable';
@@ -28,9 +29,11 @@ import ConfirmDeleteModal from '../../components/Modals/ConfirmDeleteModal';
 
 import {
   CheckCircle,
+  Download,
   Eye,
   FileText,
   Mail,
+  MoreVertical,
   Pencil,
   QrCode,
   Search,
@@ -38,6 +41,102 @@ import {
   Trash2,
   XCircle,
 } from 'lucide-react';
+
+// Component for PDF button with dropdown
+const PdfFileButton = ({ file }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+  const [isDownloading, setIsDownloading] = useState(false);
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
+
+  const fileUrl = getFileUrl(file?.url || file?.path || file);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target) &&
+        btnRef.current &&
+        !btnRef.current.contains(e.target)
+      ) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const openMenu = () => {
+    const rect = btnRef.current.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const menuHeight = 50;
+    const top =
+      spaceBelow >= menuHeight ? rect.bottom + 4 : rect.top - menuHeight - 4;
+    let left = rect.right - 140;
+    if (left < 8) left = 8;
+    setMenuPos({ top, left });
+    setMenuOpen((prev) => !prev);
+  };
+
+  const handleView = () => {
+    if (fileUrl) {
+      window.open(fileUrl, '_blank');
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!fileUrl) return;
+    setIsDownloading(true);
+    setMenuOpen(false);
+    try {
+      await downloadFile(fileUrl);
+      toast.success('Archivo descargado');
+    } catch (error) {
+      toast.error('Error al descargar el archivo');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        type="button"
+        onClick={handleView}
+        className="flex items-center gap-2 rounded-lg bg-red-500/15 px-3 py-1.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/25"
+      >
+        <FileText size={16} />
+        Ver PDF
+      </button>
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={openMenu}
+        disabled={isDownloading}
+        className="flex h-8 w-8 items-center justify-center rounded-lg text-[color:var(--foreground-muted)] transition-colors hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--foreground)]"
+      >
+        {isDownloading ? <Spinner size="sm" /> : <MoreVertical size={18} />}
+      </button>
+      {menuOpen && (
+        <div
+          ref={menuRef}
+          className="fixed z-50 min-w-[140px] rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] py-1 shadow-lg"
+          style={{ top: menuPos.top, left: menuPos.left }}
+        >
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+          >
+            <Download size={16} />
+            Descargar
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CustodyPage = () => {
   const navigate = useNavigate();
@@ -201,20 +300,7 @@ const CustodyPage = () => {
       {
         key: 'file',
         title: 'Archivo',
-        render: (val) =>
-          val ? (
-            <div className="w-48">
-              <FileIcon
-                file={{
-                  ...val,
-                  name: 'Ver PDF',
-                  type: 'application/pdf',
-                }}
-              />
-            </div>
-          ) : (
-            '-'
-          ),
+        render: (val) => (val ? <PdfFileButton file={val} /> : '-'),
       },
       {
         key: 'status',

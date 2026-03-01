@@ -1,7 +1,7 @@
 // File: frontend/src/components/ProjectDetails/Document/ProjectBulkUploadModal.jsx
 
 
-import { Label, Textarea } from 'flowbite-react';
+import { Label, Textarea } from '../../ui/flowbite';
 import { useUploadProjectDocument } from '../../../hooks/useProjectDocuments';
 import Notifies from '../../Notifies/Notifies';
 import ImagePicker from '../../Inputs/ImagePicker';

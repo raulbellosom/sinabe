@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { ErrorMessage } from 'formik';
 import classNames from 'classnames';
-import { Label } from 'flowbite-react';
+import { Label } from '../ui/flowbite';
 
 import ImageCaptureField from '../ui/ImageCaptureField';
 

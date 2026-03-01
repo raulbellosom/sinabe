@@ -265,10 +265,13 @@ const UsersPage = () => {
               userName: '',
               phone: '',
               role: '',
-              photo: '',
+              photo: [],
               status: true,
               password: '',
               repeatPassword: '',
+              employeeNumber: '',
+              jobTitle: '',
+              department: '',
             }
           }
           onSubmit={handleSubmit}

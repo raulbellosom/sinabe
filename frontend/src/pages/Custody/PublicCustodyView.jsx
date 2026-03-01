@@ -4,9 +4,9 @@ import {
   getCustodyRecordByToken,
   submitPublicSignature,
 } from '../../services/custody.api';
-import { Card, Table, Spinner, Alert, Button, Badge } from 'flowbite-react';
+import { Card, Table, Spinner, Alert, Button, Badge } from '../../components/ui/flowbite';
 import SignatureCanvas from 'react-signature-canvas';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import sinabeIcon from '../../assets/logo/sinabe_icon.png';
 import gapLogo from '../../assets/logo/gap.png';
 

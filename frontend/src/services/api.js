@@ -146,6 +146,9 @@ export const createUser = async (user) => {
         userName: user.userName,
         password: user.password,
         repeatPassword: user.repeatPassword,
+        employeeNumber: user.employeeNumber,
+        jobTitle: user.jobTitle,
+        department: user.department,
       }),
     );
     const response = await api.post(`/users`, data, headerFormData);
@@ -908,6 +911,12 @@ export const createInvoiceSimple = async (invoice) => {
     console.error(error);
     throw error;
   }
+};
+
+// ── Inventario público (sin autenticación) ──
+export const getPublicInventory = async (id) => {
+  const response = await api.get(`/inventories/public/${id}`);
+  return response.data;
 };
 
 export default api;

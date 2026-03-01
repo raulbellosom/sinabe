@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { FormikProvider, useFormik, Form } from 'formik';
 import { UserFormSchema } from './UserFormSchema';
 import UserFormFields from './UserFormFields';
-import { Button } from 'flowbite-react';
+import { Button } from '../ui/flowbite';
 import { Trash2, Save } from 'lucide-react';
 
 const UserForm = ({ initialValues, roles, onSubmit, isUpdate = false }) => {

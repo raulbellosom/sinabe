@@ -9,6 +9,7 @@ const PermissionContext = createContext({
   useDeletePermission: async () => {},
   useGetPermissionById: async () => {},
   useGetPermissions: async () => {},
+  useSyncPermissions: async () => {},
 });
 
 export const usePermissionContext = () => useContext(PermissionContext);

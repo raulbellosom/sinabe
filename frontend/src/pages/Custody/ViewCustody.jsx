@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getCustodyRecord } from '../../services/custody.api';
-import { Card, Table, Badge, Button, Spinner } from 'flowbite-react';
+import { Card, Table, Badge, Button, Spinner } from '../../components/ui/flowbite';
 import Breadcrumb from '../../components/Breadcrum/Breadcrumb';
 import { parseToLocalDate } from '../../utils/formatValues';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';

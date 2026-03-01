@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, FileInput, Spinner } from 'flowbite-react';
+import { Button, FileInput, Spinner } from '../../../components/ui/flowbite';
 import { useCatalogContext } from '../../../context/CatalogContext';
 
 import {

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ErrorMessage } from 'formik';
-import { Label } from 'flowbite-react';
+import { Label } from '../ui/flowbite';
 import classNames from 'classnames';
 import Combobox from '../common/Combobox';
 import PinnableInputWrapper from './PinnableInputWrapper';

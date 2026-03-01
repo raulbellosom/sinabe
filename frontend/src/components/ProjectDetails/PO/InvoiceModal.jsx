@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import Notifies from '../../Notifies/Notifies';
 import { useCreateInvoice, useUpdateInvoice } from '../../../hooks/useInvoices';
-import { Button } from 'flowbite-react';
+import { Button } from '../../ui/flowbite';
 import ActionButtons from '../../ActionButtons/ActionButtons';
 
 const InvoiceSchema = Yup.object({

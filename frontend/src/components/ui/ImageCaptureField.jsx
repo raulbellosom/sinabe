@@ -6,7 +6,7 @@ import { Camera, ImagePlus, X } from 'lucide-react';
 import Button from './Button';
 import cn from './cn';
 import { useNativeCamera } from '../../hooks/useNativeCamera';
-import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
+import ImageViewer from '../ImageViewer/ImageViewer2';
 
 const toFileFromBase64 = async (base64String) => {
   const blob = await fetch(`data:image/jpeg;base64,${base64String}`).then(
@@ -123,33 +123,26 @@ const ImageCaptureField = ({
       />
 
       {files.length ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {files.map((file, index) => {
-            const fileUrl = file instanceof File 
-              ? URL.createObjectURL(file) 
-              : FormattedUrlImage(file?.url || file?.thumbnail || file);
-            return (
-              <article
-                key={`${file.name || 'image'}-${index}`}
-                className="group relative overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)]"
-              >
-                <img
-                  src={fileUrl}
-                  alt={`Imagen ${index + 1}`}
-                  className="h-24 w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                  loading="lazy"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRemove(index)}
-                  className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[color:var(--danger)]"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </article>
-            );
-          })}
-        </div>
+        <ImageViewer
+          images={files.map((file, index) => ({
+            id: file.id || index,
+            url: file instanceof File ? file : file?.url || file,
+            thumbnail:
+              file instanceof File
+                ? file
+                : file?.thumbnail || file?.url || file,
+            name: file.name || `image-${index}`,
+          }))}
+          onRemove={(imageId) => {
+            const indexToRemove =
+              typeof imageId === 'number'
+                ? imageId
+                : files.findIndex((f, i) => (f.id || i) === imageId);
+            if (indexToRemove !== -1) handleRemove(indexToRemove);
+          }}
+          containerClassNames="grid grid-cols-2 gap-3 sm:grid-cols-3"
+          imageStyles="h-24"
+        />
       ) : (
         <div className="flex items-center justify-center h-24 rounded-lg border-2 border-dashed border-[color:var(--border)] bg-[color:var(--surface-muted)]">
           <p className="text-sm text-[color:var(--foreground-muted)]">

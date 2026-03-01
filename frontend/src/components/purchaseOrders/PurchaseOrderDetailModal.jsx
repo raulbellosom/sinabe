@@ -1,6 +1,6 @@
 // components/purchaseOrders/PurchaseOrderDetailModal.jsx
 import { useState } from 'react';
-import { Badge } from 'flowbite-react';
+import { Badge } from '../ui/flowbite';
 import {
   ClipboardList,
   FileText,

@@ -13,11 +13,11 @@ import {
   Modal,
   Tabs,
   Tooltip,
-} from 'flowbite-react';
+} from '../../components/ui/flowbite';
 import { useNotifications } from '../../context/NotificationContext';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import NotificationRuleForm from '../../components/Notifications/NotificationRuleForm';
 import NotificationRuleTestModal from '../../components/Notifications/NotificationRuleTestModal';
 import RuleReadStatusModal from '../../components/Notifications/RuleReadStatusModal';

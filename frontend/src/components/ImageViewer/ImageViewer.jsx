@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
-import { Dropdown } from 'flowbite-react';
+import { Dropdown } from '../ui/flowbite';
 import classNames from 'classnames';
 import NoImageFound from '../../assets/images/NoImageFound.jpg';
 import { downloadFile } from '../../services/api';

@@ -24,7 +24,7 @@ import ReusableModal from '../../components/Modals/ReusableModal';
 import InvoiceInventoryManager from '../../components/invoices/InvoiceInventoryManager';
 import AssignToPurchaseOrderModal from '../../components/invoices/AssignToPurchaseOrderModal';
 import { parseToLocalDate } from '../../utils/formatValues';
-import { Badge } from 'flowbite-react';
+import { Badge } from '../../components/ui/flowbite';
 import { getFileUrl } from '../../utils/getFileUrl';
 import { useProjectQueryParams } from '../../hooks/useProjectQueryParams';
 import ConfirmDeleteModal from '../../components/Modals/ConfirmDeleteModal';

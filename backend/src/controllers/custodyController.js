@@ -85,8 +85,8 @@ async function finalizeCustodyRecord(recordId) {
             type: "application/pdf",
             inventoryId: item.inventoryId,
           },
-        })
-      )
+        }),
+      ),
     );
   }
 
@@ -131,7 +131,7 @@ async function finalizeCustodyRecord(recordId) {
         updatedRecord.receiver.email,
         "Resguardo de Equipo Tecnológico",
         `Hola ${updatedRecord.receiver.firstName}, se ha completado tu resguardo de equipo.`,
-        [{ filename: fileName, content: pdfBytes }]
+        [{ filename: fileName, content: pdfBytes }],
       );
     } catch (emailErr) {
       console.error("Failed to send email on finalization:", emailErr);
@@ -145,7 +145,7 @@ export const createCustodyRecord = async (req, res) => {
   try {
     const {
       date,
-      receiver, // { userId, isNewInactiveUser, employeeNumber, name, email, jobTitle, department }
+      receiver, // { userId }
       delivererUserId,
       comments,
       items, // [{ inventoryId, typeBrand, model, serialNumber, assetNumber, features }]
@@ -155,59 +155,11 @@ export const createCustodyRecord = async (req, res) => {
 
     // 1. Resolve Receiver
     let receiverId = receiver.userId;
-    let receiverUser = null;
-
-    if (receiver.isNewInactiveUser) {
-      // Create new inactive user
-      // Check if email or username exists
-      const existingUser = await db.user.findFirst({
-        where: {
-          OR: [
-            { email: receiver.email },
-            { userName: receiver.userName || receiver.email },
-          ],
-        },
-      });
-
-      if (existingUser) {
-        return res
-          .status(400)
-          .json({ message: "El usuario ya existe (email/username)." });
-      }
-
-      // We need a password for the user model, even if inactive. Generate random.
-      const randomPassword = uuidv4();
-
-      // Find or create "Resguardos" role
-      let role = await db.role.findFirst({ where: { name: "Resguardos" } });
-      if (!role) {
-        // Create permission-less role
-        role = await db.role.create({ data: { name: "Resguardos" } });
-      }
-
-      receiverUser = await db.user.create({
-        data: {
-          firstName: receiver.firstName,
-          lastName: receiver.lastName,
-          email: receiver.email,
-          userName: receiver.userName || receiver.email,
-          password: randomPassword, // Should be hashed but for inactive user maybe ok or hash it if using bcrypt
-          roleId: role.id,
-          enabled: false, // Inactive
-          employeeNumber: receiver.employeeNumber,
-          jobTitle: receiver.jobTitle,
-          department: receiver.department,
-        },
-      });
-      receiverId = receiverUser.id;
-    } else {
-      receiverUser = await db.user.findUnique({ where: { id: receiverId } });
-      if (!receiverUser) {
-        return res
-          .status(404)
-          .json({ message: "Usuario receptor no encontrado." });
-      }
-      // Update user details if provided? Maybe not.
+    let receiverUser = await db.user.findUnique({ where: { id: receiverId } });
+    if (!receiverUser) {
+      return res
+        .status(404)
+        .json({ message: "Usuario receptor no encontrado." });
     }
 
     // 2. Validate Inventories
@@ -715,7 +667,7 @@ export const resendCustodyEmail = async (req, res) => {
       record.receiver.email,
       "Reenvío: Resguardo de Equipo Tecnológico",
       `Hola ${record.receiver.firstName}, te reenviamos tu resguardo de equipo solicitado.`,
-      [{ filename: path.basename(filePath), content: pdfContent }]
+      [{ filename: path.basename(filePath), content: pdfContent }],
     );
 
     res.json({ message: "Correo reenviado exitosamente." });

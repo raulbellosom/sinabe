@@ -1,4 +1,4 @@
-import { Dropdown } from 'flowbite-react';
+import { Dropdown } from '../ui/flowbite';
 import {
   Filter,
 } from 'lucide-react';

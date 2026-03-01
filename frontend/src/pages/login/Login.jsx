@@ -8,7 +8,7 @@ import LogoWhite from '../../assets/logo/sinabe_icon_white.png';
 import BgPattern from '../../assets/bg/bg_login_aeropuerto.jpeg';
 import { LogIn, AtSign, KeyRound } from 'lucide-react';
 import TextInput from '../../components/Inputs/TextInput';
-import { Button } from 'flowbite-react';
+import { Button } from '../../components/ui/flowbite';
 
 const Login = () => {
   const navigate = useNavigate();

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ActionButtons from '../ActionButtons/ActionButtons';
 
 import ModalForm from '../Modals/ModalForm';
-import { Button, Label, Select, TextInput, Tooltip } from 'flowbite-react';
+import { Button, Label, Select, TextInput, Tooltip } from '../ui/flowbite';
 
 
 

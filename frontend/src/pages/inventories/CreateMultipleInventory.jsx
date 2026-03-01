@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import uploadFilesImage from '../../assets/images/upload_files.jpg';
-import { Button, FileInput, Spinner } from 'flowbite-react';
+import { Button, FileInput, Spinner } from '../../components/ui/flowbite';
 import { useInventoryContext } from '../../context/InventoryContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
