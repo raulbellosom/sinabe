@@ -1,12 +1,14 @@
-import React from 'react';
+import { memo } from 'react';
 import { TextInput, Dropdown, Tooltip } from 'flowbite-react';
-import { TbFilter } from 'react-icons/tb';
-import { LuSearch } from 'react-icons/lu';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
 import ActionButtons from '../ActionButtons/ActionButtons';
-import { IoMdRefresh } from 'react-icons/io';
-import { GrStatusInfo } from 'react-icons/gr';
 import { ToggleSwitch } from 'flowbite-react';
+import {
+  Filter,
+  Info,
+  RefreshCw,
+  Search,
+} from 'lucide-react';
 
 const TableActions = ({
   handleSearchTerm,
@@ -53,7 +55,7 @@ const TableActions = ({
           >
             <div className="relative w-full">
               <TextInput
-                icon={LuSearch}
+                icon={Search}
                 type="search"
                 placeholder="Buscar"
                 className="bg-transparent"
@@ -86,7 +88,7 @@ const TableActions = ({
               renderTrigger={() => (
                 <button className={getButtonClassNames('indigo', false)}>
                   <i>
-                    <TbFilter size={18} />
+                    <Filter size={18} />
                   </i>
                   <span className="ml-2">Filtrar</span>
                 </button>
@@ -120,7 +122,7 @@ const TableActions = ({
               renderTrigger={() => (
                 <button className={getButtonClassNames('amber', false)}>
                   <span className="mr-2">
-                    <GrStatusInfo size={18} />
+                    <Info size={18} />
                   </span>
                   Estado
                 </button>
@@ -169,7 +171,7 @@ const TableActions = ({
                 label: 'Refrescar',
                 action: onRefreshData || null,
                 color: 'stone',
-                icon: IoMdRefresh,
+                icon: RefreshCw,
                 filled: true,
               },
             ]}
@@ -180,4 +182,4 @@ const TableActions = ({
   );
 };
 
-export default React.memo(TableActions);
+export default memo(TableActions);

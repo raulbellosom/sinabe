@@ -1,8 +1,10 @@
-import React from 'react';
+
 import { Field } from 'formik';
 import TextInput from '../../Inputs/TextInput';
-import { FaListAlt } from 'react-icons/fa';
 
+import {
+  List,
+} from 'lucide-react';
 const ConditionFormFields = () => {
   return (
     <div className="grid grid-cols-1">
@@ -12,7 +14,7 @@ const ConditionFormFields = () => {
         component={TextInput}
         label="Nombre"
         type="text"
-        icon={FaListAlt}
+        icon={List}
         className="col-span-1"
       />
       <Field

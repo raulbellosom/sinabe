@@ -1,25 +1,26 @@
-import React, { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  FaSearch,
-  FaFilter,
-  FaCalendarAlt,
-  FaUser,
-  FaHistory,
-} from 'react-icons/fa';
-import {
-  MdOutlineCompareArrows,
-  MdVisibility,
-  MdExpandMore,
-  MdExpandLess,
-  MdOutlineDelete,
-  MdOutlineEdit,
-  MdAddCircleOutline,
-} from 'react-icons/md';
+
 import { getAuditLogs } from '../../services/audit.api';
 import { useUsersList } from '../../hooks/useUsersList';
+import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 
 import LoadingModal from '../../components/loadingModal/LoadingModal';
+
+import {
+  ArrowLeftRight,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  Filter,
+  History,
+  Pencil,
+  PlusCircle,
+  Search,
+  Trash2,
+  User,
+} from 'lucide-react';
 
 const AuditPage = () => {
   const [filters, setFilters] = useState({
@@ -63,21 +64,28 @@ const AuditPage = () => {
   const renderActionIcon = (action) => {
     switch (action) {
       case 'CREATE':
-        return <MdAddCircleOutline className="text-green-500" size={20} />;
+        return <PlusCircle className="text-green-500" size={20} />;
       case 'UPDATE':
-        return <MdOutlineEdit className="text-blue-500" size={20} />;
+        return <Pencil className="text-blue-500" size={20} />;
       case 'DELETE':
-        return <MdOutlineDelete className="text-red-500" size={20} />;
+        return <Trash2 className="text-red-500" size={20} />;
       default:
-        return <FaHistory className="text-gray-500" size={20} />;
+        return <History className="text-gray-500" size={20} />;
     }
   };
 
   const renderActionBadge = (action) => {
-    let colorClass = 'bg-gray-100 text-gray-800';
-    if (action === 'CREATE') colorClass = 'bg-green-100 text-green-800';
-    if (action === 'UPDATE') colorClass = 'bg-blue-100 text-blue-800';
-    if (action === 'DELETE') colorClass = 'bg-red-100 text-red-800';
+    let colorClass =
+      'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+    if (action === 'CREATE')
+      colorClass =
+        'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300';
+    if (action === 'UPDATE')
+      colorClass =
+        'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
+    if (action === 'DELETE')
+      colorClass =
+        'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
 
     return (
       <span
@@ -141,17 +149,21 @@ const AuditPage = () => {
     };
 
     return (
-      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mt-2 text-sm">
-        <h4 className="font-semibold mb-2 flex items-center gap-2">
-          <MdOutlineCompareArrows /> Detalles del Cambio
+      <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700 mt-2 text-sm">
+        <h4 className="font-semibold mb-2 flex items-center gap-2 text-gray-700 dark:text-gray-300">
+          <ArrowLeftRight /> Detalles del Cambio
         </h4>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="text-gray-500 border-b">
+              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
                 <th className="py-1 min-w-[100px]">Campo</th>
-                <th className="py-1 min-w-[150px] text-red-600">Anterior</th>
-                <th className="py-1 min-w-[150px] text-green-600">Nuevo</th>
+                <th className="py-1 min-w-[150px] text-red-600 dark:text-red-400">
+                  Anterior
+                </th>
+                <th className="py-1 min-w-[150px] text-green-600 dark:text-green-400">
+                  Nuevo
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -164,10 +176,15 @@ const AuditPage = () => {
                   return (
                     <tr
                       key={key}
-                      className="border-b last:border-0 hover:bg-gray-100"
+                      className="border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-100 dark:hover:bg-gray-800/60"
                     >
-                      <td className="py-2 font-medium text-gray-700">{key}</td>
-                      <td className="py-2 text-gray-600" colSpan={2}>
+                      <td className="py-2 font-medium text-gray-700 dark:text-gray-300">
+                        {key}
+                      </td>
+                      <td
+                        className="py-2 text-gray-600 dark:text-gray-400"
+                        colSpan={2}
+                      >
                         {formatValue(value)}
                       </td>
                     </tr>
@@ -177,17 +194,19 @@ const AuditPage = () => {
                 return (
                   <tr
                     key={key}
-                    className="border-b last:border-0 hover:bg-gray-100"
+                    className="border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-100 dark:hover:bg-gray-800/60"
                   >
-                    <td className="py-2 font-medium text-gray-700">{key}</td>
+                    <td className="py-2 font-medium text-gray-700 dark:text-gray-300">
+                      {key}
+                    </td>
                     <td
-                      className="py-2 text-red-500 bg-red-50/50 px-1 rounded max-w-[300px] break-words"
+                      className="py-2 text-red-500 dark:text-red-400 bg-red-50/50 dark:bg-red-900/20 px-1 rounded max-w-[300px] break-words"
                       title={formatValue(oldVal)}
                     >
                       {formatValue(oldVal)}
                     </td>
                     <td
-                      className="py-2 text-green-600 bg-green-50/50 px-1 rounded max-w-[300px] break-words"
+                      className="py-2 text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-900/20 px-1 rounded max-w-[300px] break-words"
                       title={formatValue(newVal)}
                     >
                       {formatValue(newVal)}
@@ -220,7 +239,7 @@ const AuditPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Search */}
           <div className="relative">
-            <FaSearch className="absolute left-3 top-3 text-gray-400" />
+            <Search className="absolute left-3 top-3 text-gray-400" />
             <input
               type="text"
               name="search"
@@ -233,7 +252,7 @@ const AuditPage = () => {
 
           {/* User Filter */}
           <div className="relative">
-            <FaUser className="absolute left-3 top-3 text-gray-400" />
+            <User className="absolute left-3 top-3 text-gray-400" />
             <select
               name="userId"
               className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none"
@@ -251,7 +270,7 @@ const AuditPage = () => {
 
           {/* Start Date */}
           <div className="relative">
-            <FaCalendarAlt className="absolute left-3 top-3 text-gray-400" />
+            <Calendar className="absolute left-3 top-3 text-gray-400" />
             <input
               type="date"
               name="startDate"
@@ -263,7 +282,7 @@ const AuditPage = () => {
 
           {/* End Date */}
           <div className="relative">
-            <FaCalendarAlt className="absolute left-3 top-3 text-gray-400" />
+            <Calendar className="absolute left-3 top-3 text-gray-400" />
             <input
               type="date"
               name="endDate"
@@ -275,7 +294,7 @@ const AuditPage = () => {
 
           {/* Type Filter */}
           <div className="relative">
-            <FaFilter className="absolute left-3 top-3 text-gray-400" />
+            <Filter className="absolute left-3 top-3 text-gray-400" />
             <select
               name="entityType"
               className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm appearance-none"
@@ -331,7 +350,7 @@ const AuditPage = () => {
           {/* Mobile/Card View */}
           <div className="grid grid-cols-1 gap-4 md:hidden">
             {data?.data?.length === 0 ? (
-              <div className="text-center py-10 text-gray-500 bg-white rounded-lg">
+              <div className="text-center py-10 text-gray-500 dark:text-gray-400 bg-white dark:bg-[#1a1c23] rounded-lg">
                 No se encontraron registros
               </div>
             ) : (
@@ -345,12 +364,12 @@ const AuditPage = () => {
                       <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
                         {log.user?.photo?.url ? (
                           <img
-                            src={log.user.photo.url}
+                            src={FormattedUrlImage(log.user.photo.url)}
                             alt="User"
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <FaUser className="text-gray-400" />
+                          <User className="text-gray-400" />
                         )}
                       </div>
                       <div>
@@ -387,11 +406,11 @@ const AuditPage = () => {
                     >
                       {expandedRow === log.id ? (
                         <>
-                          OCULTAR DETALLES <MdExpandLess className="ml-1" />
+                          OCULTAR DETALLES <ChevronUp className="ml-1" />
                         </>
                       ) : (
                         <>
-                          VER DETALLES <MdExpandMore className="ml-1" />
+                          VER DETALLES <ChevronDown className="ml-1" />
                         </>
                       )}
                     </button>
@@ -440,8 +459,8 @@ const AuditPage = () => {
                     </tr>
                   ) : (
                     data?.data?.map((log) => (
-                      <React.Fragment key={log.id}>
-                        <tr className="hover:bg-gray-50/50 transition-colors">
+                      <Fragment key={log.id}>
+                        <tr className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                           <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                             {new Date(log.createdAt).toLocaleString('es-MX', {
                               day: '2-digit',
@@ -456,7 +475,7 @@ const AuditPage = () => {
                               <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                                 {log.user?.photo?.url ? (
                                   <img
-                                    src={log.user.photo.url}
+                                    src={FormattedUrlImage(log.user.photo.url)}
                                     alt=""
                                     className="w-full h-full object-cover"
                                   />
@@ -495,25 +514,25 @@ const AuditPage = () => {
                                   expandedRow === log.id ? null : log.id,
                                 )
                               }
-                              className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors"
+                              className="p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-gray-500 dark:text-gray-400 transition-colors"
                               title="Ver cambios"
                             >
                               {expandedRow === log.id ? (
-                                <MdExpandLess size={20} />
+                                <ChevronUp size={20} />
                               ) : (
-                                <MdVisibility size={20} />
+                                <Eye size={20} />
                               )}
                             </button>
                           </td>
                         </tr>
                         {expandedRow === log.id && (
-                          <tr className="bg-gray-50/50">
+                          <tr className="bg-gray-50/50 dark:bg-white/5">
                             <td colSpan="5" className="px-6 py-4">
                               <DiffViewer changes={log.changes} />
                             </td>
                           </tr>
                         )}
-                      </React.Fragment>
+                      </Fragment>
                     ))
                   )}
                 </tbody>
@@ -528,7 +547,7 @@ const AuditPage = () => {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-3 py-1 text-sm border rounded bg-white disabled:opacity-50 hover:bg-gray-100"
+                  className="px-3 py-1 text-sm border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                 >
                   Anterior
                 </button>
@@ -537,7 +556,7 @@ const AuditPage = () => {
                     setPage((p) => Math.min(data?.meta?.totalPages || 1, p + 1))
                   }
                   disabled={page >= (data?.meta?.totalPages || 1)}
-                  className="px-3 py-1 text-sm border rounded bg-white disabled:opacity-50 hover:bg-gray-100"
+                  className="px-3 py-1 text-sm border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                 >
                   Siguiente
                 </button>
@@ -550,11 +569,11 @@ const AuditPage = () => {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 bg-white border rounded shadow-sm disabled:opacity-50"
+              className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded shadow-sm disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             >
               Anterior
             </button>
-            <span className="flex items-center text-sm text-gray-600">
+            <span className="flex items-center text-sm text-gray-600 dark:text-gray-400">
               {page} / {data?.meta?.totalPages || 1}
             </span>
             <button
@@ -562,7 +581,7 @@ const AuditPage = () => {
                 setPage((p) => Math.min(data?.meta?.totalPages || 1, p + 1))
               }
               disabled={page >= (data?.meta?.totalPages || 1)}
-              className="px-4 py-2 bg-white border rounded shadow-sm disabled:opacity-50"
+              className="px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded shadow-sm disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
             >
               Siguiente
             </button>

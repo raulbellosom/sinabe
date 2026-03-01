@@ -1,14 +1,23 @@
-import { FaEye, FaPen, FaTrash } from 'react-icons/fa';
+
+
+
 import ProjectStatusBadge from './ProjectStatusBadge';
 import ProjectProgressBar from './ProjectProgressBar';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { Dropdown } from 'flowbite-react';
 import ActionButtons from '../ActionButtons/ActionButtons';
-import { BsThreeDotsVertical } from 'react-icons/bs';
+
 import { useNavigate } from 'react-router-dom';
 import { parseToLocalDate } from '../../utils/formatValues';
 import { useDeleteProject } from '../../hooks/useProjects';
+import {
+  Eye,
+  MoreVertical,
+  Pen,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 
 const ProjectTable = ({
   projects,
@@ -29,12 +38,12 @@ const ProjectTable = ({
     {
       label: 'Editar',
       action: () => navigate(`/projects/edit/${project.id}/`),
-      icon: FaPen,
+      icon: Pen,
     },
     {
       label: 'Eliminar',
       action: () => deleteProject(project.id),
-      icon: FaTrash,
+      icon: Trash2,
       color: 'red',
     },
   ];
@@ -142,7 +151,7 @@ const ProjectTable = ({
                             {
                               label: 'Ver',
                               href: `/projects/view/${p.id}`,
-                              icon: FaEye,
+                              icon: Eye,
                             },
                           ]}
                           className="w-full"
@@ -152,7 +161,7 @@ const ProjectTable = ({
                         <Dropdown
                           renderTrigger={() => (
                             <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
-                              <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                              <MoreVertical className="text-lg text-neutral-600" />
                             </button>
                           )}
                           dismissOnClick={true}

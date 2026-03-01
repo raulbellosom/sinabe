@@ -1,10 +1,14 @@
 // components/InventoryComponents/GlobalInventorySearch.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames';
-import { FaSearch } from 'react-icons/fa';
-import { MdClose, MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import { searchInventories } from '../../services/api';
+
+import {
+  ChevronDown,
+  Search,
+  X,
+} from 'lucide-react';
 
 const GlobalInventorySearch = () => {
   const [inputValue, setInputValue] = useState('');
@@ -130,7 +134,7 @@ const GlobalInventorySearch = () => {
   return (
     <div className="relative w-full" ref={inputRef}>
       <div className="relative">
-        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-500" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-500" />
         <input
           type="text"
           placeholder="Buscar inventario..."
@@ -140,14 +144,14 @@ const GlobalInventorySearch = () => {
           className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         {inputValue && (
-          <MdClose
+          <X
             size={22}
             onClick={handleClearInput}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-neutral-500"
           />
         )}
         {suggestions.length > 0 && (
-          <MdOutlineKeyboardArrowDown
+          <ChevronDown
             size={24}
             onClick={() => setShowDropdown((prev) => !prev)}
             className={classNames(

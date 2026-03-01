@@ -1,7 +1,7 @@
 // src/components/ProjectDetails/DeadlineFormModal.jsx
-import React, { useState, useEffect, act } from 'react';
+import { useState, useEffect, act } from 'react';
 import ReusableModal from '../../components/Modals/ReusableModal';
-import AsyncSelect from 'react-select/async';
+import Combobox from '../common/Combobox';
 import { v4 as uuidv4 } from 'uuid';
 import Notifies from '../../components/Notifies/Notifies';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
@@ -14,32 +14,26 @@ import {
 } from '../../hooks/useDeadlines';
 import { useProjectTeam } from '../../hooks/useProjectTeam';
 import {
-  FaCalendarAlt,
-  FaTasks,
-  FaPlus,
-  FaSave,
-  FaInfoCircle,
-  FaClock,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaTrashAlt,
-  FaUser,
-  FaInfoCircle as FaInfo,
-} from 'react-icons/fa';
-import {
-  MdInfoOutline,
-  MdOutlineCalendarToday,
-  MdOutlineTaskAlt,
-  MdTextFields,
-} from 'react-icons/md';
-import { IoMdClose } from 'react-icons/io';
+  Calendar,
+  ListChecks,
+  Plus,
+  Save,
+  Info,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Trash2,
+  User,
+  AlignLeft,
+  X,
+} from 'lucide-react';
 import ActionButtons from '../ActionButtons/ActionButtons';
 
 const statusIcons = {
-  PENDIENTE: <FaClock className="text-yellow-500 text-lg" />,
-  EN_PROGRESO: <MdInfoOutline className="text-blue-500 text-lg" />,
-  COMPLETADO: <FaCheckCircle className="text-green-500 text-lg" />,
-  CANCELADO: <FaTimesCircle className="text-red-500 text-lg" />,
+  PENDIENTE: <Clock className="text-yellow-500 text-lg" />,
+  EN_PROGRESO: <Info className="text-blue-500 text-lg" />,
+  COMPLETADO: <CheckCircle className="text-green-500 text-lg" />,
+  CANCELADO: <XCircle className="text-red-500 text-lg" />,
 };
 
 const borderColor = {
@@ -49,12 +43,8 @@ const borderColor = {
   CANCELADO: 'border-red-500',
 };
 
-const CustomUserOption = ({ data, innerRef, innerProps }) => (
-  <div
-    ref={innerRef}
-    {...innerProps}
-    className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-  >
+const CustomUserOption = ({ data }) => (
+  <div className="flex items-center w-full">
     {data.thumbnail ? (
       <img
         src={data.thumbnail}
@@ -62,7 +52,7 @@ const CustomUserOption = ({ data, innerRef, innerProps }) => (
         className="w-6 h-6 rounded-full object-cover mr-2"
       />
     ) : (
-      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center mr-2 text-xs font-semibold">
+      <div className="w-6 h-6 bg-[var(--surface-muted)] rounded-full flex items-center justify-center mr-2 text-xs font-semibold text-[var(--foreground-muted)]">
         {data.label
           ?.split(' ')
           .map((w) => w[0])
@@ -71,9 +61,11 @@ const CustomUserOption = ({ data, innerRef, innerProps }) => (
           .toUpperCase()}
       </div>
     )}
-    <div>
-      <p className="text-sm text-gray-800 dark:text-white">{data.label}</p>
-      <p className="text-xs text-gray-500">{data.email}</p>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm text-[var(--foreground)] truncate">{data.label}</p>
+      <p className="text-xs text-[var(--foreground-muted)] truncate">
+        {data.email}
+      </p>
     </div>
   </div>
 );
@@ -267,12 +259,12 @@ const DeadlineFormModal = ({
       title={isEditing ? 'Editar Deadline' : 'Crear Deadline'}
       size="xl"
       actions={[
-        { label: 'Cancelar', color: 'stone', icon: IoMdClose, action: onClose },
+        { label: 'Cancelar', color: 'stone', icon: X, action: onClose },
         {
           label: isEditing ? 'Guardar cambios' : 'Crear',
           color: 'purple',
           filled: true,
-          icon: FaSave,
+          icon: Save,
           action: handleSubmit,
         },
       ]}
@@ -282,12 +274,12 @@ const DeadlineFormModal = ({
         <div className="dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
             {' '}
-            <FaInfo /> Información del Deadline
+            <Info /> Información del Deadline
           </h2>
           <div className="mt-4 grid grid-cols-12 gap-4">
             <div className="col-span-12 md:col-span-6">
               <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <FaInfoCircle className="mr-1" /> Titulo del Deadline
+                <Info className="mr-1" /> Titulo del Deadline
               </label>
               <input
                 type="text"
@@ -300,7 +292,7 @@ const DeadlineFormModal = ({
             </div>
             <div className="col-span-6 md:col-span-3">
               <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <FaCalendarAlt className="mr-1" /> Vencimiento
+                <Calendar className="mr-1" /> Vencimiento
               </label>
               <input
                 type="date"
@@ -313,7 +305,7 @@ const DeadlineFormModal = ({
             </div>
             <div className="col-span-6 md:col-span-3">
               <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <FaTasks className="mr-1" /> Estado
+                <ListChecks className="mr-1" /> Estado
               </label>
               <select
                 className="w-full rounded-md border-gray-300 p-2"
@@ -331,7 +323,7 @@ const DeadlineFormModal = ({
           </div>
           <div className="mt-4">
             <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              <MdTextFields className="mr-1" /> Descripción
+              <AlignLeft className="mr-1" /> Descripción
             </label>
             <textarea
               rows={3}
@@ -343,10 +335,12 @@ const DeadlineFormModal = ({
             />
           </div>
           <div className="mt-4">
-            <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              <FaUser className="mr-1" /> Usuarios
-            </label>
-            <AsyncSelect
+            <Combobox
+              label={
+                <span className="flex items-center">
+                  <User className="mr-1" /> Usuarios
+                </span>
+              }
               isMulti
               cacheOptions
               closeMenuOnSelect={false}
@@ -358,25 +352,22 @@ const DeadlineFormModal = ({
               )}
               onChange={(sel) => setDeadline({ ...deadline, users: sel })}
               className="w-full"
-              styles={{
-                multiValue: (base) => ({ ...base, backgroundColor: '#E0E7FF' }),
-              }}
             />
           </div>
         </div>
         {/* Tasks */}
         <div className="dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-            <FaTasks className="mr-1" /> Tareas
+            <ListChecks className="mr-1" /> Tareas
           </h3>
           {/* New Task */}
           <div className="grid grid-cols-12 gap-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
             <div className="col-span-12 flex items-center text-purple-600 font-medium mb-2">
-              <FaPlus className="mr-1" /> Añadir Tarea
+              <Plus className="mr-1" /> Añadir Tarea
             </div>
             <div className="col-span-12 md:col-span-6 flex flex-col">
               <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <MdOutlineTaskAlt className="mr-1" /> Titulo de la Tarea
+                <ListChecks className="mr-1" /> Titulo de la Tarea
               </label>
               <input
                 type="text"
@@ -389,7 +380,7 @@ const DeadlineFormModal = ({
             </div>
             <div className="col-span-6 md:col-span-3 flex flex-col">
               <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <MdOutlineCalendarToday className="mr-1" /> Fecha
+                <Calendar className="mr-1" /> Fecha
               </label>
               <input
                 type="date"
@@ -405,7 +396,7 @@ const DeadlineFormModal = ({
                 onClick={handleAddTask}
                 className="w-full bg-sinabe-secondary text-white py-2 rounded-md flex items-center justify-center gap-2"
               >
-                <FaPlus /> Añadir
+                <Plus /> Añadir
               </button> */}
               <ActionButtons
                 extraActions={[
@@ -413,7 +404,7 @@ const DeadlineFormModal = ({
                     action: handleAddTask,
                     label: 'Añadir',
                     color: 'purple',
-                    icon: FaPlus,
+                    icon: Plus,
                     filled: true,
                     className: 'min-w-full min-h-10 p-2',
                     disabled: !newTask.name || !newTask.date,
@@ -423,7 +414,7 @@ const DeadlineFormModal = ({
             </div>
             <div className="col-span-12 flex flex-col">
               <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <MdTextFields className="mr-1" /> Descripción
+                <AlignLeft className="mr-1" /> Descripción
               </label>
               <textarea
                 rows={2}
@@ -435,10 +426,12 @@ const DeadlineFormModal = ({
               />
             </div>
             <div className="col-span-12">
-              <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                <FaUser className="mr-1" /> Usuarios
-              </label>
-              <AsyncSelect
+              <Combobox
+                label={
+                  <span className="flex items-center">
+                    <User className="mr-1" /> Usuarios
+                  </span>
+                }
                 isMulti
                 cacheOptions
                 closeMenuOnSelect={false}
@@ -450,12 +443,6 @@ const DeadlineFormModal = ({
                 )}
                 onChange={(sel) => setNewTask({ ...newTask, users: sel })}
                 className="w-full"
-                styles={{
-                  multiValue: (base) => ({
-                    ...base,
-                    backgroundColor: '#E0E7FF',
-                  }),
-                }}
               />
             </div>
           </div>
@@ -474,7 +461,7 @@ const DeadlineFormModal = ({
                   <div className="grid grid-cols-12 gap-4">
                     <div className="col-span-12 order-1 md:col-span-5 flex flex-col">
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
-                        <MdOutlineTaskAlt className="mr-1" /> Titulo de la Tarea
+                        <ListChecks className="mr-1" /> Titulo de la Tarea
                       </label>
                       <input
                         type="text"
@@ -493,7 +480,7 @@ const DeadlineFormModal = ({
                     </div>
                     <div className="col-span-6 order-2 md:col-span-3 flex flex-col">
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
-                        <MdOutlineCalendarToday className="mr-1" /> Fecha
+                        <Calendar className="mr-1" /> Fecha
                       </label>
                       <input
                         type="date"
@@ -512,7 +499,7 @@ const DeadlineFormModal = ({
                     </div>
                     <div className="col-span-6 order-3 md:col-span-2 flex flex-col">
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
-                        <MdInfoOutline className="mr-1" /> Estado
+                        <Info className="mr-1" /> Estado
                       </label>
                       <select
                         className="w-full rounded-md border-gray-300 p-2 mb-2"
@@ -545,7 +532,7 @@ const DeadlineFormModal = ({
                             },
                             label: 'Eliminar',
                             color: 'red',
-                            icon: FaTrashAlt,
+                            icon: Trash2,
                             filled: true,
                             className: 'min-w-full max-h-fit min-h-10 p-2',
                           },
@@ -554,7 +541,7 @@ const DeadlineFormModal = ({
                     </div>
                     <div className="col-span-12 order-5 flex flex-col">
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
-                        <MdTextFields className="mr-1" /> Descripción
+                        <AlignLeft className="mr-1" /> Descripción
                       </label>
                       <textarea
                         rows={2}
@@ -572,10 +559,12 @@ const DeadlineFormModal = ({
                       />
                     </div>
                     <div className="col-span-12 order-6">
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
-                        <FaUser className="mr-1" /> Usuarios
-                      </label>
-                      <AsyncSelect
+                      <Combobox
+                        label={
+                          <span className="flex items-center">
+                            <User className="mr-1" /> Usuarios
+                          </span>
+                        }
                         isMulti
                         cacheOptions
                         closeMenuOnSelect={false}
@@ -593,12 +582,6 @@ const DeadlineFormModal = ({
                           )
                         }
                         className="w-full"
-                        styles={{
-                          multiValue: (base) => ({
-                            ...base,
-                            backgroundColor: '#E0E7FF',
-                          }),
-                        }}
                       />
                     </div>
                     {/* <div className="col-span-12 flex justify-end">
@@ -610,7 +593,7 @@ const DeadlineFormModal = ({
                         }}
                         className="text-red-500 hover:text-red-700"
                       >
-                        <FaTrashAlt />
+                        <Trash2 />
                       </button>
                     </div> */}
                   </div>

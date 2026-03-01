@@ -1,8 +1,10 @@
 // src/components/Projects/ConfirmRemoveProjectMemberModal.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ReusableModal from '../../Modals/ReusableModal';
-import { FaTrashAlt } from 'react-icons/fa';
 
+import {
+  Trash2,
+} from 'lucide-react';
 const ConfirmRemoveProjectMemberModal = ({
   isOpen,
   onClose,
@@ -27,7 +29,7 @@ const ConfirmRemoveProjectMemberModal = ({
       onClose={onClose}
       title={
         <span className="flex items-center gap-2 text-red-600 font-semibold">
-          <FaTrashAlt /> Confirmar Eliminación
+          <Trash2 /> Confirmar Eliminación
         </span>
       }
       size="md"

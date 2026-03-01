@@ -2,24 +2,25 @@
  * Componente de campana de notificaciones para el navbar
  * Responsivo con portal para mejor posicionamiento
  */
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  HiBell,
-  HiCheck,
-  HiTrash,
-  HiExternalLink,
-  HiX,
-  HiVolumeUp,
-  HiVolumeOff,
-} from 'react-icons/hi';
 import { useNotifications } from '../../context/NotificationContext';
 import { useUserPreference } from '../../context/UserPreferenceContext';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames';
+
+import {
+  Bell,
+  Check,
+  ExternalLink,
+  Trash2,
+  Volume2,
+  VolumeX,
+  X,
+} from 'lucide-react';
 
 const NotificationBell = () => {
   const navigate = useNavigate();
@@ -206,7 +207,7 @@ const NotificationBell = () => {
         )}
         aria-label="Notificaciones"
       >
-        <HiBell className="w-6 h-6 sm:w-6 sm:h-6" />
+        <Bell className="w-6 h-6 sm:w-6 sm:h-6" />
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full ring-2 ring-white">
             {unreadCount > 99 ? '99+' : unreadCount}
@@ -265,9 +266,9 @@ const NotificationBell = () => {
                         }
                       >
                         {notificationSoundEnabled ? (
-                          <HiVolumeUp className="w-5 h-5" />
+                          <Volume2 className="w-5 h-5" />
                         ) : (
-                          <HiVolumeOff className="w-5 h-5" />
+                          <VolumeX className="w-5 h-5" />
                         )}
                       </button>
                       {unreadCount > 0 && (
@@ -275,7 +276,7 @@ const NotificationBell = () => {
                           onClick={handleMarkAllRead}
                           className="text-xs text-purple-600 hover:text-purple-700 flex items-center gap-1 font-medium"
                         >
-                          <HiCheck className="w-4 h-4" />
+                          <Check className="w-4 h-4" />
                           <span className="hidden sm:inline">
                             Marcar leídas
                           </span>
@@ -286,7 +287,7 @@ const NotificationBell = () => {
                           onClick={() => setIsOpen(false)}
                           className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
                         >
-                          <HiX className="w-5 h-5" />
+                          <X className="w-5 h-5" />
                         </button>
                       )}
                     </div>
@@ -301,7 +302,7 @@ const NotificationBell = () => {
                     ) : notifications.length === 0 ? (
                       <div className="py-12 text-center px-4">
                         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                          <HiBell className="w-8 h-8 text-gray-400" />
+                          <Bell className="w-8 h-8 text-gray-400" />
                         </div>
                         <p className="font-medium text-gray-900 mb-1">
                           No tienes notificaciones
@@ -355,7 +356,7 @@ const NotificationBell = () => {
                               </div>
                               <div className="flex items-center gap-1 flex-shrink-0 pt-1">
                                 {notification.link && (
-                                  <HiExternalLink className="w-4 h-4 text-gray-300" />
+                                  <ExternalLink className="w-4 h-4 text-gray-300" />
                                 )}
                                 <button
                                   onClick={(e) =>
@@ -363,7 +364,7 @@ const NotificationBell = () => {
                                   }
                                   className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                 >
-                                  <HiTrash className="w-4 h-4" />
+                                  <Trash2 className="w-4 h-4" />
                                 </button>
                               </div>
                             </div>

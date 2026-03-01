@@ -1,7 +1,15 @@
 // src/components/ActionButtons/ActionButtons.jsx
-import React, { forwardRef } from 'react';
-import { FaCheckCircle, FaEdit, FaEye, FaPlus, FaTrash } from 'react-icons/fa';
-import { MdCancel, MdOutlinePushPin, MdPushPin } from 'react-icons/md';
+import { forwardRef } from 'react';
+import {
+  CheckCircle,
+  Pencil,
+  Eye,
+  Plus,
+  Trash2,
+  XCircle,
+  Pin,
+  PinOff,
+} from 'lucide-react';
 import LinkButton from './LinkButton';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
 
@@ -35,7 +43,7 @@ const ActionButtons = forwardRef(
         label: labelSave || 'Guardar',
         action: onSave,
         color: colorSave || 'blue',
-        icon: iconSave || FaCheckCircle,
+        icon: iconSave || CheckCircle,
         disabled: disabledSave,
       },
       ...extraActions.map((action) => ({
@@ -45,35 +53,35 @@ const ActionButtons = forwardRef(
         label: labelShow || 'Ver',
         action: onShow,
         color: 'cyan',
-        icon: FaEye,
+        icon: Eye,
         disabled: false,
       },
       {
         label: labelEdit || 'Editar',
         action: onEdit,
         color: 'yellow',
-        icon: FaEdit,
+        icon: Pencil,
         disabled: false,
       },
       {
         label: labelRemove || 'Eliminar',
         action: onRemove,
         color: 'red',
-        icon: FaTrash,
+        icon: Trash2,
         disabled: false,
       },
       {
         label: labelCreate || 'Nuevo',
         action: onCreate,
         color: 'indigo',
-        icon: FaPlus,
+        icon: Plus,
         disabled: false,
       },
       {
         label: labelCancel || 'Cancelar',
         action: onCancel,
         color: 'red',
-        icon: MdCancel,
+        icon: XCircle,
         disabled: false,
       },
       {
@@ -82,7 +90,7 @@ const ActionButtons = forwardRef(
           : labelPin || 'Activar Pin',
         action: onTogglePin,
         color: isPinMode ? 'green' : 'blue',
-        icon: isPinMode ? MdPushPin : MdOutlinePushPin,
+        icon: isPinMode ? Pin : PinOff,
         disabled: false,
       },
     ];
@@ -118,7 +126,6 @@ const ActionButtons = forwardRef(
             action?.disabled,
             action?.className,
           )}
-          outline={action?.outline}
           type={action?.type || 'button'}
           disabled={action?.disabled || false}
         >

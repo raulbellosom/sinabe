@@ -1,6 +1,6 @@
-import React from 'react';
+
 import { motion, AnimatePresence } from 'framer-motion';
-import { MdInventory } from 'react-icons/md';
+import { Package } from 'lucide-react';
 import { useInventorySelection } from '../../context/InventorySelectionProvider';
 import classNames from 'classnames';
 
@@ -29,7 +29,7 @@ const FloatingInventoryCart = () => {
         )}
       >
         <div className="relative">
-          <MdInventory className="text-2xl" />
+          <Package className="text-2xl" />
           <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}

@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Timeline, Pagination } from 'flowbite-react';
 import { useAuditLogs } from '../../hooks/useAuditLogs';
-import { FaUser, FaClock } from 'react-icons/fa';
 import dayjs from 'dayjs';
+
+import {
+  Clock,
+  User,
+} from 'lucide-react';
 
 const AuditLogHistory = ({ entityType, entityId }) => {
   const [page, setPage] = useState(1);
@@ -68,12 +72,12 @@ const AuditLogHistory = ({ entityType, entityId }) => {
       <Timeline>
         {logs.map((log) => (
           <Timeline.Item key={log.id}>
-            <Timeline.Point icon={FaClock} />
+            <Timeline.Point icon={Clock} />
             <Timeline.Content>
               <Timeline.Time className="flex items-center gap-2">
                 {dayjs(log.createdAt).format('DD/MM/YYYY HH:mm')}
                 <span className="text-sm font-normal text-gray-500 flex items-center gap-1">
-                  <FaUser size={10} /> {log.user?.firstName}{' '}
+                  <User size={10} /> {log.user?.firstName}{' '}
                   {log.user?.lastName}
                 </span>
               </Timeline.Time>

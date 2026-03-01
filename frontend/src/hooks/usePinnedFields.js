@@ -60,7 +60,7 @@ export const usePinnedFields = () => {
   // Verificar si un campo está fijado
   const isFieldPinned = useCallback(
     (fieldName) => {
-      return pinnedFields.hasOwnProperty(fieldName);
+      return Object.hasOwn(pinnedFields, fieldName);
     },
     [pinnedFields],
   );

@@ -1,8 +1,10 @@
-import React from 'react';
+
 import { Field } from 'formik';
 import TextInput from '../../Inputs/TextInput';
-import { MdOutlinePassword } from 'react-icons/md';
 
+import {
+  KeyRound,
+} from 'lucide-react';
 const ChangePasswordFormFields = () => {
   return (
     <div className="flex flex-col gap-4">
@@ -11,7 +13,7 @@ const ChangePasswordFormFields = () => {
         id="currentPassword"
         label="Contraseña actual"
         component={TextInput}
-        icon={MdOutlinePassword}
+        icon={KeyRound}
         type="password"
       />
       <Field
@@ -19,7 +21,7 @@ const ChangePasswordFormFields = () => {
         id="newPassword"
         label="Nueva contraseña"
         component={TextInput}
-        icon={MdOutlinePassword}
+        icon={KeyRound}
         type="password"
       />
       <Field
@@ -27,7 +29,7 @@ const ChangePasswordFormFields = () => {
         id="confirmNewPassword"
         label="Confirmar nueva contraseña"
         component={TextInput}
-        icon={MdOutlinePassword}
+        icon={KeyRound}
         type="password"
       />
     </div>

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import AuthContext from './AuthContext';
 import UserProvider from './UserProvider';
 import InventoryProvider from './InventoryProvider';

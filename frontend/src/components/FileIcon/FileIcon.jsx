@@ -1,23 +1,24 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ModalViewer from '../Modals/ModalViewer';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import DownloadFileImage from '../../assets/images/download_file.webp';
 import { API_URL, downloadFile } from '../../services/api';
-import { BiError } from 'react-icons/bi';
-import { IoClose } from 'react-icons/io5';
-import { MdCloudDone, MdRemoveRedEye, MdSaveAlt } from 'react-icons/md';
-import {
-  FaFilePdf,
-  FaFileExcel,
-  FaFileCsv,
-  FaFileImage,
-  FaFilePowerpoint,
-  FaFileWord,
-  FaFile,
-  FaFileVideo,
-} from 'react-icons/fa';
 import classNames from 'classnames';
 import { FallingLines } from 'react-loader-spinner';
+
+import {
+  AlertCircle,
+  CloudCheck,
+  Eye,
+  File as FileGenericIcon,
+  FileImage,
+  FileSpreadsheet,
+  FileText,
+  FileVideo,
+  Presentation,
+  Save,
+  X,
+} from 'lucide-react';
 
 const FileIcon = ({ file, className, size, onRemove }) => {
   const [isModalDownloadOpen, setIsModalDownloadOpen] = useState(false);
@@ -26,32 +27,36 @@ const FileIcon = ({ file, className, size, onRemove }) => {
   const [isDownloadingError, setIsDownloadingError] = useState(false);
   const iconSize = size || 22;
 
+  if (!file) return null;
+
   const getIcon = (file) => {
+    if (!file) return <FileGenericIcon className="text-stone-400" size={iconSize} />;
     if (file.type?.includes('pdf')) {
-      return <FaFilePdf className="text-red-500" size={iconSize} />;
+      return <FileText className="text-red-500" size={iconSize} />;
     } else if (
       file.type?.includes('excel') ||
       file.type?.includes('spreadsheetml')
     ) {
-      return <FaFileExcel className="text-green-500" size={iconSize} />;
+      return <FileSpreadsheet className="text-green-500" size={iconSize} />;
     } else if (file.type?.includes('csv')) {
-      return <FaFileCsv className="text-lime-500" size={iconSize} />;
+      return <FileSpreadsheet className="text-lime-500" size={iconSize} />;
     } else if (file.type?.includes('image')) {
-      return <FaFileImage className="text-cyan-500" size={iconSize} />;
+      return <FileImage className="text-cyan-500" size={iconSize} />;
     } else if (file.type?.includes('powerpoint')) {
-      return <FaFilePowerpoint className="text-purple-500" size={iconSize} />;
+      return <Presentation className="text-purple-500" size={iconSize} />;
     } else if (file.type?.includes('word')) {
-      return <FaFileWord className="text-blue-500" size={iconSize} />;
+      return <FileText className="text-blue-500" size={iconSize} />;
     } else if (file.type?.includes('video')) {
-      return <FaFileVideo className="text-indigo-500" size={iconSize} />;
+      return <FileVideo className="text-indigo-500" size={iconSize} />;
     } else {
-      return <FaFile className="text-stone-400" size={iconSize} />;
+      return <FileGenericIcon className="text-stone-400" size={iconSize} />;
     }
   };
 
   const handleOpenPdf = () => {
     if (file && file.type?.includes('pdf')) {
-      window.open(getFileUrl(file), '_blank');
+      const url = getFileUrl(file);
+      if (url) window.open(url, '_blank');
     }
   };
 
@@ -74,6 +79,8 @@ const FileIcon = ({ file, className, size, onRemove }) => {
   const getFileUrl = (file) => {
     if (file instanceof File) {
       return URL.createObjectURL(file);
+    } else if (!file.url) {
+      return null;
     } else if (file.url.startsWith('http') || file.url.startsWith('https')) {
       return file.url;
     } else {
@@ -100,24 +107,18 @@ const FileIcon = ({ file, className, size, onRemove }) => {
         <div className="flex items-center justify-evenly gap-2">
           {file.type?.includes('pdf') && (
             <span onClick={handleOpenPdf}>
-              <MdRemoveRedEye
-                className="text-blue-500 cursor-pointer"
-                size={iconSize}
-              />
+              <Eye className="text-blue-500 cursor-pointer" size={iconSize} />
             </span>
           )}
           {!(file instanceof File) && (
             <span onClick={() => setIsModalDownloadOpen(true)}>
-              <MdSaveAlt
-                className="text-green-500 cursor-pointer"
-                size={iconSize}
-              />
+              <Save className="text-green-500 cursor-pointer" size={iconSize} />
             </span>
           )}
 
           {onRemove && (
             <span>
-              <IoClose
+              <X
                 className=" text-red-500 cursor-pointer"
                 size={iconSize}
                 onClick={onRemove}
@@ -149,7 +150,7 @@ const FileIcon = ({ file, className, size, onRemove }) => {
                   extraActions={[
                     {
                       label: 'Descargar',
-                      icon: MdSaveAlt,
+                      icon: Save,
                       action: handleDownload,
                       color: 'green',
                     },
@@ -171,13 +172,13 @@ const FileIcon = ({ file, className, size, onRemove }) => {
             {isDownloaded && (
               <div className="flex items-center justify-center gap-2">
                 <span className="text-green-500">Descargado</span>
-                <MdCloudDone className="text-green-500" size={iconSize} />
+                <CloudCheck className="text-green-500" size={iconSize} />
               </div>
             )}
             {isDownloadingError && (
               <div className="flex items-center justify-center gap-2">
                 <span className="text-red-500">Error al descargar</span>
-                <BiError className="text-red-500" size={iconSize} />
+                <AlertCircle className="text-red-500" size={iconSize} />
               </div>
             )}
           </div>

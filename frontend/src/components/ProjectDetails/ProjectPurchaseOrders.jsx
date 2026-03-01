@@ -1,8 +1,8 @@
 // src/components/ProjectDetails/ProjectPurchaseOrders.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
-import { FaPlus, FaClipboardList, FaSearch } from 'react-icons/fa';
+import { Plus, ClipboardList, Search } from 'lucide-react';
 import { usePurchaseOrders } from '../../hooks/usePurchaseOrders';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import POList from './PO/POList';
@@ -55,13 +55,13 @@ const ProjectPurchaseOrders = ({ projectId }) => {
             extraActions={[
               {
                 label: 'Buscar Órdenes',
-                icon: FaSearch,
+                icon: Search,
                 color: 'blue',
                 action: () => setIsSearchOpen(true),
               },
               {
                 label: 'Agregar Orden',
-                icon: FaPlus,
+                icon: Plus,
                 color: 'indigo',
                 action: () => {
                   setSelectedOrder(null); // modo creación
@@ -85,7 +85,7 @@ const ProjectPurchaseOrders = ({ projectId }) => {
           />
         ) : (
           <div className="py-16 text-center text-gray-500 space-y-2">
-            <FaClipboardList className="mx-auto text-4xl text-gray-300" />
+            <ClipboardList className="mx-auto text-4xl text-gray-300" />
             <p className="text-lg font-medium">
               Aún no tienes órdenes de compra creadas
             </p>

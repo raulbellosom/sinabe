@@ -1,6 +1,6 @@
 import { Dropdown } from 'flowbite-react';
 import ActionButtons from '../ActionButtons/ActionButtons';
-import { BsThreeDotsVertical } from 'react-icons/bs';
+import { MoreVertical } from 'lucide-react';
 
 const TableHeader = ({ title, icon: Icon, actions, collapsedActions }) => {
   return (
@@ -15,7 +15,7 @@ const TableHeader = ({ title, icon: Icon, actions, collapsedActions }) => {
           <Dropdown
             renderTrigger={() => (
               <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
-                <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                <MoreVertical className="text-lg text-neutral-600" />
               </button>
             )}
             dismissOnClick={true}

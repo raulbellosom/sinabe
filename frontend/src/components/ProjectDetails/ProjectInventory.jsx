@@ -1,19 +1,20 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import GroupedInventoryView from './Inventory/GroupedInventoryView';
-import {
-  HiOutlineCollection,
-  HiOutlineTag,
-  HiOutlineClipboardList,
-  HiOutlineCube,
-} from 'react-icons/hi';
 import Skeleton from 'react-loading-skeleton';
 import { useDeadlinesByProject } from '../../hooks/useDeadlines';
 
+import {
+  Box,
+  ClipboardList,
+  LayoutGrid,
+  Tag,
+} from 'lucide-react';
+
 const GROUP_OPTIONS = [
-  { label: 'Deadline', value: 'deadline', icon: <HiOutlineClipboardList /> },
-  { label: 'Tipo de Inventario', value: 'type', icon: <HiOutlineCollection /> },
-  { label: 'Marca', value: 'brand', icon: <HiOutlineTag /> },
-  { label: 'Modelo', value: 'model', icon: <HiOutlineCube /> },
+  { label: 'Deadline', value: 'deadline', icon: <ClipboardList /> },
+  { label: 'Tipo de Inventario', value: 'type', icon: <LayoutGrid /> },
+  { label: 'Marca', value: 'brand', icon: <Tag /> },
+  { label: 'Modelo', value: 'model', icon: <Box /> },
 ];
 
 const ProjectInventory = ({ projectId }) => {

@@ -1,5 +1,5 @@
 import { Checkbox, Table as T } from 'flowbite-react';
-import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 import classNames from 'classnames';
 
 const Table = ({ columns, children, sortBy, sortedBy, selectAll }) => {
@@ -26,7 +26,7 @@ const Table = ({ columns, children, sortBy, sortedBy, selectAll }) => {
                   {col.value}
                   {col?.order && col?.id === sortedBy && (
                     <div className="cursor-pointer disabled">
-                      {col.order === 'desc' ? <FaArrowDown /> : <FaArrowUp />}
+                      {col.order === 'desc' ? <ArrowDown /> : <ArrowUp />}
                     </div>
                   )}
                   {col?.id === 'checkbox' && (

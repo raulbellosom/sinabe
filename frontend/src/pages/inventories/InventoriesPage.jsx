@@ -1,11 +1,5 @@
 // InventoriesPage.jsx
-import React, {
-  useMemo,
-  useState,
-  useEffect,
-  useCallback,
-  useContext,
-} from 'react';
+import { useMemo, useState, useEffect, useCallback, useContext } from 'react';
 import { useSearchInventories } from '../../hooks/useSearchInventories';
 import { useInventoryQueryParams } from '../../hooks/useInventoryQueryParams';
 import { useCatalogContext } from '../../context/CatalogContext';
@@ -21,30 +15,34 @@ import ModalRemove from '../../components/Modals/ModalRemove';
 
 import { Dropdown, ToggleSwitch, Tooltip } from 'flowbite-react';
 import {
-  FaEye,
-  FaEdit,
-  FaTrash,
-  FaFileCsv,
-  FaPlus,
-  FaRegFile,
-  FaTable, // Import FaTable for table view icon
-  FaImages,
-  FaSearch,
-  FaSitemap, // Import FaImages for resources view icon (representing resources)
-  FaTh, // Import FaTh for cards view icon
-  FaFileInvoice,
-  FaMapMarkerAlt,
-} from 'react-icons/fa';
-import {
-  TbLayoutSidebarLeftCollapseFilled,
-  TbLayoutSidebarLeftExpandFilled,
-} from 'react-icons/tb'; // Import icons for preview toggle
-import { BsThreeDotsVertical } from 'react-icons/bs';
+  BadgeCheck,
+  Columns,
+  Columns2,
+  Eye,
+  File,
+  FileSpreadsheet,
+  FileText,
+  Images,
+  Info,
+  LayoutDashboard,
+  LayoutGrid,
+  MapPin,
+  MoreVertical,
+  Network,
+  Package,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Pencil,
+  Plus,
+  Printer,
+  Search,
+  Table,
+  Trash2,
+  X,
+} from 'lucide-react';
 import ImageViewer from '../../components/ImageViewer/ImageViewer2';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
-import { MdInfo, MdInventory } from 'react-icons/md';
-import { BiCategory } from 'react-icons/bi';
 import { useInventoryContext } from '../../context/InventoryContext';
 import { useInventorySelection } from '../../context/InventorySelectionProvider';
 import classNames from 'classnames';
@@ -53,15 +51,14 @@ import FilterDropdown from '../../components/Inputs/FilterDropdown'; // Make sur
 import { useVerticals } from '../../hooks/useVerticals';
 import { useSearchAllInvoices } from '../../hooks/useInvoices';
 import { useSearchPurchaseOrders } from '../../hooks/usePurchaseOrders';
-import { GrClose } from 'react-icons/gr';
 import TableHeaderFilter from '../../components/Table/TableHeaderFilter';
 import { getAllInventoryLocations } from '../../services/inventoryLocationService';
 import { useQuery } from '@tanstack/react-query';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import ColumnCustomizationModal from '../../components/Table/ColumnCustomizationModal';
-import { MdViewColumn } from 'react-icons/md';
 import ActiveFilters from '../../components/InventoryComponents/ActiveFilters';
 import { useUserPreference } from '../../context/UserPreferenceContext';
+import { toast } from 'sonner';
+import BatchQRPrintModal from '../../components/QRGenerator/BatchQRPrintModal';
 
 const InventoriesPage = () => {
   const [selectedInventory, setSelectedInventory] = useState(null);
@@ -70,6 +67,7 @@ const InventoriesPage = () => {
   const [inventoryToDelete, setInventoryToDelete] = useState(null);
   const [isColumnCustomizationOpen, setIsColumnCustomizationOpen] =
     useState(false);
+  const [isBatchQRPrintOpen, setIsBatchQRPrintOpen] = useState(false);
 
   // Estado local para el término de búsqueda (evita cursor jumping)
   const [localSearchTerm, setLocalSearchTerm] = useState('');
@@ -388,14 +386,14 @@ const InventoriesPage = () => {
     // {
     //   key: 'main',
     //   label: 'Ver',
-    //   icon: FaEye,
+    //   icon: Eye,
     //   action: () => navigate(`/inventories/view/${inventory.id}`),
     //   disabled: false,
     // },
     {
       key: 'edit',
       label: 'Editar',
-      icon: FaEdit,
+      icon: Pencil,
       action: isEditPermission.hasPermission
         ? () => navigate(`/inventories/edit/${inventory.id}`)
         : null,
@@ -404,7 +402,7 @@ const InventoriesPage = () => {
     {
       key: 'delete',
       label: 'Eliminar',
-      icon: FaTrash,
+      icon: Trash2,
       action: isDeletePermission.hasPermission
         ? () => {
             openDeleteModal(inventory);
@@ -515,10 +513,10 @@ const InventoriesPage = () => {
           <span
             className={`px-3 py-1 rounded-full text-white text-xs font-medium ${
               val === 'ALTA'
-                ? 'bg-sinabe-success'
+                ? 'bg-emerald-500'
                 : val === 'BAJA'
-                  ? 'bg-sinabe-danger'
-                  : 'bg-sinabe-warning'
+                  ? 'bg-red-500'
+                  : 'bg-amber-500'
             }`}
           >
             {val === 'PROPUESTA' ? 'PROP. BAJA' : val}
@@ -627,7 +625,7 @@ const InventoriesPage = () => {
         render: (val) =>
           (
             <span className="w-fit p-2 px-4 flex justify-center items-center gap-2 bg-sky-50 text-black rounded-md">
-              <FaRegFile className="text-neutral-500" /> {val?.length}
+              <File className="text-neutral-500" /> {val?.length}
             </span>
           ) || 0,
         headerClassName: 'w-24',
@@ -736,7 +734,7 @@ const InventoriesPage = () => {
   const pageActions = [
     {
       label: 'Nuevo',
-      icon: FaPlus,
+      icon: Plus,
       action: () => navigate('/inventories/create'),
       color: 'indigo',
       filled: true,
@@ -778,17 +776,15 @@ const InventoriesPage = () => {
   };
 
   const collapsedActions = [
-    { label: 'Exportar CSV', icon: FaFileCsv, action: handleDownloadCSV },
+    { label: 'Exportar CSV', icon: FileSpreadsheet, action: handleDownloadCSV },
     {
       label: isOpenPreview ? 'Ocultar Preview' : 'Mostrar Preview',
-      icon: isOpenPreview
-        ? TbLayoutSidebarLeftCollapseFilled
-        : TbLayoutSidebarLeftExpandFilled,
+      icon: isOpenPreview ? PanelLeftClose : PanelLeftOpen,
       action: () => setIsOpenPreview((prev) => !prev),
     },
     {
       label: 'Personalizar Columnas',
-      icon: MdViewColumn,
+      icon: Columns2,
       action: () => setIsColumnCustomizationOpen(true),
     },
   ];
@@ -798,16 +794,28 @@ const InventoriesPage = () => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <MdInventory className="text-purple-500" /> Inventarios
+            <Package className="text-purple-500" /> Inventarios
           </h1>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center flex-wrap">
+          {Object.keys(selectedForDownload).length > 0 && (
+            <button
+              onClick={() => setIsBatchQRPrintOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm font-medium transition-colors"
+            >
+              <Printer size={15} />
+              <span className="hidden sm:inline">Etiquetas QR</span>
+              <span className="inline-flex items-center justify-center bg-white text-purple-700 font-bold rounded-full px-2 py-0.5 text-xs">
+                {Object.keys(selectedForDownload).length}
+              </span>
+            </button>
+          )}
           <ActionButtons extraActions={pageActions} />
           <Dropdown
             renderTrigger={() => (
               <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 flex items-center justify-center">
-                <BsThreeDotsVertical />
+                <MoreVertical />
               </button>
             )}
             placement="bottom-end"
@@ -843,7 +851,7 @@ const InventoriesPage = () => {
                   },
                 )}
               >
-                <FaTable className="h-4 w-4" />
+                <Table className="h-4 w-4" />
               </button>
             </Tooltip>
             <Tooltip content="Vista de Tarjetas">
@@ -858,7 +866,7 @@ const InventoriesPage = () => {
                   },
                 )}
               >
-                <FaTh className="h-4 w-4" />
+                <LayoutGrid className="h-4 w-4" />
               </button>
             </Tooltip>
             <Tooltip content="Vista de Imágenes">
@@ -873,7 +881,7 @@ const InventoriesPage = () => {
                   },
                 )}
               >
-                <FaImages className="h-4 w-4" />
+                <Images className="h-4 w-4" />
               </button>
             </Tooltip>
           </div>
@@ -885,7 +893,7 @@ const InventoriesPage = () => {
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10 pr-4 py-2 border-gray-300 rounded-md w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-nowrap">
               <Tooltip content="Activar búsqueda avanzada">
                 <ToggleSwitch
@@ -1131,6 +1139,11 @@ const InventoriesPage = () => {
             : allColumns.map((col) => col.key)
         }
         onSave={handleSaveColumnCustomization}
+      />
+      <BatchQRPrintModal
+        inventories={Object.values(selectedForDownload)}
+        isOpen={isBatchQRPrintOpen}
+        onClose={() => setIsBatchQRPrintOpen(false)}
       />
     </div>
   );

@@ -1,25 +1,28 @@
 import { Badge } from 'flowbite-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { API_URL } from '../../../services/api';
 import ImageViewer from '../../../components/ImageViewer/ImageViewer';
 import FileIcon from '../../../components/FileIcon/FileIcon';
 import InventoryProperty from '../../../components/InventoryComponents/InventoryView/InventoryProperty';
 import formatFileData from '../../../utils/fileDataFormatter';
-import { MdClose, MdInfo, MdInventory, MdOutlineTextsms } from 'react-icons/md';
-import { FaUser } from 'react-icons/fa';
-import {
-  BiCategory,
-  BiSolidCalendarCheck,
-  BiSolidCalendarEdit,
-  BiSolidCalendarPlus,
-} from 'react-icons/bi';
 import { parseToLocalDate } from '../../../utils/formatValues';
-import { AiOutlineFieldNumber } from 'react-icons/ai';
-import { TbNumber123 } from 'react-icons/tb';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import classNames from 'classnames';
-import { IoCopyOutline } from 'react-icons/io5';
-import { RiInputField } from 'react-icons/ri';
 
+import {
+  CalendarCheck,
+  CalendarClock,
+  CalendarPlus,
+  Copy,
+  FormInput,
+  Hash,
+  Info,
+  Layers,
+  MessageSquare,
+  Package,
+  Tag,
+  User,
+  X,
+} from 'lucide-react';
 const InventoryPreview = ({ inventory, onClose }) => {
   const [images, setImages] = useState([]);
   const [files, setFiles] = useState([]);
@@ -33,68 +36,68 @@ const InventoryPreview = ({ inventory, onClose }) => {
           inventory?.status === 'PROPUESTA'
             ? 'PROPUESTA DE BAJA'
             : inventory?.status,
-        icon: MdInfo,
+        icon: Info,
         label: 'Estado',
       },
       'model.name': {
         name: inventory?.model?.name,
-        icon: MdInventory,
+        icon: Package,
         label: 'Modelo',
       },
       'model.brand.name': {
         name: inventory?.model?.brand?.name,
-        icon: PiTrademarkRegisteredBold,
+        icon: Tag,
         label: 'Marca',
       },
       'model.type.name': {
         name: inventory?.model?.type?.name,
-        icon: BiCategory,
+        icon: Layers,
         label: 'Tipo de Inventario',
       },
       serialNumber: {
         name: inventory?.serialNumber,
-        icon: TbNumber123,
+        icon: Hash,
         label: 'Número de Serie',
       },
       activeNumber: {
         name: inventory?.activeNumber,
-        icon: AiOutlineFieldNumber,
+        icon: Hash,
         label: 'Número de activo',
       },
       internalFolio: {
         name: inventory?.internalFolio,
-        icon: AiOutlineFieldNumber,
+        icon: Hash,
         label: 'Folio Interno',
       },
       receptionDate: {
         name: inventory?.receptionDate
           ? parseToLocalDate(inventory?.receptionDate)
           : '',
-        icon: BiSolidCalendarCheck,
+        icon: CalendarCheck,
         label: 'Fecha de Recepción',
       },
       lastModification: {
         name: inventory?.updatedAt
           ? parseToLocalDate(inventory?.updatedAt)
           : '',
-        icon: BiSolidCalendarEdit,
+        icon: CalendarClock,
         label: 'Última Modificación',
       },
       creationDate: {
         name: inventory?.createdAt
           ? parseToLocalDate(inventory?.createdAt)
           : '',
-        icon: BiSolidCalendarPlus,
+        icon: CalendarPlus,
         label: 'Fecha de Creación',
       },
       creationUser: {
         name: `${inventory?.createdBy?.firstName} ${inventory?.createdBy?.lastName}`,
-        icon: FaUser,
+        icon: User,
         label: 'Creado por',
       },
       comments: {
         name: inventory?.comments,
-        icon: MdOutlineTextsms,
+        icon: MessageSquare,
         label: 'Comentarios',
       },
     };
@@ -135,7 +138,7 @@ const InventoryPreview = ({ inventory, onClose }) => {
           onClick={onClose}
         >
           <span className="text-sm 2xl:text-base text-neutral-500">
-            <MdClose size={20} className="inline" />
+            <X size={20} className="inline" />
           </span>
         </div>
       </div>
@@ -218,7 +221,7 @@ const InventoryPreview = ({ inventory, onClose }) => {
                 <InventoryProperty
                   label={field.label}
                   value={field.value}
-                  icon={RiInputField}
+                  icon={FormInput}
                   onSearch={null}
                   color={
                     inventory.status === 'PROPUESTA'
@@ -285,7 +288,7 @@ const InventoryPreview = ({ inventory, onClose }) => {
                   renderMenuOptions={[
                     {
                       label: 'Copiar URL',
-                      icon: IoCopyOutline,
+                      icon: Copy,
                       onClick: (img) => handleShareImage(img),
                     },
                   ]}

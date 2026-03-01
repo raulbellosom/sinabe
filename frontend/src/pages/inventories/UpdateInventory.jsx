@@ -11,13 +11,10 @@ import PurchaseOrderForm from '../../components/Forms/PurchaseOrderForm';
 import InvoiceForm from '../../components/Forms/InvoiceForm';
 import LocationForm from '../../components/Forms/LocationForm';
 import ModalRemove from '../../components/Modals/ModalRemove';
-const InventoryForm = React.lazy(
-  () =>
-    import('../../components/InventoryComponents/InventoryForm/InventoryForm'),
-);
+import InventoryForm from '../../components/InventoryComponents/InventoryForm/InventoryForm';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 
-import { FaClipboardList, FaSave } from 'react-icons/fa';
+import { ClipboardList, Save } from 'lucide-react';
 import withPermission from '../../utils/withPermissions';
 import { useCustomFieldContext } from '../../context/CustomFieldContext';
 import NotFound from '../notFound/NotFound';
@@ -349,48 +346,58 @@ const UpdateInventory = () => {
 
   return (
     <>
-      <div className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
-        <div className="flex flex-col-reverse md:flex-row items-center gap-4 w-full pb-1">
-          <div className="w-full h-full rounded-md flex items-center text-purple-500">
-            <FaClipboardList size={24} className="mr-4" />
-            <h1 className="text-2xl font-bold">Actualizar Inventario</h1>
-          </div>
-          <div className="flex justify-center gap-2">
-            <ActionButtons
-              extraActions={[
-                {
-                  label: 'Actualizar',
-                  action: handleSubmitRef,
-                  icon: FaSave,
-                  color: 'green',
-                },
-              ]}
-              onShow={onShow}
-              onRemove={onRemove}
-            />
+      <div className="min-h-full">
+        {/* Header Section */}
+        <div className="mb-6">
+          <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--primary)]/10">
+                <ClipboardList className="h-5 w-5 text-[color:var(--primary)]" />
+              </div>
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold text-[color:var(--foreground)]">
+                  Actualizar Inventario
+                </h1>
+                <p className="text-sm text-[color:var(--foreground-muted)]">
+                  Modifica los campos necesarios y guarda los cambios
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <ActionButtons
+                extraActions={[
+                  {
+                    label: 'Actualizar',
+                    action: handleSubmitRef,
+                    icon: Save,
+                    color: 'green',
+                  },
+                ]}
+                onShow={onShow}
+                onRemove={onRemove}
+              />
+            </div>
           </div>
         </div>
-        <p className="mb-4 text-gray-800">
-          Llena el formulario para actualizar el inventario. Los campos marcados
-          con * son obligatorios.
-        </p>
-        {isPending ||
-        isFetching ||
-        (Object.keys(inventory).length == 0 &&
-          inventory.constructor === Object) ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 gap-y-6">
-            <Skeleton className="h-10 rounded-md" />
-            <Skeleton className="h-10 rounded-md" />
-            <Skeleton className="h-10 rounded-md" />
-            <Skeleton className="h-10 rounded-md" />
-            <Skeleton className="h-10 rounded-md" />
-            <Skeleton className="h-10 rounded-md" />
-            <Skeleton className="h-10 rounded-md" />
-            <Skeleton className="h-10 rounded-md" />
-            <Skeleton className="h-10 rounded-md" />
-          </div>
-        ) : (
-          <>
+
+        {/* Form Container */}
+        <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4 md:p-6 shadow-sm">
+          {isPending ||
+          isFetching ||
+          (Object.keys(inventory).length == 0 &&
+            inventory.constructor === Object) ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 gap-y-6">
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+              <Skeleton className="h-10 rounded-md" />
+            </div>
+          ) : (
             <InventoryForm
               ref={formRef}
               initialValues={initialValues}
@@ -415,8 +422,8 @@ const UpdateInventory = () => {
               onPinField={pinField}
               onUnpinField={unpinField}
             />
-          </>
-        )}
+          )}
+        </div>
       </div>
       <ModalRemove
         isOpenModal={isOpenModal}

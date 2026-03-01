@@ -1,8 +1,11 @@
-import React from 'react';
-import { FaFileInvoice, FaSitemap, FaMapMarkerAlt } from 'react-icons/fa';
-import { MdInventory } from 'react-icons/md';
-import { BiCategory } from 'react-icons/bi';
-import { GrClose } from 'react-icons/gr';
+import {
+  FileText,
+  Layers,
+  MapPin,
+  Network,
+  Package,
+  X,
+} from 'lucide-react';
 
 const ActiveFilters = ({
   query,
@@ -30,7 +33,7 @@ const ActiveFilters = ({
       <div className="flex flex-wrap gap-2">
         {currentInvoice && (
           <div className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-            <FaFileInvoice size={12} />
+            <FileText size={12} />
             <span>Factura: {currentInvoice.code}</span>
             <button
               onClick={() =>
@@ -43,13 +46,13 @@ const ActiveFilters = ({
               }
               className="ml-1 hover:text-blue-900"
             >
-              <GrClose size={12} />
+              <X size={12} />
             </button>
           </div>
         )}
         {currentPurchaseOrder && (
           <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-            <FaSitemap size={12} />
+            <Network size={12} />
             <span>OC: {currentPurchaseOrder.code}</span>
             <button
               onClick={() =>
@@ -62,13 +65,13 @@ const ActiveFilters = ({
               }
               className="ml-1 hover:text-green-900"
             >
-              <GrClose size={12} />
+              <X size={12} />
             </button>
           </div>
         )}
         {query.locationName && (
           <div className="flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-            <FaMapMarkerAlt size={12} />
+            <MapPin size={12} />
             <span>Ubicación: {decodeURIComponent(query.locationName)}</span>
             <button
               onClick={() =>
@@ -80,7 +83,7 @@ const ActiveFilters = ({
               }
               className="ml-1 hover:text-purple-900"
             >
-              <GrClose size={12} />
+              <X size={12} />
             </button>
           </div>
         )}
@@ -89,7 +92,7 @@ const ActiveFilters = ({
             key={model}
             className="flex items-center gap-2 px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm"
           >
-            <MdInventory size={12} />
+            <Package size={12} />
             <span>Modelo: {model}</span>
             <button
               onClick={() =>
@@ -101,7 +104,7 @@ const ActiveFilters = ({
               }
               className="ml-1 hover:text-indigo-900"
             >
-              <GrClose size={12} />
+              <X size={12} />
             </button>
           </div>
         ))}
@@ -121,7 +124,7 @@ const ActiveFilters = ({
               }
               className="ml-1 hover:text-pink-900"
             >
-              <GrClose size={12} />
+              <X size={12} />
             </button>
           </div>
         ))}
@@ -130,7 +133,7 @@ const ActiveFilters = ({
             key={type}
             className="flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm"
           >
-            <BiCategory size={12} />
+            <Layers size={12} />
             <span>Tipo: {type}</span>
             <button
               onClick={() =>
@@ -142,7 +145,7 @@ const ActiveFilters = ({
               }
               className="ml-1 hover:text-amber-900"
             >
-              <GrClose size={12} />
+              <X size={12} />
             </button>
           </div>
         ))}
@@ -154,7 +157,7 @@ const ActiveFilters = ({
               key={vId}
               className="flex items-center gap-2 px-3 py-1 bg-cyan-100 text-cyan-800 rounded-full text-sm"
             >
-              <FaSitemap size={12} />
+              <Network size={12} />
               <span>Vertical: {verticalName}</span>
               <button
                 onClick={() =>
@@ -166,7 +169,7 @@ const ActiveFilters = ({
                 }
                 className="ml-1 hover:text-cyan-900"
               >
-                <GrClose size={12} />
+                <X size={12} />
               </button>
             </div>
           );
@@ -176,7 +179,7 @@ const ActiveFilters = ({
             key={vName}
             className="flex items-center gap-2 px-3 py-1 bg-cyan-100 text-cyan-800 rounded-full text-sm"
           >
-            <FaSitemap size={12} />
+            <Network size={12} />
             <span>Vertical: {vName}</span>
             <button
               onClick={() =>
@@ -188,7 +191,7 @@ const ActiveFilters = ({
               }
               className="ml-1 hover:text-cyan-900"
             >
-              <GrClose size={12} />
+              <X size={12} />
             </button>
           </div>
         ))}
@@ -208,7 +211,7 @@ const ActiveFilters = ({
               }
               className="ml-1 hover:text-teal-900"
             >
-              <GrClose size={12} />
+              <X size={12} />
             </button>
           </div>
         ))}
@@ -230,7 +233,7 @@ const ActiveFilters = ({
               }
               className="ml-1 hover:text-orange-900"
             >
-              <GrClose size={12} />
+              <X size={12} />
             </button>
           </div>
         ))}

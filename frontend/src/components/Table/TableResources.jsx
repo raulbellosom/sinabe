@@ -1,11 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import ImageViewer from '../ImageViewer/ImageViewer2';
 import { Checkbox } from 'flowbite-react';
-import { FaCheckSquare, FaFileDownload, FaListUl } from 'react-icons/fa';
-import { MdInsertDriveFile, MdViewAgenda, MdGridView } from 'react-icons/md';
 import ActionButtons from '../ActionButtons/ActionButtons';
-import { RiFolderZipLine } from 'react-icons/ri';
-import { BsBadgeHdFill } from 'react-icons/bs';
 import FileIcon from '../FileIcon/FileIcon';
 import formatFileData from '../../utils/fileDataFormatter';
 import {
@@ -14,6 +10,17 @@ import {
 } from '../../utils/downloadImagesAsZip';
 import Notifies from '../Notifies/Notifies';
 import { Link } from 'react-router-dom';
+import {
+  Badge,
+  CheckSquare,
+  Download,
+  File as FileIconLucide,
+  FolderArchive,
+  LayoutGrid,
+  LayoutList,
+  List,
+  Tv,
+} from 'lucide-react';
 
 /**
  * @param {Array} data - Lista de elementos (inventarios, etc.) cada uno con su "id", "images", "files".
@@ -169,21 +176,21 @@ const TableResources = ({ data = [] }) => {
   const resourceViewModeButtons = [
     {
       label: 'Agrupadas',
-      icon: MdViewAgenda,
+      icon: LayoutList,
       action: () => setResourceMode('images-grouped'),
       color: resourceMode === 'images-grouped' ? 'purple' : 'stone',
       filled: resourceMode === 'images-grouped',
     },
     {
       label: 'Planas',
-      icon: MdGridView,
+      icon: LayoutGrid,
       action: () => setResourceMode('images-flat'),
       color: resourceMode === 'images-flat' ? 'purple' : 'stone',
       filled: resourceMode === 'images-flat',
     },
     {
       label: 'Archivos',
-      icon: MdInsertDriveFile,
+      icon: FileIconLucide,
       action: () => setResourceMode('files'),
       color: resourceMode === 'files' ? 'purple' : 'stone',
       filled: resourceMode === 'files',
@@ -217,21 +224,21 @@ const TableResources = ({ data = [] }) => {
                     extraActions={[
                       {
                         label: 'Comprimir',
-                        icon: RiFolderZipLine,
+                        icon: FolderArchive,
                         action: () => handleDownloadZipClick(true),
                         color: 'teal',
                         disabled: getAllSelectedImages().length === 0,
                       },
                       {
                         label: 'HD',
-                        icon: BsBadgeHdFill,
+                        icon: Tv,
                         action: () => handleDownloadZipClick(false),
                         color: 'green',
                         disabled: getAllSelectedImages().length === 0,
                       },
                       {
                         label: 'Sel. Todas',
-                        icon: FaCheckSquare,
+                        icon: CheckSquare,
                         action: selectAllOverallImages,
                         color: 'blue',
                         disabled:
@@ -246,14 +253,14 @@ const TableResources = ({ data = [] }) => {
                   extraActions={[
                     {
                       label: 'Comprimir Archivos',
-                      icon: RiFolderZipLine,
+                      icon: FolderArchive,
                       action: handleDownloadFilesZipClick,
                       color: 'teal',
                       disabled: getAllSelectedFiles().length === 0,
                     },
                     {
                       label: 'Seleccionar Todos',
-                      icon: FaCheckSquare,
+                      icon: CheckSquare,
                       action: selectAllOverallFiles,
                       color: 'blue',
                       disabled:

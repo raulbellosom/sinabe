@@ -1,13 +1,18 @@
 import { useMemo, useState } from 'react';
-import { BsBoxSeam } from 'react-icons/bs';
-import { FaChevronDown, FaChevronUp, FaEye } from 'react-icons/fa';
-import { HiOutlineClipboardList } from 'react-icons/hi';
 import { Badge } from 'flowbite-react';
 import { formatConditionColor } from '../../../utils/formatValues';
 import Skeleton from 'react-loading-skeleton';
 import ImageViewer from '../../ImageViewer/ImageViewer2';
 import ActionButtons from '../../ActionButtons/ActionButtons';
 import Notifies from '../../Notifies/Notifies';
+
+import {
+  Box,
+  ChevronDown,
+  ChevronUp,
+  ClipboardList,
+  Eye,
+} from 'lucide-react';
 
 const GroupedInventoryView = ({
   inventories = [],
@@ -65,7 +70,7 @@ const GroupedInventoryView = ({
             className="w-full flex justify-between items-center p-4 text-left"
           >
             <div className="flex items-center gap-2">
-              <BsBoxSeam className="text-xl" />
+              <Box className="text-xl" />
               <h3 className="font-semibold text-lg text-gray-800 dark:text-white">
                 {groupName}{' '}
                 <span className="text-sm font-normal text-gray-500">
@@ -73,7 +78,7 @@ const GroupedInventoryView = ({
                 </span>
               </h3>
             </div>
-            {openGroups[groupName] ? <FaChevronUp /> : <FaChevronDown />}
+            {openGroups[groupName] ? <ChevronUp /> : <ChevronDown />}
           </button>
 
           {openGroups[groupName] && (
@@ -150,12 +155,12 @@ const GroupedInventoryView = ({
                       extraActions={[
                         {
                           label: '',
-                          icon: FaEye,
+                          icon: Eye,
                           href: `/inventories/view/${inv.id}`,
                         },
                         {
                           label: '',
-                          icon: HiOutlineClipboardList,
+                          icon: ClipboardList,
                           action: () => {
                             // copy all fields to clipboard
                             const fields = {

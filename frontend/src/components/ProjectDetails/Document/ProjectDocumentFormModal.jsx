@@ -1,9 +1,9 @@
 // src/components/ProjectDetails/Document/ProjectDocumentFormModal.jsx
-import React from 'react';
+
 import ReusableModal from '../../Modals/ReusableModal';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { FaSave, FaTimes } from 'react-icons/fa';
+import { Save, X } from 'lucide-react';
 import Notifies from '../../Notifies/Notifies';
 import {
   useUploadProjectDocument,
@@ -80,12 +80,12 @@ const ProjectDocumentFormModal = ({
       title={isEdit ? 'Editar Documento' : 'Agregar Documento'}
       size="md"
       actions={[
-        { label: 'Cancelar', color: 'stone', icon: FaTimes, action: onClose },
+        { label: 'Cancelar', color: 'stone', icon: X, action: onClose },
         {
           label: isEdit ? 'Actualizar' : 'Guardar',
           color: 'purple',
           filled: true,
-          icon: FaSave,
+          icon: Save,
           // Usar window.document para evitar shadowing del prop
           action: () =>
             window.document.getElementById('doc-form-submit')?.click(),

@@ -1,9 +1,12 @@
 // components/Modals/ConfirmDeleteModal.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Label, TextInput } from 'flowbite-react';
-import { HiExclamationCircle } from 'react-icons/hi';
-import { RiDeleteBin2Fill } from 'react-icons/ri';
 import ReusableModal from './ReusableModal';
+
+import {
+  AlertCircle,
+  Trash2,
+} from 'lucide-react';
 
 const ConfirmDeleteModal = ({
   isOpen,
@@ -58,7 +61,7 @@ const ConfirmDeleteModal = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-2">
-          <HiExclamationCircle size={24} className="text-red-500" />
+          <AlertCircle size={24} className="text-red-500" />
           <span className="text-red-500">Eliminar {itemType}</span>
         </div>
       }
@@ -66,7 +69,7 @@ const ConfirmDeleteModal = ({
       actions={modalActions}
     >
       <div className="text-center space-y-4">
-        <RiDeleteBin2Fill className="mx-auto h-24 w-24 text-red-500 dark:text-gray-200" />
+        <Trash2 className="mx-auto h-24 w-24 text-red-500 dark:text-gray-200" />
 
         <h3 className="text-xl font-normal text-gray-500 dark:text-gray-400">
           ¿Estás seguro de que deseas eliminar{' '}

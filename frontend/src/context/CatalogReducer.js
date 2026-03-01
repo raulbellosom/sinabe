@@ -113,7 +113,7 @@ const CatalogReducer = (state, action) => {
         ...state,
         inventoryModels: [
           ...state.inventoryModels,
-          ...action.payload?.createdModels,
+          ...(action.payload?.createdModels || []),
         ],
         inventoryBrands: action.payload?.brands,
         inventoryTypes: action.payload?.types,

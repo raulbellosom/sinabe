@@ -1,14 +1,9 @@
-import React from 'react';
+import { memo } from 'react';
 import { Field } from 'formik';
 import TextInput from '../Inputs/TextInput';
 import SelectInput from '../Inputs/SelectInput';
-import { BiUser } from 'react-icons/bi';
-import { FaEnvelope, FaUserTag } from 'react-icons/fa';
-import { FaPhoneAlt } from 'react-icons/fa';
-import { FaLock } from 'react-icons/fa';
-import { MdManageAccounts } from 'react-icons/md';
+import { User, Mail, UserCheck, Phone, Lock, UserCog } from 'lucide-react';
 import FileInput from '../Inputs/FileInput';
-import { PiUserCircleCheckBold } from 'react-icons/pi';
 
 const UserFormFields = ({ roles, editMode }) => {
   return (
@@ -19,7 +14,7 @@ const UserFormFields = ({ roles, editMode }) => {
         component={TextInput}
         label="Nombre"
         type="text"
-        icon={BiUser}
+        icon={User}
         className="col-span-2 md:col-span-1"
       />
       <Field
@@ -28,7 +23,7 @@ const UserFormFields = ({ roles, editMode }) => {
         component={TextInput}
         label="Apellido"
         type="text"
-        icon={BiUser}
+        icon={User}
         className="col-span-2 md:col-span-1"
       />
       <Field
@@ -37,7 +32,7 @@ const UserFormFields = ({ roles, editMode }) => {
         component={TextInput}
         label="Correo Electrónico"
         type="email"
-        icon={FaEnvelope}
+        icon={Mail}
         className="col-span-2 md:col-span-1"
       />
       <Field
@@ -46,7 +41,7 @@ const UserFormFields = ({ roles, editMode }) => {
         component={TextInput}
         label="Nombre de Usuario"
         type="text"
-        icon={FaUserTag}
+        icon={UserCheck}
         className="col-span-2 md:col-span-1"
       />
       <Field
@@ -55,7 +50,7 @@ const UserFormFields = ({ roles, editMode }) => {
         component={TextInput}
         label="Teléfono"
         type="text"
-        icon={FaPhoneAlt}
+        icon={Phone}
         className="col-span-2 md:col-span-1"
       />
       <Field
@@ -64,7 +59,7 @@ const UserFormFields = ({ roles, editMode }) => {
         component={TextInput}
         label="Número de Empleado"
         type="text"
-        icon={BiUser}
+        icon={User}
         className="col-span-2 md:col-span-1"
       />
       <Field
@@ -73,7 +68,7 @@ const UserFormFields = ({ roles, editMode }) => {
         component={TextInput}
         label="Puesto"
         type="text"
-        icon={BiUser}
+        icon={User}
         className="col-span-2 md:col-span-1"
       />
       <Field
@@ -82,7 +77,7 @@ const UserFormFields = ({ roles, editMode }) => {
         component={TextInput}
         label="Departamento"
         type="text"
-        icon={BiUser}
+        icon={User}
         className="col-span-2 md:col-span-1"
       />
       <Field
@@ -94,7 +89,7 @@ const UserFormFields = ({ roles, editMode }) => {
           value: role.id,
           label: role.name,
         }))}
-        icon={MdManageAccounts}
+        icon={UserCog}
         className="col-span-2 md:col-span-1"
       />
       {!editMode && (
@@ -104,7 +99,7 @@ const UserFormFields = ({ roles, editMode }) => {
           component={TextInput}
           label="Contraseña"
           type="password"
-          icon={FaLock}
+          icon={Lock}
           className="col-span-2 md:col-span-1"
         />
       )}
@@ -115,7 +110,7 @@ const UserFormFields = ({ roles, editMode }) => {
           component={TextInput}
           label="Repetir Contraseña"
           type="password"
-          icon={FaLock}
+          icon={Lock}
           className="col-span-2 md:col-span-1"
         />
       )}
@@ -129,7 +124,7 @@ const UserFormFields = ({ roles, editMode }) => {
             { value: true, label: 'Habilitado' },
             { value: false, label: 'Deshabilitado' },
           ]}
-          icon={PiUserCircleCheckBold}
+          icon={UserCheck}
           className="col-span-2 md:col-span-1"
         />
       )}
@@ -147,4 +142,4 @@ const UserFormFields = ({ roles, editMode }) => {
   );
 };
 
-export default React.memo(UserFormFields);
+export default memo(UserFormFields);

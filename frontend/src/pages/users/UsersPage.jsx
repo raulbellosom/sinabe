@@ -1,5 +1,5 @@
 // UsersPage.jsx
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchUsers } from '../../hooks/useSearchUsers';
 import { useUserQueryParams } from '../../hooks/useUserQueryParams';
 import { useUserContext } from '../../context/UserContext';
@@ -20,14 +20,7 @@ import {
   UserFormChangePasswordSchema,
 } from '../../components/Users/UserFormSchema';
 
-import {
-  FaUserShield,
-  FaLock,
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaSearch,
-} from 'react-icons/fa';
+import { ShieldCheck, Lock, Plus, Pencil, Trash2, Search } from 'lucide-react';
 import ReusableTable from '../../components/Table/ReusableTable';
 
 const UsersPage = () => {
@@ -156,18 +149,18 @@ const UsersPage = () => {
     {
       key: 'main',
       label: 'Editar',
-      icon: FaEdit,
+      icon: Pencil,
       action: isEdit.hasPermission ? () => openEditModal(user) : null,
       color: 'blue',
     },
     {
       label: 'Cambiar Contraseña',
-      icon: FaLock,
+      icon: Lock,
       action: isEdit.hasPermission ? () => openChangePassword(user) : null,
     },
     {
       label: 'Eliminar',
-      icon: FaTrash,
+      icon: Trash2,
       action: isDelete.hasPermission
         ? () => {
             setUserToDelete(user);
@@ -181,14 +174,14 @@ const UsersPage = () => {
     <div className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-          <FaUserShield className="text-purple-500" /> Usuarios
+          <ShieldCheck className="text-purple-500" /> Usuarios
         </h1>
         <div className="flex items-center gap-2">
           <ActionButtons
             extraActions={[
               {
                 label: 'Nuevo',
-                icon: FaPlus,
+                icon: Plus,
                 action: isCreate.hasPermission
                   ? () => setModalOpen(true)
                   : null,
@@ -211,7 +204,7 @@ const UsersPage = () => {
             }
             className="pl-10 pr-4 py-2 border-gray-300 rounded-md w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           />
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         </div>
 
         <FilterDropdown

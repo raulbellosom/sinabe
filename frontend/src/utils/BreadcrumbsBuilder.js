@@ -1,18 +1,19 @@
 import {
-  FaClipboardList,
-  FaFileInvoice,
-  FaSitemap,
-  FaUserCircle,
-  FaUserCog,
-  FaUserShield,
-} from 'react-icons/fa';
-import { HiHome } from 'react-icons/hi';
-import { MdChecklist, MdInventory } from 'react-icons/md';
-import { PiStackPlusFill } from 'react-icons/pi';
-import { BiCategory } from 'react-icons/bi';
-import { AiOutlineProject } from 'react-icons/ai';
-import { TbAdjustmentsHorizontal } from 'react-icons/tb';
-import { FaHistory } from 'react-icons/fa';
+  ClipboardList,
+  FileText,
+  Network,
+  UserCircle,
+  UserCog,
+  ShieldCheck,
+  Home,
+  ListChecks,
+  Package,
+  Layers,
+  LayoutGrid,
+  FolderKanban,
+  SlidersHorizontal,
+  History,
+} from 'lucide-react';
 
 const BreadcrumbsBuilder = (path) => {
   // No mostrar breadcrumbs en home o dashboard
@@ -22,6 +23,7 @@ const BreadcrumbsBuilder = (path) => {
 
   // Extraemos solo la parte base de la ruta para los breadcrumbs
   // Ejemplo: '/purchase-orders/3d9439b5-9511-48ed-89c8-854cdf165897/invoices' => '/purchase-orders/invoices'
+  // eslint-disable-next-line no-unused-vars
   const getBasePath = (fullPath) => {
     // UUID regex más preciso para capturar UUIDs completos
     const uuidRegex =
@@ -45,12 +47,12 @@ const BreadcrumbsBuilder = (path) => {
     {
       label: 'Inventarios',
       href: '/inventories',
-      icon: MdInventory,
+      icon: Package,
     },
     {
       label: 'Crear',
       href: '/inventories/create',
-      icon: PiStackPlusFill,
+      icon: Layers,
     },
     {
       label: 'Editar',
@@ -59,42 +61,42 @@ const BreadcrumbsBuilder = (path) => {
     {
       label: 'Detalles',
       href: '/inventories/view',
-      icon: MdChecklist,
+      icon: ListChecks,
     },
     {
       label: 'Migrar',
       href: '/inventories/migrate',
-      icon: HiHome,
+      icon: Home,
     },
     {
       label: 'Resguardos',
       href: '/custody',
-      icon: FaFileInvoice,
+      icon: FileText,
     },
     {
       label: 'Crear',
       href: '/custody/create',
-      icon: PiStackPlusFill,
+      icon: Layers,
     },
     {
       label: 'Verticales',
       href: '/verticals',
-      icon: FaSitemap,
+      icon: Network,
     },
     {
       label: 'Proyectos',
       href: '/projects',
-      icon: AiOutlineProject,
+      icon: FolderKanban,
     },
     {
       label: 'Detalles del Proyecto',
       href: '/projects/view',
-      icon: MdChecklist,
+      icon: ListChecks,
     },
     {
       label: 'Crear Proyecto',
       href: '/projects/create',
-      icon: PiStackPlusFill,
+      icon: Layers,
     },
     {
       label: 'Editar Proyecto',
@@ -104,17 +106,17 @@ const BreadcrumbsBuilder = (path) => {
     {
       label: 'Órdenes de Compra',
       href: '/purchase-orders',
-      icon: FaClipboardList,
+      icon: ClipboardList,
     },
     {
       label: 'Facturas',
       href: '/invoices',
-      icon: FaFileInvoice,
+      icon: FileText,
     },
     {
       label: 'Crear',
       href: '/purchase-orders/create',
-      icon: PiStackPlusFill,
+      icon: Layers,
     },
     {
       label: 'Editar',
@@ -124,7 +126,7 @@ const BreadcrumbsBuilder = (path) => {
     {
       label: 'Catalogos',
       href: '/catalogs',
-      icon: BiCategory,
+      icon: LayoutGrid,
     },
     {
       label: 'Crear',
@@ -139,7 +141,7 @@ const BreadcrumbsBuilder = (path) => {
     {
       label: 'Usuarios',
       href: '/users',
-      icon: FaUserCircle,
+      icon: UserCircle,
     },
     {
       label: 'Crear',
@@ -159,17 +161,17 @@ const BreadcrumbsBuilder = (path) => {
     {
       label: 'Mi Perfil',
       href: '/account-settings',
-      icon: FaUserCog,
+      icon: UserCog,
     },
     {
       label: 'Preferencias',
       href: '/preferences',
-      icon: TbAdjustmentsHorizontal,
+      icon: SlidersHorizontal,
     },
     {
       label: 'Control de roles',
       href: '/roles',
-      icon: FaUserShield,
+      icon: ShieldCheck,
     },
     {
       label: 'Agenda',
@@ -179,7 +181,7 @@ const BreadcrumbsBuilder = (path) => {
     {
       label: 'Auditoría',
       href: '/audit-logs',
-      icon: FaHistory,
+      icon: History,
     },
   ];
 

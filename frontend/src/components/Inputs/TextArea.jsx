@@ -1,6 +1,5 @@
-import React from 'react';
 import { ErrorMessage } from 'formik';
-import { Textarea as Area, Label } from 'flowbite-react';
+import { Label } from 'flowbite-react';
 import classNames from 'classnames';
 import PinnableInputWrapper from './PinnableInputWrapper';
 
@@ -15,18 +14,28 @@ const TextArea = ({
 }) => {
   // Provide defaults for form properties
   const { touched = {}, errors = {} } = form;
+  const hasError = touched[field?.name] && errors[field?.name];
+
   const textareaContent = (
     <>
-      <Area
+      <textarea
         {...field}
         {...props}
-        color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
-        className="mt-1 min-h-44 md:min-h-28"
+        className={classNames(
+          'w-full min-h-[120px] text-sm py-2.5 px-3 rounded-lg resize-y',
+          'border bg-[color:var(--surface)] text-[color:var(--foreground)]',
+          'placeholder:text-[color:var(--foreground-muted)]',
+          'transition-all duration-200',
+          'focus:outline-none focus:ring-2',
+          hasError
+            ? 'border-[color:var(--danger)] focus:ring-[color:var(--danger)]/30 focus:border-[color:var(--danger)]'
+            : 'border-[color:var(--border)] focus:ring-[color:var(--primary)]/30 focus:border-[color:var(--primary)]',
+        )}
       />
       <ErrorMessage
         name={field?.name || ''}
         component="div"
-        className="text-red-500 text-sm"
+        className="text-[color:var(--danger)] text-xs mt-1"
       />
     </>
   );
@@ -39,7 +48,7 @@ const TextArea = ({
           htmlFor={props.id || props.name}
           isPinned={isPinned}
           onTogglePin={() => onTogglePin(field.value)}
-          error={touched[field?.name] && errors[field?.name]}
+          error={hasError}
         >
           {textareaContent}
         </PinnableInputWrapper>
@@ -51,8 +60,9 @@ const TextArea = ({
     <div className={classNames('w-full', className)}>
       <Label
         htmlFor={props.id || props.name}
-        className={'block text-sm font-medium'}
-        color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
+        className={classNames('block text-sm font-medium mb-1.5', {
+          'text-[color:var(--danger)]': hasError,
+        })}
         value={props.label}
       />
       {textareaContent}

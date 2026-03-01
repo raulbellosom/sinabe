@@ -1,9 +1,11 @@
 // src/components/Modals/ConfirmRemoveInventoryModal.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ReusableModal from '../../Modals/ReusableModal';
-import { MdRemoveCircle } from 'react-icons/md';
-import { IoMdClose } from 'react-icons/io';
 
+import {
+  X,
+  XCircle,
+} from 'lucide-react';
 const ConfirmRemoveInventoryModal = ({ isOpen, onClose, onConfirm }) => {
   const [confirmText, setConfirmText] = useState('');
 
@@ -30,7 +32,7 @@ const ConfirmRemoveInventoryModal = ({ isOpen, onClose, onConfirm }) => {
       }}
       title={
         <span className="flex items-center gap-2 text-red-600 font-semibold">
-          <MdRemoveCircle /> Confirmar remoción de inventario
+          <XCircle /> Confirmar remoción de inventario
         </span>
       }
       size="sm"
@@ -38,7 +40,7 @@ const ConfirmRemoveInventoryModal = ({ isOpen, onClose, onConfirm }) => {
         {
           label: 'Cancelar',
           color: 'stone',
-          icon: IoMdClose,
+          icon: X,
           action: () => {
             setConfirmText('');
             onClose();
@@ -48,7 +50,7 @@ const ConfirmRemoveInventoryModal = ({ isOpen, onClose, onConfirm }) => {
           label: 'Remover',
           color: 'red',
           filled: true,
-          icon: MdRemoveCircle,
+          icon: XCircle,
           action: handleConfirm,
           disabled: !canRemove,
         },

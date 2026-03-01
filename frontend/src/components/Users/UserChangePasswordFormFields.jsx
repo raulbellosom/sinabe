@@ -1,7 +1,7 @@
-import React from 'react';
+import { memo } from 'react';
 import { Field } from 'formik';
 import TextInput from '../Inputs/TextInput';
-import { FaLock } from 'react-icons/fa';
+import { Lock } from 'lucide-react';
 
 const UserFormFields = () => {
   return (
@@ -12,7 +12,7 @@ const UserFormFields = () => {
         component={TextInput}
         label="Contraseña"
         type="password"
-        icon={FaLock}
+        icon={Lock}
       />
       <Field
         name="repeatPassword"
@@ -20,11 +20,11 @@ const UserFormFields = () => {
         component={TextInput}
         label="Repetir Contraseña"
         type="password"
-        icon={FaLock}
+        icon={Lock}
       />
       <Field name="id" id="id" component={TextInput} type="hidden" />
     </div>
   );
 };
 
-export default React.memo(UserFormFields);
+export default memo(UserFormFields);

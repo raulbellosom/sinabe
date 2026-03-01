@@ -1,9 +1,9 @@
-import React from 'react';
+import { memo } from 'react';
 import { FormikProvider, useFormik, Form } from 'formik';
 import { UserFormSchema } from './UserFormSchema';
 import UserFormFields from './UserFormFields';
 import { Button } from 'flowbite-react';
-import { FaRegTrashAlt, FaSave } from 'react-icons/fa';
+import { Trash2, Save } from 'lucide-react';
 
 const UserForm = ({ initialValues, roles, onSubmit, isUpdate = false }) => {
   const formik = useFormik({
@@ -26,7 +26,7 @@ const UserForm = ({ initialValues, roles, onSubmit, isUpdate = false }) => {
         <UserFormFields roles={roles} />
         <div className="flex justify-end items-center space-x-4 pt-4">
           <Button type="button" color="gray" onClick={() => formik.resetForm()}>
-            <FaRegTrashAlt size={20} className="mr-2" />
+            <Trash2 size={20} className="mr-2" />
             Limpiar
           </Button>
           <Button
@@ -36,7 +36,7 @@ const UserForm = ({ initialValues, roles, onSubmit, isUpdate = false }) => {
             isProcessing={formik.isSubmitting}
           >
             <>
-              <FaSave size={20} className="mr-2" />
+              <Save size={20} className="mr-2" />
               {isUpdate ? 'Actualizar ' : ' Crear '} Usuario
             </>
           </Button>
@@ -46,4 +46,4 @@ const UserForm = ({ initialValues, roles, onSubmit, isUpdate = false }) => {
   );
 };
 
-export default React.memo(UserForm);
+export default memo(UserForm);

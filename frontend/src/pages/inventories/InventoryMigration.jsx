@@ -1,31 +1,28 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Tabs } from 'flowbite-react';
-import { HiLink } from 'react-icons/hi';
-import {
-  BiCategory,
-  BiCode,
-  BiSolidCalendarCheck,
-  BiSolidCalendarEdit,
-  BiSolidCalendarMinus,
-  BiSolidCalendarPlus,
-} from 'react-icons/bi';
 import Notifies from '../../components/Notifies/Notifies';
-import { TbNumber123 } from 'react-icons/tb';
-import { AiOutlineFieldNumber } from 'react-icons/ai';
-import {
-  MdInfo,
-  MdInventory,
-  MdOutlineDirectionsCar,
-  MdOutlineTextsms,
-} from 'react-icons/md';
 import { parseToLocalDate } from '../../utils/formatValues';
 import InventoryProperty from '../../components/InventoryComponents/InventoryView/InventoryProperty';
-import { RiInputField } from 'react-icons/ri';
 import FileIcon from '../../components/FileIcon/FileIcon';
 import classNames from 'classnames';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 import { API_URL, migrateInventory } from '../../services/api';
+
+import {
+  CalendarCheck,
+  CalendarClock,
+  CalendarMinus,
+  CalendarPlus,
+  Code,
+  FormInput,
+  Hash,
+  Info,
+  Layers,
+  Link,
+  MessageSquare,
+  Package,
+  Tag,
+} from 'lucide-react';
 
 function stripHtml(html) {
   if (!html) return '';
@@ -117,68 +114,68 @@ const MigratedInventoryPreview = ({ inventory }) => {
     status: {
       label: 'Estado',
       value: getStatusLabel(inventory.status),
-      icon: MdInfo,
+      icon: Info,
     },
     modelName: {
       label: 'Modelo',
       value: inventory.inventoryModel.name,
-      icon: MdInventory,
+      icon: Package,
     },
     modelBrand: {
       label: 'Marca',
       value: inventory.inventoryModel.inventoryBrand.name,
-      icon: PiTrademarkRegisteredBold,
+      icon: Tag,
     },
     modelType: {
       label: 'Tipo de Inventario',
       value: inventory.inventoryModel.inventoryType.name,
-      icon: BiCategory,
+      icon: Layers,
     },
     serialNumber: {
       label: 'Número de Serie',
       value: inventory.serialNumber,
-      icon: TbNumber123,
+      icon: Hash,
     },
     activeNumber: {
       label: 'Número de Activo',
       value: inventory.activeNumber,
-      icon: AiOutlineFieldNumber,
+      icon: Hash,
     },
     receptionDate: {
       label: 'Fecha de Recepción',
       value: inventory.receptionDate
         ? parseToLocalDate(inventory.receptionDate)
         : 'N/A',
-      icon: BiSolidCalendarCheck,
+      icon: CalendarCheck,
     },
     altaDate: {
       label: 'Fecha de Alta',
       value: inventory.altaDate || 'N/A',
-      icon: BiSolidCalendarPlus,
+      icon: CalendarPlus,
     },
     bajaDate: {
       label: 'Fecha de Baja',
       value: inventory.bajaDate || 'N/A',
-      icon: BiSolidCalendarMinus,
+      icon: CalendarMinus,
     },
     createdAt: {
       label: 'Fecha de Creación',
       value: inventory.createdAt
         ? parseToLocalDate(inventory.createdAt)
         : 'N/A',
-      icon: BiSolidCalendarPlus,
+      icon: CalendarPlus,
     },
     updatedAt: {
       label: 'Última Modificación',
       value: inventory.updatedAt
         ? parseToLocalDate(inventory.updatedAt)
         : 'N/A',
-      icon: BiSolidCalendarEdit,
+      icon: CalendarClock,
     },
     comments: {
       label: 'Comentarios',
       value: stripHtml(inventory.comments),
-      icon: MdOutlineTextsms,
+      icon: MessageSquare,
     },
   };
 
@@ -252,7 +249,7 @@ const MigratedInventoryPreview = ({ inventory }) => {
                       <InventoryProperty
                         label={field.customField}
                         value={field.customFieldValue}
-                        icon={RiInputField}
+                        icon={FormInput}
                       />
                     </div>
                   ))
@@ -342,7 +339,7 @@ const MigratedInventoryPreview = ({ inventory }) => {
 
 const InventoryMigration = () => {
   // Estados para pestañas "Importar por URL" y "Pegar JSON"
-  const [apiBaseUrl, setApiBaseUrl] = useState('https://sinabe.giize.com/api');
+  const [apiBaseUrl, setApiBaseUrl] = useState(API_URL);
   const [url, setUrl] = useState('');
   const [token, setToken] = useState('');
   const [jsonText, setJsonText] = useState('');
@@ -529,7 +526,7 @@ const InventoryMigration = () => {
         variant="fullWidth"
         className="text-nowrap overflow-x-auto"
       >
-        <Tabs.Item title="Importar por URL" icon={HiLink}>
+        <Tabs.Item title="Importar por URL" icon={Link}>
           <div className="p-4">
             <form onSubmit={handleUrlSubmit} className="flex flex-col gap-4">
               <div>
@@ -592,7 +589,7 @@ const InventoryMigration = () => {
             </form>
           </div>
         </Tabs.Item>
-        <Tabs.Item title="Pegar JSON" icon={BiCode}>
+        <Tabs.Item title="Pegar JSON" icon={Code}>
           <div className="p-4">
             <form onSubmit={handleJsonSubmit} className="flex flex-col gap-4">
               <div>
@@ -622,7 +619,7 @@ const InventoryMigration = () => {
           </div>
         </Tabs.Item>
 
-        <Tabs.Item title="Subir CSV" icon={BiSolidCalendarEdit}>
+        <Tabs.Item title="Subir CSV" icon={CalendarClock}>
           <div className="p-4">
             <form onSubmit={handleCsvSubmit} className="flex flex-col gap-4">
               <div>

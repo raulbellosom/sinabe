@@ -103,7 +103,7 @@ export const useCreateTask = (projectId) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ deadlineId, data }) => createTask(deadlineId, data),
-    onSuccess: (_, { deadlineId }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deadlines', projectId] });
     },
   });

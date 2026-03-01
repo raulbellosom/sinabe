@@ -1,7 +1,7 @@
 /**
  * Modal para probar una regla de notificación
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Modal,
   Button,
@@ -10,9 +10,14 @@ import {
   Badge,
   ToggleSwitch,
 } from 'flowbite-react';
-import { HiPlay, HiCheck, HiExclamation } from 'react-icons/hi';
 import { useNotifications } from '../../context/NotificationContext';
 import { toast } from 'react-hot-toast';
+
+import {
+  AlertTriangle,
+  Check,
+  Play,
+} from 'lucide-react';
 
 const NotificationRuleTestModal = ({ show, onClose, rule }) => {
   const { testRunRule } = useNotifications();
@@ -55,7 +60,7 @@ const NotificationRuleTestModal = ({ show, onClose, rule }) => {
           <div className="space-y-4">
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start gap-3">
-                <HiExclamation className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                 <div>
                   <h4 className="font-medium text-yellow-800">
                     Modo de prueba
@@ -92,7 +97,7 @@ const NotificationRuleTestModal = ({ show, onClose, rule }) => {
                 {loading ? (
                   <Spinner size="sm" className="mr-2" />
                 ) : (
-                  <HiPlay className="w-5 h-5 mr-2" />
+                  <Play className="w-5 h-5 mr-2" />
                 )}
                 {loading
                   ? 'Ejecutando...'
@@ -104,7 +109,7 @@ const NotificationRuleTestModal = ({ show, onClose, rule }) => {
           </div>
         ) : result.error ? (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-            <HiExclamation className="w-12 h-12 mx-auto text-red-500 mb-2" />
+            <AlertTriangle className="w-12 h-12 mx-auto text-red-500 mb-2" />
             <h4 className="font-medium text-red-800">Error en la ejecución</h4>
             <p className="text-sm text-red-700 mt-1">{result.error}</p>
           </div>
@@ -119,7 +124,7 @@ const NotificationRuleTestModal = ({ show, onClose, rule }) => {
                   }`}
                 >
                   {result.matchCount > 0 ? (
-                    <HiCheck className="w-6 h-6 text-green-600" />
+                    <Check className="w-6 h-6 text-green-600" />
                   ) : (
                     <span className="text-2xl font-bold text-gray-400">0</span>
                   )}

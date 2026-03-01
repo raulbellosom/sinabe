@@ -1,9 +1,9 @@
 // src/components/ProjectDetails/PO/PurchaseOrderFormModal.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ReusableModal from '../../Modals/ReusableModal';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { FaClipboardList, FaSave, FaTimes } from 'react-icons/fa';
+import { ClipboardList, Save, X } from 'lucide-react';
 import Notifies from '../../Notifies/Notifies';
 import {
   useCreatePurchaseOrder,
@@ -64,18 +64,18 @@ export const PurchaseOrderFormModal = ({
       onClose={onClose}
       title={
         <span className="flex items-center gap-2">
-          <FaClipboardList className="text-purple-600" />
+          <ClipboardList className="text-purple-600" />
           {isEditing ? 'Editar Orden de Compra' : 'Nueva Orden de Compra'}
         </span>
       }
       size="md"
       actions={[
-        { label: 'Cancelar', color: 'stone', icon: FaTimes, action: onClose },
+        { label: 'Cancelar', color: 'stone', icon: X, action: onClose },
         {
           label: isEditing ? 'Actualizar' : 'Crear',
           color: 'purple',
           filled: true,
-          icon: FaSave,
+          icon: Save,
           action: () => document.getElementById('po-form-submit')?.click(),
         },
       ]}

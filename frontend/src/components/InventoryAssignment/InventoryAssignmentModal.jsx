@@ -1,9 +1,15 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import SideModal from '../Modals/SideModal';
 import ConfirmModal from '../Modals/ConfirmModal';
 import { useInventorySelection } from '../../context/InventorySelectionProvider';
-import { MdInventory, MdWarning, MdCheckCircle } from 'react-icons/md';
-import { FaFileInvoice, FaClipboardList, FaTimes } from 'react-icons/fa';
+import {
+  FileText,
+  ClipboardList,
+  X,
+  Package,
+  AlertTriangle,
+  CheckCircle,
+} from 'lucide-react';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import ReusableTable from '../Table/ReusableTable';
 import classNames from 'classnames';
@@ -327,7 +333,7 @@ const InventoryAssignmentModal = () => {
           className="p-1 hover:bg-red-100 rounded-full transition-colors"
           title="Remover de la selección"
         >
-          <FaTimes className="hover:text-red-600 w-4 h-4" />
+          <X className="hover:text-red-600 w-4 h-4" />
         </button>
       ),
     },
@@ -413,7 +419,7 @@ const InventoryAssignmentModal = () => {
       isOpen={isCartOpen}
       onClose={closeCart}
       title="Asignación Masiva de Inventarios"
-      icon={MdInventory}
+      icon={Package}
       size="xl"
     >
       <div className="flex flex-col gap-4">
@@ -421,7 +427,7 @@ const InventoryAssignmentModal = () => {
         <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-700">
           <div className="flex flex-col md:flex-row gap-2 items-center justify-between">
             <div className="flex items-center gap-2">
-              <MdInventory className="text-xl text-purple-600" />
+              <Package className="text-xl text-purple-600" />
               <div>
                 <p className="font-semibold text-sm text-gray-800 dark:text-gray-200">
                   {selectedInventories.length}{' '}
@@ -439,7 +445,7 @@ const InventoryAssignmentModal = () => {
               extraActions={[
                 {
                   label: 'Limpiar',
-                  icon: FaTimes,
+                  icon: X,
                   action: handleClearAll,
                   color: 'red',
                   filled: true,
@@ -462,7 +468,7 @@ const InventoryAssignmentModal = () => {
               )}
             >
               <div className="flex items-center gap-2">
-                <FaFileInvoice />
+                <FileText />
                 <span>Facturas</span>
               </div>
             </button>
@@ -476,7 +482,7 @@ const InventoryAssignmentModal = () => {
               )}
             >
               <div className="flex items-center gap-2">
-                <FaClipboardList />
+                <ClipboardList />
                 <span>Ordenes de Compra</span>
               </div>
             </button>
@@ -509,7 +515,7 @@ const InventoryAssignmentModal = () => {
                       extraActions={[
                         {
                           label: 'Asignar Factura',
-                          icon: FaFileInvoice,
+                          icon: FileText,
                           action: handleAssignInvoice,
                           color: 'purple',
                           filled: true,
@@ -549,7 +555,7 @@ const InventoryAssignmentModal = () => {
                       extraActions={[
                         {
                           label: 'Asignar Orden de Compra',
-                          icon: FaClipboardList,
+                          icon: ClipboardList,
                           action: handleAssignPurchaseOrder,
                           color: 'purple',
                           filled: true,
@@ -574,7 +580,7 @@ const InventoryAssignmentModal = () => {
           {availableInventories.length > 0 && (
             <div>
               <h3 className="font-semibold text-green-700 dark:text-green-400 mb-2 flex items-center gap-2 text-sm">
-                <MdCheckCircle />
+                <CheckCircle />
                 Disponibles ({availableInventories.length})
               </h3>
               <ReusableTable
@@ -593,7 +599,7 @@ const InventoryAssignmentModal = () => {
           {unavailableInventories.length > 0 && (
             <div>
               <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2 flex items-center gap-2 text-sm">
-                <MdWarning />
+                <AlertTriangle />
                 No Disponibles ({unavailableInventories.length})
               </h3>
               <ReusableTable
@@ -612,7 +618,7 @@ const InventoryAssignmentModal = () => {
           {alreadyAssignedInventories.length > 0 && (
             <div>
               <h3 className="font-semibold text-blue-700 dark:text-blue-400 mb-2 flex items-center gap-2 text-sm">
-                <MdCheckCircle />
+                <CheckCircle />
                 Ya Asignados ({alreadyAssignedInventories.length})
               </h3>
               <ReusableTable

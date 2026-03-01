@@ -43,7 +43,7 @@ export const useUpdateVertical = () => {
 
   return useMutation({
     mutationFn: ({ id, data }) => updateVertical(id, data),
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verticals'] });
     },
   });

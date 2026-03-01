@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   getCustodyRecordByToken,
@@ -7,18 +7,19 @@ import {
 import { Card, Table, Spinner, Alert, Button, Badge } from 'flowbite-react';
 import SignatureCanvas from 'react-signature-canvas';
 import { toast } from 'react-hot-toast';
-import {
-  HiExclamation,
-  HiCheckCircle,
-  HiCalendar,
-  HiUser,
-  HiOfficeBuilding,
-  HiInformationCircle,
-  HiPencilAlt,
-  HiX,
-} from 'react-icons/hi';
 import sinabeIcon from '../../assets/logo/sinabe_icon.png';
 import gapLogo from '../../assets/logo/gap.png';
+
+import {
+  AlertTriangle,
+  Building2,
+  Calendar,
+  CheckCircle,
+  Info,
+  Pencil,
+  User,
+  X,
+} from 'lucide-react';
 
 const PublicCustodyView = () => {
   const { token } = useParams();
@@ -85,7 +86,7 @@ const PublicCustodyView = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
-        <Alert color="failure" icon={HiExclamation}>
+        <Alert color="failure" icon={AlertTriangle}>
           <span className="font-medium">¡Atención!</span> {error}
         </Alert>
         <div className="mt-8 flex flex-col items-center">
@@ -143,7 +144,7 @@ const PublicCustodyView = () => {
 
         <div className="grid grid-cols-1 gap-6">
           {/* Status Alert */}
-          <Alert color="success" icon={HiCheckCircle}>
+          <Alert color="success" icon={CheckCircle}>
             Este es un documento verificado y válido emitido por el Departamento
             de TI.
           </Alert>
@@ -154,7 +155,7 @@ const PublicCustodyView = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                    <HiCalendar className="h-5 w-5" />
+                    <Calendar className="h-5 w-5" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
@@ -172,7 +173,7 @@ const PublicCustodyView = () => {
 
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                    <HiUser className="h-5 w-5" />
+                    <User className="h-5 w-5" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
@@ -191,7 +192,7 @@ const PublicCustodyView = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                    <HiOfficeBuilding className="h-5 w-5" />
+                    <Building2 className="h-5 w-5" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider">
@@ -263,7 +264,7 @@ const PublicCustodyView = () => {
           {record.comments && (
             <Card>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                <HiInformationCircle className="text-blue-600" /> Comentarios
+                <Info className="text-blue-600" /> Comentarios
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm whitespace-pre-wrap">
                 {record.comments}
@@ -276,7 +277,7 @@ const PublicCustodyView = () => {
             {/* Deliverer Signature (Read Only) */}
             <Card>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                <HiUser className="text-green-500" /> Entregado por (TI)
+                <User className="text-green-500" /> Entregado por (TI)
               </h3>
               <div className="flex justify-center p-4 bg-gray-50 dark:bg-gray-800 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl min-h-[160px] items-center">
                 {record.delivererSignature ? (
@@ -332,7 +333,7 @@ const PublicCustodyView = () => {
                       }}
                       className="!p-1 hover:text-red-600"
                     >
-                      <HiX className="mr-1 h-3 w-3" /> Limpiar
+                      <X className="mr-1 h-3 w-3" /> Limpiar
                     </Button>
                   </div>
                   <div className="bg-white dark:bg-gray-900 rounded-b-xl border-2 border-dashed border-blue-200 dark:border-blue-900 overflow-hidden shadow-inner relative">
@@ -355,7 +356,7 @@ const PublicCustodyView = () => {
                       isProcessing={isSubmitting}
                       disabled={!hasSignature || isSubmitting}
                     >
-                      <HiCheckCircle className="mr-2 h-5 w-5" /> Firmar y
+                      <CheckCircle className="mr-2 h-5 w-5" /> Firmar y
                       Finalizar
                     </Button>
                     <p className="text-[9px] text-gray-400 text-center uppercase tracking-tighter leading-tight font-medium">
@@ -369,7 +370,7 @@ const PublicCustodyView = () => {
                   {isSignedSuccessfully && (
                     <Alert
                       color="success"
-                      icon={HiCheckCircle}
+                      icon={CheckCircle}
                       className="py-2"
                     >
                       <span className="text-xs font-bold">

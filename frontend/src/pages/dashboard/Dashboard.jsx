@@ -4,28 +4,27 @@ import { getDashboardData } from '../../services/api';
 import InventoryStatusCards from './graphics/InventoryStatusCards';
 import PieChart from './graphics/PieChart';
 import {
-  FaBoxOpen,
-  FaEdit,
-  FaEye,
-  FaIndustry,
-  FaSun,
-  FaTools,
-} from 'react-icons/fa';
-import {
-  MdAssignment,
-  MdCalendarMonth,
-  MdNightsStay,
-  MdWbSunny,
-} from 'react-icons/md';
+  Package,
+  Pencil,
+  Eye,
+  Factory,
+  Sun,
+  Wrench,
+  ClipboardList,
+  Calendar,
+  Moon,
+  Sunrise,
+  LayoutGrid,
+  MoreVertical,
+  Users,
+} from 'lucide-react';
 import DonutChart from './graphics/DonutChart';
 import PolarAreaChart from './graphics/PolarAreaChart';
 import AreaChart from './graphics/AreaChart';
 import TableChart from './graphics/TableChart';
 import GradientChart from './graphics/GradientChart';
 import { Dropdown } from 'flowbite-react';
-import { BsGrid1X2Fill, BsThreeDotsVertical } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
-import { WiSunrise } from 'react-icons/wi';
 import { ThreeCircles } from 'react-loader-spinner';
 import Skeleton from 'react-loading-skeleton';
 
@@ -40,18 +39,18 @@ const getGreeting = () => {
   if (hour >= 6 && hour < 12) {
     return {
       text: '¡Buenos días',
-      icon: <WiSunrise size={40} className="inline text-yellow-400 mb-1" />,
+      icon: <Sunrise size={40} className="inline text-yellow-400 mb-1" />,
     };
   }
   if (hour >= 12 && hour < 19) {
     return {
       text: '¡Buenas tardes',
-      icon: <FaSun size={40} className="inline text-orange-400 mb-1" />,
+      icon: <Sun size={40} className="inline text-orange-400 mb-1" />,
     };
   }
   return {
     text: '¡Buenas noches',
-    icon: <MdNightsStay size={40} className="inline text-blue-500 mb-1" />,
+    icon: <Moon size={40} className="inline text-blue-500 mb-1" />,
   };
 };
 
@@ -69,13 +68,13 @@ const Dashboard = () => {
     {
       label: 'Ver Detalles',
       href: `/inventories/view/${inventory.id}`,
-      icon: FaEye,
+      icon: Eye,
       disabled: true,
     },
     {
       label: 'Editar',
       href: `/inventories/edit/${inventory.id}`,
-      icon: FaEdit,
+      icon: Pencil,
       disabled: true,
     },
   ];
@@ -83,23 +82,23 @@ const Dashboard = () => {
   return (
     <div className="h-full">
       {dashboard && (
-        <div className="mb-4 p-4 bg-white shadow rounded-lg flex flex-col-reverse md:flex-row items-center justify-between">
+        <div className="mb-4 p-4 bg-white dark:bg-neutral-800 shadow dark:shadow-neutral-900/50 rounded-lg flex flex-col-reverse md:flex-row items-center justify-between">
           <div className="flex items-center gap-1 w-full">
             <span>
-              <BsGrid1X2Fill
+              <LayoutGrid
                 size={32}
-                className="inline text-sinabe-primary-500 mr-2 text-sinabe-primary"
+                className="inline text-sinabe-primary mr-2"
               />
             </span>
             <div>
-              <h1 className="text-base md:text-xl font-bold">Dashboard</h1>
-              <p className="text-gray-600 text-sm">
+              <h1 className="text-base md:text-xl font-bold dark:text-white">Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Aquí puedes ver un resumen de los inventarios y su estado
                 actual.
               </p>
             </div>
           </div>
-          <div className="flex w-full md:justify-end items-center gap-2 text-md md:text-lg text-gray-700">
+          <div className="flex w-full md:justify-end items-center gap-2 text-md md:text-lg text-gray-700 dark:text-gray-300">
             <span className="text-2xl">{greeting.icon}</span>
             <span>
               {greeting.text},{' '}
@@ -123,7 +122,7 @@ const Dashboard = () => {
           <DonutChart
             title="Inventarios por Status"
             subtitle="Estatus de los inventarios"
-            icon={<MdAssignment />}
+            icon={<ClipboardList />}
             dataObj={dashboard.distribution.byStatus}
             colors={{
               ALTA: 'rgba(75, 192, 192, 0.6)',
@@ -134,19 +133,19 @@ const Dashboard = () => {
           <PolarAreaChart
             title="Inventarios por Condición"
             subtitle="Estado actual de los equipos registrados"
-            icon={<FaTools />}
+            icon={<Wrench />}
             dataObj={dashboard.distribution.byCondition}
           />
           <PieChart
             title="Distribución por Tipo"
             subtitle="Categorización de inventarios por tipo de equipo"
-            icon={<FaBoxOpen />}
+            icon={<Package />}
             dataObj={dashboard.distribution.byType}
           />
           <PieChart
             title="Distribución por Marca"
             subtitle="Inventarios clasificados por fabricante"
-            icon={<FaIndustry />}
+            icon={<Factory />}
             dataObj={dashboard.distribution.byBrand}
           />
         </div>
@@ -156,7 +155,7 @@ const Dashboard = () => {
           <AreaChart
             title="Inventarios Creados por Mes"
             subtitle="Tendencia de registro de nuevos inventarios durante el año"
-            icon={<MdCalendarMonth />}
+            icon={<Calendar />}
             labels={dashboard.months}
             dataValues={dashboard.inventoriesByMonth.map((m) => m.count)}
           />
@@ -167,7 +166,7 @@ const Dashboard = () => {
           <TableChart
             title="Últimos Movimientos"
             subtitle="Los 5 inventarios más recientes en el sistema"
-            icon={<FaBoxOpen />}
+            icon={<Package />}
             columns={[
               { key: 'model', label: 'Modelo' },
               {
@@ -193,8 +192,8 @@ const Dashboard = () => {
               actions: (
                 <Dropdown
                   renderTrigger={() => (
-                    <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
-                      <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                    <button className="w-fit bg-white dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border dark:border-neutral-600 text-stone-800 dark:text-white">
+                      <MoreVertical className="text-lg text-neutral-600 dark:text-neutral-300" />
                     </button>
                   )}
                   dismissOnClick={true}
@@ -222,7 +221,7 @@ const Dashboard = () => {
           <GradientChart
             title="Inventarios por Usuario por Mes"
             subtitle="Tendencia de registro de inventarios por usuario durante el año"
-            icon={<MdAssignment />}
+            icon={<Users />}
             labels={dashboard.months}
             usersData={dashboard.inventoriesByUserMonthly}
           />
@@ -232,19 +231,19 @@ const Dashboard = () => {
       {!dashboard && (
         <div className="flex flex-col items-start justify-start h-[80dvh]">
           <div className="mb-4 p-4 w-full">
-            <Skeleton height={138} className="w-full" />
+            <Skeleton height={138} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4 w-full">
-            <Skeleton height={150} className="w-full" />
-            <Skeleton height={150} className="w-full" />
-            <Skeleton height={150} className="w-full" />
-            <Skeleton height={150} className="w-full" />
+            <Skeleton height={150} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
+            <Skeleton height={150} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
+            <Skeleton height={150} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
+            <Skeleton height={150} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 3xl:grid-cols-4 gap-4 my-4 w-full">
-            <Skeleton height={250} className="w-full" />
-            <Skeleton height={250} className="w-full" />
-            <Skeleton height={250} className="w-full" />
-            <Skeleton height={250} className="w-full" />
+            <Skeleton height={250} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
+            <Skeleton height={250} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
+            <Skeleton height={250} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
+            <Skeleton height={250} className="w-full" baseColor="var(--skeleton-base)" highlightColor="var(--skeleton-highlight)" />
           </div>
         </div>
       )}

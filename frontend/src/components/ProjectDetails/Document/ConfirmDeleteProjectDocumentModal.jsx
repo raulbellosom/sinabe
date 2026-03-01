@@ -1,12 +1,14 @@
 // src/components/ProjectDetails/Document/ConfirmDeleteProjectDocumentModal.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ReusableModal from '../../Modals/ReusableModal';
 import { Label, TextInput } from 'flowbite-react';
 import Notifies from '../../Notifies/Notifies';
 import { useDeleteProjectDocument } from '../../../hooks/useProjectDocuments';
-import { IoMdClose } from 'react-icons/io';
-import { FaTrashAlt } from 'react-icons/fa';
 
+import {
+  Trash2,
+  X,
+} from 'lucide-react';
 const ConfirmDeleteProjectDocumentModal = ({
   isOpen,
   onClose,
@@ -47,7 +49,7 @@ const ConfirmDeleteProjectDocumentModal = ({
       }}
       title={
         <span className="flex items-center gap-2 text-red-600 font-semibold">
-          <FaTrashAlt /> ¿Eliminar {count} documento{count > 1 ? 's' : ''}?
+          <Trash2 /> ¿Eliminar {count} documento{count > 1 ? 's' : ''}?
         </span>
       }
       size="sm"
@@ -55,7 +57,7 @@ const ConfirmDeleteProjectDocumentModal = ({
         {
           label: 'Cancelar',
           color: 'stone',
-          icon: IoMdClose,
+          icon: X,
           action: () => {
             setConfirmation('');
             onClose();
@@ -65,7 +67,7 @@ const ConfirmDeleteProjectDocumentModal = ({
           label: 'Eliminar',
           color: 'red',
           filled: true,
-          icon: FaTrashAlt,
+          icon: Trash2,
           action: handleDelete,
           disabled: !canDelete || isPending,
           type: 'submit',

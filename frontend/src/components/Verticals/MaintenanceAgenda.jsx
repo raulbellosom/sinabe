@@ -20,17 +20,19 @@ import {
 import { useUsersList } from '../../hooks/useUsersList';
 import SearchableSelect from '../common/SearchableSelect';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
-import {
-  FaPlus,
-  FaCheck,
-  FaCalendarAlt,
-  FaEdit,
-  FaTrash,
-} from 'react-icons/fa';
-import { BsThreeDotsVertical } from 'react-icons/bs';
+
+
 import dayjs from 'dayjs';
 import Notifies from '../Notifies/Notifies';
 import ActionButtons from '../ActionButtons/ActionButtons';
+import {
+  Calendar,
+  Check,
+  MoreVertical,
+  Pencil,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 
 const MaintenanceAgenda = ({ verticalId }) => {
   const {
@@ -264,14 +266,14 @@ const MaintenanceAgenda = ({ verticalId }) => {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold flex items-center gap-2">
-          <FaCalendarAlt /> Agenda de Mantenimiento
+          <Calendar /> Agenda de Mantenimiento
         </h3>
         <ActionButtons
           extraActions={[
             {
               label: 'Programar Mantenimiento',
               action: () => handleOpenModal(),
-              icon: FaPlus,
+              icon: Plus,
               color: 'indigo',
               filled: true,
             },
@@ -340,13 +342,13 @@ const MaintenanceAgenda = ({ verticalId }) => {
                         type="button"
                         className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full cursor-pointer flex items-center justify-center transition-colors"
                       >
-                        <BsThreeDotsVertical />
+                        <MoreVertical />
                       </button>
                     )}
                   >
                     {event.status !== 'COMPLETED' && (
                       <Dropdown.Item
-                        icon={FaCheck}
+                        icon={Check}
                         onClick={() => handleComplete(event)}
                         className="text-green-600 font-medium"
                       >
@@ -354,13 +356,13 @@ const MaintenanceAgenda = ({ verticalId }) => {
                       </Dropdown.Item>
                     )}
                     <Dropdown.Item
-                      icon={FaEdit}
+                      icon={Pencil}
                       onClick={() => handleOpenModal(event)}
                     >
                       Editar
                     </Dropdown.Item>
                     <Dropdown.Item
-                      icon={FaTrash}
+                      icon={Trash2}
                       onClick={() => handleDelete(event.id)}
                       className="text-red-600"
                     >

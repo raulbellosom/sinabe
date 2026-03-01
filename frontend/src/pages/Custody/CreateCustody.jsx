@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFormik, FormikProvider } from 'formik';
 import * as Yup from 'yup';
@@ -24,26 +24,27 @@ import {
   Badge,
   Breadcrumb,
 } from 'flowbite-react';
-import { HiPencilAlt, HiTrash } from 'react-icons/hi';
 import AutoCompleteInput from '../../components/Inputs/AutoCompleteInput';
 import TextInput from '../../components/Inputs/TextInput';
 import TextArea from '../../components/Inputs/TextArea';
 import DateInput from '../../components/Inputs/DateInput';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import {
-  HiLockClosed,
-  HiLockOpen,
-  HiRefresh,
-  HiCheckCircle,
-  HiShare,
-  HiChevronRight,
-  HiOutlineSave,
-  HiX,
-} from 'react-icons/hi';
-import { FaFileContract, FaUserTie } from 'react-icons/fa';
-import { IoMdUnlock, IoMdLock } from 'react-icons/io';
 import { QRCodeSVG } from 'qrcode.react';
 import LoadingModal from '../../components/loadingModal/LoadingModal';
+
+import {
+  CheckCircle,
+  ChevronRight,
+  FileCheck,
+  Lock,
+  Pencil,
+  RefreshCw,
+  Save,
+  Trash2,
+  Unlock,
+  UserRound,
+  X,
+} from 'lucide-react';
 
 const CreateCustody = () => {
   const navigate = useNavigate();
@@ -570,7 +571,7 @@ const CreateCustody = () => {
       <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-4">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-blue-100 rounded-lg text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-            <FaFileContract size={24} />
+            <FileCheck size={24} />
           </div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
             {isEditMode ? 'Actualizar Resguardo' : 'Nuevo Resguardo'}
@@ -581,13 +582,13 @@ const CreateCustody = () => {
           <ActionButtons
             onSave={formik.handleSubmit}
             labelSave="Finalizar Resguardo"
-            iconSave={HiCheckCircle}
+            iconSave={CheckCircle}
             disabledSave={isSubmitting || isDrafting}
             onCancel={() => navigate('/custody')}
             extraActions={[
               {
                 label: 'Guardar Borrador',
-                icon: HiOutlineSave,
+                icon: Save,
                 action: handleSaveDraft,
                 color: 'yellow',
                 disabled: isSubmitting || isDrafting,
@@ -603,7 +604,7 @@ const CreateCustody = () => {
             {/* Receiver / Deliverer */}
             <Card>
               <h3 className="text-lg font-semibold mb-4 border-b pb-2 flex items-center gap-2 dark:text-white">
-                <HiCheckCircle className="text-green-500" /> Sujetos del
+                <CheckCircle className="text-green-500" /> Sujetos del
                 Resguardo
               </h3>
               <div className="space-y-4">
@@ -705,7 +706,7 @@ const CreateCustody = () => {
             <Card>
               <div className="flex flex-col justify-start h-full w-full">
                 <h3 className="text-lg font-semibold mb-4 border-b pb-2 flex items-center w-full gap-2 dark:text-white">
-                  <HiChevronRight className="text-blue-500" /> Datos Generales
+                  <ChevronRight className="text-blue-500" /> Datos Generales
                 </h3>
                 <div className="flex flex-col gap-4">
                   <DateInput
@@ -730,7 +731,7 @@ const CreateCustody = () => {
           <Card>
             <div className="flex items-center justify-between mb-4 border-b pb-2">
               <h3 className="text-lg font-semibold flex items-center gap-2 dark:text-white">
-                <FaFileContract className="text-purple-500" /> Equipos en
+                <FileCheck className="text-purple-500" /> Equipos en
                 Resguardo
               </h3>
               <Badge color="info">{selectedInventories.length} item(s)</Badge>
@@ -832,7 +833,7 @@ const CreateCustody = () => {
                             className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
                             type="button"
                           >
-                            <HiTrash size={20} />
+                            <Trash2 size={20} />
                           </button>
                         </Table.Cell>
                       </Table.Row>
@@ -842,7 +843,7 @@ const CreateCustody = () => {
               </div>
             ) : (
               <div className="text-center py-12 bg-gray-50 dark:bg-gray-700/30 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700">
-                <FaFileContract
+                <FileCheck
                   className="mx-auto text-gray-300 dark:text-gray-600 mb-2"
                   size={40}
                 />
@@ -864,7 +865,7 @@ const CreateCustody = () => {
               <div className="flex justify-between items-center mb-4 border-b pb-2">
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-semibold dark:text-white flex items-center gap-2">
-                    <HiPencilAlt className="text-blue-500" /> Firma del Receptor
+                    <Pencil className="text-blue-500" /> Firma del Receptor
                   </h3>
                   <Button
                     size="xs"
@@ -873,9 +874,9 @@ const CreateCustody = () => {
                     className="flex items-center gap-1"
                   >
                     {isReceiverLocked ? (
-                      <HiLockClosed className="h-3 w-3" />
+                      <Lock className="h-3 w-3" />
                     ) : (
-                      <HiLockOpen className="h-3 w-3" />
+                      <Unlock className="h-3 w-3" />
                     )}
                   </Button>
                 </div>
@@ -885,7 +886,7 @@ const CreateCustody = () => {
                   onClick={() => receiverSigPad.current.clear()}
                   disabled={isReceiverLocked}
                 >
-                  <HiX className="mr-1 h-3 w-3" /> Limpiar
+                  <X className="mr-1 h-3 w-3" /> Limpiar
                 </Button>
               </div>
               {/* Receiver Signature Pad */}
@@ -895,7 +896,7 @@ const CreateCustody = () => {
               >
                 {isReceiverLocked && (
                   <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
-                    <HiLockClosed className="text-gray-400 text-4xl" />
+                    <Lock className="text-gray-400 text-4xl" />
                   </div>
                 )}
                 <SignatureCanvas
@@ -917,7 +918,7 @@ const CreateCustody = () => {
               <div className="flex justify-between items-center mb-4 border-b pb-2">
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-semibold dark:text-white flex items-center gap-2">
-                    <FaUserTie className="text-green-500" /> Firma Responsable
+                    <UserRound className="text-green-500" /> Firma Responsable
                     TI
                   </h3>
                   {(isEditMode &&
@@ -932,9 +933,9 @@ const CreateCustody = () => {
                       className="flex items-center gap-1"
                     >
                       {isDelivererLocked ? (
-                        <HiLockClosed className="h-3 w-3" />
+                        <Lock className="h-3 w-3" />
                       ) : (
-                        <HiLockOpen className="h-3 w-3" />
+                        <Unlock className="h-3 w-3" />
                       )}
                     </Button>
                   ) : null}
@@ -955,7 +956,7 @@ const CreateCustody = () => {
                           className="!p-1"
                           title="Papelera/Restablecer"
                         >
-                          <HiRefresh className="h-3 w-3" />
+                          <RefreshCw className="h-3 w-3" />
                         </Button>
                       )}
                       <Button
@@ -964,7 +965,7 @@ const CreateCustody = () => {
                         onClick={() => delivererSigPad.current.clear()}
                         disabled={isDelivererLocked}
                       >
-                        <HiX className="mr-1 h-3 w-3" /> Limpiar
+                        <X className="mr-1 h-3 w-3" /> Limpiar
                       </Button>
                     </>
                   ) : null}
@@ -976,7 +977,7 @@ const CreateCustody = () => {
               >
                 {isDelivererLocked && (
                   <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
-                    <HiLockClosed className="text-gray-400 text-4xl" />
+                    <Lock className="text-gray-400 text-4xl" />
                   </div>
                 )}
                 <SignatureCanvas
@@ -1005,7 +1006,7 @@ const CreateCustody = () => {
               isProcessing={isSubmitting}
               className="w-full md:w-80 shadow-xl hover:scale-105 transition-transform"
             >
-              <HiCheckCircle className="mr-3 h-6 w-6" /> Finalizar y Generar
+              <CheckCircle className="mr-3 h-6 w-6" /> Finalizar y Generar
               Resguardo
             </Button>
             <p className="text-xs text-gray-400 italic font-medium max-w-[200px] text-center">

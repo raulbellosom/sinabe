@@ -1,4 +1,4 @@
-import React, { useContext, useRef } from 'react';
+import { useContext, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Field, Form, FormikProvider, useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -6,9 +6,8 @@ import AuthContext from '../../context/AuthContext';
 import Logo from '../../assets/logo/sinabe_icon.png';
 import LogoWhite from '../../assets/logo/sinabe_icon_white.png';
 import BgPattern from '../../assets/bg/bg_login_aeropuerto.jpeg';
-import { FaSignInAlt } from 'react-icons/fa';
+import { LogIn, AtSign, KeyRound } from 'lucide-react';
 import TextInput from '../../components/Inputs/TextInput';
-import { MdOutlineAlternateEmail, MdOutlinePassword } from 'react-icons/md';
 import { Button } from 'flowbite-react';
 
 const Login = () => {
@@ -117,7 +116,7 @@ const Login = () => {
               name="email"
               type="text"
               label="Correo Electrónico o Usuario"
-              icon={MdOutlineAlternateEmail}
+              icon={AtSign}
             />
             <Field
               component={TextInput}
@@ -125,7 +124,7 @@ const Login = () => {
               name="password"
               type="password"
               label="Contraseña"
-              icon={MdOutlinePassword}
+              icon={KeyRound}
             />
             <div className="flex justify-center w-full items-center gap-4 pt-4">
               <Button
@@ -133,7 +132,7 @@ const Login = () => {
                 type="submit"
                 gradientDuoTone="purpleToPink"
               >
-                <FaSignInAlt size={20} className="mr-2" />
+                <LogIn size={20} className="mr-2" />
                 Iniciar Sesión
               </Button>
             </div>

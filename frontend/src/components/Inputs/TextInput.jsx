@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { TextInput as Input } from 'flowbite-react';
 import classNames from 'classnames';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { Eye, EyeOff } from 'lucide-react';
 import PinnableInputWrapper from './PinnableInputWrapper';
 
 const TextInput = ({
@@ -15,10 +14,12 @@ const TextInput = ({
   label,
   id,
   name,
+  icon: Icon,
   ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const { touched, errors } = form;
+  const hasError = touched[field?.name] && errors[field?.name];
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -40,20 +41,42 @@ const TextInput = ({
       onTogglePin={onTogglePin}
     >
       <div className="relative">
-        <Input
+        {Icon && (
+          <div
+            className={classNames(
+              'absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none',
+              hasError
+                ? 'text-[color:var(--danger)]'
+                : 'text-[color:var(--foreground-muted)]',
+            )}
+          >
+            <Icon size={18} />
+          </div>
+        )}
+        <input
           {...field}
           {...props}
           type={inputType}
-          color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
-          className="text-neutral-800"
+          className={classNames(
+            'w-full min-h-[42px] text-sm py-2.5 px-3 rounded-lg',
+            'border bg-[color:var(--surface)] text-[color:var(--foreground)]',
+            'placeholder:text-[color:var(--foreground-muted)]',
+            'transition-all duration-200',
+            'focus:outline-none focus:ring-2',
+            Icon && 'pl-10',
+            props.type === 'password' && 'pr-10',
+            hasError
+              ? 'border-[color:var(--danger)] focus:ring-[color:var(--danger)]/30 focus:border-[color:var(--danger)]'
+              : 'border-[color:var(--border)] focus:ring-[color:var(--primary)]/30 focus:border-[color:var(--primary)]',
+          )}
         />
         {props.type === 'password' && (
           <button
             type="button"
             onClick={togglePasswordVisibility}
-            className="absolute inset-y-0 right-0 flex items-center px-2 text-gray-500"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--foreground-muted)] hover:text-[color:var(--foreground)] transition-colors"
           >
-            {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         )}
       </div>

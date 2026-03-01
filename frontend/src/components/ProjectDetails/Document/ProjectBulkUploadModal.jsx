@@ -1,15 +1,17 @@
 // File: frontend/src/components/ProjectDetails/Document/ProjectBulkUploadModal.jsx
 
-import React from 'react';
+
 import { Label, Textarea } from 'flowbite-react';
 import { useUploadProjectDocument } from '../../../hooks/useProjectDocuments';
 import Notifies from '../../Notifies/Notifies';
 import ImagePicker from '../../Inputs/ImagePicker';
 import { Formik, Field, Form } from 'formik';
 import ReusableModal from '../../Modals/ReusableModal';
-import { IoMdClose } from 'react-icons/io';
-import { FaUpload } from 'react-icons/fa';
 
+import {
+  Upload,
+  X,
+} from 'lucide-react';
 const ProjectBulkUploadModal = ({ isOpen, onClose, projectId, onSuccess }) => {
   const uploadMutation = useUploadProjectDocument(projectId);
 
@@ -45,14 +47,14 @@ const ProjectBulkUploadModal = ({ isOpen, onClose, projectId, onSuccess }) => {
             {
               label: 'Cancelar',
               color: 'stone',
-              icon: IoMdClose,
+              icon: X,
               action: onClose,
             },
             {
               label: 'Subir',
               color: 'purple',
               filled: true,
-              icon: FaUpload,
+              icon: Upload,
               disabled: isSubmitting || uploadMutation.isPending,
               action: submitForm,
             },

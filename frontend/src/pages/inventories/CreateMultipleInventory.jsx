@@ -1,12 +1,16 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import uploadFilesImage from '../../assets/images/upload_files.jpg';
 import { Button, FileInput, Spinner } from 'flowbite-react';
-import { FaCloudUploadAlt, FaDownload } from 'react-icons/fa';
 import { useInventoryContext } from '../../context/InventoryContext';
-import { MdClose } from 'react-icons/md';
 import { useAuthContext } from '../../context/AuthContext';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
+
+import {
+  Download,
+  Upload,
+  X,
+} from 'lucide-react';
 
 const CreateMultipleInventory = () => {
   const ref = useRef(null);
@@ -68,7 +72,7 @@ const CreateMultipleInventory = () => {
                 download="inventories_template.csv"
                 className="text-blue-500 font-bold"
               >
-                <FaDownload size={18} className="mr-2 inline-flex" />
+                <Download size={18} className="mr-2 inline-flex" />
                 Descargar plantilla
               </a>
             </li>
@@ -104,7 +108,7 @@ const CreateMultipleInventory = () => {
               ) : (
                 <>
                   <span>
-                    <FaCloudUploadAlt size={20} className="mr-2" />
+                    <Upload size={20} className="mr-2" />
                   </span>
                   <span>Cargar Archivo</span>
                 </>
@@ -121,7 +125,7 @@ const CreateMultipleInventory = () => {
                   className="cursor-pointer hover:bg-green-200 rounded-full p-1"
                   onClick={() => setCreatedInventories(null)}
                 >
-                  <MdClose size={20} className="text-green-500" />
+                  <X size={20} className="text-green-500" />
                 </span>
               </div>
               <ul className="p-2">
@@ -150,7 +154,7 @@ const CreateMultipleInventory = () => {
                     className="cursor-pointer hover:bg-red-200 rounded-full p-1"
                     onClick={() => setError(null)}
                   >
-                    <MdClose size={20} className="text-red-500" />
+                    <X size={20} className="text-red-500" />
                   </span>
                 </div>
                 <ul>

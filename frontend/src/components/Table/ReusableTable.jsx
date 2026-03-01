@@ -1,8 +1,13 @@
 // ReusableTable.jsx
-import React from 'react';
-import { FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
-import { BsThreeDotsVertical } from 'react-icons/bs';
-import { MdNavigateBefore, MdNavigateNext } from 'react-icons/md';
+
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  MoreVertical,
+} from 'lucide-react';
 import { Spinner, Dropdown, Checkbox } from 'flowbite-react';
 import classNames from 'classnames';
 import ActionButtons from '../ActionButtons/ActionButtons';
@@ -41,7 +46,7 @@ const ReusableTable = ({
   },
 
   rowClassName = () => '',
-  striped = false,
+  striped = true,
 }) => {
   const getNestedValue = (obj, path) => {
     if (!path) return undefined;
@@ -49,9 +54,9 @@ const ReusableTable = ({
   };
 
   const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return <FaSort className="opacity-30" />;
-    if (sortConfig.direction === 'asc') return <FaSortUp />;
-    return <FaSortDown />;
+    if (sortConfig.key !== key) return <ArrowUpDown className="opacity-30" />;
+    if (sortConfig.direction === 'asc') return <ArrowUp />;
+    return <ArrowDown />;
   };
 
   const renderCell = (row, col) => {
@@ -92,9 +97,9 @@ const ReusableTable = ({
             renderTrigger={() => (
               <button
                 type="button"
-                className="w-fit p-2.5 flex items-center justify-center rounded-md border text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="w-fit p-2 flex items-center justify-center rounded-md border border-[color:var(--border)] text-[color:var(--foreground-muted)] hover:bg-[color:var(--surface-muted)] transition-colors"
               >
-                <BsThreeDotsVertical />
+                <MoreVertical />
               </button>
             )}
           >
@@ -151,7 +156,7 @@ const ReusableTable = ({
               <div
                 key={getNestedValue(row, rowKey)}
                 className={classNames(
-                  'relative bg-white dark:bg-gray-800 rounded-md shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden',
+                  'relative bg-[color:var(--surface)] border border-[color:var(--border)] rounded-md shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden',
                   rowClassName(row),
                 )}
                 onClick={() => onRowClick(row)}
@@ -174,32 +179,32 @@ const ReusableTable = ({
                   )}
                   <div className="flex-grow min-w-0">
                     {titleColumn && (
-                      <h3 className="text-base font-bold text-gray-800 dark:text-white truncate">
+                      <h3 className="text-base font-bold text-[color:var(--foreground)] truncate">
                         {renderCell(row, titleColumn)}
                       </h3>
                     )}
                     {subtitleColumn && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                      <p className="text-sm text-[color:var(--foreground-muted)] mt-0.5">
                         {renderCell(row, subtitleColumn)}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="px-4 pb-4 border-t border-gray-100 dark:border-gray-700">
+                <div className="px-4 pb-4 border-t border-[color:var(--border)]">
                   <div className="grid grid-cols-1 gap-x-4 gap-y-3 mt-3 text-sm">
                     {otherColumns.map((col) => (
                       <div key={col.key}>
-                        <span className="text-gray-500 dark:text-gray-400">
+                        <span className="text-[color:var(--foreground-muted)]">
                           {col.title}:
                         </span>
-                        <span className="ml-2 font-semibold text-gray-800 dark:text-gray-200">
+                        <span className="ml-2 font-semibold text-[color:var(--foreground)]">
                           {renderCell(row, col)}
                         </span>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+                  <div className="mt-4 pt-3 border-t border-[color:var(--border)]">
                     {renderActions(row)}
                   </div>
                 </div>
@@ -213,8 +218,8 @@ const ReusableTable = ({
     // --- Desktop Table View ---
     return (
       <div className="overflow-x-auto">
-        <table className="min-w-full w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-100 uppercase bg-gray-700 dark:bg-gray-800">
+        <table className="min-w-full w-full text-sm text-left text-[color:var(--foreground-muted)]">
+          <thead className="text-xs uppercase tracking-wide bg-[color:var(--surface-muted)] text-[color:var(--foreground-muted)]">
             <tr>
               {selectable && (
                 <th
@@ -238,7 +243,7 @@ const ReusableTable = ({
                   onClick={() => col.sortable && onSort(col.key)}
                   scope="col"
                   className={classNames(
-                    'p-4',
+                    'p-4 whitespace-nowrap',
                     'first:rounded-tl-lg last:rounded-tr-lg',
                     { 'cursor-pointer select-none': col.sortable },
                     col.headerClassName,
@@ -259,11 +264,11 @@ const ReusableTable = ({
               <tr
                 key={getNestedValue(row, rowKey)}
                 className={classNames(
-                  ' border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600',
+                  'border-b border-[color:var(--border)] hover:bg-[color:var(--surface-muted)] transition-colors cursor-pointer',
                   rowClassName(row),
                   {
-                    'bg-gray-50 dark:bg-gray-700':
-                      striped && data.indexOf(row) % 2 === 0,
+                    'bg-[color:var(--surface-muted)]/50':
+                      striped && data.indexOf(row) % 2 !== 0,
                   },
                 )}
                 onClick={() => onRowClick(row)}
@@ -280,7 +285,10 @@ const ReusableTable = ({
                 {columns.map((col) => (
                   <td
                     key={col.key}
-                    className={classNames('px-4 py-2', col.cellClassName)}
+                    className={classNames(
+                      'px-4 py-2 whitespace-nowrap',
+                      col.cellClassName,
+                    )}
                   >
                     {col.key === 'actions'
                       ? renderActions(row)
@@ -322,8 +330,8 @@ const ReusableTable = ({
       {renderContent()}
 
       {showPagination && pagination.totalRecords > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-4 p-2 border-t dark:border-gray-700 mt-4 pt-4">
-          <div className="text-sm text-gray-700 dark:text-gray-400">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-2 border-t border-[color:var(--border)] mt-4 pt-4">
+          <div className="text-sm text-[color:var(--foreground-muted)]">
             Mostrando{' '}
             <span className="font-semibold">
               {Math.min(
@@ -344,9 +352,9 @@ const ReusableTable = ({
             <button
               onClick={() => onPageChange(pagination.currentPage - 1)}
               disabled={pagination.currentPage === 1}
-              className="px-3 py-1 border rounded-md disabled:opacity-50"
+              className="px-3 py-1 border border-[color:var(--border)] rounded-md disabled:opacity-50 hover:bg-[color:var(--surface-muted)] transition-colors"
             >
-              <MdNavigateBefore className="h-5 w-5" />
+              <ChevronLeft className="h-5 w-5" />
             </button>
             {pageNumbers.map((page) => (
               <button
@@ -355,7 +363,7 @@ const ReusableTable = ({
                 className={classNames('px-3 py-1 rounded-md text-sm', {
                   'bg-purple-600 text-white font-bold':
                     page === pagination.currentPage,
-                  'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600':
+                  'bg-[color:var(--surface-muted)] hover:bg-[color:var(--surface-muted)]/80 text-[color:var(--foreground-muted)]':
                     page !== pagination.currentPage,
                 })}
               >
@@ -365,20 +373,20 @@ const ReusableTable = ({
             <button
               onClick={() => onPageChange(pagination.currentPage + 1)}
               disabled={pagination.currentPage >= pagination.totalPages}
-              className="px-3 py-1 border rounded-md disabled:opacity-50"
+              className="px-3 py-1 border border-[color:var(--border)] rounded-md disabled:opacity-50 hover:bg-[color:var(--surface-muted)] transition-colors"
             >
-              <MdNavigateNext className="h-5 w-5" />
+              <ChevronRight className="h-5 w-5" />
             </button>
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-700 dark:text-gray-400">
+            <label className="text-sm text-[color:var(--foreground-muted)]">
               Resultados por página:
             </label>
             <select
               value={pagination.pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="px-2 py-1 border-gray-100 rounded-md text-sm dark:bg-gray-700 dark:text-white"
+              className="px-2 py-1 border border-[color:var(--border)] rounded-md text-sm bg-[color:var(--surface)] text-[color:var(--foreground)]"
             >
               {pageSizeOptions.map((size) => (
                 <option key={size} value={size}>

@@ -1,21 +1,16 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useLayoutEffect,
-  useCallback,
-} from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import classNames from 'classnames';
 import {
-  HiSearch,
-  HiX,
-  HiChevronDown,
-  HiOutlineExternalLink,
-} from 'react-icons/hi';
-import { MdInventory2, MdFilterList } from 'react-icons/md';
+  Search,
+  X,
+  ChevronDown,
+  ExternalLink,
+  Package2,
+  Funnel,
+} from 'lucide-react';
 import { searchInventories } from '../../services/api';
 import { useCatalogContext } from '../../context/CatalogContext';
 
@@ -254,32 +249,40 @@ const InventorySearchCombobox = ({ className = '' }) => {
   };
 
   const statusConfig = {
-    ALTA: { label: 'Alta', bg: 'bg-green-100', text: 'text-green-700' },
-    BAJA: { label: 'Baja', bg: 'bg-red-100', text: 'text-red-700' },
+    ALTA: {
+      label: 'Alta',
+      bg: 'bg-green-100 dark:bg-green-900/40',
+      text: 'text-green-700 dark:text-green-400',
+    },
+    BAJA: {
+      label: 'Baja',
+      bg: 'bg-red-100 dark:bg-red-900/40',
+      text: 'text-red-700 dark:text-red-400',
+    },
     PROPUESTA: {
       label: 'Propuesta',
-      bg: 'bg-amber-100',
-      text: 'text-amber-700',
+      bg: 'bg-amber-100 dark:bg-amber-900/40',
+      text: 'text-amber-700 dark:text-amber-400',
     },
   };
 
   // Contenido del Dropdown (Filtros + Resultados)
   const renderDropdownContent = () => (
-    <div className="flex flex-col h-full max-h-full">
+    <div className="flex flex-col h-full max-h-full overflow-hidden">
       {/* Search Input for Mobile Header ONLY */}
       {isMobile && (
-        <div className="p-4 bg-white border-b border-gray-100 shrink-0">
+        <div className="p-4 bg-white dark:bg-neutral-800 border-b border-gray-100 dark:border-neutral-700 shrink-0">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900">Buscar</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Buscar</h3>
             <button
               onClick={handleClose}
-              className="p-2 -mr-2 text-gray-400 hover:text-gray-600"
+              className="p-2 -mr-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
             >
-              <HiX className="w-5 h-5" />
+              <X className="h-5 w-5" />
             </button>
           </div>
           <div className="relative">
-            <HiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <input
               ref={mobileInputRef}
               autoFocus
@@ -287,7 +290,7 @@ const InventorySearchCombobox = ({ className = '' }) => {
               placeholder="Buscar por nombre, serie..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-10 py-3 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-purple-400"
+              className="w-full pl-11 pr-10 py-3 rounded-xl bg-gray-50 dark:bg-neutral-700 dark:text-white dark:placeholder:text-gray-400 border-none outline-none focus:ring-0 focus:outline-none"
             />
           </div>
         </div>
@@ -300,7 +303,7 @@ const InventorySearchCombobox = ({ className = '' }) => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="shrink-0 overflow-hidden bg-white border-b border-gray-100"
+            className="shrink-0 overflow-hidden bg-white dark:bg-neutral-800 border-b border-gray-100 dark:border-neutral-700"
           >
             <div className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-2">
@@ -309,21 +312,21 @@ const InventorySearchCombobox = ({ className = '' }) => {
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-8 py-2 text-xs focus:ring-purple-400 cursor-pointer"
+                    className="w-full appearance-none rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 dark:text-white pl-3 pr-8 py-2 text-xs focus:ring-0 focus:outline-none cursor-pointer"
                   >
                     <option value="">Estado</option>
                     <option value="ALTA">Alta</option>
                     <option value="BAJA">Baja</option>
                     <option value="PROPUESTA">Propuesta</option>
                   </select>
-                  <HiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 </div>
                 {/* Filtro Condición */}
                 <div className="relative">
                   <select
                     value={filterCondition}
                     onChange={(e) => setFilterCondition(e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-8 py-2 text-xs focus:ring-purple-400 cursor-pointer"
+                    className="w-full appearance-none rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 dark:text-white pl-3 pr-8 py-2 text-xs focus:ring-0 focus:outline-none cursor-pointer"
                   >
                     <option value="">Condición</option>
                     {inventoryConditions.map((c) => (
@@ -332,14 +335,14 @@ const InventorySearchCombobox = ({ className = '' }) => {
                       </option>
                     ))}
                   </select>
-                  <HiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 </div>
                 {/* Filtro Tipo */}
                 <div className="relative">
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-8 py-2 text-xs focus:ring-purple-400 cursor-pointer"
+                    className="w-full appearance-none rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 dark:text-white pl-3 pr-8 py-2 text-xs focus:ring-0 focus:outline-none cursor-pointer"
                   >
                     <option value="">Tipo</option>
                     {inventoryTypes.map((t) => (
@@ -348,14 +351,14 @@ const InventorySearchCombobox = ({ className = '' }) => {
                       </option>
                     ))}
                   </select>
-                  <HiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 </div>
                 {/* Filtro Marca */}
                 <div className="relative">
                   <select
                     value={filterBrand}
                     onChange={(e) => setFilterBrand(e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-8 py-2 text-xs focus:ring-purple-400 cursor-pointer"
+                    className="w-full appearance-none rounded-lg border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 dark:text-white pl-3 pr-8 py-2 text-xs focus:ring-0 focus:outline-none cursor-pointer"
                   >
                     <option value="">Marca</option>
                     {inventoryBrands.map((b) => (
@@ -364,13 +367,13 @@ const InventorySearchCombobox = ({ className = '' }) => {
                       </option>
                     ))}
                   </select>
-                  <HiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 </div>
               </div>
               {activeFiltersCount > 0 && (
                 <button
                   onClick={clearFilters}
-                  className="text-xs text-purple-600 font-medium"
+                  className="text-xs text-purple-600 dark:text-purple-400 font-medium"
                 >
                   Limpiar filtros
                 </button>
@@ -381,23 +384,23 @@ const InventorySearchCombobox = ({ className = '' }) => {
       </AnimatePresence>
 
       {/* Lista de Resultados */}
-      <div className="overflow-y-auto flex-1 p-2">
+      <div className="overflow-y-auto flex-1 p-2 min-h-0">
         {loading ? (
           <div className="py-8 text-center">
-            <div className="inline-block w-6 h-6 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-2" />
-            <p className="text-xs text-gray-500">Buscando...</p>
+            <div className="inline-block w-6 h-6 border-2 border-purple-200 dark:border-purple-800 border-t-purple-600 rounded-full animate-spin mb-2" />
+            <p className="text-xs text-gray-500 dark:text-gray-400">Buscando...</p>
           </div>
         ) : results.length === 0 ? (
           <div className="py-8 text-center">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-              <MdInventory2 className="w-6 h-6 text-gray-400" />
+            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-neutral-700 flex items-center justify-center">
+              <Package2 className="h-6 w-6 text-gray-400 dark:text-gray-500" />
             </div>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">
               {search || activeFiltersCount > 0
                 ? 'Sin resultados'
                 : 'Busca inventarios'}
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {search || activeFiltersCount > 0
                 ? 'Intenta otros términos'
                 : 'Escribe nombre, serie o activo'}
@@ -414,35 +417,35 @@ const InventorySearchCombobox = ({ className = '' }) => {
                   className={classNames(
                     'w-full flex items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors',
                     highlightedIndex === index
-                      ? 'bg-purple-50 ring-1 ring-purple-200'
-                      : 'hover:bg-gray-50',
+                      ? 'bg-purple-50 dark:bg-purple-900/30'
+                      : 'hover:bg-gray-50 dark:hover:bg-neutral-700/50',
                   )}
                 >
                   <div
                     className={classNames(
                       'h-9 w-9 rounded-lg flex items-center justify-center shrink-0',
-                      status?.bg || 'bg-purple-100',
+                      status?.bg || 'bg-purple-100 dark:bg-purple-900/40',
                     )}
                   >
-                    <MdInventory2
+                    <Package2
                       className={classNames(
-                        'w-4 h-4',
-                        status?.text || 'text-purple-600',
+                        'h-4 w-4',
+                        status?.text || 'text-purple-600 dark:text-purple-400',
                       )}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-gray-900 truncate">
+                    <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
                       {formatInventoryLabel(item)}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                       {formatInventoryDetails(item)}
                     </p>
                   </div>
                   {status && (
                     <span
                       className={classNames(
-                        'px-2 py-0.5 rounded text-[10px] font-semibold',
+                        'px-2 py-0.5 rounded text-[10px] font-semibold shrink-0',
                         status.bg,
                         status.text,
                       )}
@@ -458,13 +461,13 @@ const InventorySearchCombobox = ({ className = '' }) => {
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t border-gray-100 bg-gray-50 text-right">
+      <div className="p-3 border-t border-gray-100 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800/80 text-right shrink-0">
         <button
           onClick={handleGoToInventories}
           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-600 text-white hover:bg-purple-700 transition-colors"
         >
           Ver todos los resultados
-          <HiOutlineExternalLink className="w-3 h-3" />
+          <ExternalLink className="h-3 w-3" />
         </button>
       </div>
     </div>
@@ -481,23 +484,22 @@ const InventorySearchCombobox = ({ className = '' }) => {
       {isMobile ? (
         <button
           onClick={handleOpen}
-          className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+          className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
           aria-label="Buscar"
         >
-          <HiSearch className="w-6 h-6" />
+          <Search className="h-6 w-6" />
         </button>
       ) : (
         <div
           className={classNames(
-            'relative flex items-center bg-gray-50 border border-gray-200 transition-all duration-200',
-            // Desktop styles mainly
-            'min-w-[140px] sm:min-w-[600px] h-11', // Increased width to 600px
+            'relative flex items-center border transition-all duration-200',
+            'min-w-[140px] sm:min-w-[600px] h-11',
             open
-              ? 'rounded-t-2xl rounded-b-none border-transparent bg-white shadow-lg z-[60]' // Removed purple border, added shadow
-              : 'rounded-2xl hover:border-gray-300 hover:bg-white hover:shadow-sm z-50',
+              ? 'rounded-t-2xl rounded-b-none border-transparent bg-white dark:bg-neutral-800 shadow-lg z-[60]'
+              : 'rounded-2xl bg-gray-50 dark:bg-neutral-700/50 border-gray-200 dark:border-neutral-600 hover:border-gray-300 dark:hover:border-neutral-500 hover:bg-white dark:hover:bg-neutral-700 hover:shadow-sm z-50',
           )}
         >
-          <HiSearch className="absolute left-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
+          <Search className="pointer-events-none absolute left-3.5 h-5 w-5 text-gray-400 dark:text-gray-500" />
 
           {/* The actual input - always visible on Desktop */}
           <input
@@ -508,9 +510,7 @@ const InventorySearchCombobox = ({ className = '' }) => {
             onChange={(e) => setSearch(e.target.value)}
             onFocus={handleOpen}
             onKeyDown={handleKeyDown}
-            className={classNames(
-              'w-full pl-10 pr-10 bg-transparent border-none focus:ring-0 text-sm text-gray-900 placeholder:text-gray-500 h-full',
-            )}
+            className="w-full pl-10 pr-10 bg-transparent border-none outline-none focus:ring-0 focus:outline-none text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 h-full"
           />
 
           {/* Right Actions: Clear / Filter */}
@@ -521,9 +521,9 @@ const InventorySearchCombobox = ({ className = '' }) => {
                   setSearch('');
                   inputRef.current?.focus();
                 }}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200"
+                className="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-neutral-600"
               >
-                <HiX className="w-4 h-4" />
+                <X className="h-4 w-4" />
               </button>
             )}
             {/* Filter Trigger (Desktop) */}
@@ -535,11 +535,11 @@ const InventorySearchCombobox = ({ className = '' }) => {
               className={classNames(
                 'p-1.5 rounded-lg transition-colors',
                 showFilters
-                  ? 'bg-purple-100 text-purple-600'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100',
+                  ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400'
+                  : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-700',
               )}
             >
-              <MdFilterList className="w-5 h-5" />
+              <Funnel className="h-5 w-5" />
               {activeFiltersCount > 0 && (
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-1 ring-white" />
               )}
@@ -560,10 +560,10 @@ const InventorySearchCombobox = ({ className = '' }) => {
               exit={{ opacity: 0, y: -5 }}
               transition={{ duration: 0.1 }}
               className={classNames(
-                'absolute top-full left-0 right-0 bg-white shadow-lg rounded-b-2xl z-[59]', // Removed borders, relying on shadow
-                '-mt-[1px]', // Overlap slight border
+                'absolute top-full left-0 right-0 bg-white dark:bg-neutral-800 shadow-lg rounded-b-2xl z-[59] overflow-hidden',
+                '-mt-[1px]',
               )}
-              style={{ minHeight: '100px', maxHeight: '500px' }}
+              style={{ maxHeight: '500px', display: 'flex', flexDirection: 'column' }}
             >
               {renderDropdownContent()}
             </motion.div>
@@ -601,7 +601,7 @@ const InventorySearchCombobox = ({ className = '' }) => {
                   animate={{ y: 0 }}
                   exit={{ y: '100%' }}
                   transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                  className="fixed bottom-0 left-0 right-0 h-[75dvh] z-[9999] bg-white rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
+                  className="fixed bottom-0 left-0 right-0 h-[75dvh] z-[9999] bg-white dark:bg-neutral-800 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
                   // Ensure we don't accidentally close when clicking inside
                   onClick={(e) => e.stopPropagation()}
                 >

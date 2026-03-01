@@ -1,8 +1,7 @@
 // components/Modals/ConfirmUnassignModal.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Label, TextInput } from 'flowbite-react';
-import { HiExclamationCircle } from 'react-icons/hi';
-import { MdLinkOff } from 'react-icons/md';
+import { AlertCircle, Unlink } from 'lucide-react';
 import ReusableModal from './ReusableModal';
 
 const ConfirmUnassignModal = ({
@@ -60,7 +59,7 @@ const ConfirmUnassignModal = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-2">
-          <HiExclamationCircle size={24} className="text-orange-500" />
+          <AlertCircle size={24} className="text-orange-500" />
           <span className="text-orange-500">Desasignar {sourceLabel}</span>
         </div>
       }
@@ -68,7 +67,7 @@ const ConfirmUnassignModal = ({
       actions={modalActions}
     >
       <div className="text-center space-y-4">
-        <MdLinkOff className="mx-auto h-24 w-24 text-orange-500 dark:text-orange-400" />
+        <Unlink className="mx-auto h-24 w-24 text-orange-500 dark:text-orange-400" />
 
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Estás a punto de desasignar {sourceLabel === 'factura' ? 'la' : 'el'}{' '}

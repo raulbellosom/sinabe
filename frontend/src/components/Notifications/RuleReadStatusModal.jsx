@@ -2,7 +2,7 @@
  * Modal para ver el estado de lectura de las notificaciones de una regla
  * Solo el creador de la regla puede ver esta información
  */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Modal,
   Badge,
@@ -11,19 +11,20 @@ import {
   Table,
   Tooltip,
 } from 'flowbite-react';
-import {
-  HiEye,
-  HiEyeOff,
-  HiCheckCircle,
-  HiXCircle,
-  HiUsers,
-  HiMail,
-  HiClock,
-} from 'react-icons/hi';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNotifications } from '../../context/NotificationContext';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
+
+import {
+  CheckCircle,
+  Clock,
+  Eye,
+  EyeOff,
+  Mail,
+  Users,
+  XCircle,
+} from 'lucide-react';
 
 const RuleReadStatusModal = ({ show, onClose, rule }) => {
   const { getRuleReadStatus } = useNotifications();
@@ -70,7 +71,7 @@ const RuleReadStatusModal = ({ show, onClose, rule }) => {
     <Modal show={show} onClose={onClose} size="4xl">
       <Modal.Header>
         <div className="flex items-center gap-2">
-          <HiEye className="w-5 h-5 text-blue-500" />
+          <Eye className="w-5 h-5 text-blue-500" />
           <span>Estado de Lectura - {rule?.name}</span>
         </div>
       </Modal.Header>
@@ -81,7 +82,7 @@ const RuleReadStatusModal = ({ show, onClose, rule }) => {
           </div>
         ) : error ? (
           <div className="text-center py-8">
-            <HiXCircle className="w-16 h-16 mx-auto text-red-400 mb-4" />
+            <XCircle className="w-16 h-16 mx-auto text-red-400 mb-4" />
             <p className="text-red-600">{error}</p>
           </div>
         ) : data ? (
@@ -89,7 +90,7 @@ const RuleReadStatusModal = ({ show, onClose, rule }) => {
             {/* Resumen General */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <HiUsers className="w-5 h-5 text-gray-600" />
+                <Users className="w-5 h-5 text-gray-600" />
                 Resumen General
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -141,13 +142,13 @@ const RuleReadStatusModal = ({ show, onClose, rule }) => {
             {/* Estado por Destinatario */}
             <div>
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <HiMail className="w-5 h-5 text-gray-600" />
+                <Mail className="w-5 h-5 text-gray-600" />
                 Estado por Destinatario
               </h3>
 
               {data.recipients.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-lg">
-                  <HiEyeOff className="w-12 h-12 mx-auto text-gray-300 mb-2" />
+                  <EyeOff className="w-12 h-12 mx-auto text-gray-300 mb-2" />
                   <p className="text-gray-500">
                     No hay notificaciones enviadas aún
                   </p>
@@ -245,7 +246,7 @@ const RuleReadStatusModal = ({ show, onClose, rule }) => {
                                 )}
                               >
                                 <span className="text-sm text-gray-600 flex items-center gap-1">
-                                  <HiCheckCircle className="w-4 h-4 text-green-500" />
+                                  <CheckCircle className="w-4 h-4 text-green-500" />
                                   {formatDistanceToNow(
                                     new Date(recipient.lastReadAt),
                                     { addSuffix: true, locale: es },
@@ -254,7 +255,7 @@ const RuleReadStatusModal = ({ show, onClose, rule }) => {
                               </Tooltip>
                             ) : (
                               <span className="text-sm text-gray-400 flex items-center gap-1">
-                                <HiClock className="w-4 h-4" />
+                                <Clock className="w-4 h-4" />
                                 Pendiente
                               </span>
                             )}

@@ -1,4 +1,4 @@
-import React from 'react';
+import { Children, isValidElement, cloneElement } from 'react';
 import { Label } from 'flowbite-react';
 import { ErrorMessage } from 'formik';
 import classNames from 'classnames';
@@ -22,8 +22,8 @@ const PinnableInputWrapper = ({
   const hasError = form && form.touched[fieldName] && form.errors[fieldName];
 
   // Clone children and pass only relevant props (field and form)
-  const childrenWithProps = React.Children.map(children, (child) => {
-    if (React.isValidElement(child)) {
+  const childrenWithProps = Children.map(children, (child) => {
+    if (isValidElement(child)) {
       // Filter out props that shouldn't be passed to DOM elements
       const {
         isPinMode: _,
@@ -31,7 +31,7 @@ const PinnableInputWrapper = ({
         onTogglePin: ___,
         ...safeProps
       } = props;
-      return React.cloneElement(child, {
+      return cloneElement(child, {
         field,
         form,
         ...safeProps,

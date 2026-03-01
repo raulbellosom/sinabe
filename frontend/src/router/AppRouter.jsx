@@ -1,66 +1,65 @@
-import React, { Suspense, useContext } from 'react';
+﻿import React, { Suspense, lazy, useContext } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from 'react-router-dom';
+
 import AuthContext from '../context/AuthContext';
 import LoadingModal from '../components/loadingModal/LoadingModal';
 import Sidebar from '../components/sidebar/Sidebar';
 import ProtectedRoute from './ProtectedRoute';
 import HardwareBackButtonHandler from '../components/Navigation/HardwareBackButtonHandler';
 
-import Login from '../pages/login/Login';
-import Dashboard from '../pages/dashboard/Dashboard';
-// import Inventories from '../pages/inventories/Inventories';
-import InventoriesPage from '../pages/inventories/InventoriesPage';
-import CreateInventory from '../pages/inventories/CreateInventory';
-import UpdateInventory from '../pages/inventories/UpdateInventory';
-import ViewInventory from '../pages/inventories/ViewInventory';
-import InventoryDecommissioning from '../pages/inventories/InventoryDecommissioning';
-import InventoryMigration from '../pages/inventories/InventoryMigration';
-import Catalogs from '../pages/inventories/catalogs/Catalogs';
-import Account from '../pages/account/Account';
-// import Users from '../pages/users/Users';
-import UsersPage from '../pages/users/UsersPage';
-import NotFound from '../pages/notFound/NotFound';
-import Roles from '../pages/roles/Roles';
-import ProjectsPage from '../pages/projects/ProjectsPage';
-import CreateProjectPage from '../pages/projects/CreateProjectPage';
-import EditProjectPage from '../pages/projects/EditProjectPage';
-import ProjectDetailPage from '../pages/projects/ProjectDetailPage';
-import VerticalPage from '../pages/vertical/VerticalPage';
-import PurchaseOrdersPage from '../pages/purchaseOrders/PurchaseOrdersPage';
-import InvoicesPage from '../pages/invoices/InvoicesPage';
-import CreateCustody from '../pages/Custody/CreateCustody';
-import CustodyPage from '../pages/Custody/CustodyPage';
-import PublicCustodyView from '../pages/Custody/PublicCustodyView';
-import ViewCustody from '../pages/Custody/ViewCustody';
-import Preferences from '../pages/preferences/Preferences';
-import NotificationsPage from '../pages/preferences/NotificationsPage';
-import NotificationRulesPage from '../pages/preferences/NotificationRulesPage';
-import AgendaPage from '../pages/agenda/AgendaPage';
-import AuditPage from '../pages/audit/AuditPage';
+const Login = lazy(() => import('../pages/login/Login'));
+const Dashboard = lazy(() => import('../pages/dashboard/Dashboard'));
+const InventoriesPage = lazy(() => import('../pages/inventories/InventoriesPage'));
+const CreateInventory = lazy(() => import('../pages/inventories/CreateInventory'));
+const UpdateInventory = lazy(() => import('../pages/inventories/UpdateInventory'));
+const ViewInventory = lazy(() => import('../pages/inventories/ViewInventory'));
+const InventoryDecommissioning = lazy(
+  () => import('../pages/inventories/InventoryDecommissioning'),
+);
+const Catalogs = lazy(() => import('../pages/inventories/catalogs/Catalogs'));
+const Account = lazy(() => import('../pages/account/Account'));
+const UsersPage = lazy(() => import('../pages/users/UsersPage'));
+const NotFound = lazy(() => import('../pages/notFound/NotFound'));
+const Roles = lazy(() => import('../pages/roles/Roles'));
+const VerticalPage = lazy(() => import('../pages/vertical/VerticalPage'));
+const PurchaseOrdersPage = lazy(
+  () => import('../pages/purchaseOrders/PurchaseOrdersPage'),
+);
+const InvoicesPage = lazy(() => import('../pages/invoices/InvoicesPage'));
+const CreateCustody = lazy(() => import('../pages/Custody/CreateCustody'));
+const CustodyPage = lazy(() => import('../pages/Custody/CustodyPage'));
+const PublicCustodyView = lazy(() => import('../pages/Custody/PublicCustodyView'));
+const ViewCustody = lazy(() => import('../pages/Custody/ViewCustody'));
+const Preferences = lazy(() => import('../pages/preferences/Preferences'));
+const NotificationsPage = lazy(
+  () => import('../pages/preferences/NotificationsPage'),
+);
+const NotificationRulesPage = lazy(
+  () => import('../pages/preferences/NotificationRulesPage'),
+);
+const AgendaPage = lazy(() => import('../pages/agenda/AgendaPage'));
+const AuditPage = lazy(() => import('../pages/audit/AuditPage'));
 
 const AppRouter = () => {
   const { user, loading } = useContext(AuthContext);
 
-  // Mostrar loading mientras verifica la autenticación
   if (loading) {
     return <LoadingModal loading={true} />;
   }
 
   return (
-    <>
-      <Router>
-        <HardwareBackButtonHandler>
-          <Suspense fallback={<LoadingModal loading={true} />}>
-            {user ? <AuthorizedRoute user={user} /> : <UnauthorizedRoute />}
-          </Suspense>
-        </HardwareBackButtonHandler>
-      </Router>
-    </>
+    <Router>
+      <HardwareBackButtonHandler>
+        <Suspense fallback={<LoadingModal loading={true} />}>
+          {user ? <AuthorizedRoute user={user} /> : <UnauthorizedRoute />}
+        </Suspense>
+      </HardwareBackButtonHandler>
+    </Router>
   );
 };
 
@@ -71,86 +70,46 @@ const AuthorizedRoute = ({ user }) => {
       <Route
         path="*"
         element={
-          <>
-            <Sidebar>
-              <Routes>
-                <Route element={<ProtectedRoute user={user} />}>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/agenda" element={<AgendaPage />} />
-                  <Route path="/account-settings" element={<Account />} />
-                  <Route path="/preferences" element={<Preferences />} />
-                  <Route
-                    path="/preferences/notifications"
-                    element={<NotificationsPage />}
-                  />
-                  <Route
-                    path="/preferences/notification-rules"
-                    element={<NotificationRulesPage />}
-                  />
-                  <Route path="/users" element={<UsersPage />} />
-                  {/* <Route path="/inventories" element={<Inventories />} /> */}
-                  <Route path="/inventories" element={<InventoriesPage />} />
-                  <Route
-                    path="/inventories/create"
-                    element={<CreateInventory />}
-                  />
-                  <Route
-                    path="/inventories/decommissioning"
-                    element={<InventoryDecommissioning />}
-                  />
-                  {/* <Route
-                    path="/inventories/migrate"
-                    element={<InventoryMigration />}
-                  /> */}
-                  <Route
-                    path="/inventories/edit/:id"
-                    element={<UpdateInventory />}
-                  />
-                  <Route
-                    path="/inventories/view/:id"
-                    element={<ViewInventory />}
-                  />
-                  <Route path="/custody" element={<CustodyPage />} />
-                  <Route path="/custody/create" element={<CreateCustody />} />
-                  <Route path="/custody/edit/:id" element={<CreateCustody />} />
-                  <Route path="/custody/view/:id" element={<ViewCustody />} />
-                  <Route path="/verticals" element={<VerticalPage />} />
-                  <Route path="/projects" element={<ProjectsPage />} />
-                  <Route
-                    path="/projects/create"
-                    element={<CreateProjectPage />}
-                  />
-                  <Route
-                    path="/projects/edit/:id"
-                    element={<EditProjectPage />}
-                  />
-                  <Route
-                    path="/projects/view/:id"
-                    element={<ProjectDetailPage />}
-                  />
-                  {/* 🆕 Rutas independientes para Finanzas */}
-                  <Route
-                    path="/purchase-orders"
-                    element={<PurchaseOrdersPage />}
-                  />
-                  <Route path="/invoices" element={<InvoicesPage />} />
-                  <Route path="/catalogs" element={<Catalogs />} />
-                  <Route path="/roles" element={<Roles />} />
-                  <Route path="/audit-logs" element={<AuditPage />} />
-                  <Route
-                    path="/login"
-                    element={
-                      <>
-                        <Navigate to={'/'} replace={true} />
-                      </>
-                    }
-                  />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              </Routes>
-            </Sidebar>
-          </>
+          <Sidebar>
+            <Routes>
+              <Route element={<ProtectedRoute user={user} />}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/agenda" element={<AgendaPage />} />
+                <Route path="/account-settings" element={<Account />} />
+                <Route path="/preferences" element={<Preferences />} />
+                <Route
+                  path="/preferences/notifications"
+                  element={<NotificationsPage />}
+                />
+                <Route
+                  path="/preferences/notification-rules"
+                  element={<NotificationRulesPage />}
+                />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/inventories" element={<InventoriesPage />} />
+                <Route path="/inventories/create" element={<CreateInventory />} />
+                <Route
+                  path="/inventories/decommissioning"
+                  element={<InventoryDecommissioning />}
+                />
+                <Route path="/inventories/edit/:id" element={<UpdateInventory />} />
+                <Route path="/inventories/view/:id" element={<ViewInventory />} />
+                <Route path="/custody" element={<CustodyPage />} />
+                <Route path="/custody/create" element={<CreateCustody />} />
+                <Route path="/custody/edit/:id" element={<CreateCustody />} />
+                <Route path="/custody/view/:id" element={<ViewCustody />} />
+                <Route path="/verticals" element={<VerticalPage />} />
+                <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+                <Route path="/invoices" element={<InvoicesPage />} />
+                <Route path="/catalogs" element={<Catalogs />} />
+                <Route path="/roles" element={<Roles />} />
+                <Route path="/audit-logs" element={<AuditPage />} />
+                <Route path="/login" element={<Navigate to={'/'} replace={true} />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </Sidebar>
         }
       />
     </Routes>

@@ -2,20 +2,21 @@
  * Modal para ver el estado de lectura de una notificación específica
  * Solo visible para el creador de la regla que generó la notificación
  */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal, Badge, Spinner, Progress, Tooltip } from 'flowbite-react';
-import {
-  HiEye,
-  HiEyeOff,
-  HiCheckCircle,
-  HiClock,
-  HiUsers,
-  HiXCircle,
-} from 'react-icons/hi';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useNotifications } from '../../context/NotificationContext';
 import ImageViewer2 from '../ImageViewer/ImageViewer2';
+
+import {
+  CheckCircle,
+  Clock,
+  Eye,
+  EyeOff,
+  Users,
+  XCircle,
+} from 'lucide-react';
 
 const NotificationReadStatusModal = ({ show, onClose, notification }) => {
   const { getNotificationReadStatus } = useNotifications();
@@ -55,7 +56,7 @@ const NotificationReadStatusModal = ({ show, onClose, notification }) => {
     <Modal show={show} onClose={onClose} size="lg">
       <Modal.Header>
         <div className="flex items-center gap-2">
-          <HiEye className="w-5 h-5 text-blue-500" />
+          <Eye className="w-5 h-5 text-blue-500" />
           <span>¿Quién ha visto esta notificación?</span>
         </div>
       </Modal.Header>
@@ -66,7 +67,7 @@ const NotificationReadStatusModal = ({ show, onClose, notification }) => {
           </div>
         ) : error ? (
           <div className="text-center py-8">
-            <HiXCircle className="w-16 h-16 mx-auto text-red-400 mb-4" />
+            <XCircle className="w-16 h-16 mx-auto text-red-400 mb-4" />
             <p className="text-red-600">{error}</p>
           </div>
         ) : data ? (
@@ -87,21 +88,21 @@ const NotificationReadStatusModal = ({ show, onClose, notification }) => {
             {/* Resumen */}
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-blue-50 rounded-lg p-3 text-center border border-blue-100">
-                <HiUsers className="w-6 h-6 mx-auto text-blue-500 mb-1" />
+                <Users className="w-6 h-6 mx-auto text-blue-500 mb-1" />
                 <p className="text-2xl font-bold text-blue-700">
                   {data.summary.totalRecipients}
                 </p>
                 <p className="text-xs text-blue-600">Destinatarios</p>
               </div>
               <div className="bg-green-50 rounded-lg p-3 text-center border border-green-100">
-                <HiCheckCircle className="w-6 h-6 mx-auto text-green-500 mb-1" />
+                <CheckCircle className="w-6 h-6 mx-auto text-green-500 mb-1" />
                 <p className="text-2xl font-bold text-green-700">
                   {data.summary.totalRead}
                 </p>
                 <p className="text-xs text-green-600">Leídas</p>
               </div>
               <div className="bg-orange-50 rounded-lg p-3 text-center border border-orange-100">
-                <HiClock className="w-6 h-6 mx-auto text-orange-500 mb-1" />
+                <Clock className="w-6 h-6 mx-auto text-orange-500 mb-1" />
                 <p className="text-2xl font-bold text-orange-700">
                   {data.summary.totalUnread}
                 </p>
@@ -176,13 +177,13 @@ const NotificationReadStatusModal = ({ show, onClose, notification }) => {
                             )}
                           >
                             <div className="flex items-center gap-1 text-green-600">
-                              <HiCheckCircle className="w-5 h-5" />
+                              <CheckCircle className="w-5 h-5" />
                               <span className="text-sm font-medium">Leída</span>
                             </div>
                           </Tooltip>
                         ) : (
                           <div className="flex items-center gap-1 text-gray-400">
-                            <HiEyeOff className="w-5 h-5" />
+                            <EyeOff className="w-5 h-5" />
                             <span className="text-sm">Pendiente</span>
                           </div>
                         )}

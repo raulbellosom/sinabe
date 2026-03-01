@@ -5,25 +5,29 @@ import ModalRemove from '../../components/Modals/ModalRemove';
 import ModalViewer from '../../components/Modals/ModalViewer';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import { useNavigate } from 'react-router-dom';
-import { LuFileSpreadsheet } from 'react-icons/lu';
 import {
-  FaClipboardList,
-  FaEdit,
-  FaEye,
-  FaRegFile,
-  FaTable,
-  FaTrash,
-} from 'react-icons/fa';
+  FileSpreadsheet,
+  ClipboardList,
+  Pencil,
+  Eye,
+  File,
+  Table as TableIcon,
+  Trash2,
+  Upload,
+  Plus,
+  MoreVertical,
+  PanelLeftClose,
+  PanelLeftOpen,
+  FolderOpen,
+} from 'lucide-react';
 import { Checkbox, Dropdown, Table as T } from 'flowbite-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchInventories } from '../../services/api';
 import Card from '../../components/Card/Card';
 import { parseToLocalDate } from '../../utils/formatValues';
-import { MdOutlineFileUpload } from 'react-icons/md';
 import CreateMultipleInventory from './CreateMultipleInventory';
 import { downloadCSV } from '../../utils/DownloadCSV';
 import Notifies from '../../components/Notifies/Notifies';
-import { IoMdAdd } from 'react-icons/io';
 import { inventoryColumns } from '../../utils/InventoryFields';
 import TableResultsNotFound from '../../components/Table/TableResultsNotFound';
 import { useCatalogContext } from '../../context/CatalogContext';
@@ -46,15 +50,9 @@ import {
   downloadImagesAsZip,
   downloadFilesAsZip,
 } from '../../utils/downloadImagesAsZip';
-import { BsThreeDotsVertical } from 'react-icons/bs';
 import classNames from 'classnames';
 import InventoryPreview from './views/InventoryPreview';
-import {
-  TbLayoutSidebarLeftCollapseFilled,
-  TbLayoutSidebarLeftExpandFilled,
-} from 'react-icons/tb';
 import { formatInventoriesToCSVString } from '../../utils/inventoriesUtils';
-import { RiFolderImageFill } from 'react-icons/ri';
 import { useInventoryQueryParams } from '../../hooks/useInventoryQueryParams';
 import debounce from 'lodash/debounce';
 
@@ -246,7 +244,7 @@ const Inventories = () => {
   const collapsedActions = (inventory) => [
     {
       label: 'Editar',
-      icon: FaEdit,
+      icon: Pencil,
       action: isEditPermission.hasPermission
         ? () => navigate(`/inventories/edit/${inventory.id}`)
         : null,
@@ -254,7 +252,7 @@ const Inventories = () => {
     },
     {
       label: 'Eliminar',
-      icon: FaTrash,
+      icon: Trash2,
       action: isDeletePermission.hasPermission
         ? () => {
             setIsOpenModal(true);
@@ -269,7 +267,7 @@ const Inventories = () => {
     <>
       <section className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
         <TableHeader
-          icon={FaClipboardList}
+          icon={ClipboardList}
           title="Inventario"
           actions={[
             {
@@ -277,8 +275,8 @@ const Inventories = () => {
               href: isCreatePermission.hasPermission
                 ? '/inventories/create'
                 : null,
-              color: 'mycad',
-              icon: IoMdAdd,
+              color: 'primary',
+              icon: Plus,
               filled: true,
             },
           ]}
@@ -288,7 +286,7 @@ const Inventories = () => {
               label: 'Exportar',
               action: downloadInventoriesCSV,
               color: 'green',
-              icon: LuFileSpreadsheet,
+              icon: FileSpreadsheet,
               disabled: Object.keys(itemsToDownload).length === 0,
             },
             {
@@ -297,14 +295,14 @@ const Inventories = () => {
                 ? () => setIsOpenModalUpload(true)
                 : null,
               color: 'blue',
-              icon: MdOutlineFileUpload,
+              icon: Upload,
             },
             {
               label: viewMode === 'table' ? 'Recursos' : 'Tabla',
               action: () =>
                 setViewMode(viewMode === 'table' ? 'images' : 'table'),
               color: 'black',
-              icon: viewMode === 'table' ? RiFolderImageFill : FaTable,
+              icon: viewMode === 'table' ? FolderOpen : TableIcon,
             },
             {
               label: isOpenPreview
@@ -317,8 +315,8 @@ const Inventories = () => {
                 }
               },
               icon: isOpenPreview
-                ? TbLayoutSidebarLeftCollapseFilled
-                : TbLayoutSidebarLeftExpandFilled,
+                ? PanelLeftClose
+                : PanelLeftOpen,
             },
           ]}
         />
@@ -408,11 +406,11 @@ const Inventories = () => {
                                     return (
                                       <T.Cell
                                         className={classNames('py-2', {
-                                          'bg-sinabe-success/20':
+                                          'bg-emerald-500/20':
                                             inventory.status === 'ALTA',
-                                          'bg-sinabe-danger/20':
+                                          'bg-red-500/20':
                                             inventory.status === 'BAJA',
-                                          'bg-sinabe-warning/20 ':
+                                          'bg-amber-500/20 ':
                                             inventory.status === 'PROPUESTA',
                                         })}
                                         key={column.id}
@@ -484,10 +482,10 @@ const Inventories = () => {
                                         <span
                                           className={`px-4 py-1 text-white rounded-full text-xs font-medium ${
                                             inventory.status === 'ALTA'
-                                              ? 'bg-sinabe-success'
+                                              ? 'bg-emerald-500'
                                               : inventory.status === 'BAJA'
-                                                ? 'bg-sinabe-danger'
-                                                : 'bg-sinabe-warning'
+                                                ? 'bg-red-500'
+                                                : 'bg-amber-500'
                                           }`}
                                         >
                                           {inventory.status === 'PROPUESTA'
@@ -511,7 +509,7 @@ const Inventories = () => {
                                     return (
                                       <T.Cell key={column.id}>
                                         <span className="w-fit p-2 px-4 flex justify-center items-center gap-2 bg-sky-50 text-black rounded-md">
-                                          <FaRegFile className="text-neutral-500" />
+                                          <File className="text-neutral-500" />
                                           {content?.length}
                                         </span>
                                       </T.Cell>
@@ -526,7 +524,7 @@ const Inventories = () => {
                                             <LinkButton
                                               route={`/inventories/view/${inventory.id}`}
                                               label="Ver"
-                                              icon={FaEye}
+                                              icon={Eye}
                                               color="cyan"
                                             />
                                           )}
@@ -537,7 +535,7 @@ const Inventories = () => {
                                               <Dropdown
                                                 renderTrigger={() => (
                                                   <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
-                                                    <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                                                    <MoreVertical className="text-lg text-neutral-600" />
                                                   </button>
                                                 )}
                                                 dismissOnClick={true}
@@ -673,7 +671,7 @@ const Inventories = () => {
                                   extraActions={[
                                     {
                                       label: 'Ver',
-                                      icon: FaEye,
+                                      icon: Eye,
                                       color: 'cyan',
                                       action: () =>
                                         navigate(
@@ -690,7 +688,7 @@ const Inventories = () => {
                                   <Dropdown
                                     renderTrigger={() => (
                                       <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
-                                        <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                                        <MoreVertical className="text-lg text-neutral-600" />
                                       </button>
                                     )}
                                     dismissOnClick={true}

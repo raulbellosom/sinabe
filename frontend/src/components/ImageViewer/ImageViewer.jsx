@@ -2,15 +2,18 @@ import { useState } from 'react';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
-import { IoClose } from 'react-icons/io5';
-import { MdSaveAlt } from 'react-icons/md';
 import { Dropdown } from 'flowbite-react';
-import { BsThreeDotsVertical } from 'react-icons/bs';
 import classNames from 'classnames';
 import NoImageFound from '../../assets/images/NoImageFound.jpg';
 import { downloadFile } from '../../services/api';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import 'react-photo-view/dist/react-photo-view.css';
+
+import {
+  MoreVertical,
+  Save,
+  X,
+} from 'lucide-react';
 
 const ImageViewer = ({
   images = [],
@@ -137,7 +140,7 @@ const ImageViewer = ({
             </svg>
             <span className="PhotoView-Slider__toolbarIcon text-white">
               <Dropdown
-                label={<BsThreeDotsVertical size={20} />}
+                label={<MoreVertical size={20} />}
                 dismissOnClick={false}
                 inline
                 arrowIcon={null}
@@ -146,7 +149,7 @@ const ImageViewer = ({
                   <Dropdown.Item
                     className="bg-white text-black hover:bg-slate-100 hover:text-slate-500"
                     onClick={() => handleDownloadImage(images[index])}
-                    icon={MdSaveAlt}
+                    icon={Save}
                   >
                     <span>Descargar</span>
                   </Dropdown.Item>
@@ -192,7 +195,7 @@ const ImageViewer = ({
                 }}
                 className="absolute top-2 right-2 hover:bg-red-500 hover:scale-110 transition-all ease-in-out hover:text-white p-1 bg-white rounded-full shadow-md"
               >
-                <IoClose size={20} />
+                <X size={20} />
               </button>
             )}
             <LazyLoadImage

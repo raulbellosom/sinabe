@@ -1,6 +1,8 @@
 import { Dropdown } from 'flowbite-react';
-import { BsThreeDotsVertical } from 'react-icons/bs';
-import { MdSaveAlt } from 'react-icons/md';
+import {
+  MoreVertical,
+  Save,
+} from 'lucide-react';
 import {
   ZoomInIcon,
   ZoomOutIcon,
@@ -29,7 +31,7 @@ export const CustomToolbar = ({
       {/* Menú de opciones */}
       <span className="PhotoView-Slider__toolbarIcon text-white">
         <Dropdown
-          label={<BsThreeDotsVertical size={20} />}
+          label={<MoreVertical size={20} />}
           dismissOnClick={true} // Es mejor que el menú se cierre al hacer clic
           inline
           arrowIcon={false}
@@ -38,7 +40,7 @@ export const CustomToolbar = ({
           {isDownloadable && (
             <Dropdown.Item
               onClick={() => onDownload(imageIndex)}
-              icon={MdSaveAlt}
+              icon={Save}
             >
               Descargar
             </Dropdown.Item>

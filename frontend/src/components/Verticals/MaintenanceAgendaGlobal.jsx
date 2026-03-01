@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Button,
   Table,
@@ -21,15 +21,15 @@ import { useUsersList } from '../../hooks/useUsersList';
 import { useAuthStatus } from '../../hooks/useAuthStatus';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 import {
-  FaPlus,
-  FaCheck,
-  FaTrash,
-  FaEdit,
-  FaCalendarAlt,
-  FaList,
-  FaCheckCircle,
-  FaUser,
-} from 'react-icons/fa';
+  Plus,
+  Check,
+  Trash2,
+  Pencil,
+  Calendar,
+  List,
+  CheckCircle,
+  User,
+} from 'lucide-react';
 import dayjs from 'dayjs';
 import Notifies from '../Notifies/Notifies';
 import AgendaCalendar from './AgendaCalendar';
@@ -230,7 +230,7 @@ const MaintenanceAgendaGlobal = () => {
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
-            <FaCalendarAlt className="text-xl text-indigo-600 dark:text-indigo-400" />
+            <Calendar className="text-xl text-indigo-600 dark:text-indigo-400" />
           </div>
           <div>
             <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
@@ -246,13 +246,13 @@ const MaintenanceAgendaGlobal = () => {
               onClick={() => setViewMode('calendar')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-gray-600 shadow text-indigo-600 dark:text-indigo-200' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              <FaCalendarAlt className="inline mr-2" /> Calendario
+              <Calendar className="inline mr-2" /> Calendario
             </button>
             <button
               onClick={() => setViewMode('list')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow text-indigo-600 dark:text-indigo-200' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              <FaList className="inline mr-2" /> Lista
+              <List className="inline mr-2" /> Lista
             </button>
           </div>
           <ActionButtons
@@ -260,7 +260,7 @@ const MaintenanceAgendaGlobal = () => {
               {
                 label: 'Nuevo',
                 action: () => handleOpenModal(null, new Date()),
-                icon: FaPlus,
+                icon: Plus,
                 color: 'indigo',
                 filled: true,
               },
@@ -327,7 +327,7 @@ const MaintenanceAgendaGlobal = () => {
                               {
                                 label: 'Completar',
                                 action: () => handleComplete(event),
-                                icon: FaCheckCircle,
+                                icon: CheckCircle,
                                 color: 'success',
                               },
                             ]
@@ -509,7 +509,7 @@ const MaintenanceAgendaGlobal = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                  <FaCalendarAlt />
+                  <Calendar />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase font-semibold">
@@ -526,7 +526,7 @@ const MaintenanceAgendaGlobal = () => {
               {viewingEvent?.provider && (
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                    <FaList />
+                    <List />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 uppercase font-semibold">
@@ -574,7 +574,7 @@ const MaintenanceAgendaGlobal = () => {
                 handleOpenModal(viewingEvent);
               }}
             >
-              <FaEdit className="mr-2 h-4 w-4" />
+              <Pencil className="mr-2 h-4 w-4" />
               Editar
             </Button>
           )}

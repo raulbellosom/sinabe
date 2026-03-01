@@ -1,6 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FaSearch } from 'react-icons/fa';
-import { GrClose } from 'react-icons/gr';
+import { useState, useRef, useEffect } from 'react';
+import {
+  Search,
+  X,
+} from 'lucide-react';
 import classNames from 'classnames';
 
 const TableHeaderFilter = ({
@@ -85,7 +87,7 @@ const TableHeaderFilter = ({
         })}
         title={placeholder}
       >
-        <FaSearch className="h-3 w-3" />
+        <Search className="h-3 w-3" />
         {selected.length > 0 && (
           <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center">
             {selected.length}
@@ -150,7 +152,7 @@ const TableHeaderFilter = ({
                 onClick={handleClearAll}
                 className="w-full px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-md flex items-center justify-center gap-2"
               >
-                <GrClose size={12} />
+                <X size={12} />
                 Limpiar selección
               </button>
             </div>

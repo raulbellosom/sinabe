@@ -47,7 +47,7 @@ export const PermissionsByGroup = {
   },
   users: {
     name: 'Usuarios',
-    permissions: ['view_users', 'create_users', , 'edit_users', 'delete_users'],
+    permissions: ['view_users', 'create_users', 'edit_users', 'delete_users'],
   },
   roles: {
     name: 'Roles',

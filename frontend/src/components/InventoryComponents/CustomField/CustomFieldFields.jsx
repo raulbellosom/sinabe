@@ -1,8 +1,11 @@
-import React from 'react';
+
 import { Field } from 'formik';
 import TextInput from '../../Inputs/TextInput';
-import { LuTextCursorInput } from 'react-icons/lu';
 import SelectInput from '../../Inputs/SelectInput';
+
+import {
+  TextCursorInput,
+} from 'lucide-react';
 
 const CustomFieldFields = ({}) => {
   return (
@@ -13,7 +16,7 @@ const CustomFieldFields = ({}) => {
         component={TextInput}
         label="Nombre"
         type="text"
-        icon={LuTextCursorInput}
+        icon={TextCursorInput}
         className="col-span-1"
       />
       <Field

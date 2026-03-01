@@ -8,6 +8,7 @@ export const useUserPreference = () => useContext(UserPreferenceContext);
 
 // Preferencias por defecto del sistema
 export const DEFAULT_PREFERENCES = {
+  theme: 'system',
   inventoryDetailViewMode: 'list', // 'list' | 'cards'
   notificationSoundEnabled: true, // Sonido de notificaciones activado por defecto
   // Agregar más preferencias aquí según se necesiten

@@ -7,13 +7,7 @@ import ProjectOverview from '../../components/ProjectDetails/ProjectOverview';
 import ProjectMetrics from '../../components/ProjectDetails/ProjectMetrics';
 import ProjectTimeline from '../../components/ProjectDetails/ProjectTimeline';
 import CustomTabs from '../../components/ProjectDetails/CustomTabs';
-import {
-  FaFileAlt,
-  FaBox,
-  FaCalendarCheck,
-  FaClipboardList,
-  FaUsers,
-} from 'react-icons/fa';
+import { FileText, Box, CalendarCheck, ClipboardList, Users } from 'lucide-react';
 import ProjectDeadlines from '../../components/ProjectDetails/ProjectDeadlines';
 import ProjectTeamList from '../../components/ProjectDetails/Team/ProjectTeamList';
 import ProjectInventory from '../../components/ProjectDetails/ProjectInventory';
@@ -39,7 +33,7 @@ const ProjectDetailPage = () => {
   const tabs = [
     {
       title: 'Resumen',
-      icon: FaFileAlt,
+      icon: FileText,
       content: (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -52,27 +46,27 @@ const ProjectDetailPage = () => {
     },
     {
       title: 'Deadlines',
-      icon: FaCalendarCheck,
+      icon: CalendarCheck,
       content: <ProjectDeadlines projectId={project.id} />,
     },
     {
       title: 'Inventario',
-      icon: FaBox,
+      icon: Box,
       content: <ProjectInventory projectId={project.id} />,
     },
     {
       title: 'Órdenes de Compra',
-      icon: FaClipboardList,
+      icon: ClipboardList,
       content: <ProjectPurchaseOrders projectId={project.id} />,
     },
     {
       title: 'Equipo',
-      icon: FaUsers,
+      icon: Users,
       content: <ProjectTeamList projectId={project.id} />,
     },
     {
       title: 'Documentos',
-      icon: FaFileAlt,
+      icon: FileText,
       content: <ProjectDocuments projectId={project.id} />,
     },
   ];

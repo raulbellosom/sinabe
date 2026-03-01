@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { Badge } from 'flowbite-react';
 import classNames from 'classnames';
 import {
-  FaSearch,
-  FaClipboardList,
-  FaFile,
-  FaImage,
-  FaHistory,
-  FaInfoCircle,
-} from 'react-icons/fa';
-import { MdInfo } from 'react-icons/md';
+  Search,
+  ClipboardList,
+  File,
+  Image,
+  History,
+  Info,
+} from 'lucide-react';
 import ImageViewer from '../../ImageViewer/ImageViewer2';
 import Notifies from '../../Notifies/Notifies';
 import { FormattedUrlImage } from '../../../utils/FormattedUrlImage';
@@ -44,19 +43,19 @@ const CardField = ({
       className="group flex flex-col gap-1 relative"
       onDoubleClick={handleDoubleClick}
     >
-      <span className="text-sm text-gray-500 flex items-center gap-1.5">
+      <span className="text-sm text-[color:var(--foreground-muted)] flex items-center gap-1.5">
         {Icon && <Icon className={iconColorClass} size={14} />}
         {label}
       </span>
-      <span className="text-base font-semibold text-gray-800 flex items-center gap-2">
+      <span className="text-base font-semibold text-[color:var(--foreground)] flex items-center gap-2">
         {value || '—'}
         {onSearch && value && (
           <button
             onClick={onSearch}
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-gray-100"
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-[color:var(--surface-muted)]"
             title="Buscar inventarios similares"
           >
-            <FaSearch className="text-gray-400 hover:text-gray-600" size={12} />
+            <Search className="text-[color:var(--foreground-muted)] hover:text-[color:var(--foreground)]" size={12} />
           </button>
         )}
       </span>
@@ -83,13 +82,13 @@ const InfoCard = ({
   return (
     <div
       className={classNames(
-        'bg-white rounded-xl border border-gray-100 shadow-sm p-5',
+        'bg-[color:var(--surface)] rounded-xl border border-[color:var(--border)] shadow-sm p-5',
         className,
       )}
     >
-      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[color:var(--border)]">
         {Icon && <Icon className={iconColorClass} size={18} />}
-        <h3 className="font-semibold text-gray-700">{title}</h3>
+        <h3 className="font-semibold text-[color:var(--foreground)]">{title}</h3>
       </div>
       <div className="grid grid-cols-2 gap-4">{children}</div>
     </div>
@@ -168,27 +167,27 @@ const InventoryCardView = ({
   const commentsField = regularFields.find((f) => f.key === 'comments');
 
   const tabs = [
-    { id: 'info', label: 'Información', icon: FaInfoCircle },
+    { id: 'info', label: 'Información', icon: Info },
     {
       id: 'images',
       label: 'Imágenes',
-      icon: FaImage,
+      icon: Image,
       count: images?.length || 0,
     },
-    { id: 'files', label: 'Archivos', icon: FaFile, count: files?.length || 0 },
-    { id: 'history', label: 'Historial', icon: FaHistory },
+    { id: 'files', label: 'Archivos', icon: File, count: files?.length || 0 },
+    { id: 'history', label: 'Historial', icon: History },
   ];
 
   // Primera imagen para el header
   const headerImage = images?.[0];
 
   return (
-    <div className="bg-gray-50 min-h-full">
+    <div className="bg-[color:var(--background)] min-h-full">
       {/* Header con imagen y datos principales */}
-      <div className="bg-white border-b border-gray-100 p-6 mb-6">
+      <div className="bg-[color:var(--surface)] border-b border-[color:var(--border)] p-6 mb-6">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Imagen o placeholder */}
-          <div className="w-full md:w-32 h-32 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+          <div className="w-full md:w-32 h-32 flex-shrink-0 bg-[color:var(--surface-muted)] rounded-lg overflow-hidden flex items-center justify-center">
             {headerImage ? (
               <ImageViewer
                 images={[headerImage]}
@@ -196,18 +195,18 @@ const InventoryCardView = ({
                 imageClassNames="w-full h-full object-cover"
               />
             ) : (
-              <FaClipboardList className="text-gray-300" size={48} />
+              <ClipboardList className="text-[color:var(--foreground-muted)]" size={48} />
             )}
           </div>
 
           {/* Info principal */}
           <div className="flex-1">
             <div className="flex flex-wrap items-start gap-3 mb-2">
-              <h1 className="text-2xl font-bold text-gray-800">
+              <h1 className="text-2xl font-bold text-[color:var(--foreground)]">
                 {inventory?.model?.brand?.name} {inventory?.model?.name}
               </h1>
               {inventory?.receptionDate && (
-                <span className="text-gray-500 text-lg">
+                <span className="text-[color:var(--foreground-muted)] text-lg">
                   ({new Date(inventory.receptionDate).getFullYear()})
                 </span>
               )}
@@ -226,23 +225,23 @@ const InventoryCardView = ({
                   : inventory?.status}
               </Badge>
               {inventory?.model?.type?.name && (
-                <span className="text-gray-500">
+                <span className="text-[color:var(--foreground-muted)]">
                   {inventory.model.type.name}
                 </span>
               )}
             </div>
 
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+            <div className="flex flex-wrap gap-4 text-sm text-[color:var(--foreground-muted)]">
               {inventory?.serialNumber && (
                 <span>
-                  <span className="text-gray-400">◇</span> No. Serie:{' '}
-                  <strong>{inventory.serialNumber}</strong>
+                  <span className="text-[color:var(--foreground-muted)]">◇</span> No. Serie:{' '}
+                  <strong className="text-[color:var(--foreground)]">{inventory.serialNumber}</strong>
                 </span>
               )}
               {inventory?.activeNumber && (
                 <span>
-                  <span className="text-gray-400">⊞</span> No. Activo:{' '}
-                  <strong>{inventory.activeNumber}</strong>
+                  <span className="text-[color:var(--foreground-muted)]">⊞</span> No. Activo:{' '}
+                  <strong className="text-[color:var(--foreground)]">{inventory.activeNumber}</strong>
                 </span>
               )}
             </div>
@@ -263,7 +262,7 @@ const InventoryCardView = ({
 
       {/* Tabs */}
       <div className="px-6">
-        <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto overflow-y-hidden scrollbar-none">
+        <div className="flex gap-1 border-b border-[color:var(--border)] mb-6 overflow-x-auto overflow-y-hidden scrollbar-none">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -271,14 +270,14 @@ const InventoryCardView = ({
               className={classNames(
                 'flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px whitespace-nowrap flex-shrink-0',
                 activeTab === tab.id
-                  ? 'border-purple-500 text-purple-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                  ? 'border-[color:var(--primary)] text-[color:var(--primary)]'
+                  : 'border-transparent text-[color:var(--foreground-muted)] hover:text-[color:var(--foreground)] hover:border-[color:var(--border)]',
               )}
             >
               <tab.icon size={16} />
               {tab.label}
               {tab.count !== undefined && tab.count > 0 && (
-                <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
+                <span className="bg-[color:var(--surface-muted)] text-[color:var(--foreground-muted)] text-xs px-2 py-0.5 rounded-full">
                   {tab.count}
                 </span>
               )}
@@ -294,7 +293,7 @@ const InventoryCardView = ({
               {identificationFields.length > 0 && (
                 <InfoCard
                   title="Identificación"
-                  icon={FaInfoCircle}
+                  icon={Info}
                   color={themeColor}
                 >
                   {identificationFields.map((field) => (
@@ -319,7 +318,7 @@ const InventoryCardView = ({
               {specificationFields.length > 0 && (
                 <InfoCard
                   title="Especificaciones"
-                  icon={MdInfo}
+                  icon={Info}
                   color={themeColor}
                 >
                   {specificationFields.map((field) => (
@@ -339,7 +338,7 @@ const InventoryCardView = ({
               {relationFields.length > 0 && (
                 <InfoCard
                   title="Información de Compra"
-                  icon={FaClipboardList}
+                  icon={ClipboardList}
                   color={themeColor}
                 >
                   {relationFields.map((field) => (
@@ -372,7 +371,7 @@ const InventoryCardView = ({
               {dateFields.length > 0 && (
                 <InfoCard
                   title="Fechas y Estado"
-                  icon={FaHistory}
+                  icon={History}
                   color={themeColor}
                 >
                   {dateFields.map((field) => (
@@ -391,7 +390,7 @@ const InventoryCardView = ({
               {customFields.length > 0 && (
                 <InfoCard
                   title="Campos Personalizados"
-                  icon={FaInfoCircle}
+                  icon={Info}
                   className="lg:col-span-2"
                   color={themeColor}
                 >
@@ -411,7 +410,7 @@ const InventoryCardView = ({
 
               {/* Comentarios */}
               {commentsField?.name && (
-                <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                <div className="lg:col-span-2 bg-[color:var(--surface)] rounded-xl border border-[color:var(--border)] shadow-sm p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <commentsField.icon
                       className={classNames('', {
@@ -421,11 +420,11 @@ const InventoryCardView = ({
                       })}
                       size={18}
                     />
-                    <h3 className="font-semibold text-gray-700">
+                    <h3 className="font-semibold text-[color:var(--foreground)]">
                       {commentsField.label}
                     </h3>
                   </div>
-                  <p className="text-gray-600 text-base whitespace-pre-wrap">
+                  <p className="text-[color:var(--foreground-muted)] text-base whitespace-pre-wrap">
                     {commentsField.name}
                   </p>
                 </div>
@@ -435,7 +434,7 @@ const InventoryCardView = ({
               {relations.filter((r) => r.label === 'Deadline').length > 0 && (
                 <InfoCard
                   title="Deadlines Asignados"
-                  icon={FaHistory}
+                  icon={History}
                   className="lg:col-span-2"
                   color={themeColor}
                 >
@@ -457,8 +456,8 @@ const InventoryCardView = ({
           )}
 
           {activeTab === 'files' && (
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-semibold text-gray-700 mb-4">
+            <div className="bg-[color:var(--surface)] rounded-xl border border-[color:var(--border)] shadow-sm p-5">
+              <h3 className="font-semibold text-[color:var(--foreground)] mb-4">
                 Archivos Adjuntos
               </h3>
               {files && files.length > 0 ? (
@@ -467,7 +466,7 @@ const InventoryCardView = ({
                     <React.Suspense
                       key={idx}
                       fallback={
-                        <div className="h-10 bg-gray-100 animate-pulse rounded" />
+                        <div className="h-10 bg-[color:var(--surface-muted)] animate-pulse rounded" />
                       }
                     >
                       <FileIcon file={file} />
@@ -475,7 +474,7 @@ const InventoryCardView = ({
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">
+                <p className="text-[color:var(--foreground-muted)] text-center py-8">
                   No hay archivos adjuntos
                 </p>
               )}
@@ -483,15 +482,15 @@ const InventoryCardView = ({
           )}
 
           {activeTab === 'images' && (
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-semibold text-gray-700 mb-4">Imágenes</h3>
+            <div className="bg-[color:var(--surface)] rounded-xl border border-[color:var(--border)] shadow-sm p-5">
+              <h3 className="font-semibold text-[color:var(--foreground)] mb-4">Imágenes</h3>
               {images && images.length > 0 ? (
                 <ImageViewer
                   images={images}
                   containerClassNames="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
                 />
               ) : (
-                <p className="text-gray-500 text-center py-8">
+                <p className="text-[color:var(--foreground-muted)] text-center py-8">
                   El inventario no tiene imágenes
                 </p>
               )}
@@ -499,8 +498,8 @@ const InventoryCardView = ({
           )}
 
           {activeTab === 'history' && (
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-semibold text-gray-700 mb-4">Historial</h3>
+            <div className="bg-[color:var(--surface)] rounded-xl border border-[color:var(--border)] shadow-sm p-5">
+              <h3 className="font-semibold text-[color:var(--foreground)] mb-4">Historial</h3>
               <AuditLogHistory
                 entityType="INVENTORY"
                 entityId={inventory?.id}

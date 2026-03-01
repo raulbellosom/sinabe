@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button, FileInput, Spinner } from 'flowbite-react';
-import { FaCloudUploadAlt, FaDownload } from 'react-icons/fa';
 import { useCatalogContext } from '../../../context/CatalogContext';
-import { MdClose } from 'react-icons/md';
 
+import {
+  Download,
+  Upload,
+  X,
+} from 'lucide-react';
 const CreateMultipleModels = () => {
   const { createMultipleModels } = useCatalogContext();
   const [file, setFile] = useState(null);
@@ -48,7 +51,7 @@ const CreateMultipleModels = () => {
                 download="models_template.csv"
                 className="text-blue-500 font-bold"
               >
-                <FaDownload size={18} className="mr-2 inline-flex" />
+                <Download size={18} className="mr-2 inline-flex" />
                 Descargar plantilla
               </a>
             </li>
@@ -85,7 +88,7 @@ const CreateMultipleModels = () => {
             ) : (
               <>
                 <span>
-                  <FaCloudUploadAlt size={20} className="mr-2" />
+                  <Upload size={20} className="mr-2" />
                 </span>
                 <span>Cargar Archivo</span>
               </>
@@ -112,7 +115,7 @@ const CreateMultipleModels = () => {
                 className="cursor-pointer hover:bg-red-200 rounded-full p-1"
                 onClick={() => setError(null)}
               >
-                <MdClose size={20} className="text-red-500" />
+                <X size={20} className="text-red-500" />
               </span>
             </div>
             <ul>

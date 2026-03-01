@@ -1,5 +1,8 @@
 import { Dropdown } from 'flowbite-react';
-import { TbFilter } from 'react-icons/tb';
+import {
+  Filter,
+} from 'lucide-react';
+
 import { useMemo } from 'react';
 import classNames from 'classnames';
 
@@ -73,7 +76,7 @@ const ProjectFilters = ({ verticals, filters, setFilters }) => {
       <Dropdown
         renderTrigger={() => (
           <button className="flex items-center px-4 py-2 text-white bg-sinabe-primary hover:bg-sinabe-primary/90 rounded shadow transition text-sm">
-            <TbFilter size={18} />
+            <Filter size={18} />
             <span className="ml-2">Filtrar</span>
           </button>
         )}

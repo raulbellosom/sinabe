@@ -1,4 +1,4 @@
-import React, {
+import {
   useCallback,
   useEffect,
   useRef,
@@ -6,8 +6,6 @@ import React, {
   useMemo,
 } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
-import { HiCubeTransparent } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
 
 import { useCatalogContext } from '../../../context/CatalogContext';
@@ -21,6 +19,13 @@ import useCheckPermissions from '../../../hooks/useCheckPermissions';
 import ReusableTable from '../../../components/Table/ReusableTable';
 import ActionButtons from '../../../components/ActionButtons/ActionButtons';
 import ReusableModal from '../../../components/Modals/ReusableModal'; // Import ReusableModal
+
+import {
+  Box,
+  Pencil,
+  Search,
+  Trash2,
+} from 'lucide-react';
 
 const Models = () => {
   const {
@@ -163,7 +168,7 @@ const Models = () => {
         render: (value) => (
           <div className="flex items-center gap-3">
             <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-              <HiCubeTransparent className="text-indigo-600 dark:text-indigo-400 text-lg" />
+              <Box className="text-indigo-600 dark:text-indigo-400 text-lg" />
             </div>
             <span className="font-semibold text-gray-700 dark:text-gray-200">
               {value}
@@ -216,7 +221,7 @@ const Models = () => {
       actions.push({
         key: 'main', // Set as main action
         label: 'Editar',
-        icon: FaEdit,
+        icon: Pencil,
         action: () => onEditModel(row),
         color: 'yellow',
       });
@@ -225,7 +230,7 @@ const Models = () => {
       actions.push({
         key: 'delete',
         label: 'Eliminar',
-        icon: FaTrash,
+        icon: Trash2,
         action: () => onRemoveModel(row.id),
         color: 'red',
       });
@@ -239,7 +244,7 @@ const Models = () => {
       <div className="p-4 pt-0 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-            <HiCubeTransparent className="text-indigo-600 dark:text-indigo-400 text-xl" />
+            <Box className="text-indigo-600 dark:text-indigo-400 text-xl" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-800 dark:text-white">
@@ -253,7 +258,7 @@ const Models = () => {
 
         <div className="flex flex-col md:flex-row items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Buscar modelo..."

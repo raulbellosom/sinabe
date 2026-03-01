@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useRoleContext } from '../../context/RoleContext';
 import TableHeader from '../../components/Table/TableHeader';
-import { IoMdAdd } from 'react-icons/io';
+import { Plus, ChevronRight, ShieldCheck, Pencil, Shield, MoreVertical, ShieldOff } from 'lucide-react';
 import Accordion from '../../components/Accordion/Accordion';
-import { FaChevronRight, FaUserShield } from 'react-icons/fa';
-import { FiEdit } from 'react-icons/fi';
 import classNames from 'classnames';
-import { IoShieldSharp } from 'react-icons/io5';
 import { PermissionsByGroup } from '../../utils/Permissions';
 import { usePermissionContext } from '../../context/PermissionContext';
 import { Dropdown, TextInput } from 'flowbite-react';
-import { BsThreeDotsVertical } from 'react-icons/bs';
 import ModalFormikForm from '../../components/Modals/ModalFormikForm';
 import { RoleFormSchema } from '../../components/Roles/RoleFormSchema';
 import RoleFormFields from '../../components/Roles/RoleFormFields';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import { MdRemoveModerator } from 'react-icons/md';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
@@ -216,15 +211,15 @@ const Roles = () => {
       <section className="flex flex-col gap-3 min-h-full h-full bg-white shadow-md rounded-md dark:bg-neutral-900 p-3 pb-0 antialiased">
         <TableHeader
           title="Control de Roles"
-          icon={FaUserShield}
+          icon={ShieldCheck}
           actions={[
             {
               label: 'Agregar Rol',
               action: isCreateRolesPermission.hasPermission
                 ? () => setIsModalOpen(true)
                 : null,
-              color: 'mycad',
-              icon: IoMdAdd,
+              color: 'primary',
+              icon: Plus,
               filled: true,
             },
           ]}
@@ -251,7 +246,7 @@ const Roles = () => {
                   )}
                 >
                   <div className="flex gap-4 items-center">
-                    <IoShieldSharp size={20} />
+                    <Shield size={20} />
                     <h3 className="text-sm lg:text-lg font-semibold">
                       {role.name}
                     </h3>
@@ -262,7 +257,7 @@ const Roles = () => {
                       activeTab == role?.id ? '' : 'text-white',
                     )}
                   >
-                    <FaChevronRight size={18} className="text-lg mt-0.5" />
+                    <ChevronRight size={18} className="text-lg mt-0.5" />
                   </i>
                 </div>
               ))}
@@ -282,7 +277,7 @@ const Roles = () => {
                 isEditRolesPermission.hasPermission) && (
                 <Dropdown
                   label={
-                    <BsThreeDotsVertical
+                    <MoreVertical
                       size={36}
                       className="p-2 rounded-full hover:bg-neutral-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                     />
@@ -301,7 +296,7 @@ const Roles = () => {
                             setIsModalOpen(true);
                           },
                           color: 'transparent',
-                          icon: FiEdit,
+                          icon: Pencil,
                           className:
                             'md:min-w-full border-none hover:bg-neutral-100',
                         },
@@ -316,7 +311,7 @@ const Roles = () => {
                           action: () => setIsDeleteModalOpen(true),
                           color: 'transparent',
                           filled: true,
-                          icon: MdRemoveModerator,
+                          icon: ShieldOff,
                           className:
                             'md:min-w-full border-none hover:bg-neutral-100',
                         },

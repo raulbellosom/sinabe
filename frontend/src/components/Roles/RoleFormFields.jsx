@@ -1,7 +1,7 @@
-import React from 'react';
+
 import { Field } from 'formik';
 import TextInput from '../Inputs/TextInput';
-import { FaUserShield } from 'react-icons/fa';
+import { ShieldCheck } from 'lucide-react';
 
 const RoleFormFields = () => {
   return (
@@ -12,7 +12,7 @@ const RoleFormFields = () => {
         component={TextInput}
         label="Nombre del Rol"
         type="text"
-        icon={FaUserShield}
+        icon={ShieldCheck}
       />
       <Field
         className="hidden"

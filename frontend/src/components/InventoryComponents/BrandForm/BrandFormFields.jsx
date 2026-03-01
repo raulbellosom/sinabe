@@ -1,8 +1,10 @@
-import React from 'react';
+
 import { Field } from 'formik';
 import TextInput from '../../Inputs/TextInput';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
 
+import {
+  Tag,
+} from 'lucide-react';
 const BrandFormFields = ({}) => {
   return (
     <div className="grid grid-cols-1">
@@ -12,7 +14,7 @@ const BrandFormFields = ({}) => {
         component={TextInput}
         label="Nombre"
         type="text"
-        icon={PiTrademarkRegisteredBold}
+        icon={Tag}
         className="col-span-1"
       />
       <Field

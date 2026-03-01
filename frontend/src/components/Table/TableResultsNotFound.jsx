@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import Image from '../../assets/images/results_not_found.webp';
 
 const TableResultsNotFound = () => {
@@ -15,4 +15,4 @@ const TableResultsNotFound = () => {
   );
 };
 
-export default React.memo(TableResultsNotFound);
+export default memo(TableResultsNotFound);

@@ -1,10 +1,5 @@
 // src/components/ProjectDetails/ProjectMetrics.jsx
-import {
-  FaMoneyBillWave,
-  FaCalendarAlt,
-  FaUsers,
-  FaBoxOpen,
-} from 'react-icons/fa';
+import { DollarSign, Calendar, Users, Package } from 'lucide-react';
 
 const MetricCard = ({ icon: Icon, label, value }) => (
   <div className="flex items-center gap-4 bg-white dark:bg-sinabe-blue-dark p-4 rounded-md border border-gray-200 dark:border-gray-700">
@@ -38,22 +33,22 @@ const ProjectMetrics = ({ project }) => {
   return (
     <>
       <MetricCard
-        icon={FaMoneyBillWave}
+        icon={DollarSign}
         label="Presupuesto Total"
         value={`$${project.budgetTotal.toLocaleString()}`}
       />
       <MetricCard
-        icon={FaCalendarAlt}
+        icon={Calendar}
         label="Fechas del Proyecto"
         value={`${new Date(project.startDate).toLocaleDateString()} → ${new Date(project.endDate).toLocaleDateString()}`}
       />
       <MetricCard
-        icon={FaBoxOpen}
+        icon={Package}
         label="Inventario Asignado"
         value={`${inventoryAssigned.length} artículos`}
       />
       <MetricCard
-        icon={FaUsers}
+        icon={Users}
         label="Miembros del Equipo"
         value={`${project.teamMembers.length} miembros`}
       />

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import classNames from 'classnames';
 import Icon from '../../assets/logo/sinabe_icon_white.png';
 import ImageViewer from '../ImageViewer/ImageViewer';

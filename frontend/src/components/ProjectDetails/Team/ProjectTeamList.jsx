@@ -1,21 +1,22 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   useProjectTeam,
   useRemoveUserFromProject,
 } from '../../../hooks/useProjectTeam';
 import ModalProjectMember from './ModalProjectMember';
-import {
-  FaPlus,
-  FaUserMinus,
-  FaUserCircle,
-  FaUsers,
-  FaUserTie,
-  FaEdit,
-} from 'react-icons/fa';
 import ConfirmRemoveProjectMemberModal from './ConfirmRemoveProjectMemberModal';
 import FilterDropdown from '../../Inputs/FilterDropdown';
 import { FormattedUrlImage } from '../../../utils/FormattedUrlImage';
 import Notifies from '../../Notifies/Notifies';
+
+import {
+  Pencil,
+  Plus,
+  UserCircle,
+  UserMinus,
+  UserRound,
+  Users,
+} from 'lucide-react';
 
 const ProjectTeamList = ({ projectId }) => {
   const { data: team = [], isLoading } = useProjectTeam(projectId);
@@ -70,7 +71,7 @@ const ProjectTeamList = ({ projectId }) => {
       <div className="flex flex-col xl:flex-row lg:items-center lg:justify-between gap-4">
         <div className="flex items-center gap-2">
           <span className="text-sinabe-primary text-2xl">
-            <FaUsers className="text-sinabe-primary text-xl" />
+            <Users className="text-sinabe-primary text-xl" />
           </span>
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">
             Miembros del equipo
@@ -100,7 +101,7 @@ const ProjectTeamList = ({ projectId }) => {
               onClick={() => setIsModalOpen(true)}
               className="bg-sinabe-primary hover:bg-sinabe-primary/80 text-white px-3 py-2 rounded-md flex items-center gap-2 text-sm"
             >
-              <FaPlus /> <span className="">Agregar miembro</span>
+              <Plus /> <span className="">Agregar miembro</span>
             </button>
           </div>
         </div>
@@ -110,7 +111,7 @@ const ProjectTeamList = ({ projectId }) => {
         <p className="text-gray-500 dark:text-gray-300">Cargando equipo...</p>
       ) : filteredTeam.length === 0 ? (
         <div className="text-center text-gray-500 dark:text-gray-400 py-10">
-          <FaUserCircle className="text-5xl mx-auto text-sinabe-primary mb-2" />
+          <UserCircle className="text-5xl mx-auto text-sinabe-primary mb-2" />
           <p className="font-medium text-lg">No hay miembros que coincidan</p>
           <p className="text-sm">Ajusta la búsqueda o limpia los filtros.</p>
         </div>
@@ -143,7 +144,7 @@ const ProjectTeamList = ({ projectId }) => {
                   {member.name}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
-                  <FaUserTie className="text-sinabe-primary" /> {member.role}
+                  <UserRound className="text-sinabe-primary" /> {member.role}
                 </p>
               </div>
 
@@ -153,7 +154,7 @@ const ProjectTeamList = ({ projectId }) => {
                   className="text-blue-600 hover:text-blue-800"
                   title="Editar miembro"
                 >
-                  <FaEdit />
+                  <Pencil />
                 </button>
 
                 <button
@@ -161,7 +162,7 @@ const ProjectTeamList = ({ projectId }) => {
                   className="text-red-600 hover:text-red-800"
                   title="Eliminar miembro"
                 >
-                  <FaUserMinus className="text-xl" />
+                  <UserMinus className="text-xl" />
                 </button>
               </div>
             </li>

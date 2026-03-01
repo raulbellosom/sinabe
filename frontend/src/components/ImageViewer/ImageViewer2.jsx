@@ -8,12 +8,15 @@ import { Checkbox } from 'flowbite-react';
 import { CustomToolbar } from './CustomToolbar';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 import { downloadFile } from '../../services/api';
-import { IoClose } from 'react-icons/io5';
 import NoImageFound from '../../assets/images/NoImageFound.jpg';
 import Notifies from '../Notifies/Notifies';
 
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import 'react-photo-view/dist/react-photo-view.css';
+
+import {
+  X,
+} from 'lucide-react';
 
 const getImageSrc = (image, isThumbnail = false) => {
   if (!image) return NoImageFound;
@@ -143,7 +146,7 @@ const ImageViewer = ({
                     }}
                     className="absolute top-1 right-1 z-10 p-1 bg-white rounded-full shadow-md text-gray-700 transition-all duration-300 transform scale-100 sm:scale-0 sm:group-hover:scale-100 hover:bg-red-500 hover:text-white"
                   >
-                    <IoClose size={18} />
+                    <X size={18} />
                   </button>
                 )}
                 <LazyLoadImage

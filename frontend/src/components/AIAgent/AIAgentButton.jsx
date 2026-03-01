@@ -1,8 +1,11 @@
-import React from 'react';
+
 import { Tooltip } from 'flowbite-react';
-import { HiSparkles } from 'react-icons/hi';
 import { useAIAgent } from '../../context/AIAgentContext.jsx';
 import classNames from 'classnames';
+
+import {
+  Sparkles,
+} from 'lucide-react';
 
 const AIAgentButton = ({ className = '' }) => {
   const { openModal, isHealthy, isLoading } = useAIAgent();
@@ -32,7 +35,7 @@ const AIAgentButton = ({ className = '' }) => {
           className,
         )}
       >
-        <HiSparkles className="w-6 h-6 sm:w-6 sm:h-6" />
+        <Sparkles className="w-6 h-6 sm:w-6 sm:h-6" />
       </button>
     </Tooltip>
   );

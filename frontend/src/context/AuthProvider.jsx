@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect } from 'react';
+import { useReducer, useEffect } from 'react';
 import AuthContext from './AuthContext';
 import authReducer from './AuthReducer';
 import { useAuthData } from '../hooks/useAuth';

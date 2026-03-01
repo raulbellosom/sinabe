@@ -2,7 +2,7 @@
  * Formulario para crear/editar reglas de notificación
  * Con mejoras: SearchableSelect, modales de ayuda, campos dinámicos
  */
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Modal,
   Button,
@@ -13,21 +13,22 @@ import {
   Badge,
   Spinner,
 } from 'flowbite-react';
-import {
-  HiMail,
-  HiBell,
-  HiPlus,
-  HiTrash,
-  HiUser,
-  HiAtSymbol,
-  HiInformationCircle,
-  HiExclamationCircle,
-} from 'react-icons/hi';
 import { useNotifications } from '../../context/NotificationContext';
 import { toast } from 'react-hot-toast';
 import SearchableSelect from '../common/SearchableSelect';
 import { CronHelpModal, JsonFilterHelpModal } from './HelpModals';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
+
+import {
+  AlertCircle,
+  AtSign,
+  Bell,
+  Info,
+  Mail,
+  Plus,
+  Trash2,
+  User,
+} from 'lucide-react';
 
 const NotificationRuleForm = ({ show, onClose, onSuccess, rule }) => {
   const {
@@ -560,7 +561,7 @@ const NotificationRuleForm = ({ show, onClose, onSuccess, rule }) => {
                 onClick={() => setShowJsonHelp(true)}
                 className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
               >
-                <HiInformationCircle className="w-4 h-4" />
+                <Info className="w-4 h-4" />
                 Ver ejemplos
               </button>
             </div>
@@ -587,7 +588,7 @@ const NotificationRuleForm = ({ show, onClose, onSuccess, rule }) => {
             />
             {!isValidJson && (
               <p className="text-xs text-red-500 flex items-center gap-1">
-                <HiExclamationCircle className="w-4 h-4" />
+                <AlertCircle className="w-4 h-4" />
                 JSON inválido. Verifica la sintaxis.
               </p>
             )}
@@ -753,7 +754,7 @@ const NotificationRuleForm = ({ show, onClose, onSuccess, rule }) => {
                         onClick={() => setShowCronHelp(true)}
                         className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
                       >
-                        <HiInformationCircle className="w-4 h-4" />
+                        <Info className="w-4 h-4" />
                         Ayuda
                       </button>
                     </div>
@@ -785,7 +786,7 @@ const NotificationRuleForm = ({ show, onClose, onSuccess, rule }) => {
                     }
                     onChange={() => handleChannelToggle('EMAIL')}
                   />
-                  <HiMail className="w-5 h-5 text-blue-500" />
+                  <Mail className="w-5 h-5 text-blue-500" />
                   <span>Email</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -796,7 +797,7 @@ const NotificationRuleForm = ({ show, onClose, onSuccess, rule }) => {
                     }
                     onChange={() => handleChannelToggle('IN_APP')}
                   />
-                  <HiBell className="w-5 h-5 text-green-500" />
+                  <Bell className="w-5 h-5 text-green-500" />
                   <span>In-App</span>
                 </div>
               </div>
@@ -852,7 +853,7 @@ const NotificationRuleForm = ({ show, onClose, onSuccess, rule }) => {
                     input.value = '';
                   }}
                 >
-                  <HiPlus className="w-4 h-4" />
+                  <Plus className="w-4 h-4" />
                 </Button>
               </div>
 
@@ -892,13 +893,13 @@ const NotificationRuleForm = ({ show, onClose, onSuccess, rule }) => {
                             ) : (
                               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                                 <span className="text-[10px] font-semibold text-white">
-                                  {initials || <HiUser className="w-3 h-3" />}
+                                  {initials || <User className="w-3 h-3" />}
                                 </span>
                               </div>
                             )
                           ) : (
                             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                              <HiAtSymbol className="w-3.5 h-3.5 text-white" />
+                              <AtSign className="w-3.5 h-3.5 text-white" />
                             </div>
                           )}
                           <span className="text-sm text-gray-700 dark:text-gray-200">
@@ -913,7 +914,7 @@ const NotificationRuleForm = ({ show, onClose, onSuccess, rule }) => {
                           size="xs"
                           onClick={() => handleRemoveRecipient(index)}
                         >
-                          <HiTrash className="w-3 h-3" />
+                          <Trash2 className="w-3 h-3" />
                         </Button>
                       </div>
                     );

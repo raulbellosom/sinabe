@@ -3,8 +3,11 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import { ThreeCircles } from 'react-loader-spinner';
-import { TbFileSad } from 'react-icons/tb';
 import classNames from 'classnames';
+
+import {
+  FileX,
+} from 'lucide-react';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -23,7 +26,7 @@ const PDFReader = ({ file, className }) => {
       )}
     >
       <span>
-        <TbFileSad size={44} />
+        <FileX size={44} />
       </span>
       <p className="text-lg font-semibold">Error al cargar el archivo</p>
       <p className="text-sm text-neutral-500">

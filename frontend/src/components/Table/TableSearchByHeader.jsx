@@ -1,12 +1,23 @@
 import React, { useState } from 'react';
 import ActionButtons from '../ActionButtons/ActionButtons';
-import { RiMenuSearchLine } from 'react-icons/ri';
+
 import ModalForm from '../Modals/ModalForm';
 import { Button, Label, Select, TextInput, Tooltip } from 'flowbite-react';
-import { IoIosArrowForward, IoMdAdd } from 'react-icons/io';
-import { MdClose } from 'react-icons/md';
-import { FaTrashAlt } from 'react-icons/fa';
+
+
+
+
+
+
+
 import { useCustomFieldContext } from '../../context/CustomFieldContext';
+import {
+  ChevronRight,
+  Plus,
+  Search,
+  Trash2,
+  X,
+} from 'lucide-react';
 
 const criteria = [
   {
@@ -150,8 +161,8 @@ const TableSearchByHeader = ({
               {
                 label: 'Columnas',
                 action: () => setIsModalOpen(true),
-                color: 'mycad',
-                icon: RiMenuSearchLine,
+                color: 'primary',
+                icon: Search,
               },
             ]}
           />
@@ -180,7 +191,7 @@ const TableSearchByHeader = ({
                 }{' '}
                 <strong>{filter.searchTerm}</strong>
                 <i>
-                  <MdClose size={18} />
+                  <X size={18} />
                 </i>
               </div>
             ))}
@@ -191,7 +202,7 @@ const TableSearchByHeader = ({
                     label: '',
                     action: cleanFilters,
                     color: 'red',
-                    icon: FaTrashAlt,
+                    icon: Trash2,
                   },
                 ]}
               />
@@ -327,7 +338,7 @@ const TableSearchByHeader = ({
                   label: 'Cerrar',
                   action: handleCloseModal,
                   color: 'red',
-                  icon: MdClose,
+                  icon: X,
                 },
                 {
                   label: 'Limpiar filtros',
@@ -339,13 +350,13 @@ const TableSearchByHeader = ({
                     setTouched({});
                   },
                   color: 'gray',
-                  icon: FaTrashAlt,
+                  icon: Trash2,
                 },
                 {
                   label: 'Agregar búsqueda',
                   action: handleSearch,
                   color: 'success',
-                  icon: IoMdAdd,
+                  icon: Plus,
                   filled: true,
                 },
               ]}

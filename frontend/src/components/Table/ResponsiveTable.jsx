@@ -1,27 +1,133 @@
-// ResponsiveTable.jsx
-import React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  FaSort,
-  FaSortUp,
-  FaSortDown,
-  FaEye,
-  FaEdit,
-  FaTrash,
-  FaTag, // Icon for serial number
-  FaBox, // Icon for active number
-  FaFileAlt, // Icon for internal folio
-  FaCalendarAlt, // Icon for date
-  FaCommentDots, // Icon for comments
-} from 'react-icons/fa';
-import { Spinner, Dropdown, Checkbox, Tooltip } from 'flowbite-react';
-import { useMediaQuery } from 'react-responsive';
-import { BsThreeDotsVertical } from 'react-icons/bs';
-import { MdNavigateBefore, MdNavigateNext } from 'react-icons/md'; // Import these icons
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Box,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  EllipsisVertical,
+  Eye,
+  FileText,
+  MessageCircle,
+  Tag,
+} from 'lucide-react';
 import classNames from 'classnames';
 
 import TableResultsNotFound from './TableResultsNotFound';
 import TableResources from './TableResources';
 import ActionButtons from '../ActionButtons/ActionButtons';
+
+const getValueByKey = (row, key) => {
+  if (!row || !key) {
+    return undefined;
+  }
+
+  if (!key.includes('.')) {
+    return row[key];
+  }
+
+  return key.split('.').reduce((acc, segment) => acc?.[segment], row);
+};
+
+const Spinner = () => (
+  <span
+    className="inline-block h-9 w-9 animate-spin rounded-full border-4 border-[color:var(--primary)] border-r-transparent"
+    aria-label="Cargando"
+  />
+);
+
+const SortIcon = ({ isActive, direction }) => {
+  if (!isActive) {
+    return <ArrowUpDown size={14} className="opacity-50" />;
+  }
+
+  return direction === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />;
+};
+
+const RowActionsMenu = ({ row, rowActions }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  const actions = useMemo(() => {
+    const resolved =
+      typeof rowActions === 'function' ? rowActions(row) : rowActions;
+    return Array.isArray(resolved)
+      ? resolved.filter((action) => typeof action?.action === 'function')
+      : [];
+  }, [row, rowActions]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const handleClickOutside = (event) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  if (!actions.length) {
+    return null;
+  }
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          setIsOpen((prev) => !prev);
+        }}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[color:var(--foreground-muted)] transition-colors hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--foreground)]"
+        aria-label="Acciones"
+      >
+        <EllipsisVertical size={16} />
+      </button>
+
+      {isOpen ? (
+        <div className="absolute right-0 top-10 z-40 min-w-[11rem] overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-1 shadow-xl">
+          {actions.map((action) => {
+            const Icon = action.icon;
+
+            return (
+              <button
+                key={`${row.id}-${action.key || action.label}`}
+                type="button"
+                disabled={action.disabled}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  action.action(row);
+                  setIsOpen(false);
+                }}
+                className={classNames(
+                  'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
+                  action.disabled
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'hover:bg-[color:var(--surface-muted)]',
+                )}
+              >
+                {Icon ? <Icon size={14} /> : null}
+                <span>{action.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+};
 
 const ResponsiveTable = ({
   columns = [],
@@ -30,12 +136,10 @@ const ResponsiveTable = ({
   loading = false,
   error = null,
   sortConfig = { key: null, direction: 'asc' },
-  // Selection props
   selectable = false,
   selectedRows = {},
   onSelectRow = () => {},
   onSelectAllRows = () => {},
-  // Callbacks
   onSort,
   onPageChange,
   onPageSizeChange,
@@ -44,646 +148,417 @@ const ResponsiveTable = ({
   onRowControlClick,
   rowActions = [],
   pageSizeOptions = [10, 20, 30, 50, 100, 0],
-  viewMode = 'table', // 'table', 'cards', 'resources'
-  // Header filters
-  headerFilters = {}, // { columnKey: { options: [], selected: [], onChange: fn } }
+  viewMode = 'table',
+  headerFilters = {},
 }) => {
-  const getSortIcon = (key) => {
-    if (sortConfig.key !== key) return <FaSort className="opacity-30" />;
-    if (sortConfig.direction === 'asc') return <FaSortUp />;
-    return <FaSortDown />;
+  const safePagination = {
+    currentPage: pagination?.currentPage || 1,
+    totalPages: pagination?.totalPages || 1,
+    totalRecords: pagination?.totalRecords ?? data.length,
+    pageSize: pagination?.pageSize || 10,
   };
 
-  const handleRowClickInternal = (row, e) => {
-    if (e.ctrlKey || e.metaKey) {
-      if (onRowControlClick) onRowControlClick(row);
-    } else {
-      if (onRowClick) onRowClick(row);
-    }
-  };
+  const isAllSelected =
+    selectable && data.length > 0 && data.every((row) => selectedRows[row.id]);
 
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <div className="flex justify-center items-center h-64">
-          <Spinner size="xl" />
-        </div>
-      );
-    }
-    if (error) {
-      return (
-        <div className="text-center py-10 text-red-500 font-semibold">
-          {error}
-        </div>
-      );
-    }
-    if (data.length === 0) {
-      if (viewMode === 'table') {
-        return (
-          <div className="overflow-x-auto">
-            <table className="min-w-full w-full text-sm text-left text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-100 uppercase bg-gray-700 dark:bg-gray-800 whitespace-nowrap">
-                <tr>
-                  {selectable && (
-                    <th className="px-4 py-3 first:rounded-tl-lg last:rounded-tr-lg">
-                      <Checkbox
-                        checked={false}
-                        disabled
-                        className="cursor-pointer w-5 h-5 text-purple-500 focus:ring-purple-500 opacity-50"
-                      />
-                    </th>
-                  )}
-                  {columns.map((col) => (
-                    <th
-                      key={col.key}
-                      onClick={() => col.sortable && onSort && onSort(col.key)}
-                      scope="col"
-                      className={classNames(
-                        'px-4 py-2 first:rounded-tl-lg last:rounded-tr-lg',
-                        {
-                          'cursor-pointer select-none': col.sortable,
-                        },
-                        col.headerClassName,
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="flex items-center">
-                          {col.title}
-                          {col.sortable && (
-                            <span className="ml-1">{getSortIcon(col.key)}</span>
-                          )}
-                        </span>
-                        {headerFilters[col.key] && (
-                          <div onClick={(e) => e.stopPropagation()}>
-                            {headerFilters[col.key].component}
-                          </div>
-                        )}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={columns.length + (selectable ? 1 : 0)}
-                    className="p-4"
-                  >
-                    <TableResultsNotFound />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        );
+  const pageNumbers = useMemo(() => {
+    const { currentPage, totalPages } = safePagination;
+    const maxVisiblePages = 5;
+    const half = Math.floor(maxVisiblePages / 2);
+
+    let startPage = Math.max(1, currentPage - half);
+    let endPage = Math.min(totalPages, currentPage + half);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      if (startPage === 1) {
+        endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      } else {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
       }
-      return <TableResultsNotFound />;
     }
 
-    if (viewMode === 'resources') {
-      return <TableResources data={data} />;
+    return Array.from(
+      { length: endPage - startPage + 1 },
+      (_, index) => startPage + index,
+    );
+  }, [safePagination]);
+
+  const handleRowClick = (row, event) => {
+    if (event.ctrlKey || event.metaKey) {
+      onRowControlClick?.(row);
+      return;
     }
 
-    if (viewMode === 'cards') {
-      return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-          {data.map((row) => (
-            <div
-              key={row.id}
-              className={classNames(
-                'relative bg-white dark:bg-gray-800 rounded-md shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full',
-                {
-                  'border-l-4 border-sinabe-danger': row.status === 'BAJA',
-                  'border-l-4 border-sinabe-warning':
-                    row.status === 'PROPUESTA',
-                  'border-l-4 border-sinabe-success': row.status === 'ALTA',
-                },
-              )}
-              onClick={(e) => handleRowClickInternal(row, e)}
-              onDoubleClick={() => onRowDoubleClick && onRowDoubleClick(row)}
-            >
-              {selectable && (
-                <div className="absolute top-1 right-3 z-10">
-                  <Checkbox
-                    checked={!!selectedRows[row.id]}
-                    onChange={() => onSelectRow(row)}
-                    className="form-checkbox h-5 w-5 text-purple-600 rounded"
-                  />
-                </div>
-              )}
+    onRowClick?.(row);
+  };
 
-              {/* Options Dropdown for actions, positioned top-right */}
-              <div className="absolute top-1 right-0 z-10 text-nowrap"></div>
+  const renderCell = (row, column) => {
+    if (column.key === 'actions') {
+      return <RowActionsMenu row={row} rowActions={rowActions} />;
+    }
 
-              {/* Main content section - grows to fill available space */}
-              <div className="flex-grow">
-                {/* Card Header with Image and Main Info */}
-                <div className="flex p-4 pb-2 items-center">
-                  <div className="flex-shrink-0 mr-4">
-                    {columns
-                      .find((col) => col.key === 'images')
-                      ?.render?.(row.images, row) || (
-                      <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">
-                        No Imagen
-                      </div>
-                    )}
+    const rawValue = getValueByKey(row, column.key);
+
+    if (typeof column.render === 'function') {
+      return column.render(rawValue, row);
+    }
+
+    if (rawValue === null || rawValue === undefined || rawValue === '') {
+      return '-';
+    }
+
+    return String(rawValue);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)]">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-[color:var(--danger)]/30 bg-[color:var(--danger)]/10 p-4 text-sm text-[color:var(--danger)]">
+        Error al cargar la tabla.
+      </div>
+    );
+  }
+
+  if (viewMode === 'resources') {
+    return <TableResources data={data} />;
+  }
+
+  if (!data.length) {
+    return (
+      <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+        <TableResultsNotFound />
+      </div>
+    );
+  }
+
+  const showPagination = viewMode !== 'resources';
+
+  return (
+    <div className="flex flex-col gap-4">
+      {viewMode === 'cards' ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {data.map((row) => {
+            const imageColumn = columns.find(
+              (column) => column.key === 'images',
+            );
+            const modelColumn = columns.find(
+              (column) => column.key === 'model.name',
+            );
+            const typeColumn = columns.find(
+              (column) => column.key === 'model.type.name',
+            );
+            const brandColumn = columns.find(
+              (column) => column.key === 'model.brand.name',
+            );
+            const receptionColumn = columns.find(
+              (column) => column.key === 'receptionDate',
+            );
+            const commentsColumn = columns.find(
+              (column) => column.key === 'comments',
+            );
+
+            const statusColor =
+              row.status === 'ALTA'
+                ? 'bg-[color:var(--success)]'
+                : row.status === 'BAJA'
+                  ? 'bg-[color:var(--danger)]'
+                  : 'bg-[color:var(--warning)]';
+
+            return (
+              <article
+                key={row.id}
+                className="relative flex h-full flex-col overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-sm"
+                onClick={(event) => handleRowClick(row, event)}
+                onDoubleClick={() => onRowDoubleClick?.(row)}
+              >
+                {selectable ? (
+                  <label className="absolute right-3 top-3 z-10 inline-flex cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(selectedRows[row.id])}
+                      onChange={() => onSelectRow(row)}
+                      className="sinabe-checkbox h-4 w-4 cursor-pointer appearance-none rounded-[3px] transition-all duration-150 border-2 border-[color:var(--border)] bg-[color:var(--surface)] checked:border-[color:var(--primary)] checked:bg-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-[color:var(--primary)] focus:ring-offset-1"
+                    />
+                  </label>
+                ) : null}
+
+                <div className="flex items-start gap-3 border-b border-[color:var(--border)] p-4">
+                  <div className="shrink-0">
+                    {imageColumn?.render
+                      ? imageColumn.render(getValueByKey(row, 'images'), row)
+                      : null}
                   </div>
-                  <div className="flex-grow min-w-0">
-                    <h3 className="text-base font-bold text-sinabe-primary dark:text-white truncate">
-                      {columns
-                        .find((col) => col.key === 'model.name')
-                        ?.render?.(row.model?.name, row) ||
-                        row.model?.name ||
-                        '-'}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-base font-semibold text-[color:var(--foreground)]">
+                      {modelColumn?.render
+                        ? modelColumn.render(
+                            getValueByKey(row, 'model.name'),
+                            row,
+                          )
+                        : getValueByKey(row, 'model.name') || '-'}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                      {(columns
-                        .find((col) => col.key === 'model.type.name')
-                        ?.render?.(row.model?.type?.name, row) ||
-                        row.model?.type?.name ||
-                        '-') +
+                    <p className="truncate text-sm text-[color:var(--foreground-muted)]">
+                      {(typeColumn?.render
+                        ? typeColumn.render(
+                            getValueByKey(row, 'model.type.name'),
+                            row,
+                          )
+                        : getValueByKey(row, 'model.type.name') || '-') +
                         ' - ' +
-                        (columns
-                          .find((col) => col.key === 'model.brand.name')
-                          ?.render?.(row.model?.brand?.name, row) ||
-                          row.model?.brand?.name ||
-                          '-')}
+                        (brandColumn?.render
+                          ? brandColumn.render(
+                              getValueByKey(row, 'model.brand.name'),
+                              row,
+                            )
+                          : getValueByKey(row, 'model.brand.name') || '-')}
                     </p>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {row.status && (
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-medium text-white ${
-                            row.status === 'ALTA'
-                              ? 'bg-sinabe-success'
-                              : row.status === 'BAJA'
-                                ? 'bg-sinabe-danger'
-                                : 'bg-sinabe-warning'
-                          }`}
-                        >
-                          {row.status === 'PROPUESTA'
-                            ? 'PROP. BAJA'
-                            : row.status}
-                        </span>
-                      )}
-                      {row.conditions?.map((condition) => (
-                        <span
-                          key={condition.id}
-                          className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-200"
-                        >
-                          {condition?.condition?.name}
-                        </span>
-                      ))}
-                    </div>
+                    {row.status ? (
+                      <span
+                        className={classNames(
+                          'mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold text-white',
+                          statusColor,
+                        )}
+                      >
+                        {row.status === 'PROPUESTA' ? 'PROP. BAJA' : row.status}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
 
-                {/* Card Body with Key Details */}
-                <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-700 dark:text-gray-300">
-                  <div className="flex items-center">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 p-4 text-xs text-[color:var(--foreground-muted)]">
+                  <div className="flex items-start gap-1.5">
+                    <Tag size={14} className="mt-0.5" />
                     <span>
-                      <FaTag className="mr-2 text-gray-500" />
-                    </span>
-                    <span className="flex flex-col items-start">
                       Serie:{' '}
-                      <span className="font-semibold">
+                      <strong className="text-[color:var(--foreground)]">
                         {row.serialNumber || '-'}
-                      </span>
+                      </strong>
                     </span>
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex items-start gap-1.5">
+                    <Box size={14} className="mt-0.5" />
                     <span>
-                      <FaBox className="mr-2 text-gray-500" />
-                    </span>
-                    <span className="flex flex-col items-start">
                       Activo:{' '}
-                      <span className="font-semibold">
+                      <strong className="text-[color:var(--foreground)]">
                         {row.activeNumber || '-'}
-                      </span>
+                      </strong>
                     </span>
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex items-start gap-1.5">
+                    <FileText size={14} className="mt-0.5" />
                     <span>
-                      <FaFileAlt className="mr-2 text-gray-500" />
-                    </span>
-                    <span className="flex flex-col items-start">
                       Folio:{' '}
-                      <span className="font-semibold">
+                      <strong className="text-[color:var(--foreground)]">
                         {row.internalFolio || '-'}
-                      </span>
+                      </strong>
                     </span>
                   </div>
-                  <div className="flex items-center">
+                  <div className="flex items-start gap-1.5">
+                    <Calendar size={14} className="mt-0.5" />
                     <span>
-                      <FaCalendarAlt className="mr-2 text-gray-500" />
-                    </span>
-                    <span className="flex flex-col items-start">
                       Recepción:{' '}
-                      <span className="font-semibold">
-                        {columns
-                          .find((c) => c.key === 'receptionDate')
-                          ?.render?.(row.receptionDate) || '-'}
-                      </span>
+                      <strong className="text-[color:var(--foreground)]">
+                        {receptionColumn?.render
+                          ? receptionColumn.render(row.receptionDate, row)
+                          : row.receptionDate || '-'}
+                      </strong>
                     </span>
                   </div>
-                  {row.comments && (
-                    <div className="flex items-start col-span-2 my-1">
-                      <FaCommentDots className="mr-2 text-gray-500 mt-1" />
-                      <div className="text-gray-700 dark:text-gray-300 line-clamp-2">
-                        {columns
-                          .find((c) => c.key === 'comments')
-                          ?.render?.(row.comments, row) || row.comments}
+                  {row.comments ? (
+                    <div className="col-span-2 flex items-start gap-1.5">
+                      <MessageCircle size={14} className="mt-0.5" />
+                      <div className="line-clamp-2 text-[color:var(--foreground-muted)]">
+                        {commentsColumn?.render
+                          ? commentsColumn.render(row.comments, row)
+                          : row.comments}
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </div>
-              </div>
 
-              {/* Actions section - always at the bottom */}
-              <div className="mt-auto px-4 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30">
-                <div className="flex items-center justify-end gap-2">
+                <div className="mt-auto flex items-center justify-between border-t border-[color:var(--border)] bg-[color:var(--surface-muted)]/40 p-3">
                   <ActionButtons
                     extraActions={[
                       {
-                        icon: FaEye,
-                        label: 'Ver Detalles',
-                        action: () => onRowDoubleClick && onRowDoubleClick(row),
+                        icon: Eye,
+                        label: 'Ver',
+                        action: () => onRowDoubleClick?.(row),
                         disabled: false,
                       },
                     ]}
                   />
-                  {rowActions.length > 0 && (
-                    <Dropdown
-                      inline
-                      label=""
-                      arrowIcon={false}
-                      renderTrigger={() => {
-                        return (
-                          <button
-                            type="button"
-                            className="w-fit md:w-fit text-xs xl:text-sm transition ease-in-out duration-200 p-2.5 flex items-center justify-center rounded-md border text-stone-800 dark:text-gray-200 dark:border-gray-600"
-                          >
-                            <BsThreeDotsVertical />
-                          </button>
-                        );
-                      }}
-                    >
-                      {rowActions(row).map((action, index) =>
-                        action.action ? (
-                          <Dropdown.Item
-                            key={index}
-                            icon={action.icon}
-                            onClick={(e) => {
-                              action.action(row);
-                            }}
-                            disabled={action.disabled}
-                          >
-                            {action.label}
-                          </Dropdown.Item>
-                        ) : null,
-                      )}
-                    </Dropdown>
-                  )}
+                  <RowActionsMenu row={row} rowActions={rowActions} />
                 </div>
-              </div>
-            </div>
-          ))}
+              </article>
+            );
+          })}
         </div>
-      );
-    }
-
-    // Scroll synchronization logic
-    const tableContainerRef = React.useRef(null);
-    const topScrollContainerRef = React.useRef(null);
-    const [scrollWidth, setScrollWidth] = React.useState(0);
-    const isSyncingLeft = React.useRef(false);
-    const isSyncingRight = React.useRef(false);
-
-    // Measure content width for the top scrollbar
-    React.useEffect(() => {
-      const checkScrollWidth = () => {
-        if (tableContainerRef.current) {
-          setScrollWidth(tableContainerRef.current.scrollWidth);
-        }
-      };
-
-      // Initial check
-      checkScrollWidth();
-
-      // Check on resize
-      window.addEventListener('resize', checkScrollWidth);
-
-      // Check whenever data or columns change (rendering might change width)
-      const timeoutId = setTimeout(checkScrollWidth, 100);
-
-      return () => {
-        window.removeEventListener('resize', checkScrollWidth);
-        clearTimeout(timeoutId);
-      };
-    }, [data, columns, viewMode, loading]);
-
-    const handleScrollTable = (e) => {
-      if (isSyncingLeft.current) {
-        isSyncingLeft.current = false;
-        return;
-      }
-      if (topScrollContainerRef.current) {
-        isSyncingRight.current = true;
-        topScrollContainerRef.current.scrollLeft = e.target.scrollLeft;
-      }
-    };
-
-    const handleScrollTop = (e) => {
-      if (isSyncingRight.current) {
-        isSyncingRight.current = false;
-        return;
-      }
-      if (tableContainerRef.current) {
-        isSyncingLeft.current = true;
-        tableContainerRef.current.scrollLeft = e.target.scrollLeft;
-      }
-    };
-
-    // Desktop table view
-    return (
-      <div className="flex flex-col">
-        {/* Top Scrollbar */}
-        <div
-          ref={topScrollContainerRef}
-          className="overflow-x-auto w-full mb-1"
-          onScroll={handleScrollTop}
-          style={{
-            height:
-              scrollWidth > (tableContainerRef.current?.clientWidth || 0)
-                ? '12px'
-                : '0px',
-            opacity:
-              scrollWidth > (tableContainerRef.current?.clientWidth || 0)
-                ? 1
-                : 0,
-          }}
-        >
-          <div style={{ width: `${scrollWidth}px`, height: '1px' }}></div>
-        </div>
-
-        <div
-          className="overflow-x-auto"
-          ref={tableContainerRef}
-          onScroll={handleScrollTable}
-        >
-          <table className="min-w-full w-full text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead className="text-xs text-gray-100 uppercase bg-gray-700 dark:bg-gray-800 whitespace-nowrap">
+      ) : (
+        <div className="overflow-x-auto rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)]">
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-[color:var(--surface-muted)] text-xs uppercase tracking-wide text-[color:var(--foreground-muted)]">
               <tr>
-                {selectable && (
-                  <th className="px-4 py-3 first:rounded-tl-lg last:rounded-tr-lg">
-                    <Checkbox
-                      checked={
-                        Object.keys(selectedRows).length === data.length &&
-                        data.length > 0
-                      }
+                {selectable ? (
+                  <th className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
                       onChange={onSelectAllRows}
-                      className="cursor-pointer w-5 h-5 text-purple-500 focus:ring-purple-500"
+                      className="sinabe-checkbox h-4 w-4 cursor-pointer appearance-none rounded-[3px] transition-all duration-150 border-2 border-[color:var(--border)] bg-[color:var(--surface)] checked:border-[color:var(--primary)] checked:bg-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-[color:var(--primary)] focus:ring-offset-1"
                     />
                   </th>
-                )}
-                {columns.map((col) => (
+                ) : null}
+
+                {columns.map((column) => (
                   <th
-                    key={col.key}
-                    onClick={() => col.sortable && onSort && onSort(col.key)}
-                    scope="col"
+                    key={column.key}
+                    onClick={() => column.sortable && onSort?.(column.key)}
                     className={classNames(
-                      'px-4 py-2 first:rounded-tl-lg last:rounded-tr-lg',
-                      {
-                        'cursor-pointer select-none': col.sortable,
-                      },
-                      col.headerClassName,
+                      'px-4 py-3 whitespace-nowrap',
+                      column.sortable ? 'cursor-pointer select-none' : '',
+                      column.headerClassName,
                     )}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="flex items-center">
-                        {col.title}
-                        {col.sortable && (
-                          <span className="ml-1">{getSortIcon(col.key)}</span>
-                        )}
+                      <span className="inline-flex items-center gap-1">
+                        {column.title}
+                        {column.sortable ? (
+                          <SortIcon
+                            isActive={sortConfig.key === column.key}
+                            direction={sortConfig.direction}
+                          />
+                        ) : null}
                       </span>
-                      {headerFilters[col.key] && (
-                        <div onClick={(e) => e.stopPropagation()}>
-                          {headerFilters[col.key].component}
-                        </div>
-                      )}
+                      {headerFilters[column.key] ? (
+                        <span onClick={(event) => event.stopPropagation()}>
+                          {headerFilters[column.key].component}
+                        </span>
+                      ) : null}
                     </div>
                   </th>
                 ))}
               </tr>
             </thead>
+
             <tbody>
               {data.map((row) => (
                 <tr
                   key={row.id}
-                  className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                  onClick={(e) => handleRowClickInternal(row, e)}
-                  onDoubleClick={() =>
-                    onRowDoubleClick && onRowDoubleClick(row)
-                  }
+                  className="border-t border-[color:var(--border)] hover:bg-[color:var(--surface-muted)]/60"
+                  onClick={(event) => handleRowClick(row, event)}
+                  onDoubleClick={() => onRowDoubleClick?.(row)}
                 >
-                  {selectable && (
-                    <td className="px-4 py-2">
-                      <Checkbox
-                        checked={!!selectedRows[row.id]}
+                  {selectable ? (
+                    <td
+                      className="px-4 py-3"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={Boolean(selectedRows[row.id])}
                         onChange={() => onSelectRow(row)}
-                        className="cursor-pointer w-5 h-5 text-purple-500 focus:ring-purple-500"
+                        className="sinabe-checkbox h-4 w-4 cursor-pointer appearance-none rounded-[3px] transition-all duration-150 border-2 border-[color:var(--border)] bg-[color:var(--surface)] checked:border-[color:var(--primary)] checked:bg-[color:var(--primary)] focus:outline-none focus:ring-2 focus:ring-[color:var(--primary)] focus:ring-offset-1"
                       />
                     </td>
-                  )}
-                  {columns.map((col) => {
-                    if (col.key === 'actions') {
-                      return (
-                        <td
-                          key={col.key}
-                          className={classNames(
-                            'px-4 py-2 text-right text-nowrap',
-                            col.cellClassName,
-                          )}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Dropdown
-                            arrowIcon={false}
-                            inline
-                            label=""
-                            renderTrigger={() => {
-                              return (
-                                <button
-                                  type="button"
-                                  className="h-10 w-10 p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full cursor-pointer flex items-center justify-center"
-                                >
-                                  <BsThreeDotsVertical />
-                                </button>
-                              );
-                            }}
-                          >
-                            {typeof rowActions === 'function'
-                              ? rowActions(row).map((action, index) =>
-                                  action.action ? (
-                                    <Dropdown.Item
-                                      key={index}
-                                      icon={action.icon}
-                                      onClick={(e) => {
-                                        action.action(row);
-                                      }}
-                                      disabled={action.disabled}
-                                    >
-                                      {action.label}
-                                    </Dropdown.Item>
-                                  ) : null,
-                                )
-                              : rowActions.map((action, index) =>
-                                  action.action ? (
-                                    <Dropdown.Item
-                                      key={index}
-                                      icon={action.icon}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        action.action(row);
-                                      }}
-                                      disabled={action.disabled}
-                                    >
-                                      {action.label}
-                                    </Dropdown.Item>
-                                  ) : null,
-                                )}
-                          </Dropdown>
-                        </td>
-                      );
-                    }
-                    return (
-                      <td
-                        key={col.key}
-                        className={classNames('px-4 py-2', col.cellClassName, {
-                          'whitespace-nowrap': col.key !== 'comments',
-                        })}
-                      >
-                        {col.render
-                          ? col.render(row[col.key], row)
-                          : String(row[col.key])}
-                      </td>
-                    );
-                  })}
+                  ) : null}
+
+                  {columns.map((column) => (
+                    <td
+                      key={`${row.id}-${column.key}`}
+                      className={classNames(
+                        'px-4 py-3 whitespace-nowrap text-[color:var(--foreground)]',
+                        column.cellClassName,
+                      )}
+                      onClick={
+                        column.key === 'actions'
+                          ? (event) => event.stopPropagation()
+                          : undefined
+                      }
+                    >
+                      {renderCell(row, column)}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
-    );
-  };
+      )}
 
-  // Logic to generate page numbers for pagination control
-  const getPageNumbers = () => {
-    const { currentPage, totalPages } = pagination;
-    const maxVisiblePages = 5;
-    const pageNumbers = [];
-
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(
-      totalPages,
-      currentPage + Math.floor(maxVisiblePages / 2),
-    );
-
-    // Adjust start/end if the range is too small
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      if (startPage === 1) {
-        endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-      } else if (endPage === totalPages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-      }
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
-    }
-    return pageNumbers;
-  };
-
-  const pageNumbers = getPageNumbers();
-
-  return (
-    <div className="flex flex-col gap-4">
-      {renderContent()} {/* Call the rendering function here */}
-      {/* Pagination (show for all view modes) */}
-      {viewMode !== 'resources' && (
-        <div className="flex flex-wrap items-center justify-between gap-4 p-2 border-t dark:border-gray-700 mt-4 pt-4">
-          {' '}
-          {/* Added top border and padding */}
-          <div className="text-sm text-gray-700 dark:text-gray-400">
+      {showPagination ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-3 text-sm">
+          <p className="text-[color:var(--foreground-muted)]">
             Mostrando{' '}
-            <span className="font-semibold">
-              {Math.min(
-                (pagination.currentPage - 1) * pagination.pageSize + 1,
-                pagination.totalRecords,
-              )}
+            <strong className="text-[color:var(--foreground)]">
+              {safePagination.totalRecords === 0
+                ? 0
+                : (safePagination.currentPage - 1) * safePagination.pageSize +
+                  1}
               -
               {Math.min(
-                pagination.currentPage * pagination.pageSize,
-                pagination.totalRecords,
+                safePagination.currentPage * safePagination.pageSize,
+                safePagination.totalRecords,
               )}
-            </span>{' '}
-            de <span className="font-semibold">{pagination.totalRecords}</span>{' '}
-            resultados
-          </div>
+            </strong>{' '}
+            de{' '}
+            <strong className="text-[color:var(--foreground)]">
+              {safePagination.totalRecords}
+            </strong>
+          </p>
+
           <div className="flex items-center gap-1">
-            {/* Previous Page Button */}
             <button
-              onClick={() => onPageChange(pagination.currentPage - 1)}
-              disabled={pagination.currentPage === 1}
-              className="px-3 py-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed  dark:text-white transition-colors flex items-center justify-center text-gray-700 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
-              title="Página Anterior"
+              type="button"
+              onClick={() => onPageChange?.(safePagination.currentPage - 1)}
+              disabled={safePagination.currentPage <= 1}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[color:var(--border)] text-[color:var(--foreground)] disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Página anterior"
             >
-              <MdNavigateBefore className="h-5 w-5" />
+              <ChevronLeft size={16} />
             </button>
 
-            {/* Page Number Buttons */}
-            <div className="flex items-center gap-1 mx-1">
-              {' '}
-              {/* Added mx-1 for spacing */}
-              {pageNumbers.map((pageNumber) => (
-                <button
-                  key={pageNumber}
-                  onClick={() => onPageChange(pageNumber)}
-                  className={classNames(
-                    'px-3 py-1 rounded-md text-sm transition-colors duration-200',
-                    {
-                      'bg-purple-600 text-white font-bold shadow-md':
-                        pageNumber === pagination.currentPage,
-                      'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600':
-                        pageNumber !== pagination.currentPage,
-                    },
-                  )}
-                >
-                  {pageNumber}
-                </button>
-              ))}
-            </div>
+            {pageNumbers.map((pageNumber) => (
+              <button
+                key={pageNumber}
+                type="button"
+                onClick={() => onPageChange?.(pageNumber)}
+                className={classNames(
+                  'inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-xs font-semibold',
+                  pageNumber === safePagination.currentPage
+                    ? 'bg-[color:var(--primary)] text-[color:var(--primary-foreground)]'
+                    : 'border border-[color:var(--border)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]',
+                )}
+              >
+                {pageNumber}
+              </button>
+            ))}
 
-            {/* Next Page Button */}
             <button
-              onClick={() => onPageChange(pagination.currentPage + 1)}
-              disabled={pagination.currentPage >= pagination.totalPages}
-              className="px-3 py-1 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed  dark:text-white transition-colors flex items-center justify-center text-gray-700 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
-              title="Página Siguiente"
+              type="button"
+              onClick={() => onPageChange?.(safePagination.currentPage + 1)}
+              disabled={safePagination.currentPage >= safePagination.totalPages}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[color:var(--border)] text-[color:var(--foreground)] disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Página siguiente"
             >
-              <MdNavigateNext className="h-5 w-5" />
+              <ChevronRight size={16} />
             </button>
           </div>
-          {/* Results per page dropdown - moved to the right for better visual balance */}
-          <div className="flex items-center gap-2 md:order-last">
-            {' '}
-            {/* md:order-last to push it to the right on larger screens */}
-            <label className="text-sm text-gray-700 dark:text-gray-400">
-              Resultados por página:
-            </label>
+
+          <label className="flex items-center gap-2 text-[color:var(--foreground-muted)]">
+            <span>Resultados por página</span>
             <select
-              value={pagination.pageSize}
-              onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="px-2 py-1 border rounded-md text-sm dark:bg-gray-700 dark:text-white"
+              value={safePagination.pageSize}
+              onChange={(event) =>
+                onPageSizeChange?.(Number(event.target.value))
+              }
+              className="rounded-md border border-[color:var(--border)] bg-[color:var(--surface)] px-2 py-1 text-sm text-[color:var(--foreground)]"
             >
               {pageSizeOptions.map((size) => (
                 <option key={size} value={size}>
@@ -691,9 +566,9 @@ const ResponsiveTable = ({
                 </option>
               ))}
             </select>
-          </div>
+          </label>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

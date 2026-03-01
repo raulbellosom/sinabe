@@ -1,3 +1,4 @@
+/* eslint-env serviceworker */
 /**
  * Service Worker personalizado para Sinabe
  * Maneja:
@@ -57,9 +58,12 @@ registerRoute(
 );
 
 // Cache para JS y CSS
+// Excluir Vite pre-bundled deps (/node_modules/.vite/deps/) ya que tienen
+// versiones con hash que cambian entre sesiones de dev y causarían duplicados de React.
 registerRoute(
-  ({ request }) =>
-    request.destination === 'script' || request.destination === 'style',
+  ({ request, url }) =>
+    (request.destination === 'script' || request.destination === 'style') &&
+    !url.pathname.includes('/node_modules/.vite/'),
   new StaleWhileRevalidate({
     cacheName: 'static-resources',
     plugins: [new CacheableResponsePlugin({ statuses: [0, 200] })],
@@ -199,7 +203,7 @@ self.addEventListener('notificationclose', (event) => {
 /**
  * Evento: Instalación
  */
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   console.log('[SW] Instalando Service Worker...');
   // Activar inmediatamente sin esperar
   self.skipWaiting();

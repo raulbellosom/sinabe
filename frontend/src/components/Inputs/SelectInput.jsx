@@ -1,6 +1,5 @@
-import React from 'react';
 import { ErrorMessage } from 'formik';
-import { Label, Select } from 'flowbite-react';
+import { Label } from 'flowbite-react';
 import classNames from 'classnames';
 import PinnableInputWrapper from './PinnableInputWrapper';
 
@@ -13,17 +12,41 @@ const SelectInput = ({
   isPinMode,
   isPinned,
   onTogglePin,
+  icon: Icon,
   ...props
 }) => {
   // Provide defaults for form properties
   const { touched = {}, errors = {}, setFieldValue = () => {} } = form;
+  const hasError = touched[field?.name] && errors[field?.name];
+
   const selectContent = (
-    <>
-      <Select
+    <div className="relative">
+      {Icon && (
+        <div
+          className={classNames(
+            'absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none',
+            hasError
+              ? 'text-[color:var(--danger)]'
+              : 'text-[color:var(--foreground-muted)]',
+          )}
+        >
+          <Icon size={18} />
+        </div>
+      )}
+      <select
         {...field}
         {...props}
-        color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
-        className="mt-1"
+        className={classNames(
+          'w-full min-h-[42px] text-sm py-2.5 px-3 rounded-lg appearance-none cursor-pointer',
+          'border bg-[color:var(--surface)] text-[color:var(--foreground)]',
+          'transition-all duration-200',
+          'focus:outline-none focus:ring-2',
+          Icon && 'pl-10',
+          'pr-10', // Space for chevron
+          hasError
+            ? 'border-[color:var(--danger)] focus:ring-[color:var(--danger)]/30 focus:border-[color:var(--danger)]'
+            : 'border-[color:var(--border)] focus:ring-[color:var(--primary)]/30 focus:border-[color:var(--primary)]',
+        )}
         onChange={(e) => {
           const value = e.target.value;
           setFieldValue(field?.name, value);
@@ -41,8 +64,29 @@ const SelectInput = ({
           </option>
         ))}
         {isOtherOption && <option value="0">Otro</option>}
-      </Select>
-    </>
+      </select>
+      {/* Custom chevron */}
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[color:var(--foreground-muted)]">
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
+      <ErrorMessage
+        name={field?.name || ''}
+        component="div"
+        className="text-[color:var(--danger)] text-xs mt-1"
+      />
+    </div>
   );
 
   if (isPinMode) {
@@ -53,7 +97,7 @@ const SelectInput = ({
           htmlFor={props.id || props.name}
           isPinned={isPinned}
           onTogglePin={() => onTogglePin(field.value)}
-          error={touched[field?.name] && errors[field?.name]}
+          error={hasError}
         >
           {selectContent}
         </PinnableInputWrapper>
@@ -65,8 +109,9 @@ const SelectInput = ({
     <div className={classNames('w-full', className)}>
       <Label
         htmlFor={props.id || props.name}
-        className="block text-sm font-medium"
-        color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
+        className={classNames('block text-sm font-medium mb-1.5', {
+          'text-[color:var(--danger)]': hasError,
+        })}
         value={props.label}
       />
       {selectContent}

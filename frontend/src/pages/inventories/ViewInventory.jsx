@@ -7,39 +7,41 @@ import InventoryCardView from '../../components/InventoryComponents/InventoryVie
 import ModalRemove from '../../components/Modals/ModalRemove';
 import ImageViewer from '../../components/ImageViewer/ImageViewer2';
 import {
-  FaClipboardList,
-  FaUser,
-  FaFileInvoiceDollar,
-  FaProjectDiagram,
-  FaMapMarkerAlt,
-  FaList,
-  FaTh,
-} from 'react-icons/fa';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
-import { MdInfo, MdOutlineTextsms, MdInventory } from 'react-icons/md';
-import { TbNumber123 } from 'react-icons/tb';
-import { AiOutlineFieldNumber } from 'react-icons/ai';
-import {
-  BiCategory,
-  BiSolidCalendarCheck,
-  BiSolidCalendarEdit,
-  BiSolidCalendarPlus,
-} from 'react-icons/bi';
-import { Badge, Label, Select, Tooltip } from 'flowbite-react';
+  AlignLeft,
+  BadgeCheck,
+  CalendarCheck,
+  CalendarClock,
+  CalendarPlus,
+  ClipboardList,
+  Copy,
+  FolderKanban,
+  Hash,
+  Info,
+  Layers,
+  LayoutDashboard,
+  LayoutGrid,
+  List,
+  MapPin,
+  MessageSquare,
+  Network,
+  Package,
+  QrCode,
+  Receipt,
+  Tag,
+  TextCursorInput,
+  User,
+} from 'lucide-react';
+
+import { Badge, Tooltip } from 'flowbite-react';
 import classNames from 'classnames';
 import { useInventoryContext } from '../../context/InventoryContext';
-import { IoCopyOutline } from 'react-icons/io5';
 import formatFileData from '../../utils/fileDataFormatter';
 import { parseToLocalDate } from '../../utils/formatValues';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import withPermission from '../../utils/withPermissions';
-import { RiInputField } from 'react-icons/ri';
-import QRCodeGenerator from '../../components/QRGenerator/QRGenerator';
-import { BsQrCodeScan } from 'react-icons/bs';
-import ModalViewer from '../../components/Modals/ModalViewer';
+import QRLabelModal from '../../components/QRGenerator/QRLabelModal';
 import NotFound from '../notFound/NotFound';
 import { ThreeCircles } from 'react-loader-spinner';
-import { FaDiagramProject } from 'react-icons/fa6';
 import { useUserPreference } from '../../context/UserPreferenceContext';
 const FileIcon = React.lazy(() => import('../../components/FileIcon/FileIcon'));
 
@@ -70,8 +72,6 @@ const ViewInventory = () => {
   const [relations, setRelations] = useState([]);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isModalViewerOpen, setIsModalViewerOpen] = useState(false);
-  const [qrType, setQrType] = useState('link');
-  const [qrSize, setQrSize] = useState('md');
   const [images, setImages] = useState([]);
   const [files, setFiles] = useState([]);
   const [customFields, setCustomFields] = useState([]);
@@ -98,7 +98,7 @@ const ViewInventory = () => {
         inventory?.status === 'PROPUESTA'
           ? 'PROPUESTA DE BAJA'
           : inventory?.status || '-',
-      icon: MdInfo,
+      icon: Info,
       label: 'Estado',
       route: null,
     });
@@ -107,7 +107,7 @@ const ViewInventory = () => {
     pillableFields.push({
       key: 'model',
       name: inventory?.model?.name || '-',
-      icon: MdInventory,
+      icon: Package,
       label: 'Modelo',
       route: inventory?.model?.name
         ? `/inventories?modelName=${encodeURIComponent(inventory.model.name)}`
@@ -118,7 +118,7 @@ const ViewInventory = () => {
     pillableFields.push({
       key: 'brand',
       name: inventory?.model?.brand?.name || '-',
-      icon: PiTrademarkRegisteredBold,
+      icon: Tag,
       label: 'Marca',
       route: inventory?.model?.brand?.name
         ? `/inventories?brandName=${encodeURIComponent(inventory.model.brand.name)}`
@@ -129,7 +129,7 @@ const ViewInventory = () => {
     pillableFields.push({
       key: 'type',
       name: inventory?.model?.type?.name || '-',
-      icon: BiCategory,
+      icon: Layers,
       label: 'Tipo de Inventario',
       route: inventory?.model?.type?.name
         ? `/inventories?typeName=${encodeURIComponent(inventory.model.type.name)}`
@@ -142,7 +142,7 @@ const ViewInventory = () => {
     pillableFields.push({
       key: 'purchaseOrder',
       name: purchaseOrderCode || '-',
-      icon: FaClipboardList,
+      icon: ClipboardList,
       label: 'Orden de Compra',
       route: purchaseOrderCode
         ? `/inventories?purchaseOrderCode=${encodeURIComponent(purchaseOrderCode)}`
@@ -153,7 +153,7 @@ const ViewInventory = () => {
     pillableFields.push({
       key: 'invoice',
       name: inventory?.invoice?.code || '-',
-      icon: FaFileInvoiceDollar,
+      icon: Receipt,
       label: 'Factura',
       route: inventory?.invoice?.code
         ? `/inventories?invoiceCode=${encodeURIComponent(inventory.invoice.code)}`
@@ -164,7 +164,7 @@ const ViewInventory = () => {
     pillableFields.push({
       key: 'location',
       name: inventory?.location?.name || '-',
-      icon: FaMapMarkerAlt,
+      icon: MapPin,
       label: 'Ubicación',
       route: inventory?.location?.name
         ? `/inventories?locationName=${encodeURIComponent(inventory.location.name)}`
@@ -176,7 +176,7 @@ const ViewInventory = () => {
       pillableFields.push({
         key: `vertical-${idx}`,
         name: vertical.name,
-        icon: BiCategory,
+        icon: Layers,
         label: 'Vertical',
         route: `/inventories?verticalName=${encodeURIComponent(vertical.name)}`,
       });
@@ -189,7 +189,7 @@ const ViewInventory = () => {
     regularFields.push({
       key: 'serialNumber',
       name: inventory?.serialNumber || '-',
-      icon: TbNumber123,
+      icon: Hash,
       label: 'Número de Serie',
       route: null,
     });
@@ -198,7 +198,7 @@ const ViewInventory = () => {
     regularFields.push({
       key: 'activeNumber',
       name: inventory?.activeNumber || '-',
-      icon: AiOutlineFieldNumber,
+      icon: Hash,
       label: 'Número de Activo',
       route: null,
     });
@@ -207,7 +207,7 @@ const ViewInventory = () => {
     regularFields.push({
       key: 'internalFolio',
       name: inventory?.internalFolio || '-',
-      icon: FaClipboardList,
+      icon: ClipboardList,
       label: 'Folio Interno',
       route: null,
     });
@@ -218,7 +218,7 @@ const ViewInventory = () => {
       name: inventory?.receptionDate
         ? parseToLocalDate(inventory.receptionDate)
         : '-',
-      icon: BiSolidCalendarCheck,
+      icon: CalendarCheck,
       label: 'Fecha de Recepción',
       route: null,
     });
@@ -227,7 +227,7 @@ const ViewInventory = () => {
     regularFields.push({
       key: 'lastModification',
       name: inventory?.updatedAt ? parseToLocalDate(inventory.updatedAt) : '-',
-      icon: BiSolidCalendarEdit,
+      icon: CalendarClock,
       label: 'Última Modificación',
       route: null,
     });
@@ -236,7 +236,7 @@ const ViewInventory = () => {
     regularFields.push({
       key: 'creationDate',
       name: inventory?.createdAt ? parseToLocalDate(inventory.createdAt) : '-',
-      icon: BiSolidCalendarPlus,
+      icon: CalendarPlus,
       label: 'Fecha de Creación',
       route: null,
     });
@@ -247,7 +247,7 @@ const ViewInventory = () => {
       name: inventory?.createdBy
         ? `${inventory.createdBy.firstName} ${inventory.createdBy.lastName}`
         : '-',
-      icon: FaUser,
+      icon: User,
       label: 'Creado por',
       route: null,
     });
@@ -256,7 +256,7 @@ const ViewInventory = () => {
     regularFields.push({
       key: 'comments',
       name: inventory?.comments || '-',
-      icon: MdOutlineTextsms,
+      icon: MessageSquare,
       label: 'Comentarios',
       route: null,
       fullWidth: true,
@@ -288,7 +288,7 @@ const ViewInventory = () => {
       rels.push({
         label: 'Proyecto',
         value: project.name,
-        icon: FaProjectDiagram,
+        icon: Network,
         route: `/projects/view/${project.id}`,
       });
     }
@@ -298,7 +298,7 @@ const ViewInventory = () => {
       rels.push({
         label: 'Deadline',
         value: dl?.deadline.name || parseToLocalDate(dl?.deadline.date),
-        icon: BiSolidCalendarCheck,
+        icon: CalendarCheck,
         route: `/projects/view/${dl?.deadline.projectId}?tab=1`,
       });
     });
@@ -359,7 +359,7 @@ const ViewInventory = () => {
               'text-red-500': inventory?.status === 'BAJA',
             })}
           >
-            <FaClipboardList size={20} className="mr-2 flex-shrink-0" />
+            <ClipboardList size={20} className="mr-2 flex-shrink-0" />
             <h1 className="text-base md:text-xl font-bold truncate">
               Detalles del Inventario
             </h1>
@@ -377,7 +377,7 @@ const ViewInventory = () => {
                       : 'bg-white text-gray-500 hover:bg-gray-50',
                   )}
                 >
-                  <FaList size={16} />
+                  <List size={16} />
                 </button>
               </Tooltip>
               <Tooltip content="Vista Cards">
@@ -390,7 +390,7 @@ const ViewInventory = () => {
                       : 'bg-white text-gray-500 hover:bg-gray-50',
                   )}
                 >
-                  <FaTh size={16} />
+                  <LayoutGrid size={16} />
                 </button>
               </Tooltip>
             </div>
@@ -400,7 +400,7 @@ const ViewInventory = () => {
               extraActions={[
                 {
                   label: 'QR',
-                  icon: BsQrCodeScan,
+                  icon: QrCode,
                   action: () => setIsModalViewerOpen(true),
                   color: 'purple',
                 },
@@ -428,56 +428,11 @@ const ViewInventory = () => {
             removeFunction={handleDeleteInventory}
           />
         )}
-        {isModalViewerOpen && (
-          <ModalViewer
-            isOpenModal={isModalViewerOpen}
-            onCloseModal={() => setIsModalViewerOpen(false)}
-            title="Generar QR"
-            size="3xl"
-            dismissible={true}
-          >
-            <div className="flex flex-col items-center gap-4 p-4">
-              <div className="w-full">
-                <Label htmlFor="qrType">Tipo de QR</Label>
-                <Select
-                  className="mt-1"
-                  id="qrType"
-                  name="qrType"
-                  value={qrType}
-                  onChange={(e) => setQrType(e.target.value)}
-                >
-                  <option value="url">URL</option>
-                  <option value="sn">Número de Serie</option>
-                  <option value="info">Información</option>
-                </Select>
-              </div>
-              <div className="w-full">
-                <Label htmlFor="qrSize">Tamaño del QR</Label>
-                <Select
-                  className="mt-1"
-                  id="qrSize"
-                  name="qrSize"
-                  value={qrSize}
-                  onChange={(e) => setQrSize(e.target.value)}
-                >
-                  <option value="xs">Extra pequeño</option>
-                  <option value="sm">Pequeño</option>
-                  <option value="md">Mediano</option>
-                  <option value="lg">Grande</option>
-                </Select>
-              </div>
-              {inventory && (
-                <div className="p-4 pb-0 flex justify-center items-center w-full">
-                  <QRCodeGenerator
-                    inventoryInfo={inventory}
-                    type={qrType}
-                    qrSize={qrSize}
-                  />
-                </div>
-              )}
-            </div>
-          </ModalViewer>
-        )}
+        <QRLabelModal
+          inventory={inventory}
+          isOpen={isModalViewerOpen}
+          onClose={() => setIsModalViewerOpen(false)}
+        />
       </div>
     );
   }
@@ -495,7 +450,7 @@ const ViewInventory = () => {
             'text-red-500': inventory?.status === 'BAJA',
           })}
         >
-          <FaClipboardList size={20} className="mr-2 flex-shrink-0" />
+          <ClipboardList size={20} className="mr-2 flex-shrink-0" />
           <h1 className="text-base md:text-xl font-bold truncate">
             Detalles del Inventario
           </h1>
@@ -513,7 +468,7 @@ const ViewInventory = () => {
                     : 'bg-white text-gray-500 hover:bg-gray-50',
                 )}
               >
-                <FaList size={16} />
+                <List size={16} />
               </button>
             </Tooltip>
             <Tooltip content="Vista Cards">
@@ -526,7 +481,7 @@ const ViewInventory = () => {
                     : 'bg-white text-gray-500 hover:bg-gray-50',
                 )}
               >
-                <FaTh size={16} />
+                <LayoutGrid size={16} />
               </button>
             </Tooltip>
           </div>
@@ -536,7 +491,7 @@ const ViewInventory = () => {
             extraActions={[
               {
                 label: 'QR',
-                icon: BsQrCodeScan,
+                icon: QrCode,
                 action: () => setIsModalViewerOpen(true),
                 color: 'purple',
               },
@@ -629,7 +584,7 @@ const ViewInventory = () => {
                   <InventoryProperty
                     label={field.label}
                     value={field.value}
-                    icon={RiInputField}
+                    icon={AlignLeft}
                     onSearch={() =>
                       navigate(`/inventories?searchTerm=${field.value}`)
                     }
@@ -752,56 +707,11 @@ const ViewInventory = () => {
           removeFunction={handleDeleteInventory}
         />
       )}
-      {isModalViewerOpen && (
-        <ModalViewer
-          isOpenModal={isModalViewerOpen}
-          onCloseModal={() => setIsModalViewerOpen(false)}
-          title="Generar QR"
-          size="3xl"
-          dismissible={true}
-        >
-          <div className="flex flex-col items-center gap-4 p-4">
-            <div className="w-full">
-              <Label htmlFor="qrType">Tipo de QR</Label>
-              <Select
-                className="mt-1"
-                id="qrType"
-                name="qrType"
-                value={qrType}
-                onChange={(e) => setQrType(e.target.value)}
-              >
-                <option value="url">URL</option>
-                <option value="sn">Número de Serie</option>
-                <option value="info">Información</option>
-              </Select>
-            </div>
-            <div className="w-full">
-              <Label htmlFor="qrSize">Tamaño del QR</Label>
-              <Select
-                className="mt-1"
-                id="qrSize"
-                name="qrSize"
-                value={qrSize}
-                onChange={(e) => setQrSize(e.target.value)}
-              >
-                <option value="xs">Extra pequeño</option>
-                <option value="sm">Pequeño</option>
-                <option value="md">Mediano</option>
-                <option value="lg">Grande</option>
-              </Select>
-            </div>
-            {inventory && (
-              <div className="p-4 pb-0 flex justify-center items-center w-full">
-                <QRCodeGenerator
-                  inventoryInfo={inventory}
-                  type={qrType}
-                  qrSize={qrSize}
-                />
-              </div>
-            )}
-          </div>
-        </ModalViewer>
-      )}
+      <QRLabelModal
+        inventory={inventory}
+        isOpen={isModalViewerOpen}
+        onClose={() => setIsModalViewerOpen(false)}
+      />
     </div>
   );
 };

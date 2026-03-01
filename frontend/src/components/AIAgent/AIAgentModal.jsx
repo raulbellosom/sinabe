@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Modal, Badge, Spinner, Tooltip } from 'flowbite-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Pie, Doughnut } from 'react-chartjs-2';
@@ -8,32 +8,33 @@ import {
   Tooltip as ChartTooltip,
   Legend,
 } from 'chart.js';
-import {
-  HiSearch,
-  HiX,
-  HiExternalLink,
-  HiSparkles,
-  HiLightBulb,
-  HiChartBar,
-  HiCollection,
-  HiExclamationCircle,
-  HiRefresh,
-  HiArrowRight,
-  HiChevronLeft,
-  HiChevronRight,
-  HiDatabase,
-  HiLocationMarker,
-  HiTag,
-  HiOfficeBuilding,
-  HiDocumentText,
-  HiCube,
-  HiChartPie,
-  HiDownload,
-  HiClipboard,
-  HiClipboardCheck,
-} from 'react-icons/hi';
 import { useAIAgent } from '../../context/AIAgentContext.jsx';
 import { aiService } from '../../services/ai.api';
+
+import {
+  AlertCircle,
+  ArrowRight,
+  BarChart2,
+  Box,
+  Building2,
+  ChevronLeft,
+  ChevronRight,
+  Clipboard,
+  ClipboardCheck,
+  Database,
+  Download,
+  ExternalLink,
+  FileText,
+  LayoutGrid,
+  Lightbulb,
+  MapPin,
+  PieChart,
+  RefreshCw,
+  Search,
+  Sparkles,
+  Tag,
+  X,
+} from 'lucide-react';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, ChartTooltip, Legend);
@@ -199,7 +200,7 @@ const SearchInput = ({
     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-stretch">
       <div className="flex-1 relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <HiSearch className="h-5 w-5 text-gray-400" />
+          <Search className="h-5 w-5 text-gray-400" />
         </div>
         <input
           type="text"
@@ -215,7 +216,7 @@ const SearchInput = ({
             onClick={onClear}
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <HiX className="h-4 w-4" />
+            <X className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -232,7 +233,7 @@ const SearchInput = ({
           </>
         ) : (
           <>
-            <HiSearch className="h-4 w-4" />
+            <Search className="h-4 w-4" />
             <span>Buscar</span>
           </>
         )}
@@ -246,11 +247,11 @@ const SearchInput = ({
 // ============================================
 const SuggestionsGrid = ({ suggestions, onSelect }) => {
   const categoryIcons = {
-    Listas: HiCollection,
-    Conteos: HiChartBar,
-    Agrupaciones: HiDatabase,
-    Faltantes: HiExclamationCircle,
-    Gráficas: HiChartPie,
+    Listas: LayoutGrid,
+    Conteos: BarChart2,
+    Agrupaciones: Database,
+    Faltantes: AlertCircle,
+    Gráficas: PieChart,
   };
 
   const categoryColors = {
@@ -272,13 +273,13 @@ const SuggestionsGrid = ({ suggestions, onSelect }) => {
         className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"
         variants={fadeInUp}
       >
-        <HiLightBulb className="h-5 w-5 text-yellow-500" />
+        <Lightbulb className="h-5 w-5 text-yellow-500" />
         <span>Prueba con alguna de estas consultas:</span>
       </motion.div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {suggestions.map((category, idx) => {
-          const Icon = categoryIcons[category.category] || HiCollection;
+          const Icon = categoryIcons[category.category] || LayoutGrid;
           const gradient =
             categoryColors[category.category] || 'from-gray-500 to-gray-600';
 
@@ -407,13 +408,13 @@ const CountResult = ({ total, message, filters }) => {
         whileTap={{ scale: 0.98 }}
         className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full hover:from-purple-700 hover:to-pink-700 transition-all shadow-md"
       >
-        <HiExternalLink className="h-5 w-5" />
+        <ExternalLink className="h-5 w-5" />
         Ver todos los inventarios
         <motion.span
           animate={{ x: [0, 4, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          <HiArrowRight className="h-4 w-4" />
+          <ArrowRight className="h-4 w-4" />
         </motion.span>
       </motion.a>
     </motion.div>
@@ -427,16 +428,16 @@ const GroupedResult = ({ rows, groupBy, total, filters }) => {
   const maxCount = Math.max(...rows.map((r) => Number(r.count) || 0), 1);
 
   const groupByConfig = {
-    brand: { label: 'Marca', icon: HiTag, color: 'purple' },
-    type: { label: 'Tipo', icon: HiCube, color: 'blue' },
-    model: { label: 'Modelo', icon: HiDocumentText, color: 'green' },
-    location: { label: 'Ubicación', icon: HiLocationMarker, color: 'orange' },
-    status: { label: 'Estado', icon: HiOfficeBuilding, color: 'pink' },
+    brand: { label: 'Marca', icon: Tag, color: 'purple' },
+    type: { label: 'Tipo', icon: Box, color: 'blue' },
+    model: { label: 'Modelo', icon: FileText, color: 'green' },
+    location: { label: 'Ubicación', icon: MapPin, color: 'orange' },
+    status: { label: 'Estado', icon: Building2, color: 'pink' },
   };
 
   const config = groupByConfig[groupBy] || {
     label: groupBy,
-    icon: HiDatabase,
+    icon: Database,
     color: 'gray',
   };
   const Icon = config.icon;
@@ -489,7 +490,7 @@ const GroupedResult = ({ rows, groupBy, total, filters }) => {
             whileHover={{ scale: 1.2 }}
             whileTap={{ scale: 0.9 }}
           >
-            <HiExternalLink className="h-5 w-5" />
+            <ExternalLink className="h-5 w-5" />
           </motion.a>
         </div>
       </motion.div>
@@ -538,7 +539,7 @@ const GroupedResult = ({ rows, groupBy, total, filters }) => {
                 </motion.div>
               </div>
               <motion.div whileHover={{ scale: 1.2 }}>
-                <HiExternalLink className="h-4 w-4 text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors flex-shrink-0" />
+                <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors flex-shrink-0" />
               </motion.div>
             </motion.a>
           );
@@ -571,14 +572,14 @@ const ChartResult = ({ rows, groupBy, total, filters, chartType = 'pie' }) => {
   const [copied, setCopied] = useState(false);
 
   const groupByConfig = {
-    brand: { label: 'Marca', icon: HiTag },
-    type: { label: 'Tipo', icon: HiCube },
-    model: { label: 'Modelo', icon: HiDocumentText },
-    location: { label: 'Ubicación', icon: HiLocationMarker },
-    status: { label: 'Estado', icon: HiOfficeBuilding },
+    brand: { label: 'Marca', icon: Tag },
+    type: { label: 'Tipo', icon: Box },
+    model: { label: 'Modelo', icon: FileText },
+    location: { label: 'Ubicación', icon: MapPin },
+    status: { label: 'Estado', icon: Building2 },
   };
 
-  const config = groupByConfig[groupBy] || { label: groupBy, icon: HiDatabase };
+  const config = groupByConfig[groupBy] || { label: groupBy, icon: Database };
   const Icon = config.icon;
 
   // Prepare chart data
@@ -732,7 +733,7 @@ const ChartResult = ({ rows, groupBy, total, filters, chartType = 'pie' }) => {
             whileHover={{ rotate: [0, -10, 10, 0] }}
             transition={{ duration: 0.5 }}
           >
-            <HiChartPie className="h-5 w-5" />
+            <PieChart className="h-5 w-5" />
           </motion.div>
           <div>
             <h4 className="font-semibold text-gray-900 dark:text-white">
@@ -752,7 +753,7 @@ const ChartResult = ({ rows, groupBy, total, filters, chartType = 'pie' }) => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <HiDownload className="h-4 w-4" />
+              <Download className="h-4 w-4" />
             </motion.button>
           </Tooltip>
           <Tooltip content={copied ? '¡Copiado!' : 'Copiar imagen'}>
@@ -767,9 +768,9 @@ const ChartResult = ({ rows, groupBy, total, filters, chartType = 'pie' }) => {
               whileTap={{ scale: 0.95 }}
             >
               {copied ? (
-                <HiClipboardCheck className="h-4 w-4" />
+                <ClipboardCheck className="h-4 w-4" />
               ) : (
-                <HiClipboard className="h-4 w-4" />
+                <Clipboard className="h-4 w-4" />
               )}
             </motion.button>
           </Tooltip>
@@ -780,7 +781,7 @@ const ChartResult = ({ rows, groupBy, total, filters, chartType = 'pie' }) => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <HiDocumentText className="h-4 w-4" />
+              <FileText className="h-4 w-4" />
             </motion.button>
           </Tooltip>
           <Badge
@@ -788,7 +789,7 @@ const ChartResult = ({ rows, groupBy, total, filters, chartType = 'pie' }) => {
             size="lg"
             className="whitespace-nowrap flex-shrink-0"
           >
-            <HiChartPie className="h-4 w-4 mr-1" />
+            <PieChart className="h-4 w-4 mr-1" />
             {chartType === 'doughnut' ? 'Dona' : 'Pastel'}
           </Badge>
         </div>
@@ -823,7 +824,7 @@ const ChartResult = ({ rows, groupBy, total, filters, chartType = 'pie' }) => {
         <details className="group">
           <summary className="cursor-pointer flex items-center justify-between gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 select-none">
             <div className="flex items-center gap-2">
-              <HiChartBar className="h-4 w-4" />
+              <BarChart2 className="h-4 w-4" />
               <span>Ver todas las categorías</span>
               <Badge color={hasMoreItems ? 'purple' : 'gray'} size="sm">
                 {rows.length} total
@@ -897,7 +898,7 @@ const ListResult = ({
           animate={{ rotate: [0, 10, -10, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <HiCollection className="h-10 w-10 text-gray-400" />
+          <LayoutGrid className="h-10 w-10 text-gray-400" />
         </motion.div>
         <p className="text-gray-500 dark:text-gray-400 text-lg">
           No se encontraron resultados
@@ -931,7 +932,7 @@ const ListResult = ({
             whileHover={{ rotate: 360 }}
             transition={{ duration: 0.5 }}
           >
-            <HiCollection className="h-5 w-5" />
+            <LayoutGrid className="h-5 w-5" />
           </motion.div>
           <div>
             <h4 className="font-semibold text-gray-900 dark:text-white">
@@ -948,7 +949,7 @@ const ListResult = ({
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <HiExternalLink className="h-4 w-4" />
+          <ExternalLink className="h-4 w-4" />
           Ver todos
         </motion.a>
       </motion.div>
@@ -1185,7 +1186,7 @@ const ListResult = ({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <HiExternalLink className="h-3 w-3" />
+                    <ExternalLink className="h-3 w-3" />
                     Ver
                   </motion.a>
                 </td>
@@ -1210,7 +1211,7 @@ const ListResult = ({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <HiChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-5 w-5" />
           </motion.button>
           <span className="text-sm text-gray-600 dark:text-gray-400">
             Página <span className="font-medium">{page}</span> de{' '}
@@ -1223,7 +1224,7 @@ const ListResult = ({
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <HiChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-5 w-5" />
           </motion.button>
         </motion.div>
       )}
@@ -1246,7 +1247,7 @@ const ErrorAlert = ({ message, onRetry }) => (
       animate={{ rotate: [0, 10, -10, 0] }}
       transition={{ duration: 0.5, repeat: 2 }}
     >
-      <HiExclamationCircle className="h-6 w-6 text-red-500" />
+      <AlertCircle className="h-6 w-6 text-red-500" />
     </motion.div>
     <div className="flex-1">
       <h4 className="font-medium text-red-800 dark:text-red-400">
@@ -1264,7 +1265,7 @@ const ErrorAlert = ({ message, onRetry }) => (
         animate={{ rotate: [0, 360] }}
         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
       >
-        <HiRefresh className="h-4 w-4" />
+        <RefreshCw className="h-4 w-4" />
       </motion.span>
       Reintentar
     </motion.button>
@@ -1306,7 +1307,7 @@ const LoadingState = () => (
         animate={{ scale: [1, 1.2, 1] }}
         transition={{ duration: 1, repeat: Infinity }}
       >
-        <HiSparkles className="h-6 w-6 text-purple-600" />
+        <Sparkles className="h-6 w-6 text-purple-600" />
       </motion.div>
     </div>
     <motion.p
@@ -1572,7 +1573,7 @@ const AIAgentModal = () => {
       <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl shadow-lg">
-            <HiSparkles className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
           </div>
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -1607,7 +1608,7 @@ const AIAgentModal = () => {
             onClick={closeModal}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <HiX className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+            <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
       </div>
@@ -1705,7 +1706,7 @@ const AIAgentModal = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <HiRefresh className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4" />
               Nueva búsqueda
             </motion.button>
           )}

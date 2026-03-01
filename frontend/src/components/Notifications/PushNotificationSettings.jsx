@@ -2,17 +2,17 @@
  * Componente para gestionar suscripciones a Push Notifications
  * Permite activar/desactivar notificaciones y enviar pruebas
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   usePushNotifications,
   PERMISSION_STATUS,
 } from '../../hooks/usePushNotifications';
 import {
-  HiBell,
-  HiBellSlash,
-  HiOutlineCheckCircle,
-  HiOutlineExclamationCircle,
-} from 'react-icons/hi';
+  Bell,
+  BellOff,
+  CheckCircle,
+  AlertCircle,
+} from 'lucide-react';
 
 const PushNotificationSettings = ({
   showTestButton = true,
@@ -67,7 +67,7 @@ const PushNotificationSettings = ({
     return (
       <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
         <div className="flex items-center gap-2 text-gray-500">
-          <HiBellSlash className="w-5 h-5" />
+          <BellOff className="w-5 h-5" />
           <span>
             Las notificaciones push no están soportadas en este dispositivo
           </span>
@@ -81,7 +81,7 @@ const PushNotificationSettings = ({
     return (
       <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
         <div className="flex items-start gap-3">
-          <HiOutlineExclamationCircle className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-medium text-yellow-800 dark:text-yellow-200">
               Permisos denegados
@@ -103,9 +103,9 @@ const PushNotificationSettings = ({
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           {isSubscribed ? (
-            <HiBell className="w-5 h-5 text-primary-600" />
+            <Bell className="w-5 h-5 text-primary-600" />
           ) : (
-            <HiBellSlash className="w-5 h-5 text-gray-400" />
+            <BellOff className="w-5 h-5 text-gray-400" />
           )}
           <span className="text-sm">
             {isSubscribed
@@ -138,11 +138,11 @@ const PushNotificationSettings = ({
         <div className="flex items-center gap-3">
           {isSubscribed ? (
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-full">
-              <HiBell className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <Bell className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
           ) : (
             <div className="p-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-              <HiBellSlash className="w-6 h-6 text-gray-500" />
+              <BellOff className="w-6 h-6 text-gray-500" />
             </div>
           )}
           <div>
@@ -257,9 +257,9 @@ const PushNotificationSettings = ({
               }`}
             >
               {testResult.success ? (
-                <HiOutlineCheckCircle className="w-4 h-4" />
+                <CheckCircle className="w-4 h-4" />
               ) : (
-                <HiOutlineExclamationCircle className="w-4 h-4" />
+                <AlertCircle className="w-4 h-4" />
               )}
               {testResult.message}
             </span>

@@ -6,15 +6,11 @@ import ModelForm from '../../components/InventoryComponents/ModelForm/ModelForm'
 import PurchaseOrderForm from '../../components/Forms/PurchaseOrderForm';
 import InvoiceForm from '../../components/Forms/InvoiceForm';
 import LocationForm from '../../components/Forms/LocationForm';
-const InventoryForm = React.lazy(
-  () =>
-    import('../../components/InventoryComponents/InventoryForm/InventoryForm'),
-);
+import InventoryForm from '../../components/InventoryComponents/InventoryForm/InventoryForm';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import { FaClipboardList, FaSave } from 'react-icons/fa';
+import { ClipboardList, Save, XCircle, Pin, PinOff } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import withPermission from '../../utils/withPermissions';
-import { MdCancel, MdOutlinePushPin, MdPushPin } from 'react-icons/md';
 import { useCustomFieldContext } from '../../context/CustomFieldContext';
 import Notifies from '../../components/Notifies/Notifies';
 
@@ -508,64 +504,78 @@ const CreateInventory = () => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800 border-gray-100 border">
-      <div className="flex flex-col-reverse md:flex-row items-center gap-4 w-full pb-1">
-        <div className="w-full h-full rounded-md flex items-center text-purple-500">
-          <FaClipboardList size={24} className="mr-4" />
-          <h1 className="md:text-2xl font-bold">Crear Inventario</h1>
-        </div>
-        <div className="flex justify-center gap-2 w-full md:w-fit text-nowrap">
-          <ActionButtons
-            extraActions={[
-              {
-                label: 'Cancelar',
-                action: onCancel,
-                color: 'red',
-                icon: MdCancel,
-              },
-              {
-                label: isPinMode ? 'Desactivar Pin' : 'Activar Pin',
-                action: togglePinMode,
-                color: isPinMode ? 'green' : 'blue',
-                icon: isPinMode ? MdPushPin : MdOutlinePushPin,
-              },
-              {
-                label: 'Guardar',
-                action: handleSubmitRef,
-                icon: FaSave,
-                color: 'green',
-              },
-            ]}
-          />
+    <div className="min-h-full">
+      {/* Header Section */}
+      <div className="mb-6">
+        <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--primary)]/10">
+              <ClipboardList className="h-5 w-5 text-[color:var(--primary)]" />
+            </div>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-[color:var(--foreground)]">
+                Crear Inventario
+              </h1>
+              <p className="text-sm text-[color:var(--foreground-muted)]">
+                Completa los campos para registrar un nuevo inventario
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <ActionButtons
+              extraActions={[
+                {
+                  label: 'Cancelar',
+                  action: onCancel,
+                  color: 'danger',
+                  icon: XCircle,
+                },
+                {
+                  label: isPinMode ? 'Desactivar Pin' : 'Activar Pin',
+                  action: togglePinMode,
+                  color: isPinMode ? 'success' : 'info',
+                  icon: isPinMode ? Pin : PinOff,
+                },
+                {
+                  label: 'Guardar',
+                  action: handleSubmitRef,
+                  icon: Save,
+                  color: 'success',
+                  filled: true,
+                },
+              ]}
+            />
+          </div>
         </div>
       </div>
-      <p className="text-xs md:text-base mb-4 text-gray-800">
-        Llena el formulario para crear un nuevo inventario. Los campos marcados
-        con * son obligatorios.
-      </p>
-      <InventoryForm
-        ref={formRef}
-        initialValues={initialValues}
-        onSubmit={handleSubmit}
-        inventoryModels={formattedModels}
-        inventoryConditions={inventoryConditions}
-        onOtherModelSelected={() => handleModalOpen()}
-        onOtherPurchaseOrderSelected={() => handlePOModalOpen()}
-        onOtherInvoiceSelected={() => handleInvoiceModalOpen()}
-        onOtherLocationSelected={() => handleLocationModalOpen()}
-        purchaseOrders={purchaseOrders}
-        invoices={invoices}
-        locations={locations}
-        customFields={customFields}
-        createCustomField={createField}
-        currentCustomFields={initialValues.customFields}
-        // Nuevas props para pin y localStorage
-        isPinMode={isPinMode}
-        pinnedFields={pinnedFields}
-        onPinField={pinField}
-        onUnpinField={unpinField}
-        onFormChange={saveToLocalStorage}
-      />
+
+      {/* Form Container */}
+      <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4 md:p-6 shadow-sm">
+        <InventoryForm
+          ref={formRef}
+          initialValues={initialValues}
+          onSubmit={handleSubmit}
+          inventoryModels={formattedModels}
+          inventoryConditions={inventoryConditions}
+          onOtherModelSelected={() => handleModalOpen()}
+          onOtherPurchaseOrderSelected={() => handlePOModalOpen()}
+          onOtherInvoiceSelected={() => handleInvoiceModalOpen()}
+          onOtherLocationSelected={() => handleLocationModalOpen()}
+          purchaseOrders={purchaseOrders}
+          invoices={invoices}
+          locations={locations}
+          customFields={customFields}
+          createCustomField={createField}
+          currentCustomFields={initialValues.customFields}
+          // Nuevas props para pin y localStorage
+          isPinMode={isPinMode}
+          pinnedFields={pinnedFields}
+          onPinField={pinField}
+          onUnpinField={unpinField}
+          onFormChange={saveToLocalStorage}
+        />
+      </div>
+
       {isModalOpen && (
         <ReusableModal
           onClose={onCloseModal}
@@ -711,12 +721,12 @@ const CreateInventory = () => {
             {
               label: 'Descartar cambios',
               action: discardUnsavedChanges,
-              color: 'red',
+              color: 'danger',
             },
             {
               label: 'Recuperar cambios',
               action: restoreUnsavedChanges,
-              color: 'green',
+              color: 'success',
               filled: true,
             },
           ]}
@@ -724,9 +734,9 @@ const CreateInventory = () => {
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-[color:var(--warning-soft)] rounded-full flex items-center justify-center">
                   <svg
-                    className="w-6 h-6 text-yellow-600"
+                    className="w-6 h-6 text-[color:var(--warning)]"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -741,10 +751,10 @@ const CreateInventory = () => {
                 </div>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-medium text-gray-900">
+                <h3 className="text-lg font-medium text-[color:var(--foreground)]">
                   Se encontró información sin guardar
                 </h3>
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-sm text-[color:var(--foreground-muted)]">
                   Parece que estabas creando un inventario anteriormente y la
                   página se cerró sin guardar. ¿Quieres recuperar esa
                   información o empezar de nuevo?

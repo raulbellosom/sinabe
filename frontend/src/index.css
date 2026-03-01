@@ -1,61 +1,162 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+@theme {
+  --font-sans: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+  --animate-shake: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+
+  /* Colores institucionales SINABE - Morado como color principal */
+  --color-sinabe-primary: #8b5cf6;
+  --color-sinabe-primary-500: #8b5cf6;
+  --color-sinabe-primary-600: #7c3aed;
+  --color-sinabe-primary-700: #6d28d9;
+  --color-sinabe-secondary: #a78bfa;
+  --color-sinabe-danger: #ef4444;
+  --color-sinabe-warning: #f59e0b;
+  --color-sinabe-success: #10b981;
+  --color-sinabe-info: #3b82f6;
+  --color-sinabe-dark: #1e293b;
+  --color-sinabe-gray: #e5e7eb;
+  --color-sinabe-gray-dark: #374151;
+
+  @keyframes shake {
+    10%,
+    90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+    20%,
+    80% {
+      transform: translate3d(2px, 0, 0);
+    }
+    30%,
+    50%,
+    70% {
+      transform: translate3d(-4px, 0, 0);
+    }
+    40%,
+    60% {
+      transform: translate3d(4px, 0, 0);
+    }
+  }
+}
+
+:root {
+  --background: #f7f8fb;
+  --foreground: #0f172a;
+  --foreground-muted: #475569;
+  --surface: #ffffff;
+  --surface-muted: #f5f3ff;
+  --border: #dbe2f0;
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  /* Semantic colors - modern palette */
+  --danger: #f43f5e;
+  --danger-foreground: #ffffff;
+  --danger-soft: #fef2f2;
+  --warning: #f59e0b;
+  --warning-foreground: #422006;
+  --warning-soft: #fffbeb;
+  --success: #22c55e;
+  --success-foreground: #ffffff;
+  --success-soft: #f0fdf4;
+  --info: #3b82f6;
+  --info-foreground: #ffffff;
+  --info-soft: #eff6ff;
+  --skeleton-base: #e0e0e0;
+  --skeleton-highlight: #f5f5f5;
+}
+
+.dark {
+  --background: #0b1220;
+  --foreground: #e2e8f0;
+  --foreground-muted: #94a3b8;
+  --surface: #121b2b;
+  --surface-muted: #1b2638;
+  --border: #28364e;
+  --primary: #a78bfa;
+  --primary-foreground: #1e1b4b;
+  /* Semantic colors - modern palette */
+  --danger: #fb7185;
+  --danger-foreground: #1c1917;
+  --danger-soft: #3f1d24;
+  --warning: #fbbf24;
+  --warning-foreground: #1c1917;
+  --warning-soft: #3d2e0a;
+  --success: #4ade80;
+  --success-foreground: #1c1917;
+  --success-soft: #14362a;
+  --info: #60a5fa;
+  --info-foreground: #1c1917;
+  --info-soft: #1e3a5f;
+  --skeleton-base: #2d3748;
+  --skeleton-highlight: #4a5568;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+/* Override Tailwind v4's default border-color: currentColor reset.
+   All bare `border` usages now use the themed CSS variable instead of
+   inheriting text color (white in dark / black in light mode). */
+*,
+::before,
+::after {
+  border-color: var(--border);
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+}
 
 html {
   scroll-behavior: auto;
 }
 
-/* .modal-root {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-} */
-
-/* styles.css or index.css */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px; /* For vertical scrollbars */
-  height: 8px; /* For horizontal scrollbars */
+  width: 8px;
+  height: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f0f0f0; /* Light gray track */
+  background: #f0f0f0;
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #c0c0c0; /* Gray thumb */
+  background: #c0c0c0;
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #a0a0a0; /* Darker gray on hover */
+  background: #a0a0a0;
 }
 
-/* AI Agent Modal Styles */
-.ai-agent-modal .flowbite-modal-body {
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.ai-agent-modal .flowbite-modal-content {
-  max-width: 90vw;
-  width: 100%;
-}
-
-@media (min-width: 768px) {
-  .ai-agent-modal .flowbite-modal-content {
-    max-width: 80vw;
-  }
-}
-
-@media (min-width: 1024px) {
-  .ai-agent-modal .flowbite-modal-content {
-    max-width: 60vw;
-  }
-}
-
-/* For Firefox */
 .custom-scrollbar {
-  scrollbar-width: thin; /* "auto" or "thin" */
-  scrollbar-color: #c0c0c0 #f0f0f0; /* thumb and track color */
+  scrollbar-width: thin;
+  scrollbar-color: #c0c0c0 #f0f0f0;
+}
+
+/* Custom styled checkboxes (appearance-none) */
+input[type='checkbox'].sinabe-checkbox:checked {
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 0.7em 0.7em;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #172033;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #384b66;
+}
+
+.dark .custom-scrollbar {
+  scrollbar-color: #384b66 #172033;
 }

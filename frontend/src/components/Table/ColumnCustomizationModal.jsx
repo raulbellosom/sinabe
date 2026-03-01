@@ -1,10 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Modal, Button, Checkbox } from 'flowbite-react';
 import { DragDropContext, Draggable } from 'react-beautiful-dnd';
 import { StrictModeDroppable } from '../DragAndDrop/StrictModeDroppable';
-import { MdDragIndicator, MdVisibility, MdVisibilityOff } from 'react-icons/md';
-import { FaSave, FaUndo } from 'react-icons/fa';
 import classNames from 'classnames';
+import {
+  Eye,
+  EyeOff,
+  GripVertical,
+  Save,
+  Undo,
+} from 'lucide-react';
 
 const ColumnCustomizationModal = ({
   isOpen,
@@ -154,7 +159,7 @@ const ColumnCustomizationModal = ({
               onClick={handleReset}
               className="w-full sm:w-auto"
             >
-              <FaUndo className="mr-1 h-3 w-3" />
+              <Undo className="mr-1 h-3 w-3" />
               <span className="text-xs">Restablecer</span>
             </Button>
           </div>
@@ -225,7 +230,7 @@ const ColumnCustomizationModal = ({
                                     {...provided.dragHandleProps}
                                     className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 -ml-1 touch-manipulation"
                                   >
-                                    <MdDragIndicator
+                                    <GripVertical
                                       size={20}
                                       className="md:w-6 md:h-6"
                                     />
@@ -260,12 +265,12 @@ const ColumnCustomizationModal = ({
                                   {/* Visibility Icon - Smaller on mobile */}
                                   <div className="text-gray-400 flex-shrink-0">
                                     {isVisible ? (
-                                      <MdVisibility
+                                      <Eye
                                         size={18}
                                         className="md:w-5 md:h-5"
                                       />
                                     ) : (
-                                      <MdVisibilityOff
+                                      <EyeOff
                                         size={18}
                                         className="md:w-5 md:h-5"
                                       />
@@ -298,7 +303,7 @@ const ColumnCustomizationModal = ({
           color="purple"
           className="w-full sm:w-auto"
         >
-          <FaSave className="mr-2 h-4 w-4" />
+          <Save className="mr-2 h-4 w-4" />
           Guardar Cambios
         </Button>
       </Modal.Footer>

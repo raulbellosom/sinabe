@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Select from 'react-select/creatable';
-import AsyncSelect from 'react-select/async-creatable';
+import { useState, useEffect, useRef } from 'react';
+import Combobox from '../common/Combobox';
 import { useFormikContext } from 'formik';
 import { getCustomFieldValues } from '../../services/api';
 import { Label } from 'flowbite-react';
 import Notifies from '../Notifies/Notifies';
 import ActionButtons from '../ActionButtons/ActionButtons';
-import { MdDelete } from 'react-icons/md';
 import PinIcon from '../PinIcon/PinIcon';
+
+import {
+  Trash2,
+} from 'lucide-react';
 
 const CustomFieldManager = ({
   name,
@@ -346,8 +348,7 @@ const CustomFieldManager = ({
           isPinMode={isPinMode}
         />
       </div>
-      <Select
-        className="w-full border-neutral-500 border rounded-md"
+      <Combobox
         options={customFields.map((field) => ({
           value: field.id,
           label: field.name,
@@ -357,8 +358,8 @@ const CustomFieldManager = ({
         isClearable
         isCreatable
         placeholder="Selecciona o crea un campo"
-        isOptionDisabled={(option) =>
-          selectedFields.some((field) => field.value === option.value)
+        filterOption={(option) =>
+          !selectedFields.some((field) => field.value === option.value)
         }
       />
 
@@ -388,7 +389,7 @@ const CustomFieldManager = ({
                 />
               </div>
               <div className="flex items-center gap-4">
-                <AsyncSelect
+                <Combobox
                   cacheOptions
                   loadOptions={(inputValue) =>
                     loadFieldValues(inputValue, field.value)
@@ -407,7 +408,7 @@ const CustomFieldManager = ({
                       {
                         action: () => handleFieldRemove(field.value),
                         color: 'red',
-                        icon: MdDelete,
+                        icon: Trash2,
                         type: 'button',
                       },
                     ]}

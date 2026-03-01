@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ImageViewer from '../../../components/ImageViewer/ImageViewer2';
 import { Link } from 'react-router-dom';
 import { Checkbox } from 'flowbite-react';
-import { FaCheckSquare, FaListUl, FaFileDownload } from 'react-icons/fa';
-import { MdGridOn, MdInsertDriveFile } from 'react-icons/md';
 import ActionButtons from '../../../components/ActionButtons/ActionButtons';
-import { RiFolderZipLine } from 'react-icons/ri';
-import { BsBadgeHdFill } from 'react-icons/bs';
 import FileIcon from '../../../components/FileIcon/FileIcon';
 import Notifies from '../../../components/Notifies/Notifies';
+
+import {
+  CheckSquare,
+  Download,
+  File,
+  FolderArchive,
+  Grid3X3,
+  List,
+  Tv,
+} from 'lucide-react';
 
 /**
  * @param {Array} inventories - Lista de inventarios (cada inventario con su "id", "model", "images", "files", etc.)
@@ -181,19 +187,19 @@ const InventoriesImagesView = ({
             extraActions={[
               {
                 label: 'Listado',
-                icon: FaListUl,
+                icon: List,
                 action: () => setMode('grouped'),
                 color: 'stone',
               },
               {
                 label: 'Cuadrícula',
-                icon: MdGridOn,
+                icon: Grid3X3,
                 action: () => setMode('flat'),
                 color: 'stone',
               },
               {
                 label: 'Archivos',
-                icon: MdInsertDriveFile,
+                icon: File,
                 action: () => setMode('files'),
                 color: 'stone',
               },
@@ -208,13 +214,13 @@ const InventoriesImagesView = ({
               extraActions={[
                 {
                   label: 'ZIP',
-                  icon: RiFolderZipLine,
+                  icon: FolderArchive,
                   action: handleDownloadFilesZip,
                   color: 'teal',
                 },
                 {
                   label: 'Todo',
-                  icon: FaCheckSquare,
+                  icon: CheckSquare,
                   action: selectAllInventoriesFiles,
                   color: 'blue',
                 },
@@ -225,19 +231,19 @@ const InventoriesImagesView = ({
               extraActions={[
                 {
                   label: 'Comprimir',
-                  icon: RiFolderZipLine,
+                  icon: FolderArchive,
                   action: () => handleDownloadZip(true),
                   color: 'teal',
                 },
                 {
                   label: 'HD',
-                  icon: BsBadgeHdFill,
+                  icon: Tv,
                   action: () => handleDownloadZip(false),
                   color: 'green',
                 },
                 {
                   label: 'Todo',
-                  icon: FaCheckSquare,
+                  icon: CheckSquare,
                   action: selectAllInventoriesImages,
                   color: 'blue',
                 },
@@ -301,7 +307,7 @@ const InventoriesImagesView = ({
                         onDownloadFilesZip(selectedFilesInInventory);
                       }}
                     >
-                      <RiFolderZipLine className="text-xl text-teal-600" />
+                      <FolderArchive className="text-xl text-teal-600" />
                     </button>
                   </div>
                 </div>

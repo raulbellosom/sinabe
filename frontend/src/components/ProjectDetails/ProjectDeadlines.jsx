@@ -1,27 +1,29 @@
 // src/components/ProjectDetails/ProjectDeadlines.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useDeadlinesByProject } from '../../hooks/useDeadlines';
 import Skeleton from 'react-loading-skeleton';
 import DeadlineFormModal from './DeadlineFormModal';
-import {
-  FaPlus,
-  FaChevronDown,
-  FaChevronUp,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaRegPauseCircle,
-  FaRegTrashAlt,
-  FaRegClock,
-} from 'react-icons/fa';
-import { MdInfoOutline, MdOutlineTaskAlt } from 'react-icons/md';
-import { FiEdit, FiCalendar } from 'react-icons/fi';
-import { BsBoxSeam } from 'react-icons/bs';
 import { parseToLocalDate } from '../../utils/formatValues';
 import ConfirmDeleteDeadlineModal from './ConfirmDeleteDeadlineModal.jsx';
 import { Tooltip } from 'flowbite-react';
 import AssignInventoryModal from './Inventory/AssignInventoryModal.jsx';
 import DeadlineTasksList from './Deadline/DeadlineTasksList.jsx';
 import ImageViewer2 from '../ImageViewer/ImageViewer2.jsx';
+
+import {
+  Box,
+  Calendar,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  Info,
+  ListChecks,
+  PauseCircle,
+  Pencil,
+  Plus,
+  Trash2,
+  XCircle,
+} from 'lucide-react';
 
 const statusBorderColor = {
   PENDIENTE: 'border-yellow-500',
@@ -51,10 +53,10 @@ const statusBadge = {
 };
 
 const statusIcons = {
-  PENDIENTE: <FaRegPauseCircle className="text-yellow-500 text-lg" />,
-  EN_PROGRESO: <MdInfoOutline className="text-blue-500 text-lg" />,
-  COMPLETADO: <FaCheckCircle className="text-green-500 text-lg" />,
-  CANCELADO: <FaTimesCircle className="text-red-500 text-lg" />,
+  PENDIENTE: <PauseCircle className="text-yellow-500 text-lg" />,
+  EN_PROGRESO: <Info className="text-blue-500 text-lg" />,
+  COMPLETADO: <CheckCircle className="text-green-500 text-lg" />,
+  CANCELADO: <XCircle className="text-red-500 text-lg" />,
 };
 
 const ProjectDeadlines = ({ projectId }) => {
@@ -87,7 +89,7 @@ const ProjectDeadlines = ({ projectId }) => {
           }}
           className="text-xs md:text-sm flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md shadow"
         >
-          <FaPlus /> Crear Deadline
+          <Plus /> Crear Deadline
         </button>
       </div>
 
@@ -134,7 +136,7 @@ const ProjectDeadlines = ({ projectId }) => {
                   className="text-gray-600 hover:text-gray-900 hover:bg-indigo-100 p-1 px-2 inline-flex items-center gap-2 border rounded-full"
                 >
                   {deadline.inventoryAssignments?.length || 0}
-                  <BsBoxSeam />
+                  <Box />
                 </button>
                 <button
                   onClick={() => {
@@ -143,13 +145,13 @@ const ProjectDeadlines = ({ projectId }) => {
                   }}
                   className="text-gray-600 hover:text-gray-900 hover:bg-indigo-100 p-1 rounded-md"
                 >
-                  <FiEdit />
+                  <Pencil />
                 </button>
                 <button
                   onClick={() => setDeletingDeadline(deadline)}
                   className="text-red-600 hover:text-red-800 hover:bg-indigo-100 p-1 rounded-md"
                 >
-                  <FaRegTrashAlt />
+                  <Trash2 />
                 </button>
               </div>
               <div className="flex flex-col md:flex-row justify-start md:items-center gap-2">
@@ -170,7 +172,7 @@ const ProjectDeadlines = ({ projectId }) => {
               <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
                 <div className="flex justify-between md:justify-start items-center gap-4 mt-2 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
-                    <FiCalendar /> <strong>Fecha límite:</strong>{' '}
+                    <Calendar /> <strong>Fecha límite:</strong>{' '}
                     {parseToLocalDate(deadline.dueDate)}
                   </div>
                   <div className="text-xs font-semibold border border-gray-400 px-2 py-1 rounded-md">
@@ -231,9 +233,9 @@ const ProjectDeadlines = ({ projectId }) => {
                     Tareas del Deadline ({totalTasks})
                   </h4>
                   {isOpen ? (
-                    <FaChevronUp className="text text-xs" />
+                    <ChevronUp className="text text-xs" />
                   ) : (
-                    <FaChevronDown className="text text-xs" />
+                    <ChevronDown className="text text-xs" />
                   )}
                 </div>
                 <DeadlineTasksList tasks={deadline.tasks} isOpen={isOpen} />

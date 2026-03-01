@@ -1,13 +1,14 @@
-import React from 'react';
+
 import { Card, Button, Badge, Spinner, Alert } from 'flowbite-react';
-import {
-  HiX,
-  HiChip,
-  HiSparkles,
-  HiInformationCircle,
-  HiCube,
-} from 'react-icons/hi';
 import { useAIAgent } from '../../context/AIAgentContext.jsx';
+
+import {
+  Box,
+  Cpu,
+  Info,
+  Sparkles,
+  X,
+} from 'lucide-react';
 
 const AIModelSpecs = ({ item, specs, onClose }) => {
   const { isLoading, error } = useAIAgent();
@@ -42,7 +43,7 @@ const AIModelSpecs = ({ item, specs, onClose }) => {
         {/* Header */}
         <div className="flex justify-between items-start pb-4 mb-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <HiChip className="text-2xl text-purple-500" />
+            <Cpu className="text-2xl text-purple-500" />
             <div>
               <h3 className="text-xl font-semibold text-gray-900">
                 Ficha Técnica Generada por IA
@@ -58,7 +59,7 @@ const AIModelSpecs = ({ item, specs, onClose }) => {
             onClick={onClose}
             className="flex items-center gap-1"
           >
-            <HiX />
+            <X />
           </Button>
         </div>
 
@@ -102,7 +103,7 @@ const AIModelSpecs = ({ item, specs, onClose }) => {
         {/* Error State */}
         {error && !isLoading && (
           <Alert color="failure" className="mb-4">
-            <HiInformationCircle className="mr-2" />
+            <Info className="mr-2" />
             <span className="font-medium">Error:</span> {error}
           </Alert>
         )}
@@ -117,7 +118,7 @@ const AIModelSpecs = ({ item, specs, onClose }) => {
                 size="sm"
                 className="flex items-center gap-1"
               >
-                <HiSparkles className="text-xs" />
+                <Sparkles className="text-xs" />
                 Generado por IA
               </Badge>
               <span className="text-xs text-gray-500">
@@ -128,7 +129,7 @@ const AIModelSpecs = ({ item, specs, onClose }) => {
             {/* Specifications */}
             <div className="space-y-3">
               <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-                <HiCube className="text-purple-500" />
+                <Box className="text-purple-500" />
                 Especificaciones Técnicas Probables
               </h4>
 
@@ -209,7 +210,7 @@ const AIModelSpecs = ({ item, specs, onClose }) => {
             {/* Disclaimer */}
             <div className="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div className="flex items-start gap-2">
-                <HiInformationCircle className="text-yellow-600 mt-0.5 flex-shrink-0" />
+                <Info className="text-yellow-600 mt-0.5 flex-shrink-0" />
                 <div className="text-sm">
                   <p className="font-medium text-yellow-800 mb-1">
                     Nota importante:

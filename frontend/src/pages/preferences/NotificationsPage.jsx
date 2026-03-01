@@ -2,7 +2,7 @@
  * Página de Notificaciones (Centro de Notificaciones)
  * Muestra la bandeja de notificaciones del usuario y gestión de reglas
  */
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   Card,
   Button,
@@ -16,30 +16,6 @@ import {
   Select,
   Tooltip,
 } from 'flowbite-react';
-import {
-  HiBell,
-  HiCheck,
-  HiTrash,
-  HiRefresh,
-  HiExternalLink,
-  HiInbox,
-  HiPlus,
-  HiPencil,
-  HiPlay,
-  HiClock,
-  HiMail,
-  HiCog,
-  HiChartBar,
-  HiSearch,
-  HiChevronLeft,
-  HiChevronRight,
-  HiX,
-  HiUser,
-  HiUsers,
-  HiViewGrid,
-  HiUserRemove,
-  HiEye,
-} from 'react-icons/hi';
 import { useNotifications } from '../../context/NotificationContext';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -48,6 +24,31 @@ import { toast } from 'react-hot-toast';
 import NotificationRuleForm from '../../components/Notifications/NotificationRuleForm';
 import NotificationRuleTestModal from '../../components/Notifications/NotificationRuleTestModal';
 import NotificationReadStatusModal from '../../components/Notifications/NotificationReadStatusModal';
+
+import {
+  BarChart2,
+  Bell,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  ExternalLink,
+  Eye,
+  Inbox,
+  LayoutGrid,
+  Mail,
+  Pencil,
+  Play,
+  Plus,
+  RefreshCw,
+  Search,
+  Settings,
+  Trash2,
+  User,
+  UserMinus,
+  Users,
+  X,
+} from 'lucide-react';
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
@@ -501,7 +502,7 @@ const NotificationsPage = () => {
         switch (c.channel) {
           case 'EMAIL':
             return (
-              <HiMail
+              <Mail
                 key={c.id}
                 className="w-4 h-4 text-blue-500"
                 title="Email"
@@ -509,7 +510,7 @@ const NotificationsPage = () => {
             );
           case 'IN_APP':
             return (
-              <HiBell
+              <Bell
                 key={c.id}
                 className="w-4 h-4 text-green-500"
                 title="In-App"
@@ -540,7 +541,7 @@ const NotificationsPage = () => {
             <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                  <HiBell className="w-7 h-7 text-white" />
+                  <Bell className="w-7 h-7 text-white" />
                 </div>
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-6 w-6">
@@ -585,7 +586,7 @@ const NotificationsPage = () => {
               }}
               className="shadow-sm hover:shadow-md transition-shadow"
             >
-              <HiRefresh className="w-4 h-4 mr-2" />
+              <RefreshCw className="w-4 h-4 mr-2" />
               Actualizar
             </Button>
           </div>
@@ -600,7 +601,7 @@ const NotificationsPage = () => {
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              <HiInbox className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <Inbox className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span className="hidden sm:inline">Bandeja</span>
               <span className="sm:hidden">Notif.</span>
               {unreadCount > 0 && (
@@ -623,7 +624,7 @@ const NotificationsPage = () => {
                   : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              <HiCog className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <Settings className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
               <span className="hidden sm:inline">Reglas</span>
               <span className="sm:hidden">Config.</span>
               <span
@@ -647,7 +648,7 @@ const NotificationsPage = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                  <HiSearch className="w-5 h-5 text-gray-400" />
+                  <Search className="w-5 h-5 text-gray-400" />
                 </div>
                 <input
                   type="text"
@@ -661,7 +662,7 @@ const NotificationsPage = () => {
                     onClick={clearSearch}
                     className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    <HiX className="w-5 h-5" />
+                    <X className="w-5 h-5" />
                   </button>
                 )}
               </div>
@@ -728,7 +729,7 @@ const NotificationsPage = () => {
                     onClick={handleMarkAllAsRead}
                     className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 border-0 shadow-md"
                   >
-                    <HiCheck className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <Check className="w-4 h-4 mr-2 flex-shrink-0" />
                     Marcar leídas
                   </Button>
                 )}
@@ -738,7 +739,7 @@ const NotificationsPage = () => {
                     onClick={handleDeleteRead}
                     className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 border-0 shadow-md"
                   >
-                    <HiTrash className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <Trash2 className="w-4 h-4 mr-2 flex-shrink-0" />
                     Eliminar leídas
                   </Button>
                 )}
@@ -754,7 +755,7 @@ const NotificationsPage = () => {
             ) : searchedNotifications.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
                 <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                  <HiInbox className="w-10 h-10 text-gray-400" />
+                  <Inbox className="w-10 h-10 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">
                   {searchQuery
@@ -777,7 +778,7 @@ const NotificationsPage = () => {
                     onClick={clearSearch}
                     className="shadow-sm"
                   >
-                    <HiX className="w-4 h-4 mr-2" />
+                    <X className="w-4 h-4 mr-2" />
                     Limpiar búsqueda
                   </Button>
                 ) : (
@@ -785,7 +786,7 @@ const NotificationsPage = () => {
                     onClick={() => handleTabChange(1)}
                     className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 border-0 shadow-md"
                   >
-                    <HiCog className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <Settings className="w-4 h-4 mr-2 flex-shrink-0" />
                     Configurar reglas
                   </Button>
                 )}
@@ -812,7 +813,7 @@ const NotificationsPage = () => {
                                 : 'bg-gradient-to-br from-gray-400 to-gray-500'
                             }`}
                           >
-                            <HiBell className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
+                            <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
                           </div>
 
                           {/* Contenido */}
@@ -836,19 +837,19 @@ const NotificationsPage = () => {
                                 className="flex items-center gap-1.5"
                                 title={formatFullDate(notification.createdAt)}
                               >
-                                <HiClock className="w-3.5 h-3.5 flex-shrink-0" />
+                                <Clock className="w-3.5 h-3.5 flex-shrink-0" />
                                 {formatTime(notification.createdAt)}
                               </span>
                               {notification.ruleCreator && (
                                 <span className="flex items-center gap-1.5 text-purple-600">
-                                  <HiUser className="w-3.5 h-3.5 flex-shrink-0" />
+                                  <User className="w-3.5 h-3.5 flex-shrink-0" />
                                   De: {notification.ruleCreator.firstName}{' '}
                                   {notification.ruleCreator.lastName}
                                 </span>
                               )}
                               {notification.readAt && (
                                 <span className="flex items-center gap-1.5 text-green-600">
-                                  <HiCheck className="w-3.5 h-3.5 flex-shrink-0" />
+                                  <Check className="w-3.5 h-3.5 flex-shrink-0" />
                                   Leída {formatTime(notification.readAt)}
                                 </span>
                               )}
@@ -867,7 +868,7 @@ const NotificationsPage = () => {
                                     }
                                     className="p-2 rounded-lg text-purple-500 hover:text-purple-700 hover:bg-purple-50 transition-all duration-200"
                                   >
-                                    <HiEye className="w-5 h-5 flex-shrink-0" />
+                                    <Eye className="w-5 h-5 flex-shrink-0" />
                                   </button>
                                 </Tooltip>
                               )}
@@ -881,7 +882,7 @@ const NotificationsPage = () => {
                                 }}
                                 className="px-3 py-2 rounded-lg text-xs font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-sm transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap"
                               >
-                                <HiExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                                <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
                                 Ver
                               </button>
                             )}
@@ -893,7 +894,7 @@ const NotificationsPage = () => {
                                 className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
                                 title="Marcar como leída"
                               >
-                                <HiCheck className="w-5 h-5 flex-shrink-0" />
+                                <Check className="w-5 h-5 flex-shrink-0" />
                               </button>
                             )}
                             <button
@@ -901,7 +902,7 @@ const NotificationsPage = () => {
                               className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
                               title="Eliminar"
                             >
-                              <HiTrash className="w-5 h-5 flex-shrink-0" />
+                              <Trash2 className="w-5 h-5 flex-shrink-0" />
                             </button>
                           </div>
                         </div>
@@ -960,8 +961,8 @@ const NotificationsPage = () => {
                           title="Primera página"
                         >
                           <div className="flex items-center">
-                            <HiChevronLeft className="w-4 h-4 flex-shrink-0" />
-                            <HiChevronLeft className="w-4 h-4 -ml-2 flex-shrink-0" />
+                            <ChevronLeft className="w-4 h-4 flex-shrink-0" />
+                            <ChevronLeft className="w-4 h-4 -ml-2 flex-shrink-0" />
                           </div>
                         </button>
 
@@ -976,7 +977,7 @@ const NotificationsPage = () => {
                           }`}
                           title="Página anterior"
                         >
-                          <HiChevronLeft className="w-4 h-4 flex-shrink-0" />
+                          <ChevronLeft className="w-4 h-4 flex-shrink-0" />
                         </button>
 
                         {/* Números de página */}
@@ -1080,7 +1081,7 @@ const NotificationsPage = () => {
                           }`}
                           title="Página siguiente"
                         >
-                          <HiChevronRight className="w-4 h-4 flex-shrink-0" />
+                          <ChevronRight className="w-4 h-4 flex-shrink-0" />
                         </button>
 
                         {/* Última página */}
@@ -1095,8 +1096,8 @@ const NotificationsPage = () => {
                           title="Última página"
                         >
                           <div className="flex items-center">
-                            <HiChevronRight className="w-4 h-4 flex-shrink-0" />
-                            <HiChevronRight className="w-4 h-4 -ml-2 flex-shrink-0" />
+                            <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                            <ChevronRight className="w-4 h-4 -ml-2 flex-shrink-0" />
                           </div>
                         </button>
                       </div>
@@ -1125,7 +1126,7 @@ const NotificationsPage = () => {
                     onClick={() => setShowCreateModal(true)}
                     className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 border-0 shadow-md whitespace-nowrap"
                   >
-                    <HiPlus className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
                     Nueva Regla
                   </Button>
                 )}
@@ -1143,7 +1144,7 @@ const NotificationsPage = () => {
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  <HiViewGrid className="w-4 h-4" />
+                  <LayoutGrid className="w-4 h-4" />
                   Mis Reglas
                   {myRules.length > 0 && (
                     <span
@@ -1165,7 +1166,7 @@ const NotificationsPage = () => {
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  <HiUsers className="w-4 h-4" />
+                  <Users className="w-4 h-4" />
                   Suscritas
                   {subscribedRules.length > 0 && (
                     <span
@@ -1198,7 +1199,7 @@ const NotificationsPage = () => {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <HiSearch className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                    <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   </div>
                   <input
                     type="text"
@@ -1247,7 +1248,7 @@ const NotificationsPage = () => {
             ) : searchedRules.length === 0 && rulesSearchQuery ? (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
                 <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                  <HiSearch className="w-10 h-10 text-gray-400" />
+                  <Search className="w-10 h-10 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">
                   No se encontraron reglas
@@ -1266,9 +1267,9 @@ const NotificationsPage = () => {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
                 <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
                   {rulesSubTab === 'mine' ? (
-                    <HiCog className="w-10 h-10 text-purple-500" />
+                    <Settings className="w-10 h-10 text-purple-500" />
                   ) : (
-                    <HiUsers className="w-10 h-10 text-blue-500" />
+                    <Users className="w-10 h-10 text-blue-500" />
                   )}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">
@@ -1286,7 +1287,7 @@ const NotificationsPage = () => {
                     onClick={() => setShowCreateModal(true)}
                     className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 border-0 shadow-md"
                   >
-                    <HiPlus className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
                     Crear Primera Regla
                   </Button>
                 )}
@@ -1364,7 +1365,7 @@ const NotificationsPage = () => {
                             <td className="px-4 py-4 whitespace-nowrap">
                               <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                  <HiUser className="w-4 h-4 text-blue-600" />
+                                  <User className="w-4 h-4 text-blue-600" />
                                 </div>
                                 <div className="min-w-0">
                                   <p className="text-sm font-medium text-gray-900 truncate">
@@ -1388,7 +1389,7 @@ const NotificationsPage = () => {
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap">
                             <div className="flex items-start gap-2">
-                              <HiClock className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                              <Clock className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                               {formatSchedule(rule)}
                             </div>
                           </td>
@@ -1430,28 +1431,28 @@ const NotificationsPage = () => {
                                     className="p-2 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-all duration-200"
                                     title="Probar regla"
                                   >
-                                    <HiPlay className="w-4 h-4 flex-shrink-0" />
+                                    <Play className="w-4 h-4 flex-shrink-0" />
                                   </button>
                                   <button
                                     onClick={() => handleViewHistory(rule)}
                                     className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
                                     title="Ver historial"
                                   >
-                                    <HiChartBar className="w-4 h-4 flex-shrink-0" />
+                                    <BarChart2 className="w-4 h-4 flex-shrink-0" />
                                   </button>
                                   <button
                                     onClick={() => setEditingRule(rule)}
                                     className="p-2 rounded-lg text-gray-400 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200"
                                     title="Editar"
                                   >
-                                    <HiPencil className="w-4 h-4 flex-shrink-0" />
+                                    <Pencil className="w-4 h-4 flex-shrink-0" />
                                   </button>
                                   <button
                                     onClick={() => handleDeleteRule(rule)}
                                     className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
                                     title="Eliminar"
                                   >
-                                    <HiTrash className="w-4 h-4 flex-shrink-0" />
+                                    <Trash2 className="w-4 h-4 flex-shrink-0" />
                                   </button>
                                 </>
                               ) : (
@@ -1462,14 +1463,14 @@ const NotificationsPage = () => {
                                     className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
                                     title="Ver historial"
                                   >
-                                    <HiChartBar className="w-4 h-4 flex-shrink-0" />
+                                    <BarChart2 className="w-4 h-4 flex-shrink-0" />
                                   </button>
                                   <button
                                     onClick={() => openUnsubscribeModal(rule)}
                                     className="p-2 rounded-lg text-gray-400 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
                                     title="Desuscribirse"
                                   >
-                                    <HiUserRemove className="w-4 h-4 flex-shrink-0" />
+                                    <UserMinus className="w-4 h-4 flex-shrink-0" />
                                   </button>
                                 </>
                               )}
@@ -1549,8 +1550,8 @@ const NotificationsPage = () => {
                             title="Primera página"
                           >
                             <div className="flex items-center">
-                              <HiChevronLeft className="w-4 h-4 flex-shrink-0" />
-                              <HiChevronLeft className="w-4 h-4 -ml-2 flex-shrink-0" />
+                              <ChevronLeft className="w-4 h-4 flex-shrink-0" />
+                              <ChevronLeft className="w-4 h-4 -ml-2 flex-shrink-0" />
                             </div>
                           </button>
 
@@ -1566,7 +1567,7 @@ const NotificationsPage = () => {
                             }`}
                             title="Página anterior"
                           >
-                            <HiChevronLeft className="w-4 h-4 flex-shrink-0" />
+                            <ChevronLeft className="w-4 h-4 flex-shrink-0" />
                           </button>
 
                           <div className="hidden sm:flex items-center gap-1">
@@ -1672,7 +1673,7 @@ const NotificationsPage = () => {
                             }`}
                             title="Página siguiente"
                           >
-                            <HiChevronRight className="w-4 h-4 flex-shrink-0" />
+                            <ChevronRight className="w-4 h-4 flex-shrink-0" />
                           </button>
 
                           <button
@@ -1688,8 +1689,8 @@ const NotificationsPage = () => {
                             title="Última página"
                           >
                             <div className="flex items-center">
-                              <HiChevronRight className="w-4 h-4 flex-shrink-0" />
-                              <HiChevronRight className="w-4 h-4 -ml-2 flex-shrink-0" />
+                              <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                              <ChevronRight className="w-4 h-4 -ml-2 flex-shrink-0" />
                             </div>
                           </button>
                         </div>
@@ -1805,7 +1806,7 @@ const NotificationsPage = () => {
           <Modal.Header>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                <HiUserRemove className="w-5 h-5 text-orange-600" />
+                <UserMinus className="w-5 h-5 text-orange-600" />
               </div>
               <span>Desuscribirse de la regla</span>
             </div>
@@ -1823,7 +1824,7 @@ const NotificationsPage = () => {
               {unsubscribeModal?.createdBy && (
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                    <HiUser className="w-5 h-5 text-blue-600" />
+                    <User className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">
@@ -1869,7 +1870,7 @@ const NotificationsPage = () => {
                   </>
                 ) : (
                   <>
-                    <HiUserRemove className="w-4 h-4 mr-2" />
+                    <UserMinus className="w-4 h-4 mr-2" />
                     Desuscribirse
                   </>
                 )}

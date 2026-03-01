@@ -1,11 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getInventories,
-  getInventory,
   createInventory,
   updateInventory,
   deleteInventory,
-  searchInventories as searchInventoriesAPI,
   createMultipleInventories,
   getPurchaseOrdersList,
   getInvoicesList,
@@ -103,7 +101,7 @@ const useInventoy = (dispatch) => {
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_PURCHASE_ORDERS_SUCCESS', payload: data });
     },
-    onError: (error) => {
+    onError: () => {
       Notifies('error', 'Error al cargar órdenes de compra');
     },
     onSettled: () => setLoading(false),
@@ -115,7 +113,7 @@ const useInventoy = (dispatch) => {
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_INVOICES_SUCCESS', payload: data });
     },
-    onError: (error) => {
+    onError: () => {
       Notifies('error', 'Error al cargar facturas');
     },
     onSettled: () => setLoading(false),
@@ -155,7 +153,7 @@ const useInventoy = (dispatch) => {
     onSuccess: (data) => {
       dispatch({ type: 'FETCH_LOCATIONS_SUCCESS', payload: data });
     },
-    onError: (error) => {
+    onError: () => {
       Notifies('error', 'Error al cargar ubicaciones');
     },
     onSettled: () => setLoading(false),

@@ -1,10 +1,6 @@
 // components/purchaseOrders/invoices/PurchaseOrderInvoicesManager.jsx
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Button, Badge } from 'flowbite-react';
-import { FaPlus, FaSearch, FaFilePdf, FaFileCode, FaEye } from 'react-icons/fa';
-import { MdLinkOff } from 'react-icons/md';
-import { FaFileInvoice } from 'react-icons/fa';
-import { MdInventory } from 'react-icons/md';
 import {
   useGetInvoicesByOrderId,
   useAssignInvoiceToPurchaseOrder,
@@ -16,6 +12,16 @@ import ConfirmUnassignModal from '../../Modals/ConfirmUnassignModal';
 import Notifies from '../../Notifies/Notifies';
 import ActionButtons from '../../ActionButtons/ActionButtons';
 import ReusableTable from '../../Table/ReusableTable';
+import {
+  Eye,
+  FileCode,
+  FileText,
+  FileText as FileInvoice,
+  Package,
+  Plus,
+  Search,
+  Unlink,
+} from 'lucide-react';
 
 const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -131,7 +137,7 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
           const count = row.inventories?.length || 0;
           return count > 0 ? (
             <Badge color="success" size="sm">
-              <MdInventory className="inline mr-1" />
+              <Package className="inline mr-1" />
               {count}
             </Badge>
           ) : (
@@ -154,7 +160,7 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
                 title="Ver PDF"
                 onClick={(e) => e.stopPropagation()}
               >
-                <FaFilePdf size={16} />
+                <FileText size={16} />
               </a>
             )}
             {row.xmlUrl && (
@@ -166,7 +172,7 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
                 title="Ver XML"
                 onClick={(e) => e.stopPropagation()}
               >
-                <FaFileCode size={16} />
+                <FileCode size={16} />
               </a>
             )}
             {!row.fileUrl && !row.xmlUrl && (
@@ -184,7 +190,7 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
             extraActions={[
               {
                 label: 'Desasignar',
-                icon: MdLinkOff,
+                icon: Unlink,
                 color: 'red',
                 filled: true,
                 action: () => handleRemoveInvoice(row.id),
@@ -214,7 +220,7 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
           Buscar Facturas Disponibles
         </h4>
         <div className="relative">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Buscar por código, concepto, proveedor..."
@@ -267,7 +273,7 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
                         )}
                         {inventoryCount > 0 && (
                           <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                            <MdInventory size={12} />
+                            <Package size={12} />
                             {inventoryCount} inventario
                             {inventoryCount !== 1 ? 's' : ''}
                           </div>
@@ -296,7 +302,7 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
                               title="Ver PDF"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <FaFilePdf size={14} />
+                              <FileText size={14} />
                             </a>
                           )}
                           {invoice.xmlUrl && (
@@ -308,7 +314,7 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
                               title="Ver XML"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <FaFileCode size={14} />
+                              <FileCode size={14} />
                             </a>
                           )}
                         </div>
@@ -320,7 +326,7 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
                             onClick={() => handleAssignInvoice(invoice.id)}
                             disabled={assignInvoice.isPending}
                           >
-                            <FaPlus />
+                            <Plus />
                           </Button>
                         )}
                       </div>
@@ -348,7 +354,7 @@ const PurchaseOrderInvoicesManager = ({ purchaseOrder }) => {
         ) : assignedInvoices.length === 0 ? (
           <div className="flex-1 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
             <div className="text-center py-8">
-              <FaFileInvoice className="mx-auto text-4xl text-gray-400 mb-2" />
+              <FileText className="mx-auto text-4xl text-gray-400 mb-2" />
               <p className="text-gray-500 text-sm">No hay facturas asignadas</p>
               <p className="text-gray-400 text-xs mt-1">
                 Busca y asigna facturas usando el campo de arriba

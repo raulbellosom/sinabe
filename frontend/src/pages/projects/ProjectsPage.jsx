@@ -2,7 +2,14 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Skeleton from 'react-loading-skeleton';
-import { FaEye, FaPen, FaPlus, FaTrash } from 'react-icons/fa';
+import {
+  Eye,
+  Pen,
+  Pencil,
+  Plus,
+  Trash2,
+} from 'lucide-react';
+
 
 import {
   useDeleteProject,
@@ -247,7 +254,7 @@ const ProjectsPage = () => {
     {
       key: 'main',
       label: 'Abrir',
-      icon: FaEye,
+      icon: Eye,
       action: () => navigate(`/projects/view/${row.id}`),
       color: 'blue',
     },
@@ -257,12 +264,12 @@ const ProjectsPage = () => {
         setSelectedProject(row);
         setIsModalOpen(true);
       },
-      icon: FaPen,
+      icon: Pen,
     },
     {
       label: 'Eliminar',
       action: () => deleteProject(row.id),
-      icon: FaTrash,
+      icon: Trash2,
       color: 'red',
     },
   ];
@@ -280,7 +287,7 @@ const ProjectsPage = () => {
                 label: 'Nuevo Proyecto',
                 action: () => setIsModalOpen(true),
                 color: 'indigo',
-                icon: FaPlus,
+                icon: Plus,
               },
             ]}
           />

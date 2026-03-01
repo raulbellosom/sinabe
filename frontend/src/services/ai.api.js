@@ -102,7 +102,7 @@ export const aiService = {
   },
 
   // Placeholder for future model specs feature
-  getModelSpecs: async (inventoryId) => {
+  getModelSpecs: async (_inventoryId) => {
     // This would need a backend endpoint - for now return empty
     return { specs: null, message: 'Not implemented' };
   },

@@ -1,8 +1,6 @@
 // components/purchaseOrders/inventory/AllInventoriesViewer.jsx
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Button, Badge } from 'flowbite-react';
-import { FaPlus, FaSearch, FaEye } from 'react-icons/fa';
-import { MdInventory, MdLinkOff } from 'react-icons/md';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   useGetAllInventoriesByPurchaseOrder,
@@ -14,6 +12,13 @@ import ConfirmUnassignModal from '../../Modals/ConfirmUnassignModal';
 import Notifies from '../../Notifies/Notifies';
 import ActionButtons from '../../ActionButtons/ActionButtons';
 import ReusableTable from '../../Table/ReusableTable';
+import {
+  Eye,
+  Package,
+  Plus,
+  Search,
+  Unlink,
+} from 'lucide-react';
 
 const AllInventoriesViewer = ({ purchaseOrder }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -206,7 +211,7 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
               extraActions={[
                 {
                   label: 'Desasignar',
-                  icon: MdLinkOff,
+                  icon: Unlink,
                   color: 'red',
                   filled: true,
                   action: () => handleRemoveInventory(row.id),
@@ -237,7 +242,7 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
           Buscar Inventarios Disponibles
         </h4>
         <div className="relative">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Buscar por modelo, serial, activo..."
@@ -321,7 +326,7 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
                             onClick={() => handleAssignInventory(inventory.id)}
                             disabled={assignInventories.isPending}
                           >
-                            <FaPlus />
+                            <Plus />
                           </Button>
                         )}
                       </div>
@@ -349,7 +354,7 @@ const AllInventoriesViewer = ({ purchaseOrder }) => {
         ) : assignedInventories.length === 0 ? (
           <div className="flex-1 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
             <div className="text-center py-8">
-              <MdInventory className="mx-auto text-4xl text-gray-400 mb-2" />
+              <Package className="mx-auto text-4xl text-gray-400 mb-2" />
               <p className="text-gray-500 text-sm">
                 No hay inventarios asignados
               </p>

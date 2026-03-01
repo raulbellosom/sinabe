@@ -32,7 +32,7 @@ export const useAuthData = (dispatch) => {
         payload: { user: data.user, token: data.token },
       });
     },
-    onError: (error) => {
+    onError: () => {
       // NO dispatchar AUTH_ERROR aquí - eso limpia user/token y causa redirect
       // Solo mostrar el toast de error
       Notifies('error', 'Usuario o contraseña incorrectos');
@@ -82,8 +82,8 @@ export const useAuthData = (dispatch) => {
         return null;
       }
     },
-    onError: (error) => {
-      console.warn('Error loading user:', error);
+    onError: () => {
+      console.warn('Error loading user:');
       // Error al cargar usuario, probablemente token inválido
       localStorage.removeItem('user');
       localStorage.removeItem('token');
@@ -101,7 +101,7 @@ export const useAuthData = (dispatch) => {
       Notifies('success', 'Perfil actualizado');
       dispatch({ type: 'PROFILE_UPDATED', payload: data });
     },
-    onError: (error) => {
+    onError: () => {
       Notifies('error', 'Error al actualizar el perfil');
     },
     onSettled: () => setLoading(false),
@@ -114,9 +114,9 @@ export const useAuthData = (dispatch) => {
       Notifies('success', 'Contraseña actualizada');
       return data;
     },
-    onError: (error) => {
+    onError: () => {
       Notifies('error', 'Error al actualizar la contraseña');
-      return error;
+      return;
     },
     onSettled: () => setLoading(false),
   });
@@ -130,7 +130,7 @@ export const useAuthData = (dispatch) => {
       Notifies('success', 'Imagen de perfil actualizada');
       dispatch({ type: 'PROFILE_IMAGE_UPDATED', payload: data });
     },
-    onError: (error) => {
+    onError: () => {
       Notifies('error', 'Error al actualizar la imagen de perfil');
     },
     onSettled: () => setLoading(false),
@@ -145,7 +145,7 @@ export const useAuthData = (dispatch) => {
       Notifies('success', 'Firma actualizada');
       dispatch({ type: 'PROFILE_UPDATED', payload: data });
     },
-    onError: (error) => {
+    onError: () => {
       Notifies('error', 'Error al actualizar la firma');
     },
     onSettled: () => setLoading(false),

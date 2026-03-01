@@ -1,9 +1,11 @@
-import React, { useImperativeHandle, forwardRef, useRef } from 'react';
+import { useImperativeHandle, forwardRef, useRef } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import TextInput from '../Inputs/TextInput';
-import { FaMapMarkerAlt } from 'react-icons/fa';
 
+import {
+  MapPin,
+} from 'lucide-react';
 const LocationFormSchema = Yup.object().shape({
   name: Yup.string()
     .min(2, 'El nombre debe tener al menos 2 caracteres')
@@ -42,7 +44,7 @@ const LocationForm = forwardRef(
               component={TextInput}
               label="* Nombre de la Ubicación"
               placeholder="Ej: Almacén Principal, Oficina Central"
-              icon={FaMapMarkerAlt}
+              icon={MapPin}
             />
           </Form>
         )}

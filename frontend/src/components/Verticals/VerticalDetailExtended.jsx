@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import classNames from 'classnames';
-import { FaBriefcase, FaCalendarAlt, FaHistory } from 'react-icons/fa';
 import VerticalModelsDetail from './VerticalModelsDetail';
 import MaintenanceAgenda from './MaintenanceAgenda';
 import AuditLogHistory from '../common/AuditLogHistory';
+
+import {
+  Briefcase,
+  Calendar,
+  History,
+} from 'lucide-react';
 
 const VerticalDetailExtended = ({
   vertical,
@@ -22,9 +27,9 @@ const VerticalDetailExtended = ({
   const [activeTab, setActiveTab] = useState('models');
 
   const tabs = [
-    { id: 'models', label: 'Modelos', icon: FaBriefcase },
-    { id: 'agenda', label: 'Agenda', icon: FaCalendarAlt },
-    { id: 'history', label: 'Historial', icon: FaHistory },
+    { id: 'models', label: 'Modelos', icon: Briefcase },
+    { id: 'agenda', label: 'Agenda', icon: Calendar },
+    { id: 'history', label: 'Historial', icon: History },
   ];
 
   return (

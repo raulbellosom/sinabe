@@ -1,7 +1,7 @@
 // components/invoices/AssignToPurchaseOrderModal.jsx
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Badge, TextInput } from 'flowbite-react';
-import { FaSearch, FaTimes, FaClipboardList } from 'react-icons/fa';
+import { Search, X, ClipboardList } from 'lucide-react';
 import { useSearchPurchaseOrders } from '../../hooks/usePurchaseOrders';
 import { useAssignInvoiceToPurchaseOrder } from '../../hooks/useInvoices';
 import { parseToLocalDate } from '../../utils/formatValues';
@@ -60,14 +60,14 @@ const AssignToPurchaseOrderModal = ({
       label: 'Cancelar',
       action: onClose,
       color: 'gray',
-      icon: FaTimes,
+      icon: X,
     },
     {
       label: assignInvoiceMutation.isPending ? 'Asignando...' : 'Asignar a OC',
       action: handleAssign,
       color: 'purple',
       filled: true,
-      icon: FaClipboardList,
+      icon: ClipboardList,
       disabled: !selectedPurchaseOrder || assignInvoiceMutation.isPending,
     },
   ];
@@ -78,7 +78,7 @@ const AssignToPurchaseOrderModal = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-2">
-          <FaClipboardList className="text-purple-600" />
+          <ClipboardList className="text-purple-600" />
           <div>
             <div className="text-lg font-semibold">
               Asignar a Orden de Compra
@@ -95,7 +95,7 @@ const AssignToPurchaseOrderModal = ({
       {/* Buscador */}
       <div className="mb-4">
         <div className="relative">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <TextInput
             placeholder="Buscar órdenes de compra por código, proveedor o descripción..."
             value={searchTerm}
@@ -122,7 +122,7 @@ const AssignToPurchaseOrderModal = ({
 
         {!searchLoading && availablePurchaseOrders.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            <FaClipboardList className="mx-auto text-4xl mb-2" />
+            <ClipboardList className="mx-auto text-4xl mb-2" />
             <p>No se encontraron órdenes de compra</p>
             <p className="text-sm">
               Intenta con diferentes términos de búsqueda

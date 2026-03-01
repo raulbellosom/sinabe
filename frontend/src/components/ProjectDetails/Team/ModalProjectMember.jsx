@@ -1,7 +1,7 @@
 // src/components/Projects/ModalProjectMember.jsx
-import React from 'react';
+
 import ReusableModal from '../../Modals/ReusableModal';
-import AsyncSelect from 'react-select/async';
+import Combobox from '../../common/Combobox';
 import { Formik, Form, Field } from 'formik';
 import Notifies from '../../Notifies/Notifies';
 import {
@@ -9,14 +9,8 @@ import {
   useUpdateProjectMember,
 } from '../../../hooks/useProjectTeam';
 import { searchAvailableUsers } from '../../../services/projectTeam.api';
-import {
-  FaUserPlus,
-  FaUserEdit,
-  FaUser,
-  FaUserTag,
-  FaSave,
-  FaTimes,
-} from 'react-icons/fa';
+import { UserPlus, UserCog, User, UserCheck, Save, X } from 'lucide-react';
+import { FormattedUrlImage } from '../../../utils/FormattedUrlImage';
 
 const ModalProjectMember = ({
   isOpen,
@@ -35,19 +29,15 @@ const ModalProjectMember = ({
         label: user.name,
         value: user.id,
         email: user.email,
-        thumbnail: user.photo?.[0]?.thumbnail || null,
+        thumbnail: FormattedUrlImage(user.photo?.[0]?.thumbnail) || null,
       }));
     } catch {
       return [];
     }
   };
 
-  const customUserOption = ({ data, innerRef, innerProps }) => (
-    <div
-      ref={innerRef}
-      {...innerProps}
-      className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-    >
+  const customUserOption = ({ data }) => (
+    <div className="flex items-center w-full">
       {data.thumbnail ? (
         <img
           src={data.thumbnail}
@@ -55,7 +45,7 @@ const ModalProjectMember = ({
           className="w-8 h-8 rounded-full mr-3"
         />
       ) : (
-        <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-3 text-sm font-semibold">
+        <div className="w-8 h-8 bg-[var(--surface-muted)] rounded-full flex items-center justify-center mr-3 text-sm font-semibold text-[var(--foreground-muted)]">
           {data.label
             ?.split(' ')
             .map((w) => w[0])
@@ -64,11 +54,13 @@ const ModalProjectMember = ({
             .toUpperCase()}
         </div>
       )}
-      <div>
-        <p className="text-sm font-medium text-gray-800 dark:text-white">
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-[var(--foreground)] truncate">
           {data.label}
         </p>
-        <p className="text-xs text-gray-500">{data.email}</p>
+        <p className="text-xs text-[var(--foreground-muted)] truncate">
+          {data.email}
+        </p>
       </div>
     </div>
   );
@@ -80,16 +72,16 @@ const ModalProjectMember = ({
       title={
         <span className="flex items-center gap-2">
           {isEditing ? (
-            <FaUserEdit className="text-sinabe-primary" />
+            <UserCog className="text-[color:var(--primary)]" />
           ) : (
-            <FaUserPlus className="text-sinabe-primary" />
+            <UserPlus className="text-[color:var(--primary)]" />
           )}
           {isEditing ? 'Editar miembro' : 'Agregar miembro'}
         </span>
       }
       size="md"
     >
-      <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">
+      <p className="text-sm text-[color:var(--foreground-muted)] mb-4">
         {isEditing
           ? 'Edita el rol de este miembro asignado al proyecto.'
           : 'Selecciona un usuario activo y asígnale un rol dentro del proyecto.'}
@@ -132,12 +124,13 @@ const ModalProjectMember = ({
           <Form className="space-y-4">
             {!isEditing && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  <span className="flex items-center gap-2">
-                    <FaUser className="text-gray-500" /> Usuario
-                  </span>
-                </label>
-                <AsyncSelect
+                <Combobox
+                  label={
+                    <span className="flex items-center gap-2">
+                      <User className="text-[color:var(--foreground-muted)]" />{' '}
+                      Usuario
+                    </span>
+                  }
                   cacheOptions
                   defaultOptions
                   loadOptions={loadUsers}
@@ -145,34 +138,28 @@ const ModalProjectMember = ({
                   value={values.user}
                   onChange={(value) => setFieldValue('user', value)}
                   components={{ Option: customUserOption }}
-                  styles={{
-                    control: (base) => ({
-                      ...base,
-                      backgroundColor: 'white',
-                      borderColor: '#d1d5db',
-                    }),
-                  }}
+                  error={errors.user && touched.user ? errors.user : null}
                 />
-                {errors.user && touched.user && (
-                  <div className="text-red-500 text-sm mt-1">{errors.user}</div>
-                )}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[color:var(--foreground)] mb-1">
                 <span className="flex items-center gap-2">
-                  <FaUserTag className="text-gray-500" /> Rol en el proyecto
+                  <UserCheck className="text-[color:var(--foreground-muted)]" />{' '}
+                  Rol en el proyecto
                 </span>
               </label>
               <Field
                 type="text"
                 name="role"
                 placeholder="Ej. Técnico, Coordinador"
-                className="w-full rounded-md border border-gray-300 p-2"
+                className="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] p-2.5 focus:ring-2 focus:ring-[color:var(--primary)] focus:border-[color:var(--primary)] transition-colors"
               />
               {errors.role && touched.role && (
-                <div className="text-red-500 text-sm mt-1">{errors.role}</div>
+                <div className="text-[color:var(--danger)] text-sm mt-1">
+                  {errors.role}
+                </div>
               )}
             </div>
 
@@ -180,16 +167,16 @@ const ModalProjectMember = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md flex items-center gap-2"
+                className="bg-[color:var(--surface-muted)] hover:bg-[color:var(--border)] text-[color:var(--foreground)] px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
               >
-                <FaTimes /> Cancelar
+                <X /> Cancelar
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-sinabe-primary hover:bg-sinabe-primary/80 text-white px-4 py-2 rounded-md flex items-center gap-2"
+                className="bg-[color:var(--primary)] hover:opacity-90 text-[color:var(--primary-foreground)] px-4 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
               >
-                <FaSave /> {isEditing ? 'Guardar cambios' : 'Agregar'}
+                <Save /> {isEditing ? 'Guardar cambios' : 'Agregar'}
               </button>
             </div>
           </Form>

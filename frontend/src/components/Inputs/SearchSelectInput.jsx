@@ -1,8 +1,8 @@
-import React from 'react';
+import { useMemo } from 'react';
 import { ErrorMessage } from 'formik';
 import { Label } from 'flowbite-react';
 import classNames from 'classnames';
-import Select from 'react-select/creatable';
+import Combobox from '../common/Combobox';
 
 const SearchSelectInput = ({
   field,
@@ -14,13 +14,23 @@ const SearchSelectInput = ({
 }) => {
   // Provide defaults for form properties
   const { touched = {}, errors = {}, setFieldValue = () => {} } = form;
-  const handleChange = (selectedOptions) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option) => option.value)
+
+  // Convert field values to selected options format for Combobox
+  const selectedOptions = useMemo(() => {
+    return props.options.filter((option) =>
+      field.value?.includes(option.value),
+    );
+  }, [field.value, props.options]);
+
+  const handleChange = (selectedOpts) => {
+    const values = selectedOpts
+      ? selectedOpts.map((option) => option.value)
       : [];
 
-    if (onSelect) {
-      selectedOptions.forEach((option) => {
+    setFieldValue(field?.name, values);
+
+    if (onSelect && selectedOpts) {
+      selectedOpts.forEach((option) => {
         onSelect(option);
       });
     }
@@ -34,24 +44,21 @@ const SearchSelectInput = ({
         color={touched[field?.name] && errors[field?.name] ? 'failure' : ''}
         value={props.label}
       />
-      <Select
-        {...field}
-        {...props}
+      <Combobox
+        options={props.options}
+        value={selectedOptions}
+        onChange={handleChange}
         isMulti
-        className="mt-1 border border-neutral-500 rounded-lg"
+        isCreatable
         closeMenuOnSelect={closeMenuOnSelect}
         placeholder="Selecciona una opción"
-        classNamePrefix="react-select"
-        onChange={handleChange}
-        value={props.options.filter((option) =>
-          field.value?.includes(option.value),
-        )}
-        options={props.options}
+        className="mt-1"
+        isClearable
       />
       <ErrorMessage
         name={field?.name || ''}
         component="div"
-        className="text-red-500 text-sm"
+        className="text-[var(--danger)] text-sm mt-1"
       />
     </div>
   );

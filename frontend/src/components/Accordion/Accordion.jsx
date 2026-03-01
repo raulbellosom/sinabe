@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { ChevronDown, ChevronUp, Box } from 'lucide-react';
 import classNames from 'classnames';
-import { MdOutlineViewInAr } from 'react-icons/md';
 
 const AccordionItem = ({ title, content }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,11 +21,11 @@ const AccordionItem = ({ title, content }) => {
       >
         <span className="text-sm lg:text-base font-semibold">
           <i>
-            <MdOutlineViewInAr size={22} className="mr-3 inline-block" />
+            <Box size={22} className="mr-3 inline-block" />
           </i>
           {title}
         </span>
-        <span>{isOpen ? <FaChevronUp /> : <FaChevronDown />}</span>
+        <span>{isOpen ? <ChevronUp /> : <ChevronDown />}</span>
       </button>
       {isOpen && (
         <div className="p-4 bg-white transition-all duration-500">

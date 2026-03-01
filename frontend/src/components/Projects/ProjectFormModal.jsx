@@ -1,8 +1,8 @@
 // src/components/Projects/ProjectFormModal.jsx
-import React from 'react';
+
 import ReusableModal from '../Modals/ReusableModal';
 import ProjectForm from './ProjectForm';
-import { IoMdClose } from 'react-icons/io';
+import { X, Save } from 'lucide-react';
 
 const ProjectFormModal = ({
   isOpen,
@@ -20,12 +20,12 @@ const ProjectFormModal = ({
       title={
         isEdit ? (
           <span className="flex items-center gap-2">
-            <IoMdClose className="opacity-0" /> {/* placeholder para alinear */}
+            <X className="opacity-0" /> {/* placeholder para alinear */}
             Editar Proyecto
           </span>
         ) : (
           <span className="flex items-center gap-2">
-            <IoMdClose className="opacity-0" /> {/* placeholder */}
+            <X className="opacity-0" /> {/* placeholder */}
             Crear Proyecto
           </span>
         )
@@ -35,14 +35,14 @@ const ProjectFormModal = ({
         {
           label: 'Cancelar',
           color: 'stone',
-          icon: IoMdClose,
+          icon: X,
           action: onClose,
         },
         {
           label: isEdit ? 'Guardar cambios' : 'Crear proyecto',
           color: 'purple',
           filled: true,
-          icon: IoMdClose, // puedes cambiar por FaSave si lo prefieres
+          icon: Save, // icono guardar
           action: () => document.getElementById('project-form-submit')?.click(),
         },
       ]}

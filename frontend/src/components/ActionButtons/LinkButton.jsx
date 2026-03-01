@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Button } from 'flowbite-react';
 import { getButtonClassNames } from '../../utils/getButtonClassNames';
 
 const LinkButton = ({
@@ -8,7 +7,7 @@ const LinkButton = ({
   filled,
   icon: Icon,
   label,
-  outline = false,
+  _outline = false,
   disabled = false,
   className,
 }) => {

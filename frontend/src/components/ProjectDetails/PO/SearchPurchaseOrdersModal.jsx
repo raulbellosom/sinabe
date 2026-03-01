@@ -1,13 +1,17 @@
 // src/components/Projects/SearchPurchaseOrdersModal.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ReusableModal from '../../Modals/ReusableModal';
-import { FaSearch, FaFileInvoice } from 'react-icons/fa';
 import {
   useSearchUnassignedPurchaseOrders,
   useAssignPurchaseOrderToProject,
 } from '../../../hooks/usePurchaseOrders';
 import Notifies from '../../Notifies/Notifies';
 import Skeleton from 'react-loading-skeleton';
+
+import {
+  FileText,
+  Search,
+} from 'lucide-react';
 
 const SearchPurchaseOrdersModal = ({ isOpen, onClose, projectId }) => {
   const { mutate: doSearch, isPending } = useSearchUnassignedPurchaseOrders();
@@ -46,7 +50,7 @@ const SearchPurchaseOrdersModal = ({ isOpen, onClose, projectId }) => {
       onClose={onClose}
       title={
         <span className="flex items-center gap-2">
-          <FaSearch className="text-gray-500" /> Buscar órdenes no asignadas
+          <Search className="text-gray-500" /> Buscar órdenes no asignadas
         </span>
       }
       size="md"
@@ -72,7 +76,7 @@ const SearchPurchaseOrdersModal = ({ isOpen, onClose, projectId }) => {
                 className="flex justify-between items-center py-2 hover:bg-gray-100 dark:hover:bg-gray-800 px-3 rounded"
               >
                 <div className="flex gap-3 items-center">
-                  <FaFileInvoice className="text-indigo-600" />
+                  <FileText className="text-indigo-600" />
                   <div>
                     <p className="font-medium text-sm">{order.code}</p>
                     <p className="text-xs text-gray-500">

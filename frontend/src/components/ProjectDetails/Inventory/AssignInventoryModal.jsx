@@ -1,7 +1,5 @@
 // File: src/components/ProjectDetails/Inventory/AssignInventoryModal.jsx
-import React, { useState } from 'react';
-import { FaEye } from 'react-icons/fa';
-import { MdInventory, MdRemoveCircle } from 'react-icons/md';
+import { useState } from 'react';
 import ReusableTable from '../../Table/ReusableTable';
 import InventorySearchInput from '../../InventoryComponents/InventorySearchInput';
 import {
@@ -15,6 +13,12 @@ import ConfirmRemoveInventoryModal from './ConfirmRemoveInventoryModal';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMediaQuery } from 'react-responsive';
 import Card from '../../Card/Card';
+
+import {
+  Eye,
+  Package,
+  XCircle,
+} from 'lucide-react';
 
 const AssignInventoryModal = ({ isOpen, onClose, deadlineId, onUpdate }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -113,7 +117,7 @@ const AssignInventoryModal = ({ isOpen, onClose, deadlineId, onUpdate }) => {
         isOpen={isOpen}
         onClose={onClose}
         title="Inventarios asignados a la deadline"
-        icon={MdInventory}
+        icon={Package}
         size="xl"
         className="mt-4 ml-4"
       >
@@ -173,7 +177,7 @@ const AssignInventoryModal = ({ isOpen, onClose, deadlineId, onUpdate }) => {
                         to={`/inventories/view/${inventory.id}`}
                         className="text-sm px-4 py-1 rounded-md text-white bg-blue-600 hover:bg-blue-700 flex gap-2 items-center"
                       >
-                        <FaEye size={16} />
+                        <Eye size={16} />
                         Ver
                       </Link>
                       <span className="mx-2 text-gray-400">|</span>
@@ -184,7 +188,7 @@ const AssignInventoryModal = ({ isOpen, onClose, deadlineId, onUpdate }) => {
                         }}
                         className="text-sm px-4 py-1 rounded-md text-white bg-red-600 hover:bg-red-700 flex gap-2 items-center"
                       >
-                        <MdRemoveCircle size={16} />
+                        <XCircle size={16} />
                         Remover
                       </button>
                     </div>
@@ -203,13 +207,13 @@ const AssignInventoryModal = ({ isOpen, onClose, deadlineId, onUpdate }) => {
               rowActions={(row) => [
                 {
                   key: 'main',
-                  icon: FaEye,
+                  icon: Eye,
                   label: 'Ver',
                   action: () => navigate(`/inventories/view/${row.id}`),
                 },
                 {
                   key: 'remove',
-                  icon: MdRemoveCircle,
+                  icon: XCircle,
                   label: 'Remover',
                   color: 'red',
                   action: () => {

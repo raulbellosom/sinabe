@@ -1,25 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import classNames from 'classnames';
-import { HiUser, HiCog, HiLogout, HiChevronDown } from 'react-icons/hi';
+import { User, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
+
 import { useAuthContext } from '../../context/AuthContext';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 
 import 'react-photo-view/dist/react-photo-view.css';
 
-// Estilos inline para asegurar que el PhotoView esté por encima del dropdown
 const photoViewOverrideStyles = `
   .PhotoView-Portal {
     z-index: 10001 !important;
   }
 `;
 
-/**
- * UserMenuDropdown - Menú de usuario con foto, nombre y opciones
- */
 const UserMenuDropdown = ({ className = '' }) => {
   const { user, logout } = useAuthContext();
   const navigate = useNavigate();
@@ -30,13 +27,11 @@ const UserMenuDropdown = ({ className = '' }) => {
   const buttonRef = useRef(null);
   const dropdownRef = useRef(null);
 
-  const { firstName, lastName, email, photo, role } = user || {};
+  const { firstName, lastName, email, photo } = user || {};
 
-  // Obtener URL de la foto con cache-buster basado en el ID
   const photoUrl = photo ? FormattedUrlImage(photo) : null;
   const photoKey = photo?.id || photo?.url || 'no-photo';
 
-  // Calcular posición del dropdown
   const updateDropdownPosition = () => {
     if (!buttonRef.current) return;
 
@@ -60,38 +55,36 @@ const UserMenuDropdown = ({ className = '' }) => {
   };
 
   useEffect(() => {
-    if (open) {
-      updateDropdownPosition();
-      window.addEventListener('scroll', updateDropdownPosition, true);
-      window.addEventListener('resize', updateDropdownPosition);
-      return () => {
-        window.removeEventListener('scroll', updateDropdownPosition, true);
-        window.removeEventListener('resize', updateDropdownPosition);
-      };
-    }
+    if (!open) return undefined;
+
+    updateDropdownPosition();
+    window.addEventListener('scroll', updateDropdownPosition, true);
+    window.addEventListener('resize', updateDropdownPosition);
+
+    return () => {
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+      window.removeEventListener('resize', updateDropdownPosition);
+    };
   }, [open]);
 
-  // Cerrar al hacer clic fuera (solo si PhotoView no está abierto)
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      // No cerrar si PhotoView está abierto
+    const handleClickOutside = (event) => {
       if (photoViewOpen) return;
 
       if (
         buttonRef.current &&
-        !buttonRef.current.contains(e.target) &&
+        !buttonRef.current.contains(event.target) &&
         dropdownRef.current &&
-        !dropdownRef.current.contains(e.target)
+        !dropdownRef.current.contains(event.target)
       ) {
         setOpen(false);
       }
     };
 
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () =>
-        document.removeEventListener('mousedown', handleClickOutside);
-    }
+    if (!open) return undefined;
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open, photoViewOpen]);
 
   const handleLogout = () => {
@@ -107,64 +100,61 @@ const UserMenuDropdown = ({ className = '' }) => {
   const menuItems = [
     {
       label: 'Mi Perfil',
-      icon: HiUser,
+      icon: User,
       onClick: () => handleNavigate('/account-settings'),
     },
     {
       label: 'Configuración',
-      icon: HiCog,
+      icon: Settings,
       onClick: () => handleNavigate('/preferences'),
     },
   ];
 
   return (
     <div className={classNames('relative', className)} ref={buttonRef}>
-      {/* Estilos para PhotoView z-index */}
       <style>{photoViewOverrideStyles}</style>
 
-      {/* Botón de usuario */}
       <button
         type="button"
         onClick={() => {
           if (!open) {
-            // Calcular posición ANTES de abrir para evitar flash
             updateDropdownPosition();
           }
-          setOpen(!open);
+          setOpen((prev) => !prev);
         }}
         className={classNames(
-          'flex items-center gap-2 p-1.5 pr-2 rounded-full transition-all duration-200',
-          open ? 'bg-gray-100 ring-2 ring-purple-300' : 'hover:bg-gray-50',
+          'flex items-center gap-2 rounded-full p-1.5 pr-2 transition-all duration-200',
+          open
+            ? 'bg-[color:var(--surface-muted)] ring-2 ring-[color:var(--primary)]/30'
+            : 'hover:bg-[color:var(--surface-muted)]',
         )}
       >
-        {/* Avatar */}
-        <div className="h-9 w-9 sm:h-8 sm:w-8 rounded-full overflow-hidden bg-gray-300 shrink-0">
+        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-300 sm:h-8 sm:w-8">
           {photoUrl ? (
             <img
               key={photoKey}
               src={photoUrl}
               alt={firstName}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-purple-500 text-white font-semibold text-sm">
+            <div className="flex h-full w-full items-center justify-center bg-[color:var(--primary)] text-sm font-semibold text-white">
               {firstName?.charAt(0)?.toUpperCase()}
             </div>
           )}
         </div>
-        {/* Nombre (solo en pantallas más grandes) */}
-        <span className="hidden sm:block text-sm font-medium text-gray-700 max-w-[80px] truncate">
+
+        <span className="hidden max-w-[80px] truncate text-sm font-medium text-[color:var(--foreground)] sm:block">
           {firstName}
         </span>
-        <HiChevronDown
+        <ChevronDown
           className={classNames(
-            'hidden sm:block w-4 h-4 text-gray-400 transition-transform duration-200',
+            'hidden h-4 w-4 text-[color:var(--foreground-muted)] transition-transform duration-200 sm:block',
             open && 'rotate-180',
           )}
         />
       </button>
 
-      {/* Dropdown en portal */}
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
@@ -176,10 +166,9 @@ const UserMenuDropdown = ({ className = '' }) => {
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
                 style={dropdownStyle}
-                className="z-[9999] bg-white rounded-xl border border-gray-200 shadow-xl overflow-hidden"
+                className="z-[9999] overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-xl"
               >
-                {/* Header con info del usuario */}
-                <div className="p-4 bg-gradient-to-br from-purple-50 to-white border-b border-gray-100">
+                <div className="border-b border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4">
                   <div className="flex items-center gap-3">
                     <PhotoProvider
                       maskOpacity={0.9}
@@ -188,16 +177,16 @@ const UserMenuDropdown = ({ className = '' }) => {
                       }}
                     >
                       <PhotoView src={photoUrl}>
-                        <div className="h-12 w-12 rounded-full overflow-hidden bg-gray-300 shrink-0 ring-2 ring-white shadow cursor-pointer hover:ring-purple-300 transition-all">
+                        <div className="h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded-full bg-gray-300 shadow ring-2 ring-white transition-all hover:ring-[color:var(--primary)]/30">
                           {photoUrl ? (
                             <img
                               key={photoKey}
                               src={photoUrl}
                               alt={firstName}
-                              className="w-full h-full object-cover"
+                              className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-purple-500 text-white font-bold text-lg">
+                            <div className="flex h-full w-full items-center justify-center bg-[color:var(--primary)] text-lg font-bold text-white">
                               {firstName?.charAt(0)?.toUpperCase()}
                             </div>
                           )}
@@ -205,37 +194,37 @@ const UserMenuDropdown = ({ className = '' }) => {
                       </PhotoView>
                     </PhotoProvider>
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-gray-900 truncate">
+                      <p className="truncate font-semibold text-[color:var(--foreground)]">
                         {firstName} {lastName}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">{email}</p>
+                      <p className="truncate text-xs text-[color:var(--foreground-muted)]">
+                        {email}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Opciones del menú */}
                 <div className="p-2">
                   {menuItems.map((item, index) => (
                     <button
-                      key={index}
+                      key={item.label}
                       type="button"
                       onClick={item.onClick}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-[color:var(--foreground)] transition-colors hover:bg-[color:var(--surface-muted)]"
                     >
-                      <item.icon className="w-5 h-5 text-gray-400" />
+                      <item.icon className="h-5 w-5 text-[color:var(--foreground-muted)]" />
                       {item.label}
                     </button>
                   ))}
                 </div>
 
-                {/* Separador y cerrar sesión */}
-                <div className="border-t border-gray-100 p-2">
+                <div className="border-t border-[color:var(--border)] p-2">
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-[color:var(--danger)] transition-colors hover:bg-[color:var(--danger)]/10"
                   >
-                    <HiLogout className="w-5 h-5" />
+                    <LogOut className="h-5 w-5" />
                     Cerrar sesión
                   </button>
                 </div>
@@ -249,3 +238,4 @@ const UserMenuDropdown = ({ className = '' }) => {
 };
 
 export default UserMenuDropdown;
+

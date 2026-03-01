@@ -1,14 +1,20 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useCatalogContext } from '../../../context/CatalogContext';
 import ModalRemove from '../../../components/Modals/ModalRemove';
 import ModalFormikForm from '../../../components/Modals/ModalFormikForm';
 import { ConditionFormSchema } from '../../../components/InventoryComponents/ConditionForm/ConditionFormSchema';
 import ConditionFormFields from '../../../components/InventoryComponents/ConditionForm/ConditionFormFields';
-import { FaListAlt, FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import useCheckPermissions from '../../../hooks/useCheckPermissions';
 import ReusableTable from '../../../components/Table/ReusableTable';
 import ActionButtons from '../../../components/ActionButtons/ActionButtons';
+
+import {
+  List,
+  Pencil,
+  Search,
+  Trash2,
+} from 'lucide-react';
 
 const Conditions = () => {
   const {
@@ -131,7 +137,7 @@ const Conditions = () => {
         render: (value) => (
           <div className="flex items-center gap-3">
             <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-              <FaListAlt className="text-orange-600 dark:text-orange-400 text-lg" />
+              <List className="text-orange-600 dark:text-orange-400 text-lg" />
             </div>
             <span className="font-semibold text-gray-700 dark:text-gray-200">
               {value}
@@ -166,7 +172,7 @@ const Conditions = () => {
       actions.push({
         key: 'main', // Set as main action
         label: 'Editar',
-        icon: FaEdit,
+        icon: Pencil,
         action: () => onEditCondition(row),
         color: 'yellow',
       });
@@ -175,7 +181,7 @@ const Conditions = () => {
       actions.push({
         key: 'delete',
         label: 'Eliminar',
-        icon: FaTrash,
+        icon: Trash2,
         action: () => onRemoveCondition(row.id),
         color: 'red',
       });
@@ -189,7 +195,7 @@ const Conditions = () => {
       <div className="p-4 pt-0 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-            <FaListAlt className="text-orange-600 dark:text-orange-400 text-xl" />
+            <List className="text-orange-600 dark:text-orange-400 text-xl" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-800 dark:text-white">
@@ -203,7 +209,7 @@ const Conditions = () => {
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Buscar condición..."

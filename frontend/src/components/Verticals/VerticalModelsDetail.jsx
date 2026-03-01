@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge, Button, TextInput } from 'flowbite-react';
-import {
-  FaChevronDown,
-  FaChevronUp,
-  FaTrashAlt,
-  FaPlus,
-  FaSearch,
-  FaCheck,
-  FaExchangeAlt,
-} from 'react-icons/fa';
 import classNames from 'classnames';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import Notifies from '../Notifies/Notifies';
 import ConfirmModal from '../Modals/ConfirmModal';
+
+import {
+  ArrowLeftRight,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Search,
+  Trash2,
+} from 'lucide-react';
 
 const VerticalModelsDetail = ({
   models = [],
@@ -129,7 +130,7 @@ const VerticalModelsDetail = ({
         {/* Integrated Search */}
         <div className="mb-4">
           <TextInput
-            icon={FaSearch}
+            icon={Search}
             placeholder="Buscar modelo para asignar o filtrar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -187,9 +188,9 @@ const VerticalModelsDetail = ({
                   >
                     <div className="flex items-center gap-2">
                       {modelDetailsOpen === model.id ? (
-                        <FaChevronUp className="text-xs" />
+                        <ChevronUp className="text-xs" />
                       ) : (
-                        <FaChevronDown className="text-xs" />
+                        <ChevronDown className="text-xs" />
                       )}
                       <span
                         className={classNames(
@@ -209,7 +210,7 @@ const VerticalModelsDetail = ({
                     {/* Status Chips */}
                     <div className="ml-5 mt-2 flex flex-wrap gap-2">
                       {isAssignedToCurrent && (
-                        <Badge color="indigo" icon={FaCheck}>
+                        <Badge color="indigo" icon={Check}>
                           Asignado aquí
                         </Badge>
                       )}
@@ -218,7 +219,7 @@ const VerticalModelsDetail = ({
                           <Badge
                             key={mv.verticalId}
                             color="warning"
-                            icon={FaExchangeAlt}
+                            icon={ArrowLeftRight}
                           >
                             En: {mv.vertical?.name || 'Otra Vertical'}
                           </Badge>
@@ -238,7 +239,7 @@ const VerticalModelsDetail = ({
                         color="failure"
                         onClick={() => handleUnassignClick(model)}
                       >
-                        <FaTrashAlt className="mr-2" /> Desasignar
+                        <Trash2 className="mr-2" /> Desasignar
                       </Button>
                     ) : (
                       <Button
@@ -246,7 +247,7 @@ const VerticalModelsDetail = ({
                         color="indigo"
                         onClick={() => handleAssign(model.id)}
                       >
-                        <FaPlus className="mr-2" /> Asignar
+                        <Plus className="mr-2" /> Asignar
                       </Button>
                     )}
                   </div>

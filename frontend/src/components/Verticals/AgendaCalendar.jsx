@@ -1,8 +1,11 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import classNames from 'classnames';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import {
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 
 dayjs.extend(weekOfYear);
@@ -397,7 +400,7 @@ const AgendaCalendar = ({
             }
             className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
           >
-            <FaChevronLeft />
+            <ChevronLeft />
           </button>
           <h2 className="text-sm md:text-xl font-bold text-gray-800 capitalize min-w-[150px] text-center">
             {view === 'week'
@@ -412,7 +415,7 @@ const AgendaCalendar = ({
             }
             className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
           >
-            <FaChevronRight />
+            <ChevronRight />
           </button>
         </div>
 

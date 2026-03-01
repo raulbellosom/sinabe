@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { ErrorMessage } from 'formik';
-import { MdClose, MdOutlineKeyboardArrowDown } from 'react-icons/md';
 import classNames from 'classnames';
 import { Label } from 'flowbite-react';
+
+import { ChevronDown, X } from 'lucide-react';
 
 const Dropdown = ({
   options,
@@ -12,7 +12,7 @@ const Dropdown = ({
   highlightedIndex,
 }) => {
   return (
-    <div className="mt-2 pt-1 min-w-full max-h-[50dvh] overflow-y-auto border border-gray-300 bg-white rounded-md shadow-lg absolute z-30">
+    <div className="mt-1 w-full max-h-[50dvh] overflow-y-auto border border-[color:var(--border)] bg-[color:var(--surface)] rounded-lg shadow-lg absolute z-30">
       {options.map((option, i) => (
         <div
           key={i}
@@ -21,15 +21,16 @@ const Dropdown = ({
             onSelect(option);
           }}
           className={classNames(
-            'py-2 px-4 text-sm cursor-pointer border-b border-b-neutral-100 flex gap-1 justify-between items-center rounded-lg transition ease-in-out duration-100 mx-2',
+            'py-2.5 px-3 text-sm cursor-pointer flex gap-1 justify-between items-center transition-colors duration-150',
             {
-              'bg-blue-500 text-white': selectedOption?.value === option.value,
-              'bg-gray-200':
+              'bg-[color:var(--primary)] text-[color:var(--primary-foreground)]':
+                selectedOption?.value === option.value,
+              'bg-[color:var(--surface-muted)]':
                 i === highlightedIndex &&
                 selectedOption?.value !== option.value,
-              'hover:bg-purple-800 hover:text-white':
+              'hover:bg-[color:var(--surface-muted)]':
                 selectedOption?.value !== option.value,
-              'bg-green-50 dark:bg-green-900/10 text-green-700 dark:text-green-300 ring-1 ring-inset ring-green-600/20':
+              'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300':
                 option.isSelected && selectedOption?.value !== option.value,
             },
             { [itemsClassName]: itemsClassName },
@@ -311,38 +312,43 @@ const AutocompleteInput = ({
       {label && (
         <Label
           htmlFor={field?.name}
-          className={classNames('block text-sm font-medium', {
-            'text-red-500': touched[field?.name] && errors[field?.name],
+          className={classNames('block text-sm font-medium mb-1.5', {
+            'text-[color:var(--danger)]':
+              touched[field?.name] && errors[field?.name],
           })}
         >
           {label}
         </Label>
       )}
-      <div className="relative mt-1">
+      <div className="relative">
         {Icon && (
           <div
             className={classNames(
-              `absolute text-lg left-3 top-1/2 transform ${!disabled && 'text-neutral-500'} -translate-y-1/2`,
-              { 'text-neutral-400': disabled && !inputValue },
-              { 'text-red-500': touched[field?.name] && errors[field?.name] },
+              'absolute left-3 top-1/2 -translate-y-1/2 text-[color:var(--foreground-muted)]',
+              { 'opacity-50': disabled && !inputValue },
+              {
+                'text-[color:var(--danger)]':
+                  touched[field?.name] && errors[field?.name],
+              },
             )}
           >
-            <Icon />
+            <Icon size={18} />
           </div>
         )}
         <input
           {...field}
           type="text"
           className={classNames(
-            'w-full text-xs md:text-sm py-2.5 px-3 border rounded-md focus:outline-none focus:ring',
+            'w-full min-h-[42px] text-sm py-2.5 px-3 rounded-lg transition-all duration-200',
+            'border border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)]',
+            'placeholder:text-[color:var(--foreground-muted)]',
+            'focus:outline-none focus:ring-2 focus:ring-[color:var(--primary)]/30 focus:border-[color:var(--primary)]',
             {
-              'border-neutral-500 focus:border-blue-500': !(
-                touched[field?.name] && errors[field?.name]
-              ),
-              'border-red-500 focus:border-red-500 focus:ring-red-500':
+              'border-[color:var(--danger)] focus:ring-[color:var(--danger)]/30 focus:border-[color:var(--danger)]':
                 touched[field?.name] && errors[field?.name],
             },
             Icon && 'pl-10',
+            'pr-16', // Space for clear and chevron icons
           )}
           placeholder={placeholder}
           value={inputValue}
@@ -354,21 +360,21 @@ const AutocompleteInput = ({
           ref={inputRef}
         />
         {isLoading && (
-          <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+          <div className="absolute right-10 top-1/2 -translate-y-1/2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[color:var(--primary)]"></div>
           </div>
         )}
         {isClearable && inputValue && !disabled && (
-          <MdClose
-            size={18}
+          <X
+            size={16}
             onClick={handleClearInput}
-            className="hover:text-red-500 absolute right-10 top-1/2 transform -translate-y-1/2 cursor-pointer"
+            className="absolute right-9 top-1/2 -translate-y-1/2 cursor-pointer text-[color:var(--foreground-muted)] hover:text-[color:var(--danger)] transition-colors"
           />
         )}
-        <MdOutlineKeyboardArrowDown
-          size={24}
+        <ChevronDown
+          size={18}
           className={classNames(
-            'absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer',
+            'absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-[color:var(--foreground-muted)] transition-transform duration-200',
             { 'rotate-180': showDropdown },
           )}
           onClick={handleToggleDropdown}

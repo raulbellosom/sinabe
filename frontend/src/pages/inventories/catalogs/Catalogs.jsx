@@ -1,12 +1,16 @@
 import React, { useEffect, useRef, Suspense } from 'react';
 import { Tabs } from 'flowbite-react';
-import { HiCubeTransparent } from 'react-icons/hi';
-import { BiCategory } from 'react-icons/bi';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
-import { FaListAlt, FaMapMarkerAlt } from 'react-icons/fa';
-import { RiInputField } from 'react-icons/ri';
 import useCheckPermissions from '../../../hooks/useCheckPermissions';
 import NotFound from '../../notFound/NotFound';
+
+import {
+  Box,
+  FormInput,
+  Layers,
+  List,
+  MapPin,
+  Tag,
+} from 'lucide-react';
 
 const Models = React.lazy(() => import('./Models'));
 const Brands = React.lazy(() => import('./Brands'));
@@ -55,16 +59,16 @@ const Catalogs = () => {
   }
 
   return (
-    <div className="w-full dark:bg-gray-800 rounded-lg shadow-md overflow-hidden min-h-[80vh]">
+    <div className="w-full bg-[color:var(--surface)] rounded-lg shadow-md overflow-hidden min-h-[80vh]">
       <Tabs
         aria-label="Catalog tabs"
         variant="underline"
         ref={tabsRef}
         onActiveTabChange={handleTabChange}
-        className="py-2 bg-white border-b border-gray-200 dark:border-gray-700"
+        className="py-2 bg-[color:var(--surface)] border-b border-[color:var(--border)]"
       >
         {isViewModelPermission.hasPermission && (
-          <Tabs.Item title="Modelos" icon={HiCubeTransparent}>
+          <Tabs.Item title="Modelos" icon={Box}>
             <Suspense
               fallback={
                 <div className=" text-center dark:text-white">
@@ -77,7 +81,7 @@ const Catalogs = () => {
           </Tabs.Item>
         )}
         {isViewBrandPermission.hasPermission && (
-          <Tabs.Item title="Marcas" icon={PiTrademarkRegisteredBold}>
+          <Tabs.Item title="Marcas" icon={Tag}>
             <Suspense
               fallback={
                 <div className=" text-center dark:text-white">
@@ -90,7 +94,7 @@ const Catalogs = () => {
           </Tabs.Item>
         )}
         {isViewTypePermission.hasPermission && (
-          <Tabs.Item title="Tipos" icon={BiCategory}>
+          <Tabs.Item title="Tipos" icon={Layers}>
             <Suspense
               fallback={
                 <div className=" text-center dark:text-white">
@@ -103,7 +107,7 @@ const Catalogs = () => {
           </Tabs.Item>
         )}
         {isViewLocationPermission.hasPermission && (
-          <Tabs.Item title="Ubicaciones" icon={FaMapMarkerAlt}>
+          <Tabs.Item title="Ubicaciones" icon={MapPin}>
             <Suspense
               fallback={
                 <div className=" text-center dark:text-white">
@@ -116,7 +120,7 @@ const Catalogs = () => {
           </Tabs.Item>
         )}
         {isViewConditionPermission.hasPermission && (
-          <Tabs.Item title="Condición" icon={FaListAlt}>
+          <Tabs.Item title="Condición" icon={List}>
             <Suspense
               fallback={
                 <div className=" text-center dark:text-white">
@@ -129,7 +133,7 @@ const Catalogs = () => {
           </Tabs.Item>
         )}
         {isCreateCustomFieldPermission.hasPermission && (
-          <Tabs.Item title="Campos" icon={RiInputField}>
+          <Tabs.Item title="Campos" icon={FormInput}>
             <Suspense
               fallback={
                 <div className=" text-center dark:text-white">

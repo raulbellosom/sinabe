@@ -1,16 +1,6 @@
 // pages/InvoicesPage.jsx
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import {
-  FaPlus,
-  FaEdit,
-  FaTrashAlt,
-  FaSearch,
-  FaFileInvoice,
-  FaFilePdf,
-  FaFileCode,
-} from 'react-icons/fa';
-import { MdInventory } from 'react-icons/md';
 import { useDeleteInvoice, useSearchInvoices } from '../../hooks/useInvoices';
 import ReusableTable from '../../components/Table/ReusableTable';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
@@ -22,6 +12,16 @@ import { Badge } from 'flowbite-react';
 import { useDebounce } from '../../hooks/useDebounce';
 import { getFileUrl } from '../../utils/getFileUrl';
 import { useMediaQuery } from 'react-responsive';
+
+import {
+  FileCode,
+  FileText,
+  Package,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from 'lucide-react';
 
 const InvoicesPage = () => {
   const { orderId } = useParams();
@@ -152,7 +152,7 @@ const InvoicesPage = () => {
                 className="text-red-500"
                 title="Ver PDF"
               >
-                <FaFilePdf size={20} />
+                <FileText size={20} />
               </a>
             )}
             {row.xmlUrl && (
@@ -163,7 +163,7 @@ const InvoicesPage = () => {
                 className="text-blue-500"
                 title="Ver XML"
               >
-                <FaFileCode size={20} />
+                <FileCode size={20} />
               </a>
             )}
           </div>
@@ -185,7 +185,7 @@ const InvoicesPage = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-lg font-bold text-sinabe-primary flex items-center gap-2">
           <span>
-            <FaFileInvoice />
+            <FileText />
           </span>
           {isMobile ? 'Facturas de la OC' : 'Facturas de la Orden de Compra'}
         </h1>
@@ -194,7 +194,7 @@ const InvoicesPage = () => {
             extraActions={[
               {
                 label: 'Nueva factura',
-                icon: FaPlus,
+                icon: Plus,
                 action: () => {
                   setSelectedInvoice(null);
                   setShowInvoiceModal(true);
@@ -221,7 +221,7 @@ const InvoicesPage = () => {
           }
           className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-4 focus:outline-none focus:ring focus:border-blue-500"
         />
-        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
       </div>
 
       <ReusableTable
@@ -258,14 +258,14 @@ const InvoicesPage = () => {
         rowActions={(inv) => [
           {
             key: 'main',
-            icon: MdInventory,
+            icon: Package,
             label: 'Inventarios',
             color: 'purple',
             action: () => handleOpenInventoryModal(inv),
           },
           {
             key: 'edit',
-            icon: FaEdit,
+            icon: Pencil,
             label: 'Editar',
             action: () => {
               setSelectedInvoice(inv);
@@ -274,7 +274,7 @@ const InvoicesPage = () => {
           },
           {
             key: 'delete',
-            icon: FaTrashAlt,
+            icon: Trash2,
             label: 'Eliminar',
             action: () => deleteInvoice.mutate(inv.id),
           },
@@ -293,7 +293,7 @@ const InvoicesPage = () => {
         isOpen={showInventoryModal}
         onClose={handleCloseInventoryModal}
         title={`Inventario de ${invoiceToManageInventory?.code || ''}`}
-        icon={MdInventory}
+        icon={Package}
         size="xl"
         className="mt-4 ml-4"
       >

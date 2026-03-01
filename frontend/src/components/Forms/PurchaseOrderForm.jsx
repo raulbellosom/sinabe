@@ -1,10 +1,13 @@
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import TextInput from '../Inputs/TextInput';
 import TextArea from '../Inputs/TextArea';
-import { FaFileInvoice, FaTruck } from 'react-icons/fa';
 
+import {
+  FileText,
+  Truck,
+} from 'lucide-react';
 const validationSchema = Yup.object({
   code: Yup.string().required('El código es requerido'),
   supplier: Yup.string().required('El proveedor es requerido'),
@@ -44,7 +47,7 @@ const PurchaseOrderForm = forwardRef(
               component={TextInput}
               label="* Código de la Orden"
               placeholder="Ej: PO-2024-001"
-              icon={FaFileInvoice}
+              icon={FileText}
             />
 
             <Field
@@ -52,7 +55,7 @@ const PurchaseOrderForm = forwardRef(
               component={TextInput}
               label="* Proveedor"
               placeholder="Nombre del proveedor"
-              icon={FaTruck}
+              icon={Truck}
             />
 
             <Field

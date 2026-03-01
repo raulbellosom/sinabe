@@ -1,16 +1,16 @@
-import React from 'react';
-import { Card, Badge, Button, Tooltip } from 'flowbite-react';
-import {
-  HiExternalLink,
-  HiInformationCircle,
-  HiCalendar,
-  HiHashtag,
-  HiLocationMarker,
-  HiDocument,
-  HiCube,
-  HiSparkles,
-} from 'react-icons/hi';
 
+import { Card, Badge, Button, Tooltip } from 'flowbite-react';
+
+import {
+  Box,
+  Calendar,
+  ExternalLink,
+  FileText,
+  Hash,
+  Info,
+  MapPin,
+  Sparkles,
+} from 'lucide-react';
 const AIResultCard = ({
   result,
   onSelect,
@@ -85,7 +85,7 @@ const AIResultCard = ({
                     size="sm"
                     className="flex items-center gap-1"
                   >
-                    <HiSparkles className="text-xs" />
+                    <Sparkles className="text-xs" />
                     {(result.score * 100).toFixed(0)}%
                   </Badge>
                 </Tooltip>
@@ -99,7 +99,7 @@ const AIResultCard = ({
         {/* Key Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
           <div className="flex items-center gap-2">
-            <HiHashtag className="text-gray-400 flex-shrink-0" />
+            <Hash className="text-gray-400 flex-shrink-0" />
             <span className="font-medium">Serial:</span>
             <span className="font-mono bg-gray-100 px-2 py-1 rounded text-xs">
               {result.serialNumber}
@@ -108,7 +108,7 @@ const AIResultCard = ({
 
           {result.activeNumber && (
             <div className="flex items-center gap-2">
-              <HiCube className="text-gray-400 flex-shrink-0" />
+              <Box className="text-gray-400 flex-shrink-0" />
               <span className="font-medium">No. Activo:</span>
               <span className="font-mono text-purple-600">
                 {result.activeNumber}
@@ -118,7 +118,7 @@ const AIResultCard = ({
 
           {result.receptionDate && (
             <div className="flex items-center gap-2">
-              <HiCalendar className="text-gray-400 flex-shrink-0" />
+              <Calendar className="text-gray-400 flex-shrink-0" />
               <span className="font-medium">Recepción:</span>
               <span>{formatDate(result.receptionDate)}</span>
             </div>
@@ -126,7 +126,7 @@ const AIResultCard = ({
 
           {result.createdAt && (
             <div className="flex items-center gap-2">
-              <HiCalendar className="text-blue-400 flex-shrink-0" />
+              <Calendar className="text-blue-400 flex-shrink-0" />
               <span className="font-medium">Creado:</span>
               <span>{formatDate(result.createdAt)}</span>
             </div>
@@ -134,7 +134,7 @@ const AIResultCard = ({
 
           {result.internalFolio && (
             <div className="flex items-center gap-2">
-              <HiDocument className="text-green-400 flex-shrink-0" />
+              <FileText className="text-green-400 flex-shrink-0" />
               <span className="font-medium">Folio Interno:</span>
               <span className="font-mono text-green-600">
                 {result.internalFolio}
@@ -144,7 +144,7 @@ const AIResultCard = ({
 
           {customFields.Ubicación && (
             <div className="flex items-center gap-2">
-              <HiLocationMarker className="text-red-400 flex-shrink-0" />
+              <MapPin className="text-red-400 flex-shrink-0" />
               <span className="font-medium">Ubicación:</span>
               <span>{customFields.Ubicación}</span>
             </div>
@@ -152,7 +152,7 @@ const AIResultCard = ({
 
           {customFields.Cantidad && (
             <div className="flex items-center gap-2">
-              <HiCube className="text-indigo-400 flex-shrink-0" />
+              <Box className="text-indigo-400 flex-shrink-0" />
               <span className="font-medium">Cantidad:</span>
               <span className="font-semibold text-indigo-600">
                 {customFields.Cantidad}
@@ -165,7 +165,7 @@ const AIResultCard = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm bg-gray-50 p-3 rounded">
             {result.invoiceCode && (
               <div className="flex items-center gap-2">
-                <HiDocument className="text-gray-400" />
+                <FileText className="text-gray-400" />
                 <span className="font-medium">Factura:</span>
                 <span className="font-mono">{result.invoiceCode}</span>
               </div>
@@ -173,7 +173,7 @@ const AIResultCard = ({
 
             {result.purchaseOrderCode && (
               <div className="flex items-center gap-2">
-                <HiDocument className="text-gray-400" />
+                <FileText className="text-gray-400" />
                 <span className="font-medium">O.C.:</span>
                 <span className="font-mono">{result.purchaseOrderCode}</span>
               </div>
@@ -204,7 +204,7 @@ const AIResultCard = ({
             onClick={onNavigate}
             className="flex items-center justify-center gap-1.5 px-3 py-2"
           >
-            <HiExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-4 h-4" />
             <span>Ver Inventario</span>
           </Button>
 
@@ -214,7 +214,7 @@ const AIResultCard = ({
             onClick={onViewSpecs}
             className="flex items-center justify-center gap-1.5 px-3 py-2 border border-gray-300 hover:bg-gray-50"
           >
-            <HiInformationCircle className="w-4 h-4" />
+            <Info className="w-4 h-4" />
             <span>Ficha Técnica</span>
           </Button>
         </div>

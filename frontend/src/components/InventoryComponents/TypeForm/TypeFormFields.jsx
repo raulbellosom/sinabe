@@ -1,9 +1,11 @@
-import React from 'react';
+
 import { Field } from 'formik';
 import TextInput from '../../Inputs/TextInput';
-import { BiCategory } from 'react-icons/bi';
-import { FaSitemap } from 'react-icons/fa';
 
+import {
+  Layers,
+  Network,
+} from 'lucide-react';
 const TypeFormFields = () => {
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -13,7 +15,7 @@ const TypeFormFields = () => {
         component={TextInput}
         label="Nombre"
         type="text"
-        icon={BiCategory}
+        icon={Layers}
         className="col-span-1"
       />
       <Field

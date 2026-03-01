@@ -1,6 +1,6 @@
 const InventoryReducer = (state, action) => {
   switch (action.type) {
-    case 'FETCH_INVENTORIES_SUCCESS':
+    case 'FETCH_INVENTORIES_SUCCESS': {
       const { data, pagination } = action.payload;
       return {
         ...state,
@@ -8,6 +8,7 @@ const InventoryReducer = (state, action) => {
         pagination,
         loading: false,
       };
+    }
     case 'FETCH_INVENTORY':
       return {
         ...state,
@@ -26,7 +27,7 @@ const InventoryReducer = (state, action) => {
         ...state,
         inventories: [
           ...state.inventories,
-          ...action.payload?.createdInventories,
+          ...(action.payload?.createdInventories || []),
         ],
         loading: false,
       };
@@ -57,7 +58,7 @@ const InventoryReducer = (state, action) => {
         invoices: action.payload,
         loading: false,
       };
-    case 'CREATE_PURCHASE_ORDER':
+    case 'CREATE_PURCHASE_ORDER': {
       const formattedPO = {
         id: action.payload.id,
         label: action.payload.code,
@@ -71,7 +72,8 @@ const InventoryReducer = (state, action) => {
         purchaseOrders: [...state.purchaseOrders, formattedPO],
         loading: false,
       };
-    case 'CREATE_INVOICE':
+    }
+    case 'CREATE_INVOICE': {
       const formattedInvoice = {
         id: action.payload.id,
         label: action.payload.code,
@@ -85,13 +87,14 @@ const InventoryReducer = (state, action) => {
         invoices: [...state.invoices, formattedInvoice],
         loading: false,
       };
+    }
     case 'FETCH_LOCATIONS_SUCCESS':
       return {
         ...state,
         locations: action.payload,
         loading: false,
       };
-    case 'CREATE_LOCATION':
+    case 'CREATE_LOCATION': {
       const formattedLocation = {
         id: action.payload.id,
         label: action.payload.name,
@@ -103,6 +106,7 @@ const InventoryReducer = (state, action) => {
         locations: [...state.locations, formattedLocation],
         loading: false,
       };
+    }
     default:
       return state;
   }

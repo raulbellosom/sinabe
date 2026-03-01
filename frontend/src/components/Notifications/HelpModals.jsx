@@ -1,7 +1,11 @@
-import React from 'react';
+
 import { Modal, Button } from 'flowbite-react';
-import { HiInformationCircle, HiClipboardCopy } from 'react-icons/hi';
 import { toast } from 'react-hot-toast';
+
+import {
+  Copy,
+  Info,
+} from 'lucide-react';
 
 /**
  * Modal de ayuda para expresiones CRON
@@ -30,7 +34,7 @@ const CronHelpModal = ({ show, onClose }) => {
     <Modal show={show} onClose={onClose} size="xl">
       <Modal.Header>
         <div className="flex items-center gap-2">
-          <HiInformationCircle className="w-6 h-6 text-blue-500" />
+          <Info className="w-6 h-6 text-blue-500" />
           <span>Guía de Expresiones CRON</span>
         </div>
       </Modal.Header>
@@ -163,7 +167,7 @@ const CronHelpModal = ({ show, onClose }) => {
                     className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-blue-600 rounded transition-all"
                     title="Copiar"
                   >
-                    <HiClipboardCopy className="w-4 h-4" />
+                    <Copy className="w-4 h-4" />
                   </button>
                 </div>
               ))}
@@ -305,7 +309,7 @@ const JsonFilterHelpModal = ({ show, onClose, entity = 'inventory' }) => {
     <Modal show={show} onClose={onClose} size="xl">
       <Modal.Header>
         <div className="flex items-center gap-2">
-          <HiInformationCircle className="w-6 h-6 text-blue-500" />
+          <Info className="w-6 h-6 text-blue-500" />
           <span>Guía de Filtros JSON</span>
         </div>
       </Modal.Header>
@@ -444,7 +448,7 @@ const JsonFilterHelpModal = ({ show, onClose, entity = 'inventory' }) => {
                       className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-blue-600 rounded transition-all"
                       title="Copiar"
                     >
-                      <HiClipboardCopy className="w-4 h-4" />
+                      <Copy className="w-4 h-4" />
                     </button>
                   </div>
                   <pre className="mt-2 p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-600 text-xs font-mono text-gray-700 dark:text-gray-300 overflow-x-auto">

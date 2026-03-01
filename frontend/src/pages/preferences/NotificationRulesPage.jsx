@@ -2,7 +2,7 @@
  * Página de Reglas de Notificación
  * Con tabs para separar "Mis Reglas" vs "Suscritas" (donde me agregaron)
  */
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   Card,
   Button,
@@ -14,22 +14,6 @@ import {
   Tabs,
   Tooltip,
 } from 'flowbite-react';
-import {
-  HiPlus,
-  HiPencil,
-  HiTrash,
-  HiPlay,
-  HiClock,
-  HiMail,
-  HiBell,
-  HiRefresh,
-  HiChartBar,
-  HiUser,
-  HiUserRemove,
-  HiUsers,
-  HiViewGrid,
-  HiEye,
-} from 'react-icons/hi';
 import { useNotifications } from '../../context/NotificationContext';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -37,6 +21,23 @@ import { toast } from 'react-hot-toast';
 import NotificationRuleForm from '../../components/Notifications/NotificationRuleForm';
 import NotificationRuleTestModal from '../../components/Notifications/NotificationRuleTestModal';
 import RuleReadStatusModal from '../../components/Notifications/RuleReadStatusModal';
+
+import {
+  BarChart2,
+  Bell,
+  Clock,
+  Eye,
+  LayoutGrid,
+  Mail,
+  Pencil,
+  Play,
+  Plus,
+  RefreshCw,
+  Trash2,
+  User,
+  UserMinus,
+  Users,
+} from 'lucide-react';
 
 const NotificationRulesPage = () => {
   const {
@@ -193,7 +194,7 @@ const NotificationRulesPage = () => {
         switch (c.channel) {
           case 'EMAIL':
             return (
-              <HiMail
+              <Mail
                 key={c.id}
                 className="w-4 h-4 text-blue-500"
                 title="Email"
@@ -201,7 +202,7 @@ const NotificationRulesPage = () => {
             );
           case 'IN_APP':
             return (
-              <HiBell
+              <Bell
                 key={c.id}
                 className="w-4 h-4 text-green-500"
                 title="In-App"
@@ -222,7 +223,7 @@ const NotificationRulesPage = () => {
     if (rulesList.length === 0) {
       return (
         <Card className="text-center py-12">
-          <HiBell className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+          <Bell className="w-16 h-16 mx-auto text-gray-300 mb-4" />
           <h3 className="text-lg font-medium text-gray-600">
             {isOwner
               ? 'No has creado reglas'
@@ -235,7 +236,7 @@ const NotificationRulesPage = () => {
           </p>
           {isOwner && (
             <Button color="blue" onClick={() => setShowCreateModal(true)}>
-              <HiPlus className="w-4 h-4 mr-1" />
+              <Plus className="w-4 h-4 mr-1" />
               Crear Regla
             </Button>
           )}
@@ -286,7 +287,7 @@ const NotificationRulesPage = () => {
                   <Table.Cell>
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                        <HiUser className="w-4 h-4 text-blue-600" />
+                        <User className="w-4 h-4 text-blue-600" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">
@@ -310,7 +311,7 @@ const NotificationRulesPage = () => {
                 </Table.Cell>
                 <Table.Cell>
                   <div className="flex items-start gap-2 text-sm text-gray-600">
-                    <HiClock className="w-4 h-4 mt-0.5 shrink-0" />
+                    <Clock className="w-4 h-4 mt-0.5 shrink-0" />
                     {formatSchedule(rule)}
                   </div>
                 </Table.Cell>
@@ -349,7 +350,7 @@ const NotificationRulesPage = () => {
                             size="xs"
                             onClick={() => setTestingRule(rule)}
                           >
-                            <HiPlay className="w-4 h-4" />
+                            <Play className="w-4 h-4" />
                           </Button>
                         </Tooltip>
                         <Tooltip content="Ver lecturas">
@@ -358,7 +359,7 @@ const NotificationRulesPage = () => {
                             size="xs"
                             onClick={() => setReadStatusRule(rule)}
                           >
-                            <HiEye className="w-4 h-4" />
+                            <Eye className="w-4 h-4" />
                           </Button>
                         </Tooltip>
                         <Tooltip content="Ver historial">
@@ -367,7 +368,7 @@ const NotificationRulesPage = () => {
                             size="xs"
                             onClick={() => handleViewHistory(rule)}
                           >
-                            <HiChartBar className="w-4 h-4" />
+                            <BarChart2 className="w-4 h-4" />
                           </Button>
                         </Tooltip>
                         <Tooltip content="Editar">
@@ -376,7 +377,7 @@ const NotificationRulesPage = () => {
                             size="xs"
                             onClick={() => setEditingRule(rule)}
                           >
-                            <HiPencil className="w-4 h-4" />
+                            <Pencil className="w-4 h-4" />
                           </Button>
                         </Tooltip>
                         <Tooltip content="Eliminar">
@@ -385,7 +386,7 @@ const NotificationRulesPage = () => {
                             size="xs"
                             onClick={() => handleDelete(rule)}
                           >
-                            <HiTrash className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </Tooltip>
                       </>
@@ -398,7 +399,7 @@ const NotificationRulesPage = () => {
                             size="xs"
                             onClick={() => handleViewHistory(rule)}
                           >
-                            <HiChartBar className="w-4 h-4" />
+                            <BarChart2 className="w-4 h-4" />
                           </Button>
                         </Tooltip>
                         <Tooltip content="Desuscribirse">
@@ -407,7 +408,7 @@ const NotificationRulesPage = () => {
                             size="xs"
                             onClick={() => openUnsubscribeModal(rule)}
                           >
-                            <HiUserRemove className="w-4 h-4" />
+                            <UserMinus className="w-4 h-4" />
                           </Button>
                         </Tooltip>
                       </>
@@ -436,7 +437,7 @@ const NotificationRulesPage = () => {
 
           <div className="flex items-center gap-2">
             <Button color="light" size="sm" onClick={fetchRules}>
-              <HiRefresh className="w-4 h-4 mr-1" />
+              <RefreshCw className="w-4 h-4 mr-1" />
               Actualizar
             </Button>
             <Button
@@ -444,7 +445,7 @@ const NotificationRulesPage = () => {
               size="sm"
               onClick={() => setShowCreateModal(true)}
             >
-              <HiPlus className="w-4 h-4 mr-1" />
+              <Plus className="w-4 h-4 mr-1" />
               Nueva Regla
             </Button>
           </div>
@@ -467,7 +468,7 @@ const NotificationRulesPage = () => {
               active={activeTab === 'mine'}
               title={
                 <div className="flex items-center gap-2">
-                  <HiViewGrid className="w-4 h-4" />
+                  <LayoutGrid className="w-4 h-4" />
                   <span>Mis Reglas</span>
                   {myRules.length > 0 && (
                     <Badge color="blue" size="sm">
@@ -483,7 +484,7 @@ const NotificationRulesPage = () => {
               active={activeTab === 'subscribed'}
               title={
                 <div className="flex items-center gap-2">
-                  <HiUsers className="w-4 h-4" />
+                  <Users className="w-4 h-4" />
                   <span>Suscritas</span>
                   {subscribedRules.length > 0 && (
                     <Badge color="purple" size="sm">
@@ -610,7 +611,7 @@ const NotificationRulesPage = () => {
           <Modal.Header>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                <HiUserRemove className="w-5 h-5 text-orange-600" />
+                <UserMinus className="w-5 h-5 text-orange-600" />
               </div>
               <span>Desuscribirse de la regla</span>
             </div>
@@ -628,7 +629,7 @@ const NotificationRulesPage = () => {
               {unsubscribeModal?.createdBy && (
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                    <HiUser className="w-5 h-5 text-blue-600" />
+                    <User className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">
@@ -674,7 +675,7 @@ const NotificationRulesPage = () => {
                   </>
                 ) : (
                   <>
-                    <HiUserRemove className="w-4 h-4 mr-2" />
+                    <UserMinus className="w-4 h-4 mr-2" />
                     Desuscribirse
                   </>
                 )}

@@ -1,13 +1,16 @@
 import { Dropdown } from 'flowbite-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import ActionButtons from '../ActionButtons/ActionButtons';
-import { BsThreeDotsVertical } from 'react-icons/bs';
 import TableHeader from '../Table/TableHeader';
 import TableActions from '../Table/TableActions';
-import { IoMdAdd } from 'react-icons/io';
 import ModalViewer from '../Modals/ModalViewer';
 import classNames from 'classnames';
+
+import {
+  MoreVertical,
+  Plus,
+} from 'lucide-react';
 
 const CatalogCardList = ({
   data = [],
@@ -63,7 +66,7 @@ const CatalogCardList = ({
                     <Dropdown
                       className="min-w-[100px] w-36"
                       label={
-                        <BsThreeDotsVertical
+                        <MoreVertical
                           size={32}
                           className="p-2 rounded-full top-2 right-2 hover:bg-neutral-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-100"
                         />
@@ -129,7 +132,7 @@ CatalogCardList.Skeleton = () => {
                     label: 'Nuevo',
                     action: () => {},
                     color: 'crossfit',
-                    icon: IoMdAdd,
+                    icon: Plus,
                     filled: true,
                   },
                 ]}

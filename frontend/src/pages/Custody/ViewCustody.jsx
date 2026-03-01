@@ -1,24 +1,24 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getCustodyRecord } from '../../services/custody.api';
 import { Card, Table, Badge, Button, Spinner } from 'flowbite-react';
 import Breadcrumb from '../../components/Breadcrum/Breadcrumb';
-import {
-  HiCalendar,
-  HiUser,
-  HiClipboardList,
-  HiChevronLeft,
-  HiPencilAlt,
-  HiCheckCircle,
-  HiXCircle,
-  HiMail,
-  HiQrcode,
-  HiShare,
-} from 'react-icons/hi';
-import { FaFileContract, FaUserTie } from 'react-icons/fa';
 import { parseToLocalDate } from '../../utils/formatValues';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
+
+import {
+  Calendar,
+  CheckCircle,
+  ClipboardList,
+  FileCheck,
+  Pencil,
+  QrCode,
+  Share2,
+  User,
+  UserRound,
+  XCircle,
+} from 'lucide-react';
 
 const ViewCustody = () => {
   const { id } = useParams();
@@ -44,7 +44,7 @@ const ViewCustody = () => {
   if (isError || !record) {
     return (
       <Card className="text-center p-8">
-        <HiXCircle className="mx-auto h-16 w-16 text-red-500 mb-4" />
+        <XCircle className="mx-auto h-16 w-16 text-red-500 mb-4" />
         <h2 className="text-2xl font-bold dark:text-white">
           Error al cargar el resguardo
         </h2>
@@ -62,7 +62,7 @@ const ViewCustody = () => {
       <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl shadow-sm">
-            <FaFileContract size={28} />
+            <FileCheck size={28} />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
@@ -78,7 +78,7 @@ const ViewCustody = () => {
               </Badge>
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-              <HiCalendar /> Creado el {parseToLocalDate(record.createdAt)}
+              <Calendar /> Creado el {parseToLocalDate(record.createdAt)}
             </p>
           </div>
         </div>
@@ -92,7 +92,7 @@ const ViewCustody = () => {
                 ? [
                     {
                       label: 'Editar Borrador',
-                      icon: HiPencilAlt,
+                      icon: Pencil,
                       action: () => navigate(`/custody/edit/${record.id}`),
                       color: 'yellow',
                     },
@@ -108,11 +108,11 @@ const ViewCustody = () => {
         <div className="space-y-6">
           <Card className="border-l-4 border-l-blue-500 overflow-hidden">
             <h3 className="text-md font-bold text-gray-500 flex items-center gap-2 uppercase tracking-tighter mb-4">
-              <HiUser className="text-blue-500" /> Receptor del Equipo
+              <User className="text-blue-500" /> Receptor del Equipo
             </h3>
             <div className="flex items-center gap-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl mb-4 border border-blue-100 dark:border-blue-800 shadow-inner">
               <div className="bg-white dark:bg-gray-800 p-2 rounded-full shadow-sm text-blue-500 border border-blue-100 dark:border-gray-700">
-                <HiUser size={24} />
+                <User size={24} />
               </div>
               <div>
                 <p className="font-black text-gray-800 dark:text-white leading-tight">
@@ -153,11 +153,11 @@ const ViewCustody = () => {
 
           <Card className="border-l-4 border-l-green-500">
             <h3 className="text-md font-bold text-gray-500 flex items-center gap-2 uppercase tracking-tighter mb-4">
-              <FaUserTie className="text-green-500" /> Entregado Por (TI)
+              <UserRound className="text-green-500" /> Entregado Por (TI)
             </h3>
             <div className="flex items-center gap-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl mb-2 border border-green-100 dark:border-green-800 shadow-inner">
               <div className="bg-white dark:bg-gray-800 p-2 rounded-full shadow-sm text-green-500 border border-green-100 dark:border-gray-700">
-                <FaUserTie size={22} />
+                <UserRound size={22} />
               </div>
               <div>
                 <p className="font-black text-gray-800 dark:text-white leading-tight">
@@ -173,7 +173,7 @@ const ViewCustody = () => {
           {record.status === 'BORRADOR' && (
             <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 border-none text-white shadow-xl">
               <h3 className="font-bold flex items-center gap-2 mb-2">
-                <HiQrcode /> Firma Remota
+                <QrCode /> Firma Remota
               </h3>
               <p className="text-xs text-indigo-100 mb-4 leading-relaxed font-medium">
                 Comparte este enlace o QR con el receptor para que pueda firmar
@@ -190,7 +190,7 @@ const ViewCustody = () => {
                   )
                 }
               >
-                <HiShare className="mr-2" /> Abrir Enlace Público
+                <Share2 className="mr-2" /> Abrir Enlace Público
               </Button>
             </Card>
           )}
@@ -200,7 +200,7 @@ const ViewCustody = () => {
         <div className="md:col-span-2 space-y-6">
           <Card>
             <h3 className="text-lg font-bold border-b pb-2 mb-4 flex items-center gap-2 dark:text-white font-mono uppercase tracking-tight">
-              <HiClipboardList className="text-blue-500" /> Detalles de Entrega
+              <ClipboardList className="text-blue-500" /> Detalles de Entrega
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-1">
@@ -225,7 +225,7 @@ const ViewCustody = () => {
           <Card>
             <div className="flex items-center justify-between mb-4 border-b pb-2">
               <h3 className="text-lg font-bold flex items-center gap-2 dark:text-white font-mono uppercase tracking-tight">
-                <HiClipboardList className="text-purple-500" /> Equipos
+                <ClipboardList className="text-purple-500" /> Equipos
                 Asociados
               </h3>
               <Badge color="purple" className="px-3">
@@ -306,7 +306,7 @@ const ViewCustody = () => {
               />
             ) : (
               <div className="text-center text-gray-400">
-                <HiXCircle className="mx-auto h-8 w-8 mb-1 opacity-20" />
+                <XCircle className="mx-auto h-8 w-8 mb-1 opacity-20" />
                 <p className="text-[10px] font-bold uppercase tracking-tighter">
                   Sin firma registrada
                 </p>
@@ -315,7 +315,7 @@ const ViewCustody = () => {
           </div>
           {record.receiverSignature && (
             <p className="text-center text-[10px] text-green-500 font-black uppercase mt-2 flex items-center justify-center gap-1">
-              <HiCheckCircle /> Firmado Digitalmente
+              <CheckCircle /> Firmado Digitalmente
             </p>
           )}
         </Card>
@@ -333,7 +333,7 @@ const ViewCustody = () => {
               />
             ) : (
               <div className="text-center text-gray-400">
-                <HiXCircle className="mx-auto h-8 w-8 mb-1 opacity-20" />
+                <XCircle className="mx-auto h-8 w-8 mb-1 opacity-20" />
                 <p className="text-[10px] font-bold uppercase tracking-tighter">
                   Sin firma registrada
                 </p>
@@ -342,7 +342,7 @@ const ViewCustody = () => {
           </div>
           {record.delivererSignature && (
             <p className="text-center text-[10px] text-blue-500 font-black uppercase mt-2 flex items-center justify-center gap-1">
-              <HiCheckCircle /> Validado por Sistemas
+              <CheckCircle /> Validado por Sistemas
             </p>
           )}
         </Card>

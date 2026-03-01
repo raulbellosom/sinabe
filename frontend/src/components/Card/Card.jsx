@@ -1,4 +1,4 @@
-import React from 'react';
+
 import ImageViewer from '../ImageViewer/ImageViewer2';
 import { Badge, Card as FlowbiteCard } from 'flowbite-react';
 import classNames from 'classnames';

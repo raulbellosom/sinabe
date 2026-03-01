@@ -40,7 +40,7 @@ export const useHardwareBackButton = () => {
     // Listener para el botón back de hardware
     const backButtonListener = App.addListener(
       'backButton',
-      ({ canGoBack }) => {
+      ({ canGoBack: _canGoBack }) => {
         handleBackButton();
       },
     );

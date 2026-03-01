@@ -5,7 +5,7 @@ import {
   DialogTitle,
   DialogPanel,
 } from '@headlessui/react';
-import { IoMdClose } from 'react-icons/io';
+import { X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import classNames from 'classnames';
 import ActionButtons from '../ActionButtons/ActionButtons';
@@ -57,7 +57,7 @@ export default function ReusableModal({
             exit="exit"
             variants={panelVariants}
             className={classNames(
-              'relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full flex flex-col max-h-[90dvh] overflow-hidden',
+              'relative bg-[color:var(--surface)] rounded-xl shadow-2xl w-full flex flex-col max-h-[90dvh] overflow-hidden border border-[color:var(--border)]',
               sizeClasses[size],
               className,
               // margen responsivo: 0.5rem en móvil, 1rem en pantallas ≥ sm
@@ -68,14 +68,14 @@ export default function ReusableModal({
             {/* Header */}
             <DialogTitle
               as="div"
-              className="flex-shrink-0 font-bold text-sinabe-primary text-sm md:text-xl dark:bg-gray-800 border-b px-6 py-4 flex justify-between items-center"
+              className="flex-shrink-0 font-bold text-[color:var(--primary)] text-sm md:text-xl bg-[color:var(--surface)] border-b border-[color:var(--border)] px-6 py-4 flex justify-between items-center"
             >
               <span>{title}</span>
               <button
                 onClick={onClose}
-                className="text-gray-500 hover:bg-gray-100 p-1 rounded-full hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
+                className="text-[color:var(--foreground-muted)] hover:bg-[color:var(--surface-muted)] p-1.5 rounded-lg hover:text-[color:var(--foreground)] transition-colors"
               >
-                <IoMdClose className="text-2xl" />
+                <X className="h-5 w-5" />
               </button>
             </DialogTitle>
 
@@ -89,8 +89,8 @@ export default function ReusableModal({
 
             {/* Footer */}
             {(footer || actions) && (
-              <div className="flex-shrink-0 dark:bg-gray-800 border-t px-6 py-4">
-                <div className="flex justify-end gap-4">
+              <div className="flex-shrink-0 bg-[color:var(--surface)] border-t border-[color:var(--border)] px-6 py-4">
+                <div className="flex justify-end gap-3">
                   {footer || <ActionButtons extraActions={actions} />}
                 </div>
               </div>

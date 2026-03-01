@@ -1,4 +1,4 @@
-import React, {
+import {
   useState,
   useEffect,
   useRef,
@@ -9,8 +9,13 @@ import React, {
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import classNames from 'classnames';
-import { HiSearch, HiX, HiChevronDown, HiCheck } from 'react-icons/hi';
 
+import {
+  Check,
+  ChevronDown,
+  Search,
+  X,
+} from 'lucide-react';
 /**
  * SearchableSelect - Componente de selección con búsqueda
  *
@@ -357,10 +362,10 @@ const SearchableSelect = ({
               onClick={handleClear}
               className="p-1 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
             >
-              <HiX className="w-4 h-4" />
+              <X className="w-4 h-4" />
             </button>
           )}
-          <HiChevronDown
+          <ChevronDown
             className={classNames(
               'w-5 h-5 text-gray-400 transition-transform duration-200',
               open && 'rotate-180',
@@ -424,13 +429,13 @@ const SearchableSelect = ({
                           onClick={handleClose}
                           className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
-                          <HiX className="w-5 h-5" />
+                          <X className="w-5 h-5" />
                         </button>
                       </div>
                     )}
 
                     <div className="relative">
-                      <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                       <input
                         ref={inputRef}
                         type="text"
@@ -508,7 +513,7 @@ const SearchableSelect = ({
                                   )}
                                 >
                                   {selected && (
-                                    <HiCheck className="w-3.5 h-3.5 text-white" />
+                                    <Check className="w-3.5 h-3.5 text-white" />
                                   )}
                                 </div>
                               )}
@@ -545,7 +550,7 @@ const SearchableSelect = ({
 
                               {/* Check para single */}
                               {!multiple && selected && (
-                                <HiCheck className="w-5 h-5 text-blue-600 shrink-0" />
+                                <Check className="w-5 h-5 text-blue-600 shrink-0" />
                               )}
                             </button>
                           );

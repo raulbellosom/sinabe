@@ -1,7 +1,9 @@
-import React from 'react';
-import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import { FaHome } from 'react-icons/fa';
 
+import ActionButtons from '../../components/ActionButtons/ActionButtons';
+
+import {
+  Home,
+} from 'lucide-react';
 export const NotFound = () => {
   return (
     <div className="w-full h-full">
@@ -27,8 +29,8 @@ export const NotFound = () => {
                   {
                     label: 'Volver al inicio',
                     href: '/',
-                    color: 'mycad',
-                    icon: FaHome,
+                    color: 'primary',
+                    icon: Home,
                     filled: true,
                   },
                 ]}

@@ -1,17 +1,16 @@
 // pages/invoices/InvoicesPage.jsx - INDEPENDIENTE
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  FaEdit,
-  FaTrashAlt,
-  FaSearch,
-  FaFileInvoice,
-  FaFilePdf,
-  FaFileCode,
-  FaExternalLinkAlt,
-  FaClipboardList,
-} from 'react-icons/fa';
-import { MdInventory } from 'react-icons/md';
+  Pencil,
+  Trash2,
+  Search,
+  FileText,
+  ExternalLink,
+  ClipboardList,
+  Package,
+  FileCode,
+} from 'lucide-react';
 import {
   useSearchAllInvoices,
   useDeleteIndependentInvoice,
@@ -43,6 +42,7 @@ const InvoicesPage = () => {
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
   const [isAssignToPOModalOpen, setIsAssignToPOModalOpen] = useState(false);
   const [isUnassignPOModalOpen, setIsUnassignPOModalOpen] = useState(false);
+  const [poCodeConfirmation, setPoCodeConfirmation] = useState('');
 
   // Leer parámetros de búsqueda de URL
   const urlSearch = searchParams.get('search') || '';
@@ -194,7 +194,7 @@ const InvoicesPage = () => {
               }
               className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors text-sm font-medium whitespace-nowrap"
             >
-              <FaExternalLinkAlt size={12} />
+              <ExternalLink size={12} />
               {invoice.purchaseOrder.code}
             </button>
           ) : (
@@ -212,7 +212,7 @@ const InvoicesPage = () => {
               to={`/inventories?invoiceCode=${encodeURIComponent(invoice.code)}`}
               className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 hover:underline transition-colors text-sm font-medium"
             >
-              <MdInventory size={14} />
+              <Package size={14} />
               {inventoryCount}
             </Link>
           ) : (
@@ -232,7 +232,7 @@ const InvoicesPage = () => {
               rel="noopener noreferrer"
               className="text-red-600 hover:text-red-800"
             >
-              <FaFilePdf size={16} />
+              <FileText size={16} />
             </a>
           ) : (
             <span className="text-gray-400">-</span>
@@ -250,7 +250,7 @@ const InvoicesPage = () => {
               rel="noopener noreferrer"
               className="text-green-600 hover:text-green-800"
             >
-              <FaFileCode size={16} />
+              <FileCode size={16} />
             </a>
           ) : (
             <span className="text-gray-400">-</span>
@@ -272,7 +272,7 @@ const InvoicesPage = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-lg font-bold text-sinabe-primary flex items-center gap-2">
           <span>
-            <FaFileInvoice />
+            <FileText />
           </span>
           Facturas
         </h1>
@@ -281,7 +281,7 @@ const InvoicesPage = () => {
             extraActions={[
               {
                 label: 'Nueva Factura',
-                icon: FaFileInvoice,
+                icon: FileText,
                 action: () => {
                   setSelectedInvoice(null);
                   setIsModalOpen(true);
@@ -311,7 +311,7 @@ const InvoicesPage = () => {
           placeholder="Buscar facturas, concepto, código..."
           className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-4 focus:outline-none focus:ring focus:border-blue-500"
         />
-        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
       </div>
 
       <ReusableTable
@@ -339,7 +339,7 @@ const InvoicesPage = () => {
         rowActions={(invoice) => [
           {
             key: 'inventory',
-            icon: MdInventory,
+            icon: Package,
             label: 'Gestionar inventarios',
             action: () => handleManageInventories(invoice),
           },
@@ -348,7 +348,7 @@ const InvoicesPage = () => {
             ? [
                 {
                   key: 'unassign-po',
-                  icon: FaClipboardList,
+                  icon: ClipboardList,
                   label: 'Desasignar de OC',
                   action: () => handleUnassignFromPurchaseOrder(invoice),
                 },
@@ -356,20 +356,20 @@ const InvoicesPage = () => {
             : [
                 {
                   key: 'assign-po',
-                  icon: FaClipboardList,
+                  icon: ClipboardList,
                   label: 'Asignar a OC',
                   action: () => handleAssignToPurchaseOrder(invoice),
                 },
               ]),
           {
             key: 'edit',
-            icon: FaEdit,
+            icon: Pencil,
             label: 'Editar',
             action: () => handleEditInvoice(invoice),
           },
           {
             key: 'delete',
-            icon: FaTrashAlt,
+            icon: Trash2,
             label: 'Eliminar',
             action: () => {
               setSelectedInvoice(invoice);

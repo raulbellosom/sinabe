@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { FaXmark } from 'react-icons/fa6';
+import { X } from 'lucide-react';
 import classNames from 'classnames';
 import { useEffect } from 'react';
 
@@ -67,7 +67,7 @@ const SideModal = ({
               onClick={onClose}
               className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-[calc(1rem+env(safe-area-inset-right))] text-gray-500 hover:text-red-500"
             >
-              <FaXmark />
+              <X />
             </button>
 
             {/* Title */}

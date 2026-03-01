@@ -1,21 +1,23 @@
 // src/components/ProjectDetails/DeadlineTasksList.jsx
-import React from 'react';
-import {
-  FaRegClock,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaRegPauseCircle,
-} from 'react-icons/fa';
-import { MdInfoOutline, MdOutlineTaskAlt } from 'react-icons/md';
+
 import { Tooltip } from 'flowbite-react';
 import { parseToLocalDate } from '../../../utils/formatValues';
 import ImageViewer2 from '../../ImageViewer/ImageViewer2';
+import {
+  CheckCircle,
+  CircleCheck,
+  Clock,
+  Info,
+  ListChecks,
+  PauseCircle,
+  XCircle,
+} from 'lucide-react';
 
 const statusIcons = {
-  PENDIENTE: <FaRegPauseCircle className="text-yellow-500 text-lg" />,
-  EN_PROGRESO: <MdInfoOutline className="text-blue-500 text-lg" />,
-  COMPLETADO: <FaCheckCircle className="text-green-500 text-lg" />,
-  CANCELADO: <FaTimesCircle className="text-red-500 text-lg" />,
+  PENDIENTE: <PauseCircle className="text-yellow-500 text-lg" />,
+  EN_PROGRESO: <Info className="text-blue-500 text-lg" />,
+  COMPLETADO: <CheckCircle className="text-green-500 text-lg" />,
+  CANCELADO: <XCircle className="text-red-500 text-lg" />,
 };
 
 const statusBadge = {
@@ -35,7 +37,7 @@ const DeadlineTasksList = ({ tasks = [], isOpen }) => {
       <div className="mt-2 space-y-2">
         {tasks.length === 0 ? (
           <div className="text-center text-gray-400 py-4">
-            <MdOutlineTaskAlt className="text-4xl mx-auto mb-2" />
+            <ListChecks className="text-4xl mx-auto mb-2" />
             <p className="font-medium">No hay tareas definidas</p>
             <p className="text-sm">Agrega tareas para este deadline</p>
           </div>
@@ -54,7 +56,7 @@ const DeadlineTasksList = ({ tasks = [], isOpen }) => {
                     {task.status.replace('_', ' ')}
                   </span>
                   <p className="font-semibold text-sm md:text-base text-left w-full md:w-fit flex items-center gap-2">
-                    <MdOutlineTaskAlt className="text-gray-500" />
+                    <ListChecks className="text-gray-500" />
                     {task.name}
                   </p>
                 </div>
@@ -63,7 +65,7 @@ const DeadlineTasksList = ({ tasks = [], isOpen }) => {
                 </p>
                 <div className="mt-2 flex items-center gap-2">
                   <div className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                    <FaRegClock />{' '}
+                    <Clock />{' '}
                     {task.date ? parseToLocalDate(task.date) : 'Sin fecha'}
                   </div>
                   <div className="text-xs flex gap-1 items-center text-gray-400 mt-1">

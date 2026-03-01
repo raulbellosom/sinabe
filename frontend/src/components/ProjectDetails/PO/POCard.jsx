@@ -1,29 +1,30 @@
 // src/components/ProjectDetails/PO/POCard.jsx
-import React, { useState } from 'react';
-import {
-  FaFileInvoice,
-  FaEye,
-  FaPlus,
-  FaDownload,
-  FaTrashAlt,
-  FaEdit,
-  FaFilePdf,
-  FaFileCode,
-} from 'react-icons/fa';
+import { useState } from 'react';
 import { Badge, Dropdown } from 'flowbite-react';
 import ActionButtons from '../../ActionButtons/ActionButtons';
 import InvoiceModal from './InvoiceModal';
 import ConfirmRemovePurchaseOrderModal from './ConfirmRemovePurchaseOrderModal';
 import { useRemovePurchaseOrderFromProject } from '../../../hooks/usePurchaseOrders';
 import ReusableTable from '../../Table/ReusableTable';
-import { BsThreeDotsVertical } from 'react-icons/bs';
 import { parseToCurrency, parseToLocalDate } from '../../../utils/formatValues';
 import { useDeleteInvoice } from '../../../hooks/useInvoices';
 import { API_URL } from '../../../services/api';
 import { useInvoices } from '../../../hooks/useInvoices';
-import { MdInventory, MdRemoveCircle } from 'react-icons/md';
 import SideModal from '../../Modals/SideModal';
 import POInvoiceInventoryManager from '../../purchaseOrders/invoices/POInvoiceInventoryManager';
+
+import {
+  Download,
+  Eye,
+  FileCode,
+  FileText,
+  MoreVertical,
+  Package,
+  Pencil,
+  Plus,
+  Trash2,
+  XCircle,
+} from 'lucide-react';
 
 const getFileUrl = (file) => {
   if (file instanceof File) {
@@ -68,13 +69,13 @@ const POCard = ({ order, onEdit }) => {
 
   // collapsed menu OC
   const collapsedActions = [
-    { label: 'Editar OC', icon: FaEdit, action: handleEditPO },
+    { label: 'Editar OC', icon: Pencil, action: handleEditPO },
     {
       label: 'Remover OC del proyecto',
-      icon: MdRemoveCircle,
+      icon: XCircle,
       action: handleRemoveOCFromProject,
     },
-    // { label: 'Descargar PDF', icon: FaDownload, action: handleDownload },
+    // { label: 'Descargar PDF', icon: Download, action: handleDownload },
   ];
 
   return (
@@ -85,7 +86,7 @@ const POCard = ({ order, onEdit }) => {
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-4">
               <div className="bg-purple-50 p-1 md:p-3 rounded-lg">
-                <FaFileInvoice className="text-purple-600 md:w-6 md:h-6 w-4 h-4" />
+                <FileText className="text-purple-600 md:w-6 md:h-6 w-4 h-4" />
               </div>
               <div>
                 <h3 className="text-sm lg:text-lg font-semibold text-gray-800">
@@ -151,7 +152,7 @@ const POCard = ({ order, onEdit }) => {
                         className="text-red-500"
                         title="Ver PDF"
                       >
-                        <FaFilePdf size={16} />
+                        <FileText size={16} />
                       </a>
                     )}
                     {row.xml && (
@@ -162,7 +163,7 @@ const POCard = ({ order, onEdit }) => {
                         className="text-blue-500"
                         title="Ver XML"
                       >
-                        <FaFileCode size={16} />
+                        <FileCode size={16} />
                       </a>
                     )}
                   </div>
@@ -185,7 +186,7 @@ const POCard = ({ order, onEdit }) => {
             rowActions={(inv) => [
               {
                 key: 'main',
-                icon: MdInventory,
+                icon: Package,
                 label: 'Inventario',
                 action: () => {
                   setInvoiceToManageInventory(inv);
@@ -194,7 +195,7 @@ const POCard = ({ order, onEdit }) => {
               },
               {
                 key: 'edit',
-                icon: FaEdit,
+                icon: Pencil,
                 label: 'Editar',
                 action: () => {
                   setInvoiceToEdit(inv);
@@ -203,7 +204,7 @@ const POCard = ({ order, onEdit }) => {
               },
               {
                 key: 'delete',
-                icon: FaTrashAlt,
+                icon: Trash2,
                 label: 'Eliminar',
                 action: () => {
                   setInvoiceToEdit(inv);
@@ -219,12 +220,12 @@ const POCard = ({ order, onEdit }) => {
               extraActions={[
                 {
                   label: 'Ver OC completa',
-                  icon: FaEye,
+                  icon: Eye,
                   href: `/purchase-orders/${order.id}/invoices`,
                 },
                 {
                   label: 'Agregar Factura',
-                  icon: FaPlus,
+                  icon: Plus,
                   action: () => {
                     setInvoiceToEdit(null);
                     setShowInvoiceModal(true);
@@ -235,7 +236,7 @@ const POCard = ({ order, onEdit }) => {
             <Dropdown
               renderTrigger={() => (
                 <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-300 flex items-center justify-center">
-                  <BsThreeDotsVertical />
+                  <MoreVertical />
                 </button>
               )}
               placement="bottom-end"
@@ -276,7 +277,7 @@ const POCard = ({ order, onEdit }) => {
           setInvoiceToManageInventory(null);
         }}
         title={`Inventario de ${invoiceToManageInventory?.code || ''}`}
-        icon={MdInventory}
+        icon={Package}
         size="xl"
         className="mt-4 ml-4"
       >

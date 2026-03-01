@@ -93,7 +93,7 @@ export const downloadFilesAsZip = async (selectedFiles = []) => {
   const folder = zip.folder('archivos');
 
   // Procesa cada archivo seleccionado usando fetchFileBlob
-  const promises = selectedFiles.map(async (file, index) => {
+  const promises = selectedFiles.map(async (file) => {
     try {
       const { blob, fileName } = await fetchFileBlob(file);
       folder.file(fileName, blob);

@@ -82,16 +82,16 @@ const DonutChart = ({
 
   return (
     <div
-      className="bg-white rounded-xl shadow p-6 flex flex-col"
+      className="bg-white dark:bg-neutral-800 rounded-xl shadow dark:shadow-neutral-900/50 p-6 flex flex-col"
       style={{ minHeight: 340 }}
     >
       <div className="flex items-center mb-2">
         {icon && (
           <span className="mr-2 text-2xl text-sinabe-primary">{icon}</span>
         )}
-        <h2 className="font-bold text-lg">{title}</h2>
+        <h2 className="font-bold text-lg dark:text-white">{title}</h2>
       </div>
-      {subtitle && <div className="text-gray-500 text-sm mb-2">{subtitle}</div>}
+      {subtitle && <div className="text-gray-500 dark:text-gray-400 text-sm mb-2">{subtitle}</div>}
       <div style={{ height, minHeight: '300px' }}>
         <Doughnut data={data} options={options} />
       </div>

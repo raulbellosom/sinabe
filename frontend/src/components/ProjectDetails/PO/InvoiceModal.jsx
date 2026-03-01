@@ -1,16 +1,16 @@
 // src/components/ProjectDetails/PO/InvoiceModal.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ReusableModal from '../../Modals/ReusableModal';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import {
-  FaFileInvoice,
-  FaTimes,
-  FaSave,
-  FaTrashAlt,
-  FaFilePdf,
-  FaFileCode,
-} from 'react-icons/fa';
+  FileText,
+  X,
+  Save,
+  Trash2,
+  FileIcon,
+  FileCode,
+} from 'lucide-react';
 import Notifies from '../../Notifies/Notifies';
 import { useCreateInvoice, useUpdateInvoice } from '../../../hooks/useInvoices';
 import { Button } from 'flowbite-react';
@@ -87,18 +87,18 @@ const InvoiceModal = ({
       onClose={onClose}
       title={
         <span className="flex items-center gap-2">
-          <FaFileInvoice className="text-purple-600" />
+          <FileText className="text-purple-600" />
           {isEditing ? 'Editar Factura' : 'Nueva Factura'}
         </span>
       }
       size="md"
       actions={[
-        { label: 'Cancelar', color: 'stone', icon: FaTimes, action: onClose },
+        { label: 'Cancelar', color: 'stone', icon: X, action: onClose },
         {
           label: isEditing ? 'Actualizar' : 'Crear',
           color: 'purple',
           filled: true,
-          icon: FaSave,
+          icon: Save,
           action: () => document.getElementById('invoice-submit')?.click(),
         },
       ]}
@@ -161,7 +161,7 @@ const InvoiceModal = ({
             </div>
             <div className="flex flex-col">
               <label className="mb-1 text-sm font-medium flex items-center gap-2">
-                <FaFilePdf /> PDF
+                <FileIcon /> PDF
               </label>
               {pdfUrl || pdfFile ? (
                 <div className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded-md">
@@ -174,7 +174,7 @@ const InvoiceModal = ({
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 text-blue-600 underline"
                     >
-                      <FaFilePdf /> Ver PDF
+                      <FileIcon /> Ver PDF
                     </a>
                   )}
                   <button
@@ -185,7 +185,7 @@ const InvoiceModal = ({
                     }}
                     className="text-red-600 hover:text-red-800"
                   >
-                    <FaTrashAlt />
+                    <Trash2 />
                   </button>
                 </div>
               ) : (
@@ -199,7 +199,7 @@ const InvoiceModal = ({
             </div>
             <div className="flex flex-col">
               <label className="mb-1 text-sm font-medium flex items-center gap-2">
-                <FaFileCode /> XML
+                <FileCode /> XML
               </label>
               {xmlUrl || xmlFile ? (
                 <div className="flex items-center justify-between bg-gray-100 px-3 py-2 rounded-md">
@@ -212,7 +212,7 @@ const InvoiceModal = ({
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 text-blue-600 underline"
                     >
-                      <FaFileCode /> Ver XML
+                      <FileCode /> Ver XML
                     </a>
                   )}
                   <button
@@ -223,7 +223,7 @@ const InvoiceModal = ({
                     }}
                     className="text-red-600 hover:text-red-800"
                   >
-                    <FaTrashAlt />
+                    <Trash2 />
                   </button>
                 </div>
               ) : (
@@ -244,7 +244,7 @@ const InvoiceModal = ({
                     onClick={() => setShowDeleteConfirm(true)}
                     className="flex items-center gap-2 w-full"
                   >
-                    <FaTrashAlt /> Eliminar Factura
+                    <Trash2 /> Eliminar Factura
                   </Button>
                 ) : (
                   <div className="space-y-2">
@@ -268,7 +268,7 @@ const InvoiceModal = ({
                               setShowDeleteConfirm(false);
                               setDeleteConfirmation('');
                             },
-                            icon: FaTimes,
+                            icon: X,
                           },
                           {
                             label: 'Eliminar',
@@ -277,7 +277,7 @@ const InvoiceModal = ({
                               onDelete(invoice.id);
                               onClose();
                             },
-                            icon: FaTrashAlt,
+                            icon: Trash2,
                             disabled: !canDelete,
                           },
                         ]}

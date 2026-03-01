@@ -1,14 +1,16 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { FormikProvider, useFormik, Form } from 'formik';
 import { ChangePasswordSchema } from './ChangePasswordSchema';
 import ChangePasswordFormFields from './ChangePasswordFormFields';
 import { Badge } from 'flowbite-react';
-import { FaRegTrashAlt } from 'react-icons/fa';
 import ResetPassowrd from '../../../assets/images/Reset-Password.svg';
 import ActionButtons from '../../ActionButtons/ActionButtons';
-import { RiLockPasswordFill } from 'react-icons/ri';
-import { BiError } from 'react-icons/bi';
 
+import {
+  AlertCircle,
+  Lock,
+  Trash2,
+} from 'lucide-react';
 const ChangePasswordForm = ({ initialValues, onSubmit, error }) => {
   const formik = useFormik({
     enableReinitialize: true,
@@ -33,7 +35,7 @@ const ChangePasswordForm = ({ initialValues, onSubmit, error }) => {
         <ChangePasswordFormFields />
         {error && (
           <Badge size={'sm'} color="red" className="text-center">
-            <BiError className="inline-block mr-2 mb-1" size={20} />
+            <AlertCircle className="inline-block mr-2 mb-1" size={20} />
             {error}
           </Badge>
         )}
@@ -43,14 +45,14 @@ const ChangePasswordForm = ({ initialValues, onSubmit, error }) => {
               {
                 label: 'Limpiar',
                 action: () => formik.resetForm(),
-                icon: FaRegTrashAlt,
+                icon: Trash2,
                 color: 'red',
               },
               {
                 label: 'Cambiar contraseña',
                 action: () => formRef.current.submitForm,
-                icon: RiLockPasswordFill,
-                color: 'mycad',
+                icon: Lock,
+                color: 'primary',
                 filled: true,
                 type: 'submit',
               },

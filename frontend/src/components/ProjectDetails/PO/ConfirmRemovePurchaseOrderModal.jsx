@@ -1,9 +1,12 @@
 // src/components/ProjectDetails/PO/ConfirmRemovePurchaseOrderModal.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ReusableModal from '../../Modals/ReusableModal';
-import { FaTrashAlt } from 'react-icons/fa';
-import { IoMdClose } from 'react-icons/io';
 import Notifies from '../../Notifies/Notifies';
+
+import {
+  Trash2,
+  X,
+} from 'lucide-react';
 
 const ConfirmRemovePurchaseOrderModal = ({
   isOpen,
@@ -35,17 +38,17 @@ const ConfirmRemovePurchaseOrderModal = ({
       onClose={onClose}
       title={
         <span className="flex items-center gap-2 text-red-600 font-semibold">
-          <FaTrashAlt /> Confirmar remoción
+          <Trash2 /> Confirmar remoción
         </span>
       }
       size="md"
       actions={[
-        { label: 'Cancelar', color: 'stone', icon: IoMdClose, action: onClose },
+        { label: 'Cancelar', color: 'stone', icon: X, action: onClose },
         {
           label: 'Remover OC del proyecto',
           color: 'red',
           filled: true,
-          icon: FaTrashAlt,
+          icon: Trash2,
           action: handleRemove,
           disabled: !canRemove,
         },

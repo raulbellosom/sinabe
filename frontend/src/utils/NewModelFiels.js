@@ -1,6 +1,4 @@
-import { BiCategory } from 'react-icons/bi';
-import { FaClipboardList } from 'react-icons/fa';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
+import { LayoutGrid, ClipboardList, BadgeCheck } from 'lucide-react';
 
 const NewModelFields = async ({ inventoryTypes, inventoryBrands }) => {
   const valuesNewModel = [
@@ -8,21 +6,21 @@ const NewModelFields = async ({ inventoryTypes, inventoryBrands }) => {
       name: 'name',
       label: 'Ingrese el nombre del modelo',
       inputType: 'text',
-      icon: FaClipboardList,
+      icon: ClipboardList,
     },
     {
       name: 'typeId',
       label: 'Seleccione el tipo de inventario',
       values: inventoryTypes,
       inputType: 'select',
-      icon: BiCategory,
+      icon: LayoutGrid,
     },
     {
       name: 'brandId',
       label: 'Seleccione la marca del inventario',
       values: inventoryBrands,
       inputType: 'select',
-      icon: PiTrademarkRegisteredBold,
+      icon: BadgeCheck,
     },
   ];
   return valuesNewModel;

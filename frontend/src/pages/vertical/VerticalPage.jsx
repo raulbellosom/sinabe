@@ -1,13 +1,6 @@
 // src/pages/VerticalPage.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-  FaSitemap,
-  FaPlus,
-  FaSearch,
-  FaChevronRight,
-  FaChevronLeft,
-} from 'react-icons/fa';
 import { TextInput } from 'flowbite-react';
 import {
   useVerticals,
@@ -25,6 +18,14 @@ import Skeleton from 'react-loading-skeleton';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import classNames from 'classnames';
 import MaintenanceAgendaGlobal from '../../components/Verticals/MaintenanceAgendaGlobal';
+
+import {
+  ChevronLeft,
+  ChevronRight,
+  Network,
+  Plus,
+  Search,
+} from 'lucide-react';
 
 const VerticalPage = () => {
   const {
@@ -125,7 +126,7 @@ const VerticalPage = () => {
       {/* HEADER */}
       <div className="flex-none p-4 bg-white dark:bg-gray-800 shadow-sm border-b flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
         <h1 className="text-xl font-bold text-sinabe-primary flex items-center gap-2 w-full md:w-auto justify-center md:justify-start">
-          <FaSitemap className="flex-shrink-0 text-2xl md:text-xl" />{' '}
+          <Network className="flex-shrink-0 text-2xl md:text-xl" />{' '}
           <span className="truncate">Gestión de Verticales</span>
         </h1>
         <div className="flex items-center gap-2 w-full md:w-auto justify-center md:justify-end overflow-x-auto">
@@ -160,7 +161,7 @@ const VerticalPage = () => {
                 extraActions={[
                   {
                     label: 'Nueva',
-                    icon: FaPlus,
+                    icon: Plus,
                     color: 'indigo',
                     filled: true,
                     action: () => {
@@ -192,7 +193,7 @@ const VerticalPage = () => {
           >
             <div className="p-4 border-b">
               <TextInput
-                icon={FaSearch}
+                icon={Search}
                 placeholder="Buscar vertical..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -236,7 +237,7 @@ const VerticalPage = () => {
                           {v.models?.length || 0} modelos
                         </p>
                       </div>
-                      <FaChevronRight
+                      <ChevronRight
                         className={classNames(
                           'text-gray-300',
                           selected?.id === v.id && 'text-indigo-500',
@@ -270,7 +271,7 @@ const VerticalPage = () => {
                   }}
                   className="md:hidden mb-4 flex items-center text-gray-600 hover:text-indigo-600 font-medium"
                 >
-                  <FaChevronLeft className="mr-2" />
+                  <ChevronLeft className="mr-2" />
                   Volver a la lista
                 </button>
 
@@ -290,7 +291,7 @@ const VerticalPage = () => {
               </>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                <FaSitemap className="text-6xl mb-4 opacity-20" />
+                <Network className="text-6xl mb-4 opacity-20" />
                 <p className="text-lg">
                   Selecciona una vertical para ver sus detalles
                 </p>

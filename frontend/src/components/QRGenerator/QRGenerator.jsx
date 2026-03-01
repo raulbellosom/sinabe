@@ -1,10 +1,15 @@
-import React from 'react';
+
 import { QRCodeCanvas } from 'qrcode.react';
 import Logo from '../../assets/logo/sinabe_icon.png';
 import { Badge } from 'flowbite-react';
-import { MdInfo } from 'react-icons/md';
+import {
+  Info,
+} from 'lucide-react';
+import { APP_URL } from '../../config/env';
 
 function QRCodeGenerator({ inventoryInfo, type, qrSize }) {
+  const inventoryUrl = `${APP_URL.replace(/\/$/, '')}/inventory/${inventoryInfo.id}`;
+
   const formatInventory = (inventory) => {
     return JSON.stringify({
       modelo: inventory.model.name,
@@ -14,14 +19,14 @@ function QRCodeGenerator({ inventoryInfo, type, qrSize }) {
       activo: inventory.activeNumber,
       estado: inventory.status,
       recepcion: inventory.receptionDate,
-      url: `https://sinabe.sytes.net/inventory/${inventory.id}`,
+      url: `${APP_URL.replace(/\/$/, '')}/inventory/${inventory.id}`,
     });
   };
 
   let value;
   switch (type) {
     case 'url':
-      value = `https://sinabe.sytes.net/inventory/${inventoryInfo.id}`;
+      value = inventoryUrl;
       break;
     case 'sn':
       value = inventoryInfo.serialNumber;
@@ -31,7 +36,7 @@ function QRCodeGenerator({ inventoryInfo, type, qrSize }) {
       value = formatInventory(inventoryInfo);
       break;
     default:
-      value = `https://sinabe.sytes.net/inventory/${inventoryInfo.id}`;
+      value = inventoryUrl;
       break;
   }
 
@@ -87,7 +92,7 @@ function QRCodeGenerator({ inventoryInfo, type, qrSize }) {
         }}
       />
       <Badge className="mt-4" color="purple">
-        <MdInfo size={20} className="inline mr-2" />
+        <Info size={20} className="inline mr-2" />
         Doble click para descargar el QR
       </Badge>
     </div>

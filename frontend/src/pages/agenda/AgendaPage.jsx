@@ -18,21 +18,22 @@ import {
 import { useVerticals } from '../../hooks/useVerticals';
 import { useUsersList } from '../../hooks/useUsersList';
 import { useAuthStatus } from '../../hooks/useAuthStatus';
-import {
-  FaPlus,
-  FaCalendarAlt,
-  FaList,
-  FaEdit,
-  FaTrash,
-  FaCheckCircle,
-  FaUser,
-} from 'react-icons/fa';
 import dayjs from 'dayjs';
 import Notifies from '../../components/Notifies/Notifies';
 import AgendaCalendar from '../../components/Verticals/AgendaCalendar';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import SearchableSelect from '../../components/common/SearchableSelect';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
+
+import {
+  Calendar,
+  CheckCircle,
+  List,
+  Pencil,
+  Plus,
+  Trash2,
+  User,
+} from 'lucide-react';
 
 // Helpers
 const getStatusBadge = (status) => {
@@ -274,7 +275,7 @@ const AgendaPage = () => {
               {
                 label: 'Evento',
                 action: () => handleOpenModal(null, new Date()),
-                icon: FaPlus,
+                icon: Plus,
                 color: 'indigo',
                 filled: true,
               },
@@ -609,7 +610,7 @@ const AgendaPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                  <FaCalendarAlt />
+                  <Calendar />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase font-semibold">
@@ -626,7 +627,7 @@ const AgendaPage = () => {
               {viewingEvent?.provider && (
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                    <FaList />
+                    <List />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 uppercase font-semibold">
@@ -673,7 +674,7 @@ const AgendaPage = () => {
                 handleOpenModal(viewingEvent);
               }}
             >
-              <FaEdit className="mr-2 h-4 w-4" />
+              <Pencil className="mr-2 h-4 w-4" />
               Editar
             </Button>
           )}

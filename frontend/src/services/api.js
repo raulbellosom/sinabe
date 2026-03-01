@@ -1,47 +1,8 @@
-import axios from 'axios';
 import { saveAs } from 'file-saver';
+import api from '../lib/api/client';
+import { API_URL } from '../config/env';
 
-const raw = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-export const API_URL = raw.endsWith('/api') ? raw : `${raw}/api`;
-
-const api = axios.create({
-  baseURL: API_URL,
-});
-
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
-
-// Interceptor para manejar errores de respuesta globalmente
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Si es error 401 (no autorizado), verificar si es un error de sesión expirada
-    // NO limpiar datos si es un error de login (credenciales incorrectas)
-    if (error.response?.status === 401) {
-      const requestUrl = error.config?.url || '';
-      const isLoginRequest = requestUrl.includes('/auth/login');
-
-      // Solo limpiar datos y recargar si NO es una petición de login
-      // y si NO estamos ya en la página de login
-      if (!isLoginRequest && !window.location.pathname.includes('/login')) {
-        console.warn('Token expired or invalid, clearing auth data');
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        window.location.reload();
-      }
-    }
-
-    return Promise.reject(error);
-  },
-);
+export { API_URL };
 
 const headerFormData = {
   headers: {

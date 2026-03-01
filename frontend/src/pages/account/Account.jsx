@@ -1,16 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuthContext } from '../../context/AuthContext';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
-import { RiImageEditLine, RiLockPasswordFill } from 'react-icons/ri';
-import { MdImageSearch, MdPassword } from 'react-icons/md';
-import { LuImageOff } from 'react-icons/lu';
+import { ImagePlus, KeyRound, ImageOff, Save, PenTool, X, Pencil } from 'lucide-react';
 import AccountFields from '../../components/AccountFields/AccountFields';
 import ModalForm from '../../components/Modals/ModalForm';
 import ChangePasswordForm from '../../components/AccountFields/ChangePassword/ChangePasswordForm';
-import { FaSave, FaPenNib } from 'react-icons/fa';
-import { IoMdClose } from 'react-icons/io';
-import { AiFillEdit } from 'react-icons/ai';
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
 import SignatureCanvas from 'react-signature-canvas';
@@ -47,23 +42,23 @@ const Account = () => {
       setExtraActions([
         {
           label: 'Descartar cambios',
-          icon: LuImageOff,
+          icon: ImageOff,
           action: () => setImage(user?.photo || ''),
           color: 'red',
         },
         {
           label: 'Guardar cambios',
-          icon: RiImageEditLine,
+          icon: ImagePlus,
           action: () => handleImageUpload(),
           filled: image ? true : false,
-          color: 'mycad',
+          color: 'primary',
         },
       ]);
     } else {
       setExtraActions([
         {
           label: 'Seleccionar imagen',
-          icon: MdImageSearch,
+          icon: ImagePlus,
           action: () => inputRef.current.click(),
           color: 'stone',
         },
@@ -277,15 +272,15 @@ const Account = () => {
                 extraActions={[
                   {
                     label: 'Descartar cambios',
-                    icon: IoMdClose,
+                    icon: X,
                     action: handleDiscardFieldChanges,
                     color: 'red',
                   },
                   {
                     label: 'Guardar cambios',
-                    icon: FaSave,
+                    icon: Save,
                     action: onSaveFieldChanges,
-                    color: 'mycad',
+                    color: 'primary',
                     filled: true,
                   },
                 ]}
@@ -295,7 +290,7 @@ const Account = () => {
                 extraActions={[
                   {
                     label: 'Editar',
-                    icon: AiFillEdit,
+                    icon: Pencil,
                     action: isEditAccountPermission.hasPermission
                       ? () => setIsEditing(true)
                       : null,
@@ -312,7 +307,7 @@ const Account = () => {
         <div className="flex flex-col gap-4">
           <h2 className="text-lg font-bold">
             <span className="inline-block mr-2">
-              <FaPenNib size={20} />
+              <PenTool size={20} />
             </span>
             Firma Digital
           </h2>
@@ -343,7 +338,7 @@ const Account = () => {
           <div className="flex flex-col gap-4">
             <h2 className="text-lg font-bold">
               <span className="inline-block mr-2">
-                <RiLockPasswordFill size={20} />
+                <KeyRound size={20} />
               </span>
               Cambiar contraseña
             </h2>
@@ -351,7 +346,7 @@ const Account = () => {
               extraActions={[
                 {
                   label: 'Cambiar contraseña',
-                  icon: MdPassword,
+                  icon: KeyRound,
                   action: () => setIsOpenModal(true),
                   color: 'stone',
                   filled: true,

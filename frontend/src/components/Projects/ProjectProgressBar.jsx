@@ -18,10 +18,10 @@ const ProjectProgressBar = ({ value }) => {
   }
 
   return (
-    <div className="w-full h-3 bg-sinabe-gray rounded-full overflow-hidden">
+    <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
       <div
         className={`h-full transition-all duration-500 ${barColor}`}
-        style={{ width: `${Math.min(value, 100)}%` }} // opcional: no sobrepasa visualmente
+        style={{ width: `${Math.min(value, 100)}%` }}
       ></div>
     </div>
   );

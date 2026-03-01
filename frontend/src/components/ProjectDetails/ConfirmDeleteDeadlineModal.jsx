@@ -1,7 +1,9 @@
 // File: src/components/ProjectDetails/ConfirmDeleteDeadlineModal.jsx
-import React, { useState } from 'react';
-import { FaTrashAlt } from 'react-icons/fa';
-import { IoMdClose } from 'react-icons/io';
+import { useState } from 'react';
+import {
+  Trash2,
+  X,
+} from 'lucide-react';
 import { useDeleteDeadline } from '../../hooks/useDeadlines';
 import ReusableModal from '../Modals/ReusableModal';
 import Notifies from '../Notifies/Notifies';
@@ -41,13 +43,13 @@ const ConfirmDeleteDeadlineModal = ({
         {
           label: 'Cancelar',
           color: 'stone',
-          icon: IoMdClose,
+          icon: X,
           action: onClose,
         },
         {
           label: 'Eliminar Deadline',
           color: 'red',
-          icon: FaTrashAlt,
+          icon: Trash2,
           filled: true,
           action: handleDelete,
           disabled: confirmation !== 'acepto',

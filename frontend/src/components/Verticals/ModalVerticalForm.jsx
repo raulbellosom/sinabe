@@ -1,8 +1,7 @@
 // File: src/components/Modals/ModalVerticalForm.jsx
-import React from 'react';
+
 import { Formik, Form, Field } from 'formik';
-import { FaPlus, FaEdit, FaSave, FaTags } from 'react-icons/fa';
-import { IoMdClose } from 'react-icons/io';
+import { Plus, Pencil, Save, Tag, X } from 'lucide-react';
 import Notifies from '../Notifies/Notifies';
 import ReusableModal from '../Modals/ReusableModal'; // ✅ import correcto
 
@@ -52,15 +51,15 @@ const ModalVerticalForm = ({
           actions={[
             {
               label: 'Cancelar',
-              color: 'stone',
-              icon: IoMdClose,
+              color: 'gray',
+              icon: X,
               action: onClose,
             },
             {
               label: isEditing ? 'Guardar cambios' : 'Crear',
-              color: 'purple',
+              color: 'primary',
               filled: true,
-              icon: FaSave,
+              icon: Save,
               action: submitForm,
               disabled: isSubmitting,
             },
@@ -68,9 +67,9 @@ const ModalVerticalForm = ({
         >
           <Form className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[color:var(--foreground)] mb-1">
                 <span className="flex items-center gap-2">
-                  <FaTags className="text-gray-500" />
+                  <Tag className="text-[color:var(--foreground-muted)]" />
                   Nombre de la vertical
                 </span>
               </label>
@@ -78,15 +77,17 @@ const ModalVerticalForm = ({
                 type="text"
                 name="name"
                 placeholder="Ej. Infraestructura de Red"
-                className="w-full rounded-md border border-gray-300 p-2"
+                className="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] p-2.5 focus:ring-2 focus:ring-[color:var(--primary)] focus:border-[color:var(--primary)] transition-colors"
               />
               {errors.name && touched.name && (
-                <div className="text-red-500 text-sm mt-1">{errors.name}</div>
+                <div className="text-[color:var(--danger)] text-sm mt-1">
+                  {errors.name}
+                </div>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-[color:var(--foreground)] mb-1">
                 Descripción
               </label>
               <Field
@@ -94,7 +95,7 @@ const ModalVerticalForm = ({
                 name="description"
                 placeholder="Describe el enfoque o los equipos relacionados con esta vertical"
                 rows={4}
-                className="w-full rounded-md border border-gray-300 p-2"
+                className="w-full rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] p-2.5 focus:ring-2 focus:ring-[color:var(--primary)] focus:border-[color:var(--primary)] transition-colors"
               />
             </div>
           </Form>

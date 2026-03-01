@@ -1,6 +1,13 @@
+import {
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Network,
+} from 'lucide-react';
 // src/components/Projects/ProjectSummaryCards.jsx
-import { FaCheckCircle, FaMoneyBillWave, FaClock } from 'react-icons/fa';
-import { FaDiagramProject } from 'react-icons/fa6';
+
+
+
 
 const ProjectSummaryCards = ({ projects }) => {
   if (!Array.isArray(projects)) {
@@ -34,26 +41,26 @@ const ProjectSummaryCards = ({ projects }) => {
     {
       label: 'Proyectos Totales',
       value: total,
-      icon: <FaDiagramProject />,
+      icon: <Network />,
       color: 'bg-sinabe-primary',
     },
     {
       label: 'En Progreso',
       value: inProgress,
-      icon: <FaCheckCircle />,
+      icon: <CheckCircle />,
       color: 'bg-sinabe-success',
     },
     {
       label: 'Presupuesto Total',
       value: `$${budgetTotal.toLocaleString()}`,
       sub: `Ejecutado: ${Math.round((budgetUsed / budgetTotal) * 100) || 0}%`,
-      icon: <FaMoneyBillWave />,
+      icon: <DollarSign />,
       color: 'bg-sinabe-info',
     },
     {
       label: 'Deadlines Próximos',
       value: upcomingDeadlines,
-      icon: <FaClock />,
+      icon: <Clock />,
       color: 'bg-sinabe-warning text-black',
     },
   ];

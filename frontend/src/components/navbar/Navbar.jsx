@@ -1,77 +1,56 @@
-import React from 'react';
-import { Button } from 'flowbite-react';
-import { HiOutlineMenuAlt1 } from 'react-icons/hi';
+﻿import React from 'react';
+import { Link } from 'react-router-dom';
+import { PlusCircle } from 'lucide-react';
+
 import Logo from '../../assets/logo/sinabe_icon.png';
 import InventorySearchCombobox from '../InventoryComponents/InventorySearchCombobox';
-import { Link } from 'react-router-dom';
-import { AiFillPlusCircle } from 'react-icons/ai';
 import { AIAgentButton } from '../AIAgent';
 import NotificationBell from '../Notifications/NotificationBell';
 import UserMenuDropdown from './UserMenuDropdown';
 
-const Navbar = ({
-  collapsed,
-  setCollapsed = () => {},
-  toggled,
-  setToggled = () => {},
-  broken,
-}) => {
+// Navbar sin botón de colapsar — el sidebar maneja su propio toggle
+const Navbar = () => {
   return (
-    <div className="flex justify-between items-center bg-white shadow-md px-2 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] w-full h-[calc(4rem+env(safe-area-inset-top))] absolute top-0 left-0 z-50">
-      {/* Lado izquierdo: Menú hamburguesa + Búsqueda + Nuevo inventario (móvil) */}
+    <header className="absolute left-0 top-0 z-50 flex h-[calc(4rem+env(safe-area-inset-top))] w-full items-center justify-between border-b border-[color:var(--border)] bg-[color:var(--surface)] px-2 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] shadow-sm">
       <div className="flex items-center gap-1">
-        <Button
-          onClick={broken ? setToggled : setCollapsed}
-          color="light"
-          style={{ borderStyle: 'none' }}
-          className="h-8 w-8 flex items-center justify-center rounded-md transition-colors duration-100 ease-in-out text-sinabe-primary hover:text-purple-600"
-        >
-          <HiOutlineMenuAlt1 className="text-2xl cursor-pointer" />
-        </Button>
-
-        {/* En móvil: Búsqueda y Nuevo inventario a la izquierda */}
         <div className="flex items-center gap-0 md:hidden">
           <InventorySearchCombobox />
           <Link
             to="/inventories/create"
-            className="flex items-center justify-center p-2 rounded-lg text-gray-500 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200"
+            className="flex items-center justify-center rounded-lg p-2 text-[color:var(--foreground-muted)] transition-all hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--primary)]"
             aria-label="Nuevo inventario"
           >
-            <AiFillPlusCircle className="w-6 h-6" />
+            <PlusCircle className="h-6 w-6" />
           </Link>
         </div>
       </div>
 
-      {/* Desktop: Búsqueda y Nuevo a la izquierda */}
-      <div className="hidden md:flex items-center gap-2 flex-1">
+      <div className="hidden flex-1 items-center gap-2 md:flex">
         <InventorySearchCombobox />
         <Link
           to="/inventories/create"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-600 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200 border border-gray-200 hover:border-purple-300"
+          className="flex items-center gap-2 rounded-xl border border-[color:var(--border)] px-4 py-2.5 text-[color:var(--foreground-muted)] transition-all hover:border-[color:var(--primary)] hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--primary)]"
         >
-          <AiFillPlusCircle className="w-5 h-5" />
+          <PlusCircle className="h-5 w-5" />
           <span className="text-sm font-medium">Nuevo</span>
         </Link>
       </div>
 
-      {/* Desktop: IA, Notificaciones y Usuario a la derecha */}
-      <div className="hidden md:flex items-center gap-1">
+      <div className="hidden items-center gap-1 md:flex">
         <AIAgentButton />
         <NotificationBell />
-        {/* Menú de usuario en desktop */}
-        <div className="ml-2 pl-3 border-l border-gray-200">
+        <div className="ml-2 border-l border-[color:var(--border)] pl-3">
           <UserMenuDropdown />
         </div>
       </div>
 
-      {/* Lado derecho en móvil: IA, Notificaciones, Perfil, Logo */}
-      <div className="flex md:hidden items-center gap-2">
+      <div className="flex items-center gap-2 md:hidden">
         <AIAgentButton />
         <NotificationBell />
         <UserMenuDropdown />
         <img src={Logo} alt="Sinabe" className="h-8 w-auto" />
       </div>
-    </div>
+    </header>
   );
 };
 

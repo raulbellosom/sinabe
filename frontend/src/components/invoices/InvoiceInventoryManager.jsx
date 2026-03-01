@@ -1,9 +1,6 @@
 // components/invoices/InvoiceInventoryManager.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Badge } from 'flowbite-react';
-import { FaSearch } from 'react-icons/fa';
-import { MdInventory, MdLinkOff } from 'react-icons/md';
-import { FaPlus } from 'react-icons/fa';
 import {
   useIndependentInvoiceInventories,
   useAssignInventoriesToIndependentInvoice,
@@ -13,6 +10,13 @@ import { useSearchInventories } from '../../hooks/useSearchInventories';
 import ConfirmUnassignModal from '../Modals/ConfirmUnassignModal';
 import Notifies from '../Notifies/Notifies';
 import ActionButtons from '../ActionButtons/ActionButtons';
+
+import {
+  Package,
+  Plus,
+  Search,
+  Unlink,
+} from 'lucide-react';
 
 const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -97,7 +101,7 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
       {/* Header */}
       <div className="border-b pb-3 mb-4">
         <h3 className="text-lg font-semibold flex items-center gap-2">
-          <MdInventory className="text-purple-600" />
+          <Package className="text-purple-600" />
           Gestión de Inventarios
         </h3>
         <div className="text-sm text-gray-600 mt-1">
@@ -116,7 +120,7 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
           Buscar Inventarios Disponibles
         </h4>
         <div className="relative">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Buscar por modelo, serial, activo..."
@@ -194,7 +198,7 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
                             extraActions={[
                               {
                                 label: 'Asignar',
-                                icon: FaPlus,
+                                icon: Plus,
                                 color: 'purple',
                                 filled: true,
                                 action: () =>
@@ -213,7 +217,7 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
                                   label: 'Desasignar',
                                   action: () =>
                                     handleRemoveInventory(inventory.id),
-                                  icon: MdLinkOff,
+                                  icon: Unlink,
                                   disabled: removeInventory.isPending,
                                   color: 'red',
                                   filled: true,
@@ -247,7 +251,7 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
         ) : assignedInventories.length === 0 ? (
           <div className="flex-1 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
             <div className="text-center py-8">
-              <MdInventory className="mx-auto text-4xl text-gray-400 mb-2" />
+              <Package className="mx-auto text-4xl text-gray-400 mb-2" />
               <p className="text-gray-500 text-sm">
                 No hay inventarios asignados
               </p>
@@ -288,7 +292,7 @@ const InvoiceInventoryManager = ({ invoice, isIndependent = false }) => {
                     extraActions={[
                       {
                         label: 'Desasignar',
-                        icon: MdLinkOff,
+                        icon: Unlink,
                         color: 'red',
                         filled: true,
                         action: () => handleRemoveInventory(inventory.id),

@@ -1,11 +1,7 @@
 // File: frontend/src/components/ProjectDetails/Document/ProjectDocumentsViewer.jsx
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import ActionButtons from '../../ActionButtons/ActionButtons';
-import { RiFolderZipLine } from 'react-icons/ri';
-import { BsBadgeHdFill } from 'react-icons/bs';
-import { FaCheckSquare, FaFileAlt, FaTrash } from 'react-icons/fa';
-import { MdFolderCopy } from 'react-icons/md';
 import ImageViewer from '../../ImageViewer/ImageViewer2';
 import FileIcon from '../../FileIcon/FileIcon';
 import Notifies from '../../Notifies/Notifies';
@@ -17,11 +13,20 @@ import ProjectDocumentFormModal from './ProjectDocumentFormModal';
 import ConfirmDeleteProjectDocumentModal from './ConfirmDeleteProjectDocumentModal';
 import ProjectBulkUploadModal from './ProjectBulkUploadModal';
 import { Tooltip } from 'flowbite-react';
-import { FaImages } from 'react-icons/fa';
 import classNames from 'classnames';
-import { FaFileArrowUp } from 'react-icons/fa6';
 import { useMediaQuery } from 'react-responsive';
 import { useDeleteProjectDocument } from '../../../hooks/useProjectDocuments';
+
+import {
+  CheckSquare,
+  Copy,
+  FileText,
+  FileUp,
+  FolderArchive,
+  Images,
+  Trash2,
+  Tv,
+} from 'lucide-react';
 
 const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
   const [viewMode, setViewMode] = useState('images');
@@ -87,7 +92,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
       <div className="flex flex-col justify-between items-start md:items-center gap-6">
         <div className="flex flex-col justify-start w-full">
           <h2 className="text-base md:text-lg font-semibold">
-            <FaFileAlt className="inline mr-2 text-sinabe-primary" />
+            <FileText className="inline mr-2 text-sinabe-primary" />
             Documentos del Proyecto
           </h2>
           <p className="text-sm text-gray-500">
@@ -107,7 +112,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
                   },
                 )}
               >
-                <FaImages className="h-4 w-4" />
+                <Images className="h-4 w-4" />
               </button>
             </Tooltip>
             <Tooltip content="Vista de Archivos">
@@ -121,7 +126,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
                   },
                 )}
               >
-                <MdFolderCopy className="h-4 w-4" />
+                <Copy className="h-4 w-4" />
               </button>
             </Tooltip>
           </div>
@@ -130,7 +135,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
               extraActions={[
                 {
                   label: isMobile ? 'Documentos' : 'Agregar Doc',
-                  icon: FaFileArrowUp,
+                  icon: FileUp,
                   color: 'indigo',
                   filled: true,
                   action: () => {
@@ -140,7 +145,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
                 },
                 {
                   label: isMobile ? 'Imágenes' : 'Subir Imágenes',
-                  icon: FaImages,
+                  icon: Images,
                   color: 'indigo',
                   action: () => setShowBulkUploadModal(true),
                 },
@@ -157,14 +162,14 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
             extraActions={[
               {
                 label: 'Comprimir',
-                icon: RiFolderZipLine,
+                icon: FolderArchive,
                 color: 'teal',
                 action: () => handleDownloadImages(true),
                 disabled: selectedImages.length === 0,
               },
               {
                 label: 'HD',
-                icon: BsBadgeHdFill,
+                icon: Tv,
                 color: 'blue',
                 action: () => handleDownloadImages(false),
                 disabled: selectedImages.length === 0,
@@ -178,7 +183,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
                     : isMobile
                       ? 'Todas'
                       : 'Seleccionar todas',
-                icon: FaCheckSquare,
+                icon: CheckSquare,
                 color: 'gray',
                 action: () =>
                   selectedImages.length === images.length
@@ -188,7 +193,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
               },
               {
                 label: isMobile ? 'Eliminar' : 'Eliminar seleccionados',
-                icon: FaTrash,
+                icon: Trash2,
                 color: 'red',
                 action: () => handleBulkDelete(selectedImages),
                 disabled: selectedImages.length === 0,
@@ -200,7 +205,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
             extraActions={[
               {
                 label: isMobile ? 'Descargar' : 'Descargar archivos',
-                icon: RiFolderZipLine,
+                icon: FolderArchive,
                 color: 'teal',
                 action: handleDownloadFiles,
                 disabled: selectedFiles.length === 0,
@@ -214,7 +219,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
                     : isMobile
                       ? 'Todos'
                       : 'Seleccionar todos',
-                icon: FaCheckSquare,
+                icon: CheckSquare,
                 color: 'gray',
                 action: () =>
                   selectedFiles.length === files.length
@@ -224,7 +229,7 @@ const ProjectDocumentsViewer = ({ documents = [], onRefresh, projectId }) => {
               },
               {
                 label: isMobile ? 'Eliminar' : 'Eliminar seleccionados',
-                icon: FaTrash,
+                icon: Trash2,
                 color: 'red',
                 action: () => handleBulkDelete(selectedFiles),
                 disabled: selectedFiles.length === 0,

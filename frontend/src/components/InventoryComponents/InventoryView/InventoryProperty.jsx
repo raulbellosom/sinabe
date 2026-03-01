@@ -2,8 +2,10 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import classNames from 'classnames';
 import Notifies from '../../Notifies/Notifies';
-import { FaSearch } from 'react-icons/fa';
 
+import {
+  Search,
+} from 'lucide-react';
 const InventoryProperty = ({
   label,
   value,
@@ -51,7 +53,7 @@ const InventoryProperty = ({
               onClick={onSearch}
               className="absolute right-0 top-1/2 transform -translate-y-1/2 hidden group-hover:inline-block text-right p-2 text-neutral-800 bg-neutral-200 rounded-md cursor-pointer"
             >
-              <FaSearch />
+              <Search />
             </i>
           )}
         </p>
@@ -71,7 +73,7 @@ const InventoryProperty = ({
               size={22}
               className={classNames('inline ', {
                 'text-sinabe-green': color === 'green',
-                'text-sinabe-danger': color === 'red',
+                'text-red-500': color === 'red',
                 'text-sinabe-warning': color === 'yellow',
                 'text-sinabe-primary': color === 'purple',
               })}
@@ -84,7 +86,7 @@ const InventoryProperty = ({
             onClick={onSearch}
             className="absolute right-0 top-1/2 transform -translate-y-1/2 hidden group-hover:inline-block text-right p-2 text-neutral-800 bg-neutral-200 rounded-md cursor-pointer"
           >
-            <FaSearch />
+            <Search />
           </i>
         )}
       </p>

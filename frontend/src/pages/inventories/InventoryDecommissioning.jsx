@@ -1,16 +1,19 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import ModalViewer from '../../components/Modals/ModalViewer';
 import ImageViewer from '../../components/ImageViewer/ImageViewer2';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import { useNavigate } from 'react-router-dom';
 import {
-  FaClipboardList,
-  FaEye,
-  FaFileDownload,
-  FaFileExcel,
-  FaFileWord,
-  FaSync,
-} from 'react-icons/fa';
+  ClipboardList,
+  Eye,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+} from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { searchInventories, updateInventoriesStatus } from '../../services/api';
 import { parseToLocalDate } from '../../utils/formatValues';
@@ -23,7 +26,6 @@ import { useInventoryQueryParams } from '../../hooks/useInventoryQueryParams';
 import debounce from 'lodash/debounce';
 import TableHeader from '../../components/Table/TableHeader';
 import ResponsiveTable from '../../components/Table/ResponsiveTable';
-import { MdCheckCircle, MdError, MdWarning } from 'react-icons/md';
 import { API_URL } from '../../services/api';
 
 const InventoryDecommissioning = () => {
@@ -51,7 +53,7 @@ const InventoryDecommissioning = () => {
               />
             </div>
           ) : (
-            <div className="w-20 h-20 md:w-12 md:h-12 bg-gray-200 rounded-md" />
+            <div className="w-20 h-20 md:w-12 md:h-12 bg-[color:var(--surface-muted)] rounded-md" />
           ),
         sortable: false,
         headerClassName: 'w-16',
@@ -100,7 +102,7 @@ const InventoryDecommissioning = () => {
         title: 'Estado',
         sortable: true,
         render: (val) => (
-          <span className="px-4 py-1 text-white rounded-full text-xs font-medium bg-sinabe-warning">
+          <span className="px-4 py-1 text-white rounded-full text-xs font-medium bg-amber-500">
             PROPUESTA DE BAJA
           </span>
         ),
@@ -134,7 +136,7 @@ const InventoryDecommissioning = () => {
                 {
                   key: 'main',
                   label: 'Ver',
-                  icon: FaEye,
+                  icon: Eye,
                   action: () => navigate(`/inventories/view/${row.id}`),
                   disabled: false,
                 },
@@ -239,9 +241,8 @@ const InventoryDecommissioning = () => {
 
     setIsGeneratingExcel(true);
     try {
-      const { generateExcelReport } = await import(
-        '../../utils/reportGenerators'
-      );
+      const { generateExcelReport } =
+        await import('../../utils/reportGenerators');
       await generateExcelReport(itemsToProcess);
       Notifies('success', 'Reporte Excel generado correctamente');
     } catch (error) {
@@ -257,9 +258,8 @@ const InventoryDecommissioning = () => {
 
     setIsGeneratingWord(true);
     try {
-      const { generateWordReport } = await import(
-        '../../utils/reportGenerators'
-      );
+      const { generateWordReport } =
+        await import('../../utils/reportGenerators');
       await generateWordReport(itemsToProcess);
       Notifies('success', 'Reporte Word generado correctamente');
     } catch (error) {
@@ -291,16 +291,16 @@ const InventoryDecommissioning = () => {
 
   return (
     <>
-      <section className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
+      <section className="flex flex-col gap-3 bg-[color:var(--surface)] shadow-md rounded-md p-3 antialiased">
         <TableHeader
-          icon={FaClipboardList}
+          icon={ClipboardList}
           title="Bajas de Inventario"
           actions={[
             {
               label: `Generar baja (${Object.keys(itemsToProcess).length})`,
               action: handleProcessInventories,
               color: 'red',
-              icon: FaClipboardList,
+              icon: ClipboardList,
               filled: true,
               disabled: Object.keys(itemsToProcess).length === 0,
             },
@@ -311,17 +311,17 @@ const InventoryDecommissioning = () => {
             <input
               type="text"
               placeholder="Buscar inventarios..."
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md bg-[color:var(--surface)] text-[color:var(--foreground)] placeholder:text-[color:var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-[color:var(--primary)] transition-colors"
               value={searchInput}
               onChange={handleSearch}
             />
           </div>
           <button
             onClick={() => refetch()}
-            className="p-2 text-gray-600 hover:text-gray-800"
+            className="p-2 text-[color:var(--foreground-muted)] hover:text-[color:var(--foreground)] transition-colors"
             title="Actualizar"
           >
-            <FaSync />
+            <RefreshCw />
           </button>
         </div>
         <ResponsiveTable
@@ -369,22 +369,22 @@ const InventoryDecommissioning = () => {
       >
         <div className="flex flex-col gap-6 py-4">
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3 bg-purple-50 p-4 rounded-lg border border-purple-200">
-              <MdCheckCircle className="text-3xl text-purple-600" />
+            <div className="flex items-center gap-3 bg-[color:var(--primary)]/10 p-4 rounded-lg border border-[color:var(--primary)]/30">
+              <CheckCircle className="text-3xl text-purple-600" />
               <div>
-                <h3 className="text-lg font-semibold text-purple-900">
+                <h3 className="text-lg font-semibold text-[color:var(--primary)]">
                   Se procesarán {Object.keys(itemsToProcess).length} inventarios
                 </h3>
-                <p className="text-purple-700">
+                <p className="text-[color:var(--foreground-muted)]">
                   Los siguientes inventarios cambiarán su estado a BAJA
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h4 className="text-gray-700 font-medium mb-3 flex items-center gap-2">
-              <FaFileDownload className="text-lg" />
+          <div className="bg-[color:var(--surface-muted)] p-4 rounded-lg border border-[color:var(--border)]">
+            <h4 className="text-[color:var(--foreground)] font-medium mb-3 flex items-center gap-2">
+              <Download className="text-lg" />
               Descargar Reportes
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -393,11 +393,11 @@ const InventoryDecommissioning = () => {
                 disabled={isGeneratingExcel || isGeneratingWord}
                 className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all duration-200 ${
                   isGeneratingExcel || isGeneratingWord
-                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                    : 'text-green-700 bg-green-50 hover:bg-green-100 border border-green-200'
+                    ? 'bg-[color:var(--surface-muted)] text-[color:var(--foreground-muted)] cursor-not-allowed opacity-60'
+                    : 'text-green-700 bg-green-50 dark:bg-green-900/20 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/40 border border-green-200 dark:border-green-800'
                 }`}
               >
-                <FaFileExcel
+                <FileSpreadsheet
                   className={`text-xl ${isGeneratingExcel ? 'animate-spin' : ''}`}
                 />
                 <span className="font-medium">
@@ -409,11 +409,11 @@ const InventoryDecommissioning = () => {
                 disabled={isGeneratingWord || isGeneratingExcel}
                 className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-all duration-200 ${
                   isGeneratingWord || isGeneratingExcel
-                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                    : 'text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200'
+                    ? 'bg-[color:var(--surface-muted)] text-[color:var(--foreground-muted)] cursor-not-allowed opacity-60'
+                    : 'text-blue-700 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-200 dark:border-blue-800'
                 }`}
               >
-                <FaFileWord
+                <FileText
                   className={`text-xl ${isGeneratingWord ? 'animate-spin' : ''}`}
                 />
                 <span className="font-medium">
@@ -423,14 +423,14 @@ const InventoryDecommissioning = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 bg-orange-50 p-4 rounded-lg border border-orange-200">
+          <div className="flex flex-col gap-4 bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
             <div className="flex gap-3">
-              <MdWarning className="text-3xl text-orange-500 flex-shrink-0" />
+              <AlertTriangle className="text-3xl text-orange-500 flex-shrink-0" />
               <div className="flex flex-col gap-2">
-                <h4 className="font-semibold text-orange-800">
+                <h4 className="font-semibold text-orange-800 dark:text-orange-300">
                   Confirmar Acción
                 </h4>
-                <p className="text-orange-700 text-sm">
+                <p className="text-orange-700 dark:text-orange-400 text-sm">
                   Esta es una acción irreversible. Para confirmar la baja de los
                   inventarios, escriba "CONFIRMAR BAJA" en el campo siguiente.
                 </p>
@@ -440,7 +440,7 @@ const InventoryDecommissioning = () => {
             <div className="flex flex-col gap-3">
               <input
                 type="text"
-                className="w-full p-3 border border-orange-200 rounded-lg bg-white text-orange-900 placeholder-orange-300 focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all duration-200"
+                className="w-full p-3 border border-orange-200 dark:border-orange-800 rounded-lg bg-white dark:bg-orange-900/10 text-orange-900 dark:text-orange-200 placeholder-orange-300 dark:placeholder-orange-700 focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all duration-200"
                 placeholder="CONFIRMAR BAJA"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
@@ -451,7 +451,7 @@ const InventoryDecommissioning = () => {
                 className="w-full px-4 py-3 text-white bg-red-600 hover:bg-red-700 disabled:bg-gray-400 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                 disabled={confirmText !== 'CONFIRMAR BAJA'}
               >
-                <MdError
+                <AlertCircle
                   className={
                     confirmText === 'CONFIRMAR BAJA'
                       ? 'text-xl animate-pulse'

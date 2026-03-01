@@ -1,16 +1,6 @@
 // pages/PurchaseOrdersPage.jsx
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  FaFileInvoice,
-  FaTrashAlt,
-  FaEdit,
-  FaSearch,
-  FaClipboardList,
-  FaExternalLinkAlt,
-  FaEye,
-} from 'react-icons/fa';
-import { MdInventory } from 'react-icons/md';
 import ReusableTable from '../../components/Table/ReusableTable';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import {
@@ -24,6 +14,16 @@ import { Badge } from 'flowbite-react';
 import ConfirmDeleteModal from '../../components/Modals/ConfirmDeleteModal';
 import PurchaseOrderDetailModal from '../../components/purchaseOrders/PurchaseOrderDetailModal';
 import Notifies from '../../components/Notifies/Notifies';
+import {
+  ClipboardList,
+  ExternalLink,
+  Eye,
+  FileText,
+  Package,
+  Pencil,
+  Search,
+  Trash2,
+} from 'lucide-react';
 
 const PurchaseOrdersPage = () => {
   const navigate = useNavigate();
@@ -124,7 +124,7 @@ const PurchaseOrdersPage = () => {
               }
               className="inline-flex items-center gap-1 text-purple-600 hover:text-purple-800 hover:underline transition-colors text-sm font-medium whitespace-nowrap"
             >
-              <FaExternalLinkAlt size={12} />
+              <ExternalLink size={12} />
               {invoiceCount} Factura{invoiceCount !== 1 ? 's' : ''}
             </button>
           ) : (
@@ -163,7 +163,7 @@ const PurchaseOrdersPage = () => {
               }
               className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 hover:underline transition-colors text-sm font-medium whitespace-nowrap"
             >
-              <MdInventory size={14} />
+              <Package size={14} />
               {totalInventoryCount} Inventario
               {totalInventoryCount !== 1 ? 's' : ''}
             </button>
@@ -190,7 +190,7 @@ const PurchaseOrdersPage = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-lg font-bold text-sinabe-primary flex items-center gap-2">
           <span>
-            <FaClipboardList />
+            <ClipboardList />
           </span>
           Órdenes de Compra
         </h1>
@@ -199,7 +199,7 @@ const PurchaseOrdersPage = () => {
             extraActions={[
               {
                 label: 'Nueva OC',
-                icon: FaFileInvoice,
+                icon: FileText,
                 action: () => {
                   setSelectedOrder(null);
                   setIsModalOpen(true);
@@ -229,7 +229,7 @@ const PurchaseOrdersPage = () => {
           placeholder="Buscar órdenes, proveedor, facturas..."
           className="w-full border border-gray-300 rounded-md py-2 pl-10 pr-4 focus:outline-none focus:ring focus:border-blue-500"
         />
-        <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
       </div>
 
       <ReusableTable
@@ -256,7 +256,7 @@ const PurchaseOrdersPage = () => {
         rowActions={(order) => [
           {
             key: 'view',
-            icon: FaEye,
+            icon: Eye,
             label: 'Ver detalles',
             action: () => {
               setSelectedOrder(order);
@@ -265,7 +265,7 @@ const PurchaseOrdersPage = () => {
           },
           {
             key: 'edit',
-            icon: FaEdit,
+            icon: Pencil,
             label: 'Editar',
             action: () => {
               setSelectedOrder(order);
@@ -274,7 +274,7 @@ const PurchaseOrdersPage = () => {
           },
           {
             key: 'delete',
-            icon: FaTrashAlt,
+            icon: Trash2,
             label: 'Eliminar',
             action: () => {
               setSelectedOrder(order);

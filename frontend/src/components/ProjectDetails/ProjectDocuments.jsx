@@ -1,6 +1,6 @@
 // File: frontend/src/components/ProjectDetails/ProjectDocuments.jsx
 
-import React from 'react';
+
 import Skeleton from 'react-loading-skeleton';
 import ProjectDocumentsViewer from './Document/ProjectDocumentsViewer';
 import { useProjectDocuments } from '../../hooks/useProjectDocuments';

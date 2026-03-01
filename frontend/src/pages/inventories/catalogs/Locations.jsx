@@ -1,6 +1,5 @@
-import React, { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FaEdit, FaTrash, FaMapMarkerAlt, FaSearch } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 import ReusableTable from '../../../components/Table/ReusableTable';
@@ -9,6 +8,12 @@ import ModalRemove from '../../../components/Modals/ModalRemove';
 import ActionButtons from '../../../components/ActionButtons/ActionButtons';
 import LocationForm from '../../../components/Forms/LocationForm';
 import Notifies from '../../../components/Notifies/Notifies';
+import {
+  MapPin,
+  Pencil,
+  Search,
+  Trash2,
+} from 'lucide-react';
 import {
   getAllInventoryLocations,
   createInventoryLocation,
@@ -150,7 +155,7 @@ const Locations = () => {
         render: (value) => (
           <div className="flex items-center gap-3">
             <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-              <FaMapMarkerAlt className="text-purple-600 dark:text-purple-400 text-lg" />
+              <MapPin className="text-purple-600 dark:text-purple-400 text-lg" />
             </div>
             <span className="font-semibold text-gray-700 dark:text-gray-200">
               {value}
@@ -183,14 +188,14 @@ const Locations = () => {
     {
       key: 'main', // Set as main action
       label: 'Editar',
-      icon: FaEdit,
+      icon: Pencil,
       action: () => handleOpenEditModal(row),
       color: 'yellow',
     },
     {
       key: 'delete',
       label: 'Eliminar',
-      icon: FaTrash,
+      icon: Trash2,
       action: () => handleOpenDeleteModal(row),
       color: 'red',
     },
@@ -202,7 +207,7 @@ const Locations = () => {
       <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-            <FaMapMarkerAlt className="text-purple-600 dark:text-purple-400 text-xl" />
+            <MapPin className="text-purple-600 dark:text-purple-400 text-xl" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-800 dark:text-white">
@@ -216,7 +221,7 @@ const Locations = () => {
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Buscar ubicación..."

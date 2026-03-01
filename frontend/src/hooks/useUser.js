@@ -61,7 +61,7 @@ const useUser = ({ dispatch }) => {
     onMutate: () => {
       setLoading(true);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       Notifies('success', 'Contraseña actualizada correctamente');
     },
     onError: (error) => {

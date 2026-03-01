@@ -10,7 +10,7 @@ import {
 import Notifies from '../components/Notifies/Notifies';
 
 // Hook personalizado para manejar los Custom Fields
-const useCustomField = (dispatch) => {
+const useCustomField = () => {
   const queryClient = useQueryClient();
 
   // Obtener todos los custom fields
@@ -66,6 +66,7 @@ const useCustomField = (dispatch) => {
 
   // Obtener valores de un custom field específico
   const getFieldValues = (customFieldId, query) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     return useQuery({
       queryKey: ['customFieldValues', customFieldId, query],
       queryFn: () => getCustomFieldValues(customFieldId, query),

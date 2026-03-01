@@ -1,15 +1,20 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useCatalogContext } from '../../../context/CatalogContext';
 import ModalRemove from '../../../components/Modals/ModalRemove';
 import ModalFormikForm from '../../../components/Modals/ModalFormikForm';
 import BrandFormFields from '../../../components/InventoryComponents/BrandForm/BrandFormFields';
 import { BrandFormSchema } from '../../../components/InventoryComponents/BrandForm/BrandFormSchema';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
-import { FaEdit, FaTrash, FaSearch } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import useCheckPermissions from '../../../hooks/useCheckPermissions';
 import ReusableTable from '../../../components/Table/ReusableTable';
 import ActionButtons from '../../../components/ActionButtons/ActionButtons';
+
+import {
+  Pencil,
+  Search,
+  Tag,
+  Trash2,
+} from 'lucide-react';
 
 const Brands = () => {
   const {
@@ -129,7 +134,7 @@ const Brands = () => {
         render: (value) => (
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <PiTrademarkRegisteredBold className="text-blue-600 dark:text-blue-400 text-lg" />
+              <Tag className="text-blue-600 dark:text-blue-400 text-lg" />
             </div>
             <span className="font-semibold text-gray-700 dark:text-gray-200">
               {value}
@@ -164,7 +169,7 @@ const Brands = () => {
       actions.push({
         key: 'main', // Set as main action
         label: 'Editar',
-        icon: FaEdit,
+        icon: Pencil,
         action: () => onEditBrand(row),
         color: 'yellow',
       });
@@ -173,7 +178,7 @@ const Brands = () => {
       actions.push({
         key: 'delete',
         label: 'Eliminar',
-        icon: FaTrash,
+        icon: Trash2,
         action: () => onRemoveBrand(row.id),
         color: 'red',
       });
@@ -187,7 +192,7 @@ const Brands = () => {
       <div className="p-4 pt-0 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <PiTrademarkRegisteredBold className="text-blue-600 dark:text-blue-400 text-xl" />
+            <Tag className="text-blue-600 dark:text-blue-400 text-xl" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-800 dark:text-white">
@@ -201,7 +206,7 @@ const Brands = () => {
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-initial">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Buscar marca..."

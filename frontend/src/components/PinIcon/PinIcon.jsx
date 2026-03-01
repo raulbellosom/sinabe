@@ -1,5 +1,5 @@
-import React from 'react';
-import { MdOutlinePushPin, MdPushPin } from 'react-icons/md';
+
+import { Pin, PinOff } from 'lucide-react';
 
 const PinIcon = ({ isPinned, onToggle, isPinMode, className = '' }) => {
   if (!isPinMode) return null;
@@ -23,11 +23,7 @@ const PinIcon = ({ isPinned, onToggle, isPinMode, className = '' }) => {
       `}
       title={isPinned ? 'Desfijar campo' : 'Fijar campo'}
     >
-      {isPinned ? (
-        <MdPushPin className="w-4 h-4" />
-      ) : (
-        <MdOutlinePushPin className="w-4 h-4" />
-      )}
+      {isPinned ? <Pin className="w-4 h-4" /> : <PinOff className="w-4 h-4" />}
     </button>
   );
 };

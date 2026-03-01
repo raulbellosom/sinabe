@@ -1,7 +1,10 @@
 // frontend/src/components/Inputs/FilterDropdown.jsx
 import { Dropdown } from 'flowbite-react';
-import { TbFilter } from 'react-icons/tb';
 import classNames from 'classnames';
+
+import {
+  Filter,
+} from 'lucide-react';
 
 const FilterDropdown = ({
   label = 'Filtrar por',
@@ -14,7 +17,7 @@ const FilterDropdown = ({
   keyField = 'id',
   labelField = 'name',
   titleDisplay = '',
-  icon = <TbFilter size={18} className="text-white" />,
+  icon = <Filter size={18} className="text-white" />,
   filterClassNames = '',
 }) => {
   const toggleOption = (id) => {

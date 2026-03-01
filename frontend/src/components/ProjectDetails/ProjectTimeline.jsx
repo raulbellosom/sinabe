@@ -1,6 +1,7 @@
+import {
+  Circle,
+} from 'lucide-react';
 // src/components/ProjectDetails/ProjectTimeline.jsx
-import { FaCircle } from 'react-icons/fa';
-
 const TIMELINE_COLORS = [
   'text-purple-600',
   'text-green-600',
@@ -33,7 +34,7 @@ const ProjectTimeline = ({ projectId }) => {
             <span
               className={`pt-1 text-sm ${TIMELINE_COLORS[idx % TIMELINE_COLORS.length]}`}
             >
-              <FaCircle />
+              <Circle />
             </span>
             <div>
               <p className="text-sm font-medium text-gray-800 dark:text-white">

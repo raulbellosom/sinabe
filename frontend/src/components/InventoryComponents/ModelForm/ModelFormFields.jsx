@@ -1,10 +1,13 @@
-import React from 'react';
+
 import { Field } from 'formik';
 import TextInput from '../../Inputs/TextInput';
-import { BiCategory } from 'react-icons/bi';
-import { PiTrademarkRegisteredBold } from 'react-icons/pi';
-import { HiCubeTransparent } from 'react-icons/hi';
 import SimpleSearchSelectInput from '../../Inputs/SimpleSearchSelectInput';
+
+import {
+  Box,
+  Layers,
+  Tag,
+} from 'lucide-react';
 
 const ModelFormFields = ({
   inventoryBrands,
@@ -20,7 +23,7 @@ const ModelFormFields = ({
         component={TextInput}
         label="Nombre"
         type="text"
-        icon={HiCubeTransparent}
+        icon={Box}
       />
       <Field
         name="brandId"
@@ -31,7 +34,7 @@ const ModelFormFields = ({
           label: brand.name,
           value: brand.id,
         }))}
-        icon={PiTrademarkRegisteredBold}
+        icon={Tag}
         isClearable
         createOption={createBrand}
       />
@@ -44,7 +47,7 @@ const ModelFormFields = ({
           label: type.name,
           value: type.id,
         }))}
-        icon={BiCategory}
+        icon={Layers}
         isClearable
         createOption={createType}
       />

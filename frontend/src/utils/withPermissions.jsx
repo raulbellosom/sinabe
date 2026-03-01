@@ -1,37 +1,38 @@
-import React, { useMemo } from 'react';
-import { useAuthContext } from '../context/AuthContext';
+import AuthContext from '../context/AuthContext';
 import NotFound from '../pages/notFound/NotFound';
 
 const withPermission = (WrappedComponent, requiredPermission) => {
-  return (props) => {
-    const { user, loading } = useAuthContext();
-    const { authPermissions } = user;
+  const PermissionWrapper = (props) => (
+    <AuthContext.Consumer>
+      {({ user, loading }) => {
+        const userPermissions = user?.authPermissions || [];
+        const hasPermission =
+          typeof requiredPermission === 'string'
+            ? userPermissions.includes(requiredPermission)
+            : Array.isArray(requiredPermission)
+              ? requiredPermission.some((permission) =>
+                  userPermissions.includes(permission),
+                )
+              : false;
 
-    const userPermissions = useMemo(() => {
-      return authPermissions;
-    }, [authPermissions]);
+        if (loading) {
+          return null;
+        }
 
-    const hasPermission = useMemo(() => {
-      if (typeof requiredPermission === 'string') {
-        return userPermissions?.includes(requiredPermission);
-      }
-      if (Array.isArray(requiredPermission)) {
-        return requiredPermission.some((permission) =>
-          userPermissions?.includes(permission),
-        );
-      }
-      return false;
-    }, [requiredPermission, userPermissions]);
+        if (!hasPermission) {
+          return <NotFound />;
+        }
 
-    if (loading) {
-      return null;
-    }
+        return <WrappedComponent {...props} />;
+      }}
+    </AuthContext.Consumer>
+  );
 
-    if (!hasPermission) {
-      return <NotFound />;
-    }
-    return <WrappedComponent {...props} />;
-  };
+  PermissionWrapper.displayName = `WithPermission(${
+    WrappedComponent.displayName || WrappedComponent.name || 'Component'
+  })`;
+
+  return PermissionWrapper;
 };
 
 export default withPermission;

@@ -2,7 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useUserContext } from '../../context/UserContext';
 import { useQuery } from '@tanstack/react-query';
 import Skeleton from 'react-loading-skeleton';
-import { IoMdAdd, IoMdTrash } from 'react-icons/io';
+import {
+  Lock,
+  MoreVertical,
+  Plus,
+  ShieldCheck,
+  Trash2,
+} from 'lucide-react';
 import { Dropdown, Table as T } from 'flowbite-react';
 import ModalRemove from '../../components/Modals/ModalRemove';
 import { searchUsers } from '../../services/api';
@@ -11,7 +17,6 @@ import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import Notifies from '../../components/Notifies/Notifies';
 import ImageViewer from '../../components/ImageViewer/ImageViewer';
 import { useAuthContext } from '../../context/AuthContext';
-import { FaLock, FaUserShield } from 'react-icons/fa';
 import { useRoleContext } from '../../context/RoleContext';
 import ModalFormikForm from '../../components/Modals/ModalFormikForm';
 import {
@@ -38,7 +43,6 @@ import classNames from 'classnames';
 import UserChangePasswordFormFields from '../../components/Users/UserChangePasswordFormFields';
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
-import { BsThreeDotsVertical } from 'react-icons/bs';
 
 const Users = () => {
   const lastChange = useRef();
@@ -296,7 +300,7 @@ const Users = () => {
           }
         : null,
       color: 'indigo',
-      icon: FaLock,
+      icon: Lock,
     },
     {
       label: 'Eliminar',
@@ -304,7 +308,7 @@ const Users = () => {
         ? () => onRemoveUser(user.id)
         : null,
       color: 'red',
-      icon: IoMdTrash,
+      icon: Trash2,
     },
   ];
 
@@ -312,15 +316,15 @@ const Users = () => {
     <div className="flex flex-col gap-3 bg-white shadow-md rounded-md dark:bg-gray-900 p-3 antialiased">
       <TableHeader
         title={'Usuarios'}
-        icon={FaUserShield}
+        icon={ShieldCheck}
         actions={[
           {
             label: 'Nuevo',
             action: isCreateUserPermission.hasPermission
               ? () => setIsOpenModal(true)
               : null,
-            color: 'mycad',
-            icon: IoMdAdd,
+            color: 'primary',
+            icon: Plus,
             filled: true,
           },
         ]}
@@ -426,7 +430,7 @@ const Users = () => {
                                 //           }
                                 //         : null,
                                 //       color: 'indigo',
-                                //       icon: FaLock,
+                                //       icon: Lock,
                                 //     },
                                 //   ]}
                               />
@@ -434,7 +438,7 @@ const Users = () => {
                                 <Dropdown
                                   renderTrigger={() => (
                                     <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
-                                      <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                                      <MoreVertical className="text-lg text-neutral-600" />
                                     </button>
                                   )}
                                   dismissOnClick={false}
@@ -508,7 +512,7 @@ const Users = () => {
                           <Dropdown
                             renderTrigger={() => (
                               <button className="w-fit bg-white hover:bg-neutral-200 md:w-fit h-9 xl:h-10 text-sm xl:text-base cursor-pointer transition ease-in-out duration-200 p-4 flex items-center justify-center rounded-md border text-stone-800">
-                                <BsThreeDotsVertical className="text-lg text-neutral-600" />
+                                <MoreVertical className="text-lg text-neutral-600" />
                               </button>
                             )}
                             dismissOnClick={false}

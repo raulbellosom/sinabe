@@ -1,14 +1,14 @@
 // components/purchaseOrders/PurchaseOrderDetailModal.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Badge } from 'flowbite-react';
 import {
-  FaClipboardList,
-  FaFileInvoice,
-  FaEdit,
-  FaChevronDown,
-  FaChevronUp,
-} from 'react-icons/fa';
-import { MdInventory } from 'react-icons/md';
+  ClipboardList,
+  FileText,
+  Pencil,
+  ChevronDown,
+  ChevronUp,
+  Package,
+} from 'lucide-react';
 import { useGetAllInventoriesByPurchaseOrder } from '../../hooks/usePurchaseOrders';
 import PurchaseOrderInvoicesManager from './invoices/PurchaseOrderInvoicesManager';
 import AllInventoriesViewer from './inventory/AllInventoriesViewer';
@@ -44,7 +44,7 @@ const PurchaseOrderDetailModal = ({
       size="xl"
       title={
         <div className="flex items-center gap-3">
-          <FaClipboardList />
+          <ClipboardList />
           <div>
             <div className="text-lg font-semibold">{purchaseOrder.code}</div>
             {purchaseOrder.supplier && (
@@ -73,12 +73,12 @@ const PurchaseOrderDetailModal = ({
                 >
                   {isDescriptionExpanded ? (
                     <>
-                      <FaChevronUp size={10} />
+                      <ChevronUp size={10} />
                       Mostrar menos
                     </>
                   ) : (
                     <>
-                      <FaChevronDown size={10} />
+                      <ChevronDown size={10} />
                       Mostrar más
                     </>
                   )}
@@ -111,7 +111,7 @@ const PurchaseOrderDetailModal = ({
                 }
               `}
             >
-              <FaFileInvoice />
+              <FileText />
               <span>Facturas</span>
               <Badge color={activeTab === 'invoices' ? 'blue' : 'gray'}>
                 {invoiceCount}
@@ -129,7 +129,7 @@ const PurchaseOrderDetailModal = ({
                 }
               `}
             >
-              <MdInventory />
+              <Package />
               <span>Inventarios</span>
               <Badge color={activeTab === 'inventories' ? 'blue' : 'gray'}>
                 {inventoryCount}

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -10,18 +10,6 @@ import {
   Label,
   Button,
 } from 'flowbite-react';
-import {
-  FaFileInvoice,
-  FaSearch,
-  FaTrash,
-  FaEdit,
-  FaCheckCircle,
-  FaTimesCircle,
-  FaEnvelope,
-  FaQrcode,
-  FaShareAlt,
-} from 'react-icons/fa';
-import { HiEye } from 'react-icons/hi';
 import {
   getCustodyRecords,
   deleteCustodyRecord,
@@ -37,6 +25,19 @@ import ActionButtons from '../../components/ActionButtons/ActionButtons';
 import { parseToLocalDate } from '../../utils/formatValues';
 import ReusableTable from '../../components/Table/ReusableTable';
 import ConfirmDeleteModal from '../../components/Modals/ConfirmDeleteModal';
+
+import {
+  CheckCircle,
+  Eye,
+  FileText,
+  Mail,
+  Pencil,
+  QrCode,
+  Search,
+  Share2,
+  Trash2,
+  XCircle,
+} from 'lucide-react';
 
 const CustodyPage = () => {
   const navigate = useNavigate();
@@ -177,13 +178,13 @@ const CustodyPage = () => {
           val ? (
             <div className="flex justify-center text-green-500">
               <Tooltip content="Resguardo firmado">
-                <FaCheckCircle className="h-5 w-5" />
+                <CheckCircle className="h-5 w-5" />
               </Tooltip>
             </div>
           ) : (
             <div className="flex justify-center text-gray-300">
               <Tooltip content="Pendiente de firma">
-                <FaTimesCircle className="h-5 w-5" />
+                <XCircle className="h-5 w-5" />
               </Tooltip>
             </div>
           ),
@@ -248,7 +249,7 @@ const CustodyPage = () => {
     {
       key: 'view',
       label: 'Ver Detalle',
-      icon: HiEye,
+      icon: Eye,
       action: () => navigate(`/custody/view/${record.id}`),
       color: 'green',
     },
@@ -257,14 +258,14 @@ const CustodyPage = () => {
           {
             key: 'share',
             label: 'QR / Enlace',
-            icon: FaQrcode,
+            icon: QrCode,
             action: () => handleShowShare(record.id),
             color: 'blue',
           },
           {
             key: 'edit',
             label: 'Editar Borrador',
-            icon: FaEdit,
+            icon: Pencil,
             action: () => navigate(`/custody/edit/${record.id}`),
             color: 'yellow',
           },
@@ -275,7 +276,7 @@ const CustodyPage = () => {
           {
             key: 'resend',
             label: 'Enviar Correo',
-            icon: FaEnvelope,
+            icon: Mail,
             action: () => handleResendEmail(record.id),
             color: 'green',
           },
@@ -284,7 +285,7 @@ const CustodyPage = () => {
     {
       key: 'delete',
       label: 'Eliminar',
-      icon: FaTrash,
+      icon: Trash2,
       action: () => handleDelete(record),
       color: 'red',
     },
@@ -311,7 +312,7 @@ const CustodyPage = () => {
       />
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-          <FaFileInvoice className="text-purple-500" />
+          <FileText className="text-purple-500" />
           Resguardos Tecnológicos
         </h1>
         <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto items-center">
@@ -319,7 +320,7 @@ const CustodyPage = () => {
             <TextInput
               id="search"
               type="text"
-              icon={FaSearch}
+              icon={Search}
               placeholder="Buscar por nombre, empleado, serie, modelo..."
               value={localSearchTerm}
               onChange={(e) => setLocalSearchTerm(e.target.value)}
@@ -393,7 +394,7 @@ const CustodyPage = () => {
                         toast.success('Copiado');
                       }}
                     >
-                      <FaShareAlt />
+                      <Share2 />
                     </Button>
                   </div>
                 </div>

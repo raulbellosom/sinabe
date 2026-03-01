@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import ActionButtons from '../ActionButtons/ActionButtons';
-import { FaArrowLeft, FaPlus, FaSave } from 'react-icons/fa';
+import { ArrowLeft, Plus, Save } from 'lucide-react';
 
 const ProjectForm = ({
   initialValues,
@@ -41,12 +41,12 @@ const ProjectForm = ({
                 </label>
                 <Field
                   name="name"
-                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 />
                 <ErrorMessage
                   name="name"
                   component="div"
-                  className="text-sm text-sinabe-danger mt-1"
+                  className="text-sm text-red-500 mt-1"
                 />
               </div>
 
@@ -56,12 +56,12 @@ const ProjectForm = ({
                 </label>
                 <Field
                   name="provider"
-                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 />
                 <ErrorMessage
                   name="provider"
                   component="div"
-                  className="text-sm text-sinabe-danger mt-1"
+                  className="text-sm text-red-500 mt-1"
                 />
               </div>
               <div>
@@ -71,7 +71,7 @@ const ProjectForm = ({
                 <Field
                   as="select"
                   name="status"
-                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">Seleccionar estado...</option>
                   <option value="PLANIFICACION">Planificación</option>
@@ -84,7 +84,7 @@ const ProjectForm = ({
                 <ErrorMessage
                   name="status"
                   component="div"
-                  className="text-sm text-sinabe-danger mt-1"
+                  className="text-sm text-red-500 mt-1"
                 />
               </div>
 
@@ -96,12 +96,12 @@ const ProjectForm = ({
                   <Field
                     name="budgetTotal"
                     type="number"
-                    className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                    className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-500"
                   />
                   <ErrorMessage
                     name="budgetTotal"
                     component="div"
-                    className="text-sm text-sinabe-danger mt-1"
+                    className="text-sm text-red-500 mt-1"
                   />
                 </div>
               </div>
@@ -115,12 +115,12 @@ const ProjectForm = ({
                 <Field
                   name="startDate"
                   type="date"
-                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 />
                 <ErrorMessage
                   name="startDate"
                   component="div"
-                  className="text-sm text-sinabe-danger mt-1"
+                  className="text-sm text-red-500 mt-1"
                 />
               </div>
 
@@ -131,12 +131,12 @@ const ProjectForm = ({
                 <Field
                   name="endDate"
                   type="date"
-                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 />
                 <ErrorMessage
                   name="endDate"
                   component="div"
-                  className="text-sm text-sinabe-danger mt-1"
+                  className="text-sm text-red-500 mt-1"
                 />
               </div>
 
@@ -148,12 +148,12 @@ const ProjectForm = ({
                   name="description"
                   as="textarea"
                   rows="4"
-                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-sinabe-primary"
+                  className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-purple-500"
                 />
                 <ErrorMessage
                   name="description"
                   component="div"
-                  className="text-sm text-sinabe-danger mt-1"
+                  className="text-sm text-red-500 mt-1"
                 />
               </div>
             </div>
@@ -164,7 +164,7 @@ const ProjectForm = ({
                   {
                     label: isEdit ? 'Cancelar' : 'Volver',
                     action: onClose,
-                    icon: FaArrowLeft,
+                    icon: ArrowLeft,
                     color: 'stone',
                     filled: true,
                     disabled: isSubmitting,
@@ -173,7 +173,7 @@ const ProjectForm = ({
                     label: isEdit ? 'Actualizar' : 'Guardar',
                     color: 'indigo',
                     filled: isChanged,
-                    icon: isEdit ? FaSave : FaPlus,
+                    icon: isEdit ? Save : Plus,
                     disabled: (isEdit ? !isChanged : false) || isSubmitting,
                     action: submitForm,
                     type: 'submit',

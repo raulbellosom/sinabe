@@ -1,8 +1,8 @@
-import React from 'react';
+import { useMemo } from 'react';
 import { ErrorMessage } from 'formik';
 import { Label } from 'flowbite-react';
 import classNames from 'classnames';
-import Select from 'react-select';
+import Combobox from '../common/Combobox';
 import PinnableInputWrapper from './PinnableInputWrapper';
 
 const MultiSelectInput = ({
@@ -19,9 +19,24 @@ const MultiSelectInput = ({
 }) => {
   // Provide defaults for form properties
   const { touched = {}, errors = {}, setFieldValue = () => {} } = form;
-  const handleChange = (selectedOptions) => {
-    const values = selectedOptions
-      ? selectedOptions.map((option) => option.value)
+
+  // Prepare options with "Other" option if needed
+  const allOptions = useMemo(
+    () => [
+      ...props.options,
+      ...(isOtherOption ? [{ label: 'Otro', value: '0' }] : []),
+    ],
+    [props.options, isOtherOption],
+  );
+
+  // Convert field values to selected options format for Combobox
+  const selectedOptions = useMemo(() => {
+    return allOptions.filter((option) => field.value?.includes(option.value));
+  }, [field.value, allOptions]);
+
+  const handleChange = (selectedOpts) => {
+    const values = selectedOpts
+      ? selectedOpts.map((option) => option.value)
       : [];
     setFieldValue(field?.name, values);
 
@@ -32,26 +47,20 @@ const MultiSelectInput = ({
 
   const selectContent = (
     <>
-      <Select
-        {...field}
-        {...props}
-        isMulti
-        className="mt-1 border border-gray-500 rounded-lg"
-        closeMenuOnSelect={closeMenuOnSelect}
-        classNamePrefix="react-select"
+      <Combobox
+        options={allOptions}
+        value={selectedOptions}
         onChange={handleChange}
-        value={props.options.filter((option) =>
-          field.value?.includes(option.value),
-        )}
-        options={[
-          ...props.options,
-          ...(isOtherOption ? [{ label: 'Otro', value: '0' }] : []),
-        ]}
+        isMulti
+        closeMenuOnSelect={closeMenuOnSelect}
+        placeholder={props.placeholder || 'Seleccionar...'}
+        isClearable
+        className="mt-1"
       />
       <ErrorMessage
         name={field?.name || ''}
         component="div"
-        className="text-red-500 text-sm"
+        className="text-[var(--danger)] text-sm mt-1"
       />
     </>
   );
