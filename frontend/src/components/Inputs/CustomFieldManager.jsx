@@ -7,9 +7,7 @@ import Notifies from '../Notifies/Notifies';
 import ActionButtons from '../ActionButtons/ActionButtons';
 import PinIcon from '../PinIcon/PinIcon';
 
-import {
-  Trash2,
-} from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
 const CustomFieldManager = ({
   name,
@@ -28,6 +26,7 @@ const CustomFieldManager = ({
   const [selectedFields, setSelectedFields] = useState([]);
   const prevCurrentCustomFieldsRef = useRef([]);
   const prevCustomFieldsRef = useRef([]);
+  const initializedRef = useRef(false);
 
   // Sync local state when form values are reset (e.g. submit without pin)
   useEffect(() => {
@@ -68,7 +67,9 @@ const CustomFieldManager = ({
       let value = field.value || '';
 
       if (!name && id) {
-        const foundField = customFields.find((cf) => cf.id === id);
+        const foundField = customFields.find(
+          (cf) => String(cf.id) === String(id),
+        );
         if (foundField) {
           name = foundField.name;
         }
@@ -153,8 +154,10 @@ const CustomFieldManager = ({
         values[name].forEach((v) => {
           const id = v.id || v.customFieldId;
           if (!processedIds.has(id)) {
-            let label = 'Campo Desconocido';
-            const catalogField = customFields.find((cf) => cf.id === id);
+            let label = v.name || 'Campo Desconocido';
+            const catalogField = customFields.find(
+              (cf) => String(cf.id) === String(id),
+            );
             if (catalogField) {
               label = catalogField.name;
             }
@@ -171,12 +174,16 @@ const CustomFieldManager = ({
 
       setSelectedFields(mergedFields);
     } else {
-      // No pin mode - use initialFields when there are actual changes
-      if (
-        currentFieldsChanged ||
-        catalogChanged ||
-        selectedFields.length === 0
-      ) {
+      // No pin mode - only re-initialize from server data when currentCustomFields
+      // changes (e.g. after a save/load). Do NOT reset on catalogChanged because
+      // that fires after a new field is created and would wipe the just-added field.
+      // Use initializedRef to avoid the stale-closure bug: selectedFields.length===0
+      // would read the old value (before handleCustomFieldSelect's setSelectedFields
+      // is committed) and incorrectly wipe the just-added field.
+      if (!initializedRef.current) {
+        initializedRef.current = true;
+        setSelectedFields(initialFields);
+      } else if (currentFieldsChanged) {
         setSelectedFields(initialFields);
       }
     }
@@ -250,6 +257,7 @@ const CustomFieldManager = ({
       ...currentFormikValues,
       {
         id: selectedOption.value,
+        name: selectedOption.label,
         value: '',
         customFieldId: selectedOption.value,
       },
@@ -283,19 +291,26 @@ const CustomFieldManager = ({
     }
   };
 
-  const handleValueChange = async (selectedValue, index) => {
+  const handleValueChange = (selectedValue, index) => {
     if (!selectedValue) return;
 
-    const updatedFields = [...selectedFields];
-    updatedFields[index].fieldValue = selectedValue.label;
+    const fieldId = selectedFields[index].value;
+
+    // No need to call addCustomFieldValue here: that endpoint requires an inventoryId
+    // (it creates an InventoryCustomField record, not a standalone suggestion).
+    // The value will be persisted naturally when the inventory is saved.
+
+    const updatedFields = selectedFields.map((f, i) =>
+      i === index ? { ...f, fieldValue: selectedValue.label } : f,
+    );
     setSelectedFields(updatedFields);
 
-    const updatedFormikValues = [...values[name]];
-    updatedFormikValues[index].value = selectedValue.label;
+    const updatedFormikValues = (values[name] || []).map((v, i) =>
+      i === index ? { ...v, value: selectedValue.label } : v,
+    );
     setFieldValue(name, updatedFormikValues);
 
     // If Individual Pin is active, update it with new value
-    const fieldId = selectedFields[index].value;
     if (isPinMode && pinnedFields[`customField_${fieldId}`] !== undefined) {
       handlePinCustomField(fieldId, updatedFields);
     }

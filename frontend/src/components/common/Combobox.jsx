@@ -177,15 +177,16 @@ const Combobox = ({
   const filteredOptions = useMemo(() => {
     if (isAsync) return currentOptions; // El filtrado lo hace el servidor
 
-    if (!search.trim()) return currentOptions;
+    // Apply custom filterOption first (e.g. hide already-selected items)
+    let options = filterOption
+      ? currentOptions.filter((opt) => filterOption(opt))
+      : currentOptions;
+
+    if (!search.trim()) return options;
 
     const searchLower = search.toLowerCase().trim();
 
-    if (filterOption) {
-      return currentOptions.filter((opt) => filterOption(opt, searchLower));
-    }
-
-    return currentOptions.filter((opt) => {
+    return options.filter((opt) => {
       const labelMatch = getOptionLabel(opt)
         ?.toLowerCase()
         .includes(searchLower);

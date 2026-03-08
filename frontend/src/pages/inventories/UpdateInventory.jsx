@@ -19,6 +19,7 @@ import withPermission from '../../utils/withPermissions';
 import { useCustomFieldContext } from '../../context/CustomFieldContext';
 import NotFound from '../notFound/NotFound';
 import { ThreeCircles } from 'react-loader-spinner';
+import InventoryFAB from '../../components/ui/InventoryFAB';
 
 const UpdateInventory = () => {
   const formRef = useRef(null);
@@ -68,6 +69,7 @@ const UpdateInventory = () => {
     locationId: '',
   });
   const [currentFormValues, setCurrentFormValues] = useState({});
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPOModalOpen, setIsPOModalOpen] = useState(false);
@@ -277,6 +279,7 @@ const UpdateInventory = () => {
     try {
       updateInventory(values);
       resetForm();
+      setHasUnsavedChanges(false);
     } catch (error) {
       console.error(error);
       setSubmitting(false);
@@ -381,7 +384,9 @@ const UpdateInventory = () => {
         </div>
 
         {/* Form Container */}
-        <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4 md:p-6 shadow-sm">
+        <div
+          className={`rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-sm p-4 md:p-6${hasUnsavedChanges ? ' pb-28 md:pb-6' : ''}`}
+        >
           {isPending ||
           isFetching ||
           (Object.keys(inventory).length == 0 &&
@@ -416,7 +421,10 @@ const UpdateInventory = () => {
               createCustomField={createField}
               currentCustomFields={initialValues.customFields}
               inventoryId={id}
-              onFormChange={setCurrentFormValues}
+              onFormChange={(vals) => {
+                setCurrentFormValues(vals);
+                setHasUnsavedChanges(true);
+              }}
               isPinMode={isPinMode}
               pinnedFields={pinnedFields}
               onPinField={pinField}
@@ -425,6 +433,9 @@ const UpdateInventory = () => {
           )}
         </div>
       </div>
+
+      {/* Floating save button (mobile only, visible when dirty) */}
+      <InventoryFAB visible={hasUnsavedChanges} onSave={handleSubmitRef} />
       <ModalRemove
         isOpenModal={isOpenModal}
         onCloseModal={() => setIsOpenModal(false)}

@@ -1,7 +1,7 @@
 ﻿import { useMemo, useRef, useState } from 'react';
 import imageCompression from 'browser-image-compression';
 import { Capacitor } from '@capacitor/core';
-import { Camera, ImagePlus, X } from 'lucide-react';
+import { Camera, ImagePlus, Upload } from 'lucide-react';
 
 import Button from './Button';
 import cn from './cn';
@@ -25,8 +25,11 @@ const ImageCaptureField = ({
   className = '',
   disabled = false,
 }) => {
-  const inputRef = useRef(null);
+  // Separate refs: one for gallery/file picker, one for camera (web fallback)
+  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
   const [busy, setBusy] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const { openCamera } = useNativeCamera();
 
   const files = useMemo(() => (Array.isArray(value) ? value : []), [value]);
@@ -81,48 +84,105 @@ const ImageCaptureField = ({
       return;
     }
 
-    inputRef.current?.click();
+    // Web fallback: trigger the camera-capture input
+    cameraInputRef.current?.click();
   };
 
   const handleRemove = (indexToRemove) => {
     onChange(files.filter((_, index) => index !== indexToRemove));
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    if (!disabled && !busy) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (disabled || busy) return;
+    const incoming = Array.from(e.dataTransfer.files || []).filter((f) =>
+      f.type.startsWith('image/'),
+    );
+    if (!incoming.length) return;
+    await appendFiles(incoming);
+  };
+
   return (
     <div className={cn('space-y-3', className)}>
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant="secondary"
-          disabled={disabled || busy}
-          onClick={() => inputRef.current?.click()}
-          className="text-sm"
-        >
-          <ImagePlus className="w-4 h-4" />
-          Seleccionar
-        </Button>
-        <Button
-          variant="ghost"
-          disabled={disabled || busy}
-          onClick={handleTakePhoto}
-          className="text-sm"
-        >
-          <Camera className="w-4 h-4" />
-          Usar cámara
-        </Button>
+      {/* Always-visible dropzone */}
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={cn(
+          'flex flex-col items-center justify-center w-full p-4 rounded-lg border-2 border-dashed transition-all duration-200',
+          disabled
+            ? 'opacity-60 cursor-not-allowed border-[color:var(--border)] bg-[color:var(--surface-muted)]'
+            : isDragging
+              ? 'border-[color:var(--primary)] bg-[color:var(--primary)]/5'
+              : 'border-[color:var(--border)] bg-[color:var(--surface-muted)] hover:border-[color:var(--primary)]/50',
+        )}
+      >
+        <Upload className="w-7 h-7 mb-2 text-[color:var(--foreground-muted)]" />
+        <p className="text-sm text-[color:var(--foreground-muted)] mb-3">
+          {isDragging
+            ? 'Suelta las imágenes aquí'
+            : 'Arrastra imágenes aquí o usa los botones'}
+        </p>
+        <div className="flex flex-wrap gap-2 justify-center">
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={disabled || busy}
+            onClick={() => fileInputRef.current?.click()}
+            className="text-sm"
+          >
+            <ImagePlus className="w-4 h-4" />
+            Seleccionar
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={disabled || busy}
+            onClick={handleTakePhoto}
+            className="text-sm"
+          >
+            <Camera className="w-4 h-4" />
+            Usar cámara
+          </Button>
+        </div>
       </div>
 
+      {/* File picker input — no capture attribute */}
       <input
-        ref={inputRef}
+        ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         multiple
         className="hidden"
         onChange={handleFileChange}
         disabled={disabled || busy}
       />
 
-      {files.length ? (
+      {/* Camera input — web fallback only, with capture */}
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileChange}
+        disabled={disabled || busy}
+      />
+
+      {/* Images grid */}
+      {files.length > 0 && (
         <ImageViewer
           images={files.map((file, index) => ({
             id: file.id || index,
@@ -143,12 +203,6 @@ const ImageCaptureField = ({
           containerClassNames="grid grid-cols-2 gap-3 sm:grid-cols-3"
           imageStyles="h-24"
         />
-      ) : (
-        <div className="flex items-center justify-center h-24 rounded-lg border-2 border-dashed border-[color:var(--border)] bg-[color:var(--surface-muted)]">
-          <p className="text-sm text-[color:var(--foreground-muted)]">
-            Sin imágenes
-          </p>
-        </div>
       )}
     </div>
   );

@@ -1,4 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import {
+  serializeFiles,
+  deserializeFiles,
+  deleteDraftFiles,
+  getDraftIds,
+} from '../../lib/draftFiles';
 import { useCatalogContext } from '../../context/CatalogContext';
 import { useInventoryContext } from '../../context/InventoryContext';
 import ReusableModal from '../../components/Modals/ReusableModal';
@@ -12,6 +18,7 @@ import { ClipboardList, Save, XCircle, Pin, PinOff } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import withPermission from '../../utils/withPermissions';
 import { useCustomFieldContext } from '../../context/CustomFieldContext';
+import InventoryFAB from '../../components/ui/InventoryFAB';
 import Notifies from '../../components/Notifies/Notifies';
 
 const initValues = {
@@ -415,13 +422,25 @@ const CreateInventory = () => {
   };
 
   // Funciones para manejar cambios sin guardar
-  const saveToLocalStorage = useCallback((values) => {
+  const saveToLocalStorage = useCallback(async (values) => {
     setCurrentFormValues(values);
     setHasUnsavedChanges(true);
-    localStorage.setItem('unsavedInventoryForm', JSON.stringify(values));
+    try {
+      const serialized = await serializeFiles(values);
+      localStorage.setItem('unsavedInventoryForm', JSON.stringify(serialized));
+    } catch {
+      // Fallback: save without file blobs (they'll be lost on reload)
+      localStorage.setItem('unsavedInventoryForm', JSON.stringify(values));
+    }
   }, []);
 
   const clearLocalStorage = () => {
+    try {
+      const saved = localStorage.getItem('unsavedInventoryForm');
+      if (saved) deleteDraftFiles(getDraftIds(JSON.parse(saved)));
+    } catch {
+      /* ignore */
+    }
     localStorage.removeItem('unsavedInventoryForm');
     setHasUnsavedChanges(false);
     setCurrentFormValues({ ...initValues });
@@ -448,18 +467,33 @@ const CreateInventory = () => {
     }
   };
 
-  const restoreUnsavedChanges = () => {
+  const restoreUnsavedChanges = async () => {
     const savedForm = localStorage.getItem('unsavedInventoryForm');
     if (savedForm) {
-      const parsedForm = JSON.parse(savedForm);
-      const mergedValues = { ...initValues, ...pinnedFields, ...parsedForm };
-      setInitialValues(mergedValues);
-      setCurrentFormValues(mergedValues);
+      try {
+        const parsedForm = JSON.parse(savedForm);
+        const withFiles = await deserializeFiles(parsedForm);
+        const mergedValues = { ...initValues, ...pinnedFields, ...withFiles };
+        setInitialValues(mergedValues);
+        setCurrentFormValues(mergedValues);
+      } catch {
+        // Fallback: restore text data only
+        const parsedForm = JSON.parse(savedForm);
+        const mergedValues = { ...initValues, ...pinnedFields, ...parsedForm };
+        setInitialValues(mergedValues);
+        setCurrentFormValues(mergedValues);
+      }
     }
     setShowUnsavedModal(false);
   };
 
   const discardUnsavedChanges = () => {
+    try {
+      const saved = localStorage.getItem('unsavedInventoryForm');
+      if (saved) deleteDraftFiles(getDraftIds(JSON.parse(saved)));
+    } catch {
+      /* ignore */
+    }
     localStorage.removeItem('unsavedInventoryForm');
     setHasUnsavedChanges(false);
 
@@ -550,7 +584,9 @@ const CreateInventory = () => {
       </div>
 
       {/* Form Container */}
-      <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4 md:p-6 shadow-sm">
+      <div
+        className={`rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] shadow-sm p-4 md:p-6${hasUnsavedChanges ? ' pb-28 md:pb-6' : ''}`}
+      >
         <InventoryForm
           ref={formRef}
           initialValues={initialValues}
@@ -709,6 +745,9 @@ const CreateInventory = () => {
           />
         </ReusableModal>
       )}
+
+      {/* Floating save button (mobile only, visible when dirty) */}
+      <InventoryFAB visible={hasUnsavedChanges} onSave={handleSubmitRef} />
 
       {/* Modal para cambios sin guardar */}
       {showUnsavedModal && (
