@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getCustodyRecord } from '../../services/custody.api';
-import { Card, Table, Badge, Button, Spinner } from '../../components/ui/flowbite';
+import {
+  Card,
+  Table,
+  Badge,
+  Button,
+  Spinner,
+} from '../../components/ui/flowbite';
 import Breadcrumb from '../../components/Breadcrum/Breadcrumb';
 import { parseToLocalDate } from '../../utils/formatValues';
 import ActionButtons from '../../components/ActionButtons/ActionButtons';
@@ -225,8 +231,7 @@ const ViewCustody = () => {
           <Card>
             <div className="flex items-center justify-between mb-4 border-b pb-2">
               <h3 className="text-lg font-bold flex items-center gap-2 dark:text-white font-mono uppercase tracking-tight">
-                <ClipboardList className="text-purple-500" /> Equipos
-                Asociados
+                <ClipboardList className="text-purple-500" /> Equipos Asociados
               </h3>
               <Badge color="purple" className="px-3">
                 {record.items?.length || 0} Equipos
@@ -297,12 +302,13 @@ const ViewCustody = () => {
           <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest text-center mb-4">
             Firma de Conformidad (Receptor)
           </h3>
-          <div className="bg-gray-50 dark:bg-gray-900 h-40 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex items-center justify-center p-4 shadow-inner">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex items-center justify-center p-4 shadow-inner">
             {record.receiverSignature ? (
               <img
                 src={record.receiverSignature}
                 alt="Firma Receptor"
-                className="max-h-full object-contain dark:invert"
+                style={{ width: 280, height: 120, objectFit: 'contain' }}
+                className="dark:invert"
               />
             ) : (
               <div className="text-center text-gray-400">
@@ -324,12 +330,13 @@ const ViewCustody = () => {
           <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest text-center mb-4">
             Sello Digital Responsable (TI)
           </h3>
-          <div className="bg-gray-50 dark:bg-gray-900 h-40 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex items-center justify-center p-4 shadow-inner">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex items-center justify-center p-4 shadow-inner">
             {record.delivererSignature ? (
               <img
                 src={record.delivererSignature}
                 alt="Firma Entrega"
-                className="max-h-full object-contain dark:invert"
+                style={{ width: 280, height: 120, objectFit: 'contain' }}
+                className="dark:invert"
               />
             ) : (
               <div className="text-center text-gray-400">

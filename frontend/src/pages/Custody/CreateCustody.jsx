@@ -96,33 +96,15 @@ const CreateCustody = () => {
   const [initialDelivererSignature, setInitialDelivererSignature] =
     useState(null);
 
-  // Canvas dimensions for desync fix
-  const [canvasWidth, setCanvasWidth] = useState(null);
-  const receiverContainerRef = useRef(null);
-  const delivererContainerRef = useRef(null);
-
-  // Resize handler to fix desync
-  useEffect(() => {
-    const handleResize = () => {
-      if (receiverContainerRef.current) {
-        setCanvasWidth(receiverContainerRef.current.offsetWidth);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  // Fixed canvas dimensions — absolute size on all screens
+  const CANVAS_W = 320;
+  const CANVAS_H = 150;
 
   // Load saved signature
   useEffect(() => {
     const loadSignature = async () => {
       // Solo cargar si NO estamos en modo edición o si el registro no tiene un entregador aún
-      if (
-        !isEditMode &&
-        user?.signature?.url &&
-        delivererSigPad.current &&
-        canvasWidth
-      ) {
+      if (!isEditMode && user?.signature?.url && delivererSigPad.current) {
         try {
           const response = await fetch(`${API_URL}/${user.signature.url}`);
           const blob = await response.blob();
@@ -132,8 +114,8 @@ const CreateCustody = () => {
             setInitialDelivererSignature(dataUrl);
             delivererSigPad.current.fromDataURL(dataUrl, {
               ratio: 1,
-              width: canvasWidth,
-              height: 256,
+              width: CANVAS_W,
+              height: CANVAS_H,
             });
           };
           reader.readAsDataURL(blob);
@@ -143,15 +125,15 @@ const CreateCustody = () => {
       }
     };
     loadSignature();
-  }, [user, canvasWidth]);
+  }, [user]);
 
   const handleReestablishDelivererSignature = () => {
-    if (initialDelivererSignature && canvasWidth) {
+    if (initialDelivererSignature) {
       delivererSigPad.current.clear();
       delivererSigPad.current.fromDataURL(initialDelivererSignature, {
         ratio: 1,
-        width: canvasWidth,
-        height: 256,
+        width: CANVAS_W,
+        height: CANVAS_H,
       });
       setIsDelivererSignatureChanged(false);
     }
@@ -800,52 +782,54 @@ const CreateCustody = () => {
           {/* Signatures */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 !mb-12">
             <Card>
-              <div className="flex justify-between items-center mb-4 border-b pb-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold dark:text-white flex items-center gap-2">
-                    <Pencil className="text-blue-500" /> Firma del Receptor
-                  </h3>
-                  <Button
-                    size="xs"
-                    color={isReceiverLocked ? 'failure' : 'success'}
-                    onClick={() => setIsReceiverLocked(!isReceiverLocked)}
-                    className="flex items-center gap-1"
-                  >
-                    {isReceiverLocked ? (
-                      <Lock className="h-3 w-3" />
-                    ) : (
-                      <Unlock className="h-3 w-3" />
-                    )}
-                  </Button>
-                </div>
+              {/* Title + actions in one responsive row */}
+              <div className="flex flex-wrap items-center gap-2 mb-3 pb-2 border-b">
+                <h3 className="text-base font-semibold dark:text-white flex items-center gap-2 mr-auto">
+                  <Pencil className="text-blue-500" size={16} /> Firma del
+                  Receptor
+                </h3>
                 <Button
                   size="xs"
-                  color="light"
-                  onClick={() => receiverSigPad.current.clear()}
-                  disabled={isReceiverLocked}
+                  color={isReceiverLocked ? 'failure' : 'success'}
+                  onClick={() => setIsReceiverLocked(!isReceiverLocked)}
                 >
-                  <X className="mr-1 h-3 w-3" /> Limpiar
+                  {isReceiverLocked ? (
+                    <Lock className="h-3 w-3" />
+                  ) : (
+                    <Unlock className="h-3 w-3" />
+                  )}
                 </Button>
+                {!isReceiverLocked && (
+                  <Button
+                    size="xs"
+                    color="light"
+                    onClick={() => receiverSigPad.current.clear()}
+                  >
+                    <X className="mr-1 h-3 w-3" /> Limpiar
+                  </Button>
+                )}
               </div>
               {/* Receiver Signature Pad */}
-              <div
-                ref={receiverContainerRef}
-                className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative"
-              >
-                {isReceiverLocked && (
-                  <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
-                    <Lock className="text-gray-400 text-4xl" />
-                  </div>
-                )}
-                <SignatureCanvas
-                  ref={receiverSigPad}
-                  penColor="black"
-                  canvasProps={{
-                    className: 'w-full h-64 cursor-crosshair',
-                    width: canvasWidth,
-                    height: 256,
-                  }}
-                />
+              <div className="flex justify-center">
+                <div
+                  className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative"
+                  style={{ width: 320 }}
+                >
+                  {isReceiverLocked && (
+                    <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
+                      <Lock className="text-gray-400 text-4xl" />
+                    </div>
+                  )}
+                  <SignatureCanvas
+                    ref={receiverSigPad}
+                    penColor="black"
+                    canvasProps={{
+                      className: 'cursor-crosshair block',
+                      width: 320,
+                      height: 150,
+                    }}
+                  />
+                </div>
               </div>
               <p className="mt-2 text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">
                 Firma Digital
@@ -853,81 +837,76 @@ const CreateCustody = () => {
             </Card>
 
             <Card>
-              <div className="flex justify-between items-center mb-4 border-b pb-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold dark:text-white flex items-center gap-2">
-                    <UserRound className="text-green-500" /> Firma Responsable
-                    TI
-                  </h3>
-                  {(isEditMode &&
-                    originalDeliverer &&
-                    user &&
-                    originalDeliverer.id === user.id) ||
-                  (!isEditMode && user) ? (
-                    <Button
-                      size="xs"
-                      color={isDelivererLocked ? 'failure' : 'success'}
-                      onClick={() => setIsDelivererLocked(!isDelivererLocked)}
-                      className="flex items-center gap-1"
-                    >
-                      {isDelivererLocked ? (
-                        <Lock className="h-3 w-3" />
-                      ) : (
-                        <Unlock className="h-3 w-3" />
-                      )}
-                    </Button>
-                  ) : null}
-                </div>
-                <div className="flex gap-1">
-                  {(isEditMode &&
-                    originalDeliverer &&
-                    user &&
-                    originalDeliverer.id === user.id) ||
-                  !isEditMode ? (
-                    <>
-                      {initialDelivererSignature && (
-                        <Button
-                          size="xs"
-                          color="purple"
-                          onClick={handleReestablishDelivererSignature}
-                          disabled={isDelivererLocked}
-                          className="!p-1"
-                          title="Papelera/Restablecer"
-                        >
-                          <RefreshCw className="h-3 w-3" />
-                        </Button>
-                      )}
+              {/* Title + actions in one responsive row */}
+              <div className="flex flex-wrap items-center gap-2 mb-3 pb-2 border-b">
+                <h3 className="text-base font-semibold dark:text-white flex items-center gap-2 mr-auto">
+                  <UserRound className="text-green-500" size={16} /> Firma
+                  Responsable TI
+                </h3>
+                {(isEditMode &&
+                  originalDeliverer &&
+                  user &&
+                  originalDeliverer.id === user.id) ||
+                (!isEditMode && user) ? (
+                  <Button
+                    size="xs"
+                    color={isDelivererLocked ? 'failure' : 'success'}
+                    onClick={() => setIsDelivererLocked(!isDelivererLocked)}
+                  >
+                    {isDelivererLocked ? (
+                      <Lock className="h-3 w-3" />
+                    ) : (
+                      <Unlock className="h-3 w-3" />
+                    )}
+                  </Button>
+                ) : null}
+                {!isDelivererLocked &&
+                ((isEditMode &&
+                  originalDeliverer &&
+                  user &&
+                  originalDeliverer.id === user.id) ||
+                  !isEditMode) ? (
+                  <>
+                    {initialDelivererSignature && (
                       <Button
                         size="xs"
-                        color="light"
-                        onClick={() => delivererSigPad.current.clear()}
-                        disabled={isDelivererLocked}
+                        color="purple"
+                        onClick={handleReestablishDelivererSignature}
                       >
-                        <X className="mr-1 h-3 w-3" /> Limpiar
+                        <RefreshCw className="mr-1 h-3 w-3" /> Restablecer
                       </Button>
-                    </>
-                  ) : null}
-                </div>
+                    )}
+                    <Button
+                      size="xs"
+                      color="light"
+                      onClick={() => delivererSigPad.current.clear()}
+                    >
+                      <X className="mr-1 h-3 w-3" /> Limpiar
+                    </Button>
+                  </>
+                ) : null}
               </div>
-              <div
-                ref={delivererContainerRef}
-                className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative"
-              >
-                {isDelivererLocked && (
-                  <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
-                    <Lock className="text-gray-400 text-4xl" />
-                  </div>
-                )}
-                <SignatureCanvas
-                  ref={delivererSigPad}
-                  penColor="black"
-                  onBegin={() => setIsDelivererSignatureChanged(true)}
-                  canvasProps={{
-                    className: 'w-full h-64 cursor-crosshair',
-                    width: canvasWidth,
-                    height: 256,
-                  }}
-                />
+              <div className="flex justify-center">
+                <div
+                  className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative"
+                  style={{ width: 320 }}
+                >
+                  {isDelivererLocked && (
+                    <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
+                      <Lock className="text-gray-400 text-4xl" />
+                    </div>
+                  )}
+                  <SignatureCanvas
+                    ref={delivererSigPad}
+                    penColor="black"
+                    onBegin={() => setIsDelivererSignatureChanged(true)}
+                    canvasProps={{
+                      className: 'cursor-crosshair block',
+                      width: 320,
+                      height: 150,
+                    }}
+                  />
+                </div>
               </div>
               <p className="mt-2 text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">
                 Firma Digital

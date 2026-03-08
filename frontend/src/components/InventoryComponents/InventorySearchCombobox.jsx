@@ -20,7 +20,7 @@ import { useCatalogContext } from '../../context/CatalogContext';
  * - Dropdown anexado visualmente al input en Desktop
  * - Fullscreen en móvil para mejor usabilidad
  */
-const InventorySearchCombobox = ({ className = '' }) => {
+const InventorySearchCombobox = ({ className = '', forceOpen = false, onClose: onCloseProp }) => {
   const navigate = useNavigate();
   const {
     inventoryTypes,
@@ -39,6 +39,7 @@ const InventorySearchCombobox = ({ className = '' }) => {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [isMobile, setIsMobile] = useState(false);
   const [portalRoot, setPortalRoot] = useState(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Filtros
   const [filterStatus, setFilterStatus] = useState('');
@@ -62,6 +63,38 @@ const InventorySearchCombobox = ({ className = '' }) => {
       return () => clearTimeout(timer);
     }
   }, [open, isMobile]);
+
+  // Sync open state with forceOpen prop (for external triggers like bottom tab)
+  useEffect(() => {
+    if (forceOpen) {
+      setOpen(true);
+    } else {
+      setOpen(false);
+      setShowFilters(false);
+      setHighlightedIndex(-1);
+    }
+  }, [forceOpen]);
+
+  // Track keyboard height via visualViewport API to avoid keyboard overlap
+  useEffect(() => {
+    if (!isMobile) return;
+    const updateKbHeight = () => {
+      if (!window.visualViewport) return;
+      const kh = Math.max(0, window.innerHeight - window.visualViewport.height);
+      setKeyboardHeight(kh);
+    };
+    window.visualViewport?.addEventListener('resize', updateKbHeight);
+    window.visualViewport?.addEventListener('scroll', updateKbHeight);
+    return () => {
+      window.visualViewport?.removeEventListener('resize', updateKbHeight);
+      window.visualViewport?.removeEventListener('scroll', updateKbHeight);
+    };
+  }, [isMobile]);
+
+  // Reset keyboard offset when modal closes
+  useEffect(() => {
+    if (!open) setKeyboardHeight(0);
+  }, [open]);
 
   // Detectar si es móvil
   useEffect(() => {
@@ -163,6 +196,7 @@ const InventorySearchCombobox = ({ className = '' }) => {
     setOpen(false);
     setShowFilters(false);
     setHighlightedIndex(-1);
+    onCloseProp?.();
     // No limpiamos search para que persista si el usuario solo cerró el dropdown
   };
 
@@ -386,7 +420,7 @@ const InventorySearchCombobox = ({ className = '' }) => {
       </AnimatePresence>
 
       {/* Lista de Resultados */}
-      <div className="overflow-y-auto flex-1 p-2 min-h-0">
+      <div className="overflow-y-auto flex-1 p-2 min-h-0 scrollbar-hide">
         {loading ? (
           <div className="py-8 text-center">
             <div className="inline-block w-6 h-6 border-2 border-purple-200 dark:border-purple-800 border-t-purple-600 rounded-full animate-spin mb-2" />
@@ -497,7 +531,7 @@ const InventorySearchCombobox = ({ className = '' }) => {
         <div
           className={classNames(
             'relative flex items-center border transition-all duration-200',
-            'min-w-[140px] flex-1 h-11',
+            'w-[520px] max-w-[calc(100vw-1.5rem)] h-12',
             open
               ? 'rounded-t-2xl rounded-b-none border-transparent bg-white dark:bg-neutral-800 shadow-lg z-[60]'
               : 'rounded-2xl bg-gray-50 dark:bg-neutral-700/50 border-gray-200 dark:border-neutral-600 hover:border-gray-300 dark:hover:border-neutral-500 hover:bg-white dark:hover:bg-neutral-700 hover:shadow-sm z-50',
@@ -564,7 +598,8 @@ const InventorySearchCombobox = ({ className = '' }) => {
               exit={{ opacity: 0, y: -5 }}
               transition={{ duration: 0.1 }}
               className={classNames(
-                'absolute top-full left-0 right-0 bg-white dark:bg-neutral-800 shadow-lg rounded-b-2xl z-[59] overflow-hidden',
+                'absolute top-full left-0 bg-white dark:bg-neutral-800 shadow-lg rounded-b-2xl z-[59] overflow-hidden',
+                'min-w-full w-[520px] max-w-[calc(100vw-1.5rem)]',
                 '-mt-[1px]',
               )}
               style={{
@@ -609,7 +644,13 @@ const InventorySearchCombobox = ({ className = '' }) => {
                   animate={{ y: 0 }}
                   exit={{ y: '100%' }}
                   transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                  className="fixed bottom-0 left-0 right-0 h-[75dvh] z-[9999] bg-white dark:bg-neutral-800 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
+                  className="fixed left-0 right-0 z-[9999] bg-white dark:bg-neutral-800 rounded-t-3xl flex flex-col shadow-2xl overflow-hidden"
+                  style={{
+                    bottom: keyboardHeight,
+                    height: keyboardHeight > 0
+                      ? `calc((${window.innerHeight - keyboardHeight}px) * 0.9)`
+                      : '75dvh',
+                  }}
                   // Ensure we don't accidentally close when clicking inside
                   onClick={(e) => e.stopPropagation()}
                 >

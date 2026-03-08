@@ -662,26 +662,12 @@ const Sidebar = ({ children }) => {
             </div>
           </nav>
 
-          <div
-            className={`fixed inset-x-3 bottom-[calc(4.6rem+env(safe-area-inset-bottom))] z-50 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-3 shadow-2xl transition-all duration-300 ${
-              isSearchSheetOpen
-                ? 'translate-y-0 opacity-100'
-                : 'pointer-events-none translate-y-3 opacity-0'
-            }`}
-          >
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-semibold text-[color:var(--foreground)]">
-                Búsqueda rápida
-              </p>
-              <Button
-                variant="ghost"
-                className="h-8 px-2 text-xs"
-                onClick={() => setIsSearchSheetOpen(false)}
-              >
-                Cerrar
-              </Button>
-            </div>
-            <InventorySearchCombobox />
+          {/* Hidden instance — portal renders the full-screen modal when isSearchSheetOpen is true */}
+          <div className="absolute overflow-hidden w-0 h-0 opacity-0 pointer-events-none" aria-hidden="true">
+            <InventorySearchCombobox
+              forceOpen={isSearchSheetOpen}
+              onClose={() => setIsSearchSheetOpen(false)}
+            />
           </div>
         </>
       ) : null}

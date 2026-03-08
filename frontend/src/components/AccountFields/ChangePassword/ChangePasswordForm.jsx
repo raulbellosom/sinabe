@@ -1,67 +1,49 @@
-import { useRef } from 'react';
+import { useEffect } from 'react';
 import { FormikProvider, useFormik, Form } from 'formik';
 import { ChangePasswordSchema } from './ChangePasswordSchema';
 import ChangePasswordFormFields from './ChangePasswordFormFields';
-import { Badge } from '../../ui/flowbite';
-import ResetPassowrd from '../../../assets/images/Reset-Password.svg';
-import ActionButtons from '../../ActionButtons/ActionButtons';
+import { AlertCircle } from 'lucide-react';
 
-import {
-  AlertCircle,
-  Lock,
-  Trash2,
-} from 'lucide-react';
-const ChangePasswordForm = ({ initialValues, onSubmit, error }) => {
+/**
+ * ChangePasswordForm
+ * Renders the form fields and error only.
+ * Action buttons are handled by the parent via `formikRef`.
+ * `formikRef.current` exposes `{ submitForm, resetForm }`.
+ */
+const ChangePasswordForm = ({ initialValues, onSubmit, error, formikRef }) => {
   const formik = useFormik({
     enableReinitialize: true,
-    initialValues: initialValues,
+    initialValues,
     validationSchema: ChangePasswordSchema,
-    onSubmit: (values, actions) => {
-      onSubmit(values, actions);
-    },
+    onSubmit: (values, actions) => onSubmit(values, actions),
   });
-  const formRef = useRef(null);
+
+  // Expose formik imperative handles to parent
+  useEffect(() => {
+    if (formikRef) {
+      formikRef.current = {
+        submitForm: formik.submitForm,
+        resetForm: formik.resetForm,
+        isSubmitting: formik.isSubmitting,
+      };
+    }
+  }, [formik.submitForm, formik.resetForm, formik.isSubmitting, formikRef]);
+
   return (
     <FormikProvider value={formik}>
-      <Form ref={formRef} className="space-y-4" onSubmit={formik.handleSubmit}>
-        <img
-          src={ResetPassowrd}
-          alt="Reset Password"
-          className="w-1/2 md:w-1/3 mx-auto"
-        />
-        <p className="text-center text-stone-800 text-base font-semibold">
-          Completa los campos para cambiar tu contraseña
-        </p>
+      <Form className="flex flex-col gap-5" onSubmit={formik.handleSubmit}>
         <ChangePasswordFormFields />
+
         {error && (
-          <Badge size={'sm'} color="red" className="text-center">
-            <AlertCircle className="inline-block mr-2 mb-1" size={20} />
-            {error}
-          </Badge>
+          <div className="flex items-start gap-2.5 rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300">
+            <AlertCircle size={15} className="shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
         )}
-        <div className="flex flex-col md:flex-row justify-end items-center gap-4 pt-4">
-          <ActionButtons
-            extraActions={[
-              {
-                label: 'Limpiar',
-                action: () => formik.resetForm(),
-                icon: Trash2,
-                color: 'red',
-              },
-              {
-                label: 'Cambiar contraseña',
-                action: () => formRef.current.submitForm,
-                icon: Lock,
-                color: 'primary',
-                filled: true,
-                type: 'submit',
-              },
-            ]}
-          />
-        </div>
       </Form>
     </FormikProvider>
   );
 };
 
 export default ChangePasswordForm;
+

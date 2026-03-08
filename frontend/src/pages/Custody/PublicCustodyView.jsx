@@ -4,7 +4,14 @@ import {
   getCustodyRecordByToken,
   submitPublicSignature,
 } from '../../services/custody.api';
-import { Card, Table, Spinner, Alert, Button, Badge } from '../../components/ui/flowbite';
+import {
+  Card,
+  Table,
+  Spinner,
+  Alert,
+  Button,
+  Badge,
+} from '../../components/ui/flowbite';
 import SignatureCanvas from 'react-signature-canvas';
 import { toast } from 'sonner';
 import sinabeIcon from '../../assets/logo/sinabe_icon.png';
@@ -279,13 +286,13 @@ const PublicCustodyView = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <User className="text-green-500" /> Entregado por (TI)
               </h3>
-              <div className="flex justify-center p-4 bg-gray-50 dark:bg-gray-800 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl min-h-[160px] items-center">
+              <div className="flex justify-center p-4 bg-gray-50 dark:bg-gray-800 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl items-center">
                 {record.delivererSignature ? (
                   <div className="flex flex-col items-center">
                     <img
                       src={record.delivererSignature}
                       alt="Firma del entregador"
-                      className="max-h-32 object-contain"
+                      style={{ width: 280, height: 120, objectFit: 'contain' }}
                     />
                     <p className="mt-2 text-xs font-medium text-gray-600 dark:text-gray-400">
                       {record.deliverer?.firstName} {record.deliverer?.lastName}
@@ -306,11 +313,11 @@ const PublicCustodyView = () => {
             <Card
               className={
                 record.status === 'BORRADOR'
-                  ? 'border-2 border-blue-500 shadow-lg'
+                  ? 'border-2 border-blue-500 shadow-lg shadow-blue-100 dark:shadow-blue-900/30'
                   : ''
               }
             >
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center justify-between">
                 Recibido por (Usuario)
                 {record.status === 'BORRADOR' && (
                   <Badge color="warning">Pendiente</Badge>
@@ -318,33 +325,39 @@ const PublicCustodyView = () => {
               </h3>
 
               {record.status === 'BORRADOR' ? (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center bg-blue-50/50 dark:bg-blue-900/10 p-3 rounded-t-xl border-x-2 border-t-2 border-dashed border-blue-200 dark:border-blue-900 -mb-4">
-                    <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <span className="text-xs font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2">
                       <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
-                      Dibuja tu firma abajo
+                      Dibuja tu firma en el recuadro
                     </span>
-                    <Button
-                      size="xs"
-                      color="light"
+                    <button
+                      type="button"
                       onClick={() => {
                         sigPad.current.clear();
                         setHasSignature(false);
                       }}
-                      className="!p-1 hover:text-red-600"
+                      className="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center gap-1"
                     >
-                      <X className="mr-1 h-3 w-3" /> Limpiar
-                    </Button>
+                      <X className="h-3 w-3" /> Limpiar
+                    </button>
                   </div>
-                  <div className="bg-white dark:bg-gray-900 rounded-b-xl border-2 border-dashed border-blue-200 dark:border-blue-900 overflow-hidden shadow-inner relative">
-                    <SignatureCanvas
-                      ref={sigPad}
-                      onEnd={() => setHasSignature(!sigPad.current.isEmpty())}
-                      penColor="black"
-                      canvasProps={{
-                        className: 'w-full h-64 cursor-crosshair',
-                      }}
-                    />
+                  <div className="flex justify-center">
+                    <div
+                      className="bg-white dark:bg-gray-900 rounded-xl border-2 border-blue-400 dark:border-blue-600 overflow-hidden shadow-md"
+                      style={{ width: 320 }}
+                    >
+                      <SignatureCanvas
+                        ref={sigPad}
+                        onEnd={() => setHasSignature(!sigPad.current.isEmpty())}
+                        penColor="black"
+                        canvasProps={{
+                          className: 'cursor-crosshair block',
+                          width: 320,
+                          height: 150,
+                        }}
+                      />
+                    </div>
                   </div>
 
                   <div className="flex flex-col items-center gap-3 pt-2">
@@ -368,23 +381,23 @@ const PublicCustodyView = () => {
               ) : (
                 <div className="space-y-4">
                   {isSignedSuccessfully && (
-                    <Alert
-                      color="success"
-                      icon={CheckCircle}
-                      className="py-2"
-                    >
+                    <Alert color="success" icon={CheckCircle} className="py-2">
                       <span className="text-xs font-bold">
                         ¡Firma registrada con éxito!
                       </span>
                     </Alert>
                   )}
-                  <div className="flex justify-center p-4 bg-gray-50 dark:bg-gray-800 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl min-h-[160px] items-center">
+                  <div className="flex justify-center p-4 bg-gray-50 dark:bg-gray-800 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl items-center">
                     {record.receiverSignature ? (
                       <div className="flex flex-col items-center">
                         <img
                           src={record.receiverSignature}
                           alt="Firma del receptor"
-                          className="max-h-32 object-contain"
+                          style={{
+                            width: 280,
+                            height: 120,
+                            objectFit: 'contain',
+                          }}
                         />
                         <p className="mt-2 text-xs font-medium text-gray-600 dark:text-gray-400">
                           {record.receiver?.firstName}{' '}
