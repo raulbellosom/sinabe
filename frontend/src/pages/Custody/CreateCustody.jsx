@@ -629,7 +629,7 @@ const CreateCustody = () => {
                 <CheckCircle className="text-green-500" /> Sujetos del Resguardo
               </h3>
               <div className="space-y-4">
-                {(!isEditMode || recordStatus === 'BORRADOR') ? (
+                {!isEditMode || recordStatus === 'BORRADOR' ? (
                   <>
                     <AutoCompleteInput
                       field={{
@@ -651,7 +651,8 @@ const CreateCustody = () => {
                     {selectedDeliverer && (
                       <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg">
                         <p className="font-bold text-green-700 dark:text-green-300">
-                          {selectedDeliverer.firstName} {selectedDeliverer.lastName}
+                          {selectedDeliverer.firstName}{' '}
+                          {selectedDeliverer.lastName}
                         </p>
                         <p className="text-xs text-green-500 dark:text-green-400">
                           {selectedDeliverer.role?.name}
@@ -669,7 +670,8 @@ const CreateCustody = () => {
                     </p>
                     <div className="p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
                       <p className="font-bold text-gray-800 dark:text-gray-100">
-                        {selectedDeliverer?.firstName} {selectedDeliverer?.lastName}
+                        {selectedDeliverer?.firstName}{' '}
+                        {selectedDeliverer?.lastName}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {selectedDeliverer?.role?.name}
