@@ -96,17 +96,35 @@ const CreateCustody = () => {
   const [initialDelivererSignature, setInitialDelivererSignature] =
     useState(null);
 
+  // Deliverer (admin only) search state
+  const [selectedDeliverer, setSelectedDeliverer] = useState(null);
+  const [allAdminUsers, setAllAdminUsers] = useState([]);
+  const [isAdminUsersLoading, setIsAdminUsersLoading] = useState(false);
+  // Tracks whether the edit-mode record has finished loading
+  const [isRecordLoaded, setIsRecordLoaded] = useState(!isEditMode);
+
   // Fixed canvas dimensions — absolute size on all screens
   const CANVAS_W = 320;
   const CANVAS_H = 150;
 
-  // Load saved signature
+  // Initialize selectedDeliverer with current user in create mode
   useEffect(() => {
-    const loadSignature = async () => {
-      // Solo cargar si NO estamos en modo edición o si el registro no tiene un entregador aún
-      if (!isEditMode && user?.signature?.url && delivererSigPad.current) {
+    if (!isEditMode && user && !selectedDeliverer) {
+      setSelectedDeliverer(user);
+    }
+  }, [user, isEditMode]);
+
+  // Load deliverer's profile signature whenever selectedDeliverer changes,
+  // but only after the record has been fully loaded (avoids overwriting in edit mode)
+  useEffect(() => {
+    if (!isRecordLoaded || !selectedDeliverer || !delivererSigPad.current)
+      return;
+    if (selectedDeliverer?.signature?.url) {
+      const loadSig = async () => {
         try {
-          const response = await fetch(`${API_URL}/${user.signature.url}`);
+          const response = await fetch(
+            `${API_URL}/${selectedDeliverer.signature.url}`,
+          );
           const blob = await response.blob();
           const reader = new FileReader();
           reader.onloadend = () => {
@@ -122,10 +140,13 @@ const CreateCustody = () => {
         } catch (e) {
           console.error('Error loading signature', e);
         }
-      }
-    };
-    loadSignature();
-  }, [user]);
+      };
+      loadSig();
+    } else {
+      delivererSigPad.current.clear();
+      setInitialDelivererSignature(null);
+    }
+  }, [selectedDeliverer, isRecordLoaded]);
 
   const handleReestablishDelivererSignature = () => {
     if (initialDelivererSignature) {
@@ -162,6 +183,30 @@ const CreateCustody = () => {
     }, 500),
     [],
   );
+
+  const handleSearchAdminUsers = useCallback(
+    debounce(async (term) => {
+      setIsAdminUsersLoading(true);
+      try {
+        const res = await searchUsers({
+          searchTerm: term,
+          pageSize: 20,
+          roles: ['Admin', 'Root'],
+        });
+        setAllAdminUsers(res.data || []);
+      } catch (error) {
+        console.error('Error searching admin users', error);
+      } finally {
+        setIsAdminUsersLoading(false);
+      }
+    }, 500),
+    [],
+  );
+
+  const handleSelectDeliverer = (adminUser) => {
+    setSelectedDeliverer(adminUser);
+    setIsDelivererSignatureChanged(true);
+  };
 
   const handleSearchInventories = useCallback(
     debounce(async (term) => {
@@ -233,12 +278,12 @@ const CreateCustody = () => {
           receiver: receiverSignature,
           deliverer: delivererSignature,
         },
-        delivererUserId:
-          isEditMode && originalDeliverer ? originalDeliverer.id : user?.id,
+        delivererUserId: selectedDeliverer?.id || user?.id,
         status: 'COMPLETADO',
       };
 
-      if (isDelivererSignatureChanged) {
+      // Only offer to save profile signature when current user is the deliverer
+      if (isDelivererSignatureChanged && selectedDeliverer?.id === user?.id) {
         setPendingCustodyPayload(payload);
         setIsSignatureUpdateModalOpen(true);
       } else {
@@ -254,6 +299,7 @@ const CreateCustody = () => {
         try {
           const record = await getCustodyRecord(id);
           setOriginalDeliverer(record.deliverer);
+          setSelectedDeliverer(record.deliverer);
           formik.setValues({
             date: record.date.split('T')[0],
             receiver: {
@@ -278,13 +324,15 @@ const CreateCustody = () => {
             );
           }
 
-          // Load signatures
+          // Load signatures from the existing record
           if (record.receiverSignature) {
             receiverSigPad.current.fromDataURL(record.receiverSignature);
           }
           if (record.delivererSignature) {
             delivererSigPad.current.fromDataURL(record.delivererSignature);
           }
+          // Mark record as loaded so deliverer changes update the pad from here on
+          setIsRecordLoaded(true);
         } catch (error) {
           toast.error('Error al cargar el resguardo para editar');
           navigate('/custody');
@@ -319,12 +367,11 @@ const CreateCustody = () => {
         receiver: receiverSignature,
         deliverer: delivererSignature,
       },
-      delivererUserId:
-        isEditMode && originalDeliverer ? originalDeliverer.id : user?.id,
+      delivererUserId: selectedDeliverer?.id || user?.id,
       status: 'BORRADOR',
     };
 
-    if (isDelivererSignatureChanged) {
+    if (isDelivererSignatureChanged && selectedDeliverer?.id === user?.id) {
       setPendingCustodyPayload(payload);
       setIsSignatureUpdateModalOpen(true);
     } else {
@@ -510,6 +557,20 @@ const CreateCustody = () => {
     setFieldTouched: formik.setFieldTouched,
   };
 
+  // Custom form wrapper for Deliverer AutoComplete (admins only)
+  const delivererFormWrapper = {
+    touched: {},
+    errors: {},
+    values: { delivererUserId: selectedDeliverer?.id || null },
+    setFieldValue: (field, value) => {
+      if (field === 'delivererUserId') {
+        const adminUser = allAdminUsers.find((u) => u.id === value);
+        if (adminUser) handleSelectDeliverer(adminUser);
+      }
+    },
+    setFieldTouched: () => {},
+  };
+
   // Custom form wrapper for Inventory AutoComplete
   const inventoryFormWrapper = {
     touched: {},
@@ -566,17 +627,36 @@ const CreateCustody = () => {
                 <CheckCircle className="text-green-500" /> Sujetos del Resguardo
               </h3>
               <div className="space-y-4">
-                <div>
-                  <Label
-                    value="Responsable de TI (Entrega)"
-                    className="text-xs uppercase tracking-wider text-gray-500"
-                  />
-                  <p className="mt-1 text-sm font-bold text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-100 dark:border-gray-600">
-                    {isEditMode && originalDeliverer
-                      ? `${originalDeliverer.firstName} ${originalDeliverer.lastName}`
-                      : `${user?.firstName} ${user?.lastName}`}
-                  </p>
-                </div>
+                <AutoCompleteInput
+                  field={{
+                    name: 'delivererUserId',
+                    value: selectedDeliverer?.id || null,
+                  }}
+                  form={delivererFormWrapper}
+                  options={allAdminUsers.map((u) => ({
+                    label: `${u.firstName} ${u.lastName} (${u.email || u.employeeNumber})`,
+                    value: u.id,
+                    searchTerms: `${u.firstName} ${u.lastName} ${u.email} ${u.employeeNumber}`,
+                  }))}
+                  onSearch={handleSearchAdminUsers}
+                  isLoading={isAdminUsersLoading}
+                  onFocusSearch={true}
+                  placeholder="Buscar responsable de TI..."
+                  label="Responsable de TI (Entrega)"
+                />
+                {selectedDeliverer && (
+                  <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg">
+                    <p className="font-bold text-green-700 dark:text-green-300">
+                      {selectedDeliverer.firstName} {selectedDeliverer.lastName}
+                    </p>
+                    <p className="text-xs text-green-500 dark:text-green-400">
+                      {selectedDeliverer.role?.name}
+                      {selectedDeliverer.jobTitle
+                        ? ` · ${selectedDeliverer.jobTitle}`
+                        : ''}
+                    </p>
+                  </div>
+                )}
 
                 <AutoCompleteInput
                   field={{
