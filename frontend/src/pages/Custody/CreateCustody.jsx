@@ -102,6 +102,7 @@ const CreateCustody = () => {
   const [isAdminUsersLoading, setIsAdminUsersLoading] = useState(false);
   // Tracks whether the edit-mode record has finished loading
   const [isRecordLoaded, setIsRecordLoaded] = useState(!isEditMode);
+  const [recordStatus, setRecordStatus] = useState(null);
 
   // Fixed canvas dimensions — absolute size on all screens
   const CANVAS_W = 320;
@@ -300,6 +301,7 @@ const CreateCustody = () => {
           const record = await getCustodyRecord(id);
           setOriginalDeliverer(record.deliverer);
           setSelectedDeliverer(record.deliverer);
+          setRecordStatus(record.status);
           formik.setValues({
             date: record.date.split('T')[0],
             receiver: {
@@ -627,34 +629,55 @@ const CreateCustody = () => {
                 <CheckCircle className="text-green-500" /> Sujetos del Resguardo
               </h3>
               <div className="space-y-4">
-                <AutoCompleteInput
-                  field={{
-                    name: 'delivererUserId',
-                    value: selectedDeliverer?.id || null,
-                  }}
-                  form={delivererFormWrapper}
-                  options={allAdminUsers.map((u) => ({
-                    label: `${u.firstName} ${u.lastName} (${u.email || u.employeeNumber})`,
-                    value: u.id,
-                    searchTerms: `${u.firstName} ${u.lastName} ${u.email} ${u.employeeNumber}`,
-                  }))}
-                  onSearch={handleSearchAdminUsers}
-                  isLoading={isAdminUsersLoading}
-                  onFocusSearch={true}
-                  placeholder="Buscar responsable de TI..."
-                  label="Responsable de TI (Entrega)"
-                />
-                {selectedDeliverer && (
-                  <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg">
-                    <p className="font-bold text-green-700 dark:text-green-300">
-                      {selectedDeliverer.firstName} {selectedDeliverer.lastName}
+                {(!isEditMode || recordStatus === 'BORRADOR') ? (
+                  <>
+                    <AutoCompleteInput
+                      field={{
+                        name: 'delivererUserId',
+                        value: selectedDeliverer?.id || null,
+                      }}
+                      form={delivererFormWrapper}
+                      options={allAdminUsers.map((u) => ({
+                        label: `${u.firstName} ${u.lastName} (${u.email || u.employeeNumber})`,
+                        value: u.id,
+                        searchTerms: `${u.firstName} ${u.lastName} ${u.email} ${u.employeeNumber}`,
+                      }))}
+                      onSearch={handleSearchAdminUsers}
+                      isLoading={isAdminUsersLoading}
+                      onFocusSearch={true}
+                      placeholder="Buscar responsable de TI..."
+                      label="Responsable de TI (Entrega)"
+                    />
+                    {selectedDeliverer && (
+                      <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg">
+                        <p className="font-bold text-green-700 dark:text-green-300">
+                          {selectedDeliverer.firstName} {selectedDeliverer.lastName}
+                        </p>
+                        <p className="text-xs text-green-500 dark:text-green-400">
+                          {selectedDeliverer.role?.name}
+                          {selectedDeliverer.jobTitle
+                            ? ` · ${selectedDeliverer.jobTitle}`
+                            : ''}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Responsable de TI (Entrega)
                     </p>
-                    <p className="text-xs text-green-500 dark:text-green-400">
-                      {selectedDeliverer.role?.name}
-                      {selectedDeliverer.jobTitle
-                        ? ` · ${selectedDeliverer.jobTitle}`
-                        : ''}
-                    </p>
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <p className="font-bold text-gray-800 dark:text-gray-100">
+                        {selectedDeliverer?.firstName} {selectedDeliverer?.lastName}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {selectedDeliverer?.role?.name}
+                        {selectedDeliverer?.jobTitle
+                          ? ` · ${selectedDeliverer.jobTitle}`
+                          : ''}
+                      </p>
+                    </div>
                   </div>
                 )}
 

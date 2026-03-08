@@ -522,6 +522,7 @@ export const updateCustodyRecord = async (req, res) => {
       items,
       signatures,
       status, // New status requested
+      delivererUserId,
     } = req.body;
 
     // 1. Fetch current record
@@ -553,6 +554,7 @@ export const updateCustodyRecord = async (req, res) => {
           date: new Date(date),
           comments,
           status,
+          ...(delivererUserId && { delivererId: delivererUserId }),
           receiverSignature:
             signatures?.receiver || currentRecord.receiverSignature,
           delivererSignature:

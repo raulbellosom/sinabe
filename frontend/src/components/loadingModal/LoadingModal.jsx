@@ -12,16 +12,14 @@ const LoadingModal = ({ loading }) => {
   if (!loading || !modalRoot) return null;
 
   return ReactDOM.createPortal(
-    <div className="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 z-[9999] flex justify-center items-center">
-      <div className="p-4 grid place-content-center">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="flex flex-col items-center gap-4 rounded-2xl bg-white/10 p-8 shadow-2xl ring-1 ring-white/20">
         <ThreeCircles
           visible={true}
-          height="100"
-          width="100"
-          color="#7e3af2"
+          height="80"
+          width="80"
+          color="#a855f7"
           ariaLabel="three-circles-loading"
-          wrapperStyle={{}}
-          wrapperclassName=""
         />
       </div>
     </div>,
