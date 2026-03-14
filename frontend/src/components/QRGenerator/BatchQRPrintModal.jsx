@@ -20,9 +20,16 @@ import {
   Trash2,
   LayoutGrid,
   FileDown,
+  Ruler,
 } from 'lucide-react';
 import QRLabel, { LABEL_SIZES } from './QRLabel';
-import { printZebraLabels, generateLabelsPDF } from '../../utils/zebraPrintUtils';
+import QRContentConfigurator from './QRContentConfigurator';
+import QRSettingsDropdown from './QRSettingsDropdown';
+import {
+  printZebraLabels,
+  generateLabelsPDF,
+} from '../../utils/zebraPrintUtils';
+import { createDefaultQRContentOptions } from '../../utils/qrCodeUtils';
 
 /**
  * @param {Array}   props.inventories - Lista de inventarios seleccionados para imprimir
@@ -32,6 +39,9 @@ import { printZebraLabels, generateLabelsPDF } from '../../utils/zebraPrintUtils
 function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
   const [labelSize, setLabelSize] = useState('md');
   const [textPosition, setTextPosition] = useState('right');
+  const [contentOptions, setContentOptions] = useState(
+    createDefaultQRContentOptions(),
+  );
   const [isPrinting, setIsPrinting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [localList, setLocalList] = useState(null); // null = use props
@@ -57,23 +67,51 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
     if (list.length === 0) return;
     setIsPrinting(true);
     try {
-      await printZebraLabels(list, labelSize, textPosition);
+      await printZebraLabels(list, labelSize, textPosition, contentOptions);
     } finally {
       setIsPrinting(false);
     }
-  }, [list, labelSize, textPosition]);
+  }, [contentOptions, labelSize, list, textPosition]);
 
   const handleExportPDF = useCallback(async () => {
     if (list.length === 0) return;
     setIsExporting(true);
     try {
-      await generateLabelsPDF(list, labelSize, textPosition);
+      await generateLabelsPDF(list, labelSize, textPosition, contentOptions);
     } finally {
       setIsExporting(false);
     }
-  }, [list, labelSize, textPosition]);
+  }, [contentOptions, labelSize, list, textPosition]);
 
-  const sizeEntries = Object.values(LABEL_SIZES);
+  const sizeOptions = Object.values(LABEL_SIZES).map((cfg) => ({
+    value: cfg.key,
+    label: cfg.label,
+    description: `${cfg.widthMm}mm × ${cfg.heightMm}mm`,
+    icon: Ruler,
+  }));
+  const textPositionOptions = [
+    {
+      value: 'right',
+      label: 'Derecha',
+      icon: PanelRight,
+    },
+    {
+      value: 'bottom',
+      label: 'Abajo',
+      icon: PanelBottom,
+    },
+    {
+      value: 'none',
+      label: 'Doble QR',
+      icon: LayoutGrid,
+    },
+  ];
+  const selectedSizeOption = sizeOptions.find(
+    (option) => option.value === labelSize,
+  );
+  const selectedTextPositionOption = textPositionOptions.find(
+    (option) => option.value === textPosition,
+  );
 
   return (
     <Dialog
@@ -82,15 +120,15 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-3"
     >
       <DialogBackdrop className="fixed inset-0 bg-black/60" />
-      <DialogPanel className="relative bg-[color:var(--surface)] rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[96dvh] sm:max-h-[92dvh] overflow-hidden border border-[color:var(--border)]">
+      <DialogPanel className="relative bg-(--surface) rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col max-h-[96dvh] sm:max-h-[92dvh] overflow-hidden border border-(--border)">
         {/* Header — compacto en móvil */}
         <DialogTitle
           as="div"
-          className="flex-shrink-0 flex items-center justify-between gap-2 px-4 py-2.5 sm:px-6 sm:py-4 border-b border-[color:var(--border)]"
+          className="shrink-0 flex items-center justify-between gap-2 px-4 py-2.5 sm:px-6 sm:py-4 border-b border-(--border)"
         >
           <div className="flex items-center gap-2 min-w-0">
             <Layers className="text-purple-500 shrink-0" size={18} />
-            <span className="font-bold text-sm sm:text-lg text-[color:var(--foreground)] truncate">
+            <span className="font-bold text-sm sm:text-lg text-(--foreground) truncate">
               Etiquetas en Lote
             </span>
             <span className="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
@@ -99,7 +137,7 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 p-1.5 rounded-lg hover:bg-[color:var(--surface-muted)] text-[color:var(--foreground-muted)] transition-colors"
+            className="shrink-0 p-1.5 rounded-lg hover:bg-(--surface-muted) text-(--foreground-muted) transition-colors"
           >
             <X size={18} />
           </button>
@@ -107,60 +145,29 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
 
         <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
           {/* ── Panel de opciones (izquierda / top en móvil) ── */}
-          <aside className="flex-shrink-0 w-full lg:w-64 lg:border-r border-b lg:border-b-0 border-[color:var(--border)] px-3 py-3 sm:px-5 sm:py-4 flex flex-col gap-3 sm:gap-4 overflow-y-auto max-h-[35dvh] lg:max-h-none">
-            {/* Tamaño — compacto en móvil: inline row */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-[color:var(--foreground-muted)]">
-                Tamaño de etiqueta
-              </label>
-              <div className="flex flex-row lg:flex-col gap-1.5">
-                {sizeEntries.map((cfg) => (
-                  <button
-                    key={cfg.key}
-                    onClick={() => setLabelSize(cfg.key)}
-                    className={`flex items-center justify-between py-1.5 sm:py-2 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all border-2 flex-1 lg:flex-none ${
-                      labelSize === cfg.key
-                        ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-200'
-                        : 'border-transparent bg-[color:var(--surface-muted)] text-[color:var(--foreground)] hover:border-purple-300'
-                    }`}
-                  >
-                    <span className="truncate">{cfg.label}</span>
-                    {labelSize === cfg.key && (
-                      <span className="text-[10px] bg-purple-600 text-white px-1.5 py-0.5 rounded-full ml-1 shrink-0">
-                        ✓
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <aside className="shrink-0 w-full lg:w-64 lg:border-r border-b lg:border-b-0 border-(--border) px-3 py-3 sm:px-5 sm:py-4 flex flex-col gap-3 sm:gap-4 overflow-y-auto max-h-[35dvh] lg:max-h-none">
+            <QRSettingsDropdown
+              label="Tamaño de etiqueta"
+              triggerIcon={selectedSizeOption?.icon}
+              triggerLabel={selectedSizeOption?.label || LABEL_SIZES.md.label}
+              options={sizeOptions}
+              selectedValue={labelSize}
+              onSelect={setLabelSize}
+            />
 
-            {/* Posición del texto */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-[color:var(--foreground-muted)]">
-                Texto en etiqueta
-              </label>
-              <div className="grid grid-cols-3 gap-1">
-                {[
-                  { key: 'right', icon: PanelRight, label: 'Derecha' },
-                  { key: 'bottom', icon: PanelBottom, label: 'Abajo' },
-                  { key: 'none', icon: LayoutGrid, label: 'Doble QR' },
-                ].map(({ key, icon: Icon, label }) => (
-                  <button
-                    key={key}
-                    onClick={() => setTextPosition(key)}
-                    className={`flex flex-col items-center gap-0.5 py-1.5 sm:py-2 px-1.5 rounded-xl text-[10px] sm:text-xs font-semibold transition-all border-2 ${
-                      textPosition === key
-                        ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
-                        : 'border-transparent bg-[color:var(--surface-muted)] text-[color:var(--foreground-muted)] hover:border-purple-300'
-                    }`}
-                  >
-                    <Icon size={14} />
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <QRSettingsDropdown
+              label="Texto en etiqueta"
+              triggerIcon={selectedTextPositionOption?.icon}
+              triggerLabel={selectedTextPositionOption?.label || 'Derecha'}
+              options={textPositionOptions}
+              selectedValue={textPosition}
+              onSelect={setTextPosition}
+            />
+
+            <QRContentConfigurator
+              value={contentOptions}
+              onChange={setContentOptions}
+            />
 
             {/* Instrucciones — ocultas en móvil para ahorrar espacio */}
             <div className="hidden sm:block border border-blue-200 bg-blue-50 dark:bg-blue-950/40 dark:border-blue-700 rounded-xl p-2.5">
@@ -200,12 +207,12 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
           {/* ── Panel de vista previa (derecha / fondo en móvil) ── */}
           <main className="flex-1 min-h-0 overflow-y-auto px-3 py-3 sm:px-5 sm:py-4 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-[color:var(--foreground-muted)]">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-(--foreground-muted)">
                 <LayoutGrid size={14} />
                 <span>Vista previa de etiquetas</span>
               </div>
               {list.length > 0 && (
-                <span className="text-[10px] sm:text-xs text-[color:var(--foreground-muted)]">
+                <span className="text-[10px] sm:text-xs text-(--foreground-muted)">
                   Haz clic en 🗑 para quitar una etiqueta
                 </span>
               )}
@@ -214,7 +221,7 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
             {list.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 py-10">
                 <QrCode size={40} className="text-gray-300" />
-                <p className="text-[color:var(--foreground-muted)] text-sm">
+                <p className="text-(--foreground-muted) text-sm">
                   No hay etiquetas. Selecciona inventarios desde la tabla.
                 </p>
               </div>
@@ -264,10 +271,11 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
                         inventory={inv}
                         size={labelSize}
                         textPosition={textPosition}
+                        contentOptions={contentOptions}
                       />
                     </div>
                     <span
-                      className="text-[10px] text-center text-[color:var(--foreground-muted)] max-w-20 truncate"
+                      className="text-[10px] text-center text-(--foreground-muted) max-w-20 truncate"
                       style={{
                         marginTop:
                           labelSize === 'sm'
@@ -287,10 +295,10 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
         </div>
 
         {/* Footer mobile */}
-        <div className="lg:hidden flex-shrink-0 flex items-center justify-between gap-2 px-3 py-2.5 sm:px-5 sm:py-3 border-t border-[color:var(--border)] bg-[color:var(--surface)]">
+        <div className="lg:hidden shrink-0 flex items-center justify-between gap-2 px-3 py-2.5 sm:px-5 sm:py-3 border-t border-(--border) bg-(--surface)">
           <button
             onClick={onClose}
-            className="px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-[color:var(--foreground-muted)] hover:bg-[color:var(--surface-muted)] transition-colors"
+            className="px-3 py-2 rounded-xl text-xs sm:text-sm font-medium text-(--foreground-muted) hover:bg-(--surface-muted) transition-colors"
           >
             Cancelar
           </button>
@@ -309,18 +317,16 @@ function BatchQRPrintModal({ inventories = [], isOpen, onClose }) {
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-xs sm:text-sm font-bold transition-colors shadow-md"
             >
               <Printer size={14} />
-              {isPrinting
-                ? '…'
-                : `Imprimir ${list.length}`}
+              {isPrinting ? '…' : `Imprimir ${list.length}`}
             </button>
           </div>
         </div>
 
         {/* Footer desktop */}
-        <div className="hidden lg:flex flex-shrink-0 items-center justify-end gap-3 px-6 py-3 border-t border-[color:var(--border)] bg-[color:var(--surface)]">
+        <div className="hidden lg:flex shrink-0 items-center justify-end gap-3 px-6 py-3 border-t border-(--border) bg-(--surface)">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-[color:var(--foreground-muted)] hover:bg-[color:var(--surface-muted)] transition-colors"
+            className="px-4 py-2 rounded-xl text-sm font-medium text-(--foreground-muted) hover:bg-(--surface-muted) transition-colors"
           >
             Cerrar
           </button>

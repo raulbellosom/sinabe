@@ -4,8 +4,11 @@
  * Renderiza un label con QR + campos de inventario (folio, SN, activo).
  */
 import { QRCodeCanvas } from 'qrcode.react';
-import Logo from '../../assets/logo/sinabe_icon.png';
-import { APP_URL } from '../../config/env';
+import {
+  buildQRValue,
+  createDefaultQRContentOptions,
+  getQRCodeCanvasProps,
+} from '../../utils/qrCodeUtils';
 
 /** Configuración de tamaños para Zebra ZD421 */
 export const LABEL_SIZES = {
@@ -45,28 +48,6 @@ export const LABEL_SIZES = {
 const mmToScreenPx = (mm) => mm * 3.7795275591;
 
 /**
- * Construye el texto que codifica el QR.
- * Primera línea = URL (navegadores la abren directamente).
- * Resto = campos clave en texto plano.
- */
-export function buildQRValue(inventory) {
-  const url = `${APP_URL.replace(/\/$/, '')}/inventory/public/${inventory.id}`;
-  const fields = [
-    inventory.internalFolio ? `Folio:${inventory.internalFolio}` : null,
-    inventory.serialNumber ? `SN:${inventory.serialNumber}` : null,
-    inventory.activeNumber ? `Activo:${inventory.activeNumber}` : null,
-    inventory.model?.name ? `Modelo:${inventory.model.name}` : null,
-    inventory.model?.brand?.name ? `Marca:${inventory.model.brand.name}` : null,
-    inventory.model?.type?.name ? `Tipo:${inventory.model.type.name}` : null,
-    inventory.status ? `Estado:${inventory.status}` : null,
-  ]
-    .filter(Boolean)
-    .join(' | ');
-
-  return `${url}\n${fields}`;
-}
-
-/**
  * @param {object}  props.inventory    - Objeto de inventario completo
  * @param {string}  props.size         - 'sm' | 'md' | 'lg'
  * @param {string}  props.textPosition - 'right' | 'bottom' | 'none'
@@ -74,10 +55,17 @@ export function buildQRValue(inventory) {
  *   'bottom' → QR arriba, texto abajo
  *   'none'   → Sin texto, dos QRs lado a lado (si hay espacio)
  * @param {string}  [props.canvasId]   - ID explícito para el canvas interno
+ * @param {object}  [props.contentOptions]
  */
-function QRLabel({ inventory, size = 'md', textPosition = 'right', canvasId }) {
+function QRLabel({
+  inventory,
+  size = 'md',
+  textPosition = 'right',
+  canvasId,
+  contentOptions = createDefaultQRContentOptions(),
+}) {
   const cfg = LABEL_SIZES[size] || LABEL_SIZES.md;
-  const qrValue = buildQRValue(inventory);
+  const qrValue = buildQRValue(inventory, contentOptions);
 
   const PADDING = 4;
   const GAP = 6;
@@ -107,16 +95,10 @@ function QRLabel({ inventory, size = 'md', textPosition = 'right', canvasId }) {
       id={id}
       value={qrValue}
       size={activeQrPx}
-      bgColor="#ffffff"
-      fgColor="#000000"
-      title={inventory.model?.name || inventory.serialNumber}
-      level="M"
-      imageSettings={{
-        src: Logo,
-        height: Math.round(activeQrPx * 0.18),
-        width: Math.round(activeQrPx * 0.18),
-        excavate: true,
-      }}
+      {...getQRCodeCanvasProps(
+        activeQrPx,
+        inventory.model?.name || inventory.serialNumber,
+      )}
     />
   );
 

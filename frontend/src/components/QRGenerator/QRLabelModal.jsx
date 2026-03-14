@@ -17,12 +17,14 @@ import {
   PanelRight,
   PanelBottom,
   LayoutGrid,
-  ChevronLeft,
-  ChevronRight,
   QrCode,
+  Ruler,
 } from 'lucide-react';
 import QRLabel, { LABEL_SIZES } from './QRLabel';
+import QRContentConfigurator from './QRContentConfigurator';
+import QRSettingsDropdown from './QRSettingsDropdown';
 import { printZebraLabels } from '../../utils/zebraPrintUtils';
+import { createDefaultQRContentOptions } from '../../utils/qrCodeUtils';
 
 /**
  * @param {object}  props.inventory   - Objeto de inventario a etiquetar
@@ -32,17 +34,25 @@ import { printZebraLabels } from '../../utils/zebraPrintUtils';
 function QRLabelModal({ inventory, isOpen, onClose }) {
   const [labelSize, setLabelSize] = useState('md');
   const [textPosition, setTextPosition] = useState('right');
+  const [contentOptions, setContentOptions] = useState(
+    createDefaultQRContentOptions(),
+  );
   const [isPrinting, setIsPrinting] = useState(false);
 
   const handlePrint = useCallback(async () => {
     if (!inventory) return;
     setIsPrinting(true);
     try {
-      await printZebraLabels([inventory], labelSize, textPosition);
+      await printZebraLabels(
+        [inventory],
+        labelSize,
+        textPosition,
+        contentOptions,
+      );
     } finally {
       setIsPrinting(false);
     }
-  }, [inventory, labelSize, textPosition]);
+  }, [contentOptions, inventory, labelSize, textPosition]);
 
   const handleDownloadPng = useCallback(() => {
     if (!inventory) return;
@@ -57,20 +67,35 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
 
   if (!inventory) return null;
 
-  const sizeEntries = Object.values(LABEL_SIZES);
-  const currentSizeIdx = sizeEntries.findIndex((s) => s.key === labelSize);
-
-  const cycleSizePrev = () => {
-    const prev =
-      sizeEntries[
-        (currentSizeIdx - 1 + sizeEntries.length) % sizeEntries.length
-      ];
-    setLabelSize(prev.key);
-  };
-  const cycleSizeNext = () => {
-    const next = sizeEntries[(currentSizeIdx + 1) % sizeEntries.length];
-    setLabelSize(next.key);
-  };
+  const sizeOptions = Object.values(LABEL_SIZES).map((cfg) => ({
+    value: cfg.key,
+    label: cfg.label,
+    description: `${cfg.widthMm}mm × ${cfg.heightMm}mm`,
+    icon: Ruler,
+  }));
+  const textPositionOptions = [
+    {
+      value: 'right',
+      label: 'Derecha',
+      icon: PanelRight,
+    },
+    {
+      value: 'bottom',
+      label: 'Abajo',
+      icon: PanelBottom,
+    },
+    {
+      value: 'none',
+      label: 'Doble QR',
+      icon: LayoutGrid,
+    },
+  ];
+  const selectedSizeOption = sizeOptions.find(
+    (option) => option.value === labelSize,
+  );
+  const selectedTextPositionOption = textPositionOptions.find(
+    (option) => option.value === textPosition,
+  );
 
   return (
     <Dialog
@@ -107,78 +132,29 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
         <div className="flex-1 overflow-y-auto px-4 py-3 sm:px-6 sm:py-5 flex flex-col gap-4 sm:gap-6">
           {/* ── Opciones ── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {/* Tamaño */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs sm:text-sm font-semibold text-[color:var(--foreground-muted)]">
-                Tamaño de etiqueta
-              </label>
-              <div className="flex items-center gap-2 bg-[color:var(--surface-muted)] rounded-xl p-1">
-                <button
-                  onClick={cycleSizePrev}
-                  className="p-1 rounded-lg hover:bg-[color:var(--surface)] transition-colors"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                {sizeEntries.map((cfg) => (
-                  <button
-                    key={cfg.key}
-                    onClick={() => setLabelSize(cfg.key)}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
-                      labelSize === cfg.key
-                        ? 'bg-purple-600 text-white shadow-md'
-                        : 'text-[color:var(--foreground-muted)] hover:bg-[color:var(--surface)]'
-                    }`}
-                  >
-                    {cfg.label}
-                  </button>
-                ))}
-                <button
-                  onClick={cycleSizeNext}
-                  className="p-1 rounded-lg hover:bg-[color:var(--surface)] transition-colors"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
+            <QRSettingsDropdown
+              label="Tamaño de etiqueta"
+              triggerIcon={selectedSizeOption?.icon}
+              triggerLabel={selectedSizeOption?.label || LABEL_SIZES.md.label}
+              options={sizeOptions}
+              selectedValue={labelSize}
+              onSelect={setLabelSize}
+            />
 
-            {/* Posición del texto */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs sm:text-sm font-semibold text-[color:var(--foreground-muted)]">
-                Texto en etiqueta
-              </label>
-              <div className="grid grid-cols-3 gap-1">
-                {[
-                  { key: 'right', icon: PanelRight, label: 'Derecha' },
-                  { key: 'bottom', icon: PanelBottom, label: 'Abajo' },
-                  { key: 'none', icon: LayoutGrid, label: 'Doble QR' },
-                ].map(({ key, icon: Icon, label }) => (
-                  <button
-                    key={key}
-                    onClick={() => setTextPosition(key)}
-                    className={`flex flex-col items-center gap-0.5 py-1.5 sm:py-2.5 px-1.5 rounded-xl text-[10px] sm:text-xs font-semibold transition-all border-2 ${
-                      textPosition === key
-                        ? 'border-purple-500 bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
-                        : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-purple-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                    }`}
-                  >
-                    <Icon size={16} />
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <QRSettingsDropdown
+              label="Texto en etiqueta"
+              triggerIcon={selectedTextPositionOption?.icon}
+              triggerLabel={selectedTextPositionOption?.label || 'Derecha'}
+              options={textPositionOptions}
+              selectedValue={textPosition}
+              onSelect={setTextPosition}
+            />
           </div>
 
-          {/* ── Info del QR ── */}
-          <div className="bg-[color:var(--surface-muted)] rounded-xl p-4">
-            <p className="text-xs font-semibold text-[color:var(--foreground-muted)] mb-1 uppercase tracking-wide">
-              Datos codificados en el QR
-            </p>
-            <p className="text-xs text-[color:var(--foreground)] font-mono break-all leading-relaxed">
-              URL del inventario · Folio · Número de serie · Número de activo ·
-              Modelo · Marca · Tipo · Estado
-            </p>
-          </div>
+          <QRContentConfigurator
+            value={contentOptions}
+            onChange={setContentOptions}
+          />
 
           {/* ── Preview de la etiqueta ── */}
           <div className="flex flex-col items-center gap-2 sm:gap-3">
@@ -204,6 +180,7 @@ function QRLabelModal({ inventory, isOpen, onClose }) {
                   inventory={inventory}
                   size={labelSize}
                   textPosition={textPosition}
+                  contentOptions={contentOptions}
                 />
               </div>
             </div>

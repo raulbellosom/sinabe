@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import {
   BarChart3,
@@ -15,7 +16,6 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Search,
-  Settings,
   Shield,
   ShieldCheck,
   Sun,
@@ -107,39 +107,100 @@ const SidebarSubmenu = ({
   onToggle,
   children,
   active,
-}) => (
-  <div className="space-y-1">
-    <button
-      type="button"
-      onClick={onToggle}
-      className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-        active
-          ? 'bg-purple-500/20 text-white'
-          : 'text-white/90 hover:bg-purple-500/20 hover:text-white'
-      }`}
+}) => {
+  const [hovered, setHovered] = useState(false);
+  const [flyoutPos, setFlyoutPos] = useState(null);
+  const buttonRef = useRef(null);
+
+  // Reset position when sidebar expands so stale coords don't linger
+  useEffect(() => {
+    if (!collapsed) {
+      setFlyoutPos(null);
+      setHovered(false);
+    }
+  }, [collapsed]);
+
+  const handleMouseEnter = () => {
+    if (!collapsed) return;
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setFlyoutPos({ top: rect.top, left: rect.right + 8 });
+    }
+    setHovered(true);
+  };
+
+  const showFlyout = collapsed && hovered;
+
+  return (
+    <div
+      className="space-y-1"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={() => setHovered(false)}
     >
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center">
-        <Icon size={20} strokeWidth={2.1} />
-      </span>
-      <SidebarItemLabel collapsed={collapsed}>{label}</SidebarItemLabel>
-      <span
-        className={`ml-auto transition-all duration-300 ${
-          collapsed ? 'w-0 opacity-0' : 'w-4 opacity-100'
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={onToggle}
+        className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+          active
+            ? 'bg-purple-500/20 text-white'
+            : 'text-white/90 hover:bg-purple-500/20 hover:text-white'
         }`}
       >
-        {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-      </span>
-    </button>
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+          <Icon size={20} strokeWidth={2.1} />
+        </span>
+        <SidebarItemLabel collapsed={collapsed}>{label}</SidebarItemLabel>
+        <span
+          className={`ml-auto transition-all duration-300 ${
+            collapsed ? 'w-0 opacity-0' : 'w-4 opacity-100'
+          }`}
+        >
+          {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+        </span>
+      </button>
 
-    <div
-      className={`overflow-hidden pl-10 transition-[max-height,opacity] duration-300 ease-out ${
-        !collapsed && open ? 'max-h-[320px] opacity-100' : 'max-h-0 opacity-0'
-      }`}
-    >
-      <div className="space-y-1 pb-1">{children}</div>
+      <div
+        className={`overflow-hidden pl-10 transition-[max-height,opacity] duration-300 ease-out ${
+          !collapsed && open ? 'max-h-[320px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="space-y-1 pb-1">{children}</div>
+      </div>
+
+      {collapsed &&
+        flyoutPos !== null &&
+        createPortal(
+          <div
+            className={`fixed z-200 min-w-45 overflow-hidden rounded-xl shadow-2xl shadow-black/50 transition-[opacity,transform] duration-200 ease-out ${
+              showFlyout
+                ? 'opacity-100 translate-x-0 pointer-events-auto'
+                : 'opacity-0 -translate-x-2 pointer-events-none'
+            }`}
+            style={{ top: flyoutPos.top, left: flyoutPos.left }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+          >
+            <div
+              className="overflow-hidden rounded-xl border border-purple-500/30 backdrop-blur-xl"
+              style={{ background: 'rgba(7, 18, 36, 0.96)' }}
+            >
+              <div className="border-b border-purple-500/20 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-white/50">
+                {label}
+              </div>
+              <div
+                className="space-y-0.5 p-1.5"
+                onClick={() => setHovered(false)}
+              >
+                {children}
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
-  </div>
-);
+  );
+};
 
 const Sidebar = ({ children }) => {
   const location = useLocation();
@@ -477,14 +538,6 @@ const Sidebar = ({ children }) => {
             collapsed={collapsed}
             active={isActiveRoute('/audit-logs')}
           />
-
-          <SidebarLinkItem
-            to="/preferences"
-            icon={Settings}
-            label="Preferencias"
-            collapsed={collapsed}
-            active={isActiveRoute('/preferences')}
-          />
         </nav>
 
         {/* Theme toggle y colapsar */}
@@ -663,7 +716,10 @@ const Sidebar = ({ children }) => {
           </nav>
 
           {/* Hidden instance — portal renders the full-screen modal when isSearchSheetOpen is true */}
-          <div className="absolute overflow-hidden w-0 h-0 opacity-0 pointer-events-none" aria-hidden="true">
+          <div
+            className="absolute overflow-hidden w-0 h-0 opacity-0 pointer-events-none"
+            aria-hidden="true"
+          >
             <InventorySearchCombobox
               forceOpen={isSearchSheetOpen}
               onClose={() => setIsSearchSheetOpen(false)}

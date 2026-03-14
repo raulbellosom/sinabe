@@ -1,24 +1,15 @@
 import { QRCodeCanvas } from 'qrcode.react';
-import Logo from '../../assets/logo/sinabe_icon.png';
 import { Badge } from '../ui/flowbite';
 import { Info } from 'lucide-react';
-import { APP_URL } from '../../config/env';
+import {
+  QR_CONTENT_PRESETS,
+  buildQRValue,
+  getInventoryPublicUrl,
+  getQRCodeCanvasProps,
+} from '../../utils/qrCodeUtils';
 
 function QRCodeGenerator({ inventoryInfo, type, qrSize }) {
-  const inventoryUrl = `${APP_URL.replace(/\/$/, '')}/inventory/public/${inventoryInfo.id}`;
-
-  const formatInventory = (inventory) => {
-    return JSON.stringify({
-      modelo: inventory.model.name,
-      marca: inventory.model.brand.name,
-      tipo: inventory.model.type.name,
-      SN: inventory.serialNumber,
-      activo: inventory.activeNumber,
-      estado: inventory.status,
-      recepcion: inventory.receptionDate,
-      url: `${APP_URL.replace(/\/$/, '')}/inventory/public/${inventory.id}`,
-    });
-  };
+  const inventoryUrl = getInventoryPublicUrl(inventoryInfo.id);
 
   let value;
   switch (type) {
@@ -30,7 +21,9 @@ function QRCodeGenerator({ inventoryInfo, type, qrSize }) {
       break;
 
     case 'info':
-      value = formatInventory(inventoryInfo);
+      value = buildQRValue(inventoryInfo, {
+        preset: QR_CONTENT_PRESETS.full.key,
+      });
       break;
     default:
       value = inventoryUrl;
@@ -78,15 +71,7 @@ function QRCodeGenerator({ inventoryInfo, type, qrSize }) {
       <QRCodeCanvas
         value={value}
         size={size}
-        bgColor="#ffffff"
-        fgColor="#7e3af2"
-        title={inventoryInfo.model.name}
-        imageSettings={{
-          src: Logo,
-          height: 48,
-          width: 48,
-          excavate: true,
-        }}
+        {...getQRCodeCanvasProps(size, inventoryInfo.model.name)}
       />
       <Badge className="mt-4" color="purple">
         <Info size={20} className="inline mr-2" />

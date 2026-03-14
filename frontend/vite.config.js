@@ -2,11 +2,13 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+
 export default defineConfig({
   // Use a non-default cache dir so Vite generates completely new chunk names
   // that the browser has never seen before, bypassing any stale HTTP cache.
   cacheDir: 'node_modules/.vite-sinabe',
   server: {
+    host: true,
     headers: {
       'Cache-Control': 'no-store',
     },

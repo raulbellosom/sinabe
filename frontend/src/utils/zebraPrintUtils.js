@@ -4,26 +4,21 @@
  * Estrategia: captura los canvas del DOM, convierte a dataURL y los
  * inyecta en un nuevo window con el HTML de impresión listo para Zebra.
  */
-import { LABEL_SIZES, buildQRValue } from '../components/QRGenerator/QRLabel';
-import QRCode from 'qrcode';
+import { LABEL_SIZES } from '../components/QRGenerator/QRLabel';
 import { jsPDF } from 'jspdf';
+import {
+  buildQRValue,
+  createDefaultQRContentOptions,
+  generateStyledQRDataUrl,
+} from './qrCodeUtils';
 
 /**
  * Genera el valor del QR como dataURL PNG usando la librería `qrcode`
  * (funciona sin DOM, útil para el nuevo window de impresión).
  * @returns {Promise<string>} dataURL
  */
-export async function generateQRDataUrl(
-  value,
-  sizePx = 140,
-  fgColor = '#000000',
-) {
-  return await QRCode.toDataURL(value, {
-    width: sizePx,
-    margin: 1,
-    color: { dark: fgColor, light: '#ffffff' },
-    errorCorrectionLevel: 'M',
-  });
+export async function generateQRDataUrl(value, sizePx = 140) {
+  return generateStyledQRDataUrl(value, sizePx);
 }
 
 /**
@@ -160,13 +155,16 @@ export async function printZebraLabels(
   inventories,
   size = 'md',
   textPosition = 'right',
+  contentOptions = createDefaultQRContentOptions(),
 ) {
   const cfg = LABEL_SIZES[size] || LABEL_SIZES.md;
   const qrPx = getEffectiveQrPx(cfg, textPosition);
 
   // Generar QR data URLs para todos los inventarios en paralelo
   const qrDataUrls = await Promise.all(
-    inventories.map((inv) => generateQRDataUrl(buildQRValue(inv), qrPx)),
+    inventories.map((inv) =>
+      generateQRDataUrl(buildQRValue(inv, contentOptions), qrPx),
+    ),
   );
 
   // Construir HTML de etiquetas
@@ -221,6 +219,7 @@ export async function generateLabelsPDF(
   inventories,
   size = 'md',
   textPosition = 'right',
+  contentOptions = createDefaultQRContentOptions(),
 ) {
   const cfg = LABEL_SIZES[size] || LABEL_SIZES.md;
   const qrPx = getEffectiveQrPx(cfg, textPosition);
@@ -247,7 +246,9 @@ export async function generateLabelsPDF(
 
   // Generar QR dataURLs
   const qrDataUrls = await Promise.all(
-    inventories.map((inv) => generateQRDataUrl(buildQRValue(inv), qrPx)),
+    inventories.map((inv) =>
+      generateQRDataUrl(buildQRValue(inv, contentOptions), qrPx),
+    ),
   );
 
   const isDouble = textPosition === 'none';
