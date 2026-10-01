@@ -34,12 +34,11 @@ const saveSignature = async (req, res, next) => {
         fs.mkdirSync(BASE_PATH, { recursive: true });
       }
 
-      // Optional: Resize signature to standard width if needed, or just keep original
-      // For signatures, we might want to ensure they are not too huge.
-      // Let's resize to max width 600px, maintaining aspect ratio.
+      // The frontend already sends a normalized 1000x400 PNG; this only caps
+      // oversized uploads, maintaining aspect ratio.
       const tempPath = file.path + ".tmp";
       await sharp(file.path)
-        .resize(600, null, { withoutEnlargement: true })
+        .resize(1000, null, { withoutEnlargement: true })
         .toFile(tempPath);
 
       fs.unlinkSync(file.path); // Remove original

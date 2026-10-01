@@ -5,7 +5,7 @@ import ModalForm from '../../components/Modals/ModalForm';
 import ChangePasswordForm from '../../components/AccountFields/ChangePassword/ChangePasswordForm';
 import withPermission from '../../utils/withPermissions';
 import useCheckPermissions from '../../hooks/useCheckPermissions';
-import SignatureCanvas from 'react-signature-canvas';
+import SignaturePad from '../../components/Signature/SignaturePad';
 import { API_URL } from '../../services/api';
 import { FormattedUrlImage } from '../../utils/FormattedUrlImage';
 import NoImageFound from '../../assets/images/NoImageFound.jpg';
@@ -104,7 +104,7 @@ const MobilePill = ({ active, onClick, icon: Icon, label }) => (
 /* ─── main component ────────────────────────────────────────────────────────── */
 const Account = () => {
   const inputRef = useRef(null);
-  const sigPad = useRef({});
+  const sigPad = useRef(null);
   const changePassFormRef = useRef(null);
   const {
     user,
@@ -303,16 +303,24 @@ const Account = () => {
     : '—';
 
   /* ─── signature save handler ──────────────────────────────────────────────── */
-  const handleSaveSignature = async () => {
-    let fileToUpload = null;
-    if (sigUploadRef.current?.files?.[0]) {
-      fileToUpload = sigUploadRef.current.files[0];
-    } else if (sigPad.current && !sigPad.current.isEmpty()) {
-      const dataUrl = sigPad.current.getCanvas().toDataURL('image/png');
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      fileToUpload = new File([blob], 'signature.png', { type: 'image/png' });
+  // Uploaded images are loaded into the pad (cropped and scaled to the same
+  // canonical format as drawn signatures) so the preview matches what's saved.
+  const handleSignatureFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const hasInk = await sigPad.current?.loadImage(file);
+      if (!hasInk) alert('No se detectó una firma en la imagen.');
+    } catch (err) {
+      console.error(err);
+      alert('No se pudo leer la imagen de la firma.');
+    } finally {
+      e.target.value = '';
     }
+  };
+
+  const handleSaveSignature = async () => {
+    const fileToUpload = await sigPad.current?.toFile();
     if (fileToUpload) {
       try {
         await updateSignature(fileToUpload);
@@ -722,16 +730,8 @@ const Account = () => {
             <p className="text-xs font-semibold uppercase tracking-wider text-(--foreground-muted)">
               Dibuja tu firma
             </p>
-            <div className="flex justify-center rounded-xl border-2 border-dashed border-(--border) bg-white">
-              <SignatureCanvas
-                ref={sigPad}
-                penColor="#1e293b"
-                canvasProps={{
-                  className: 'cursor-crosshair block',
-                  width: 320,
-                  height: 150,
-                }}
-              />
+            <div className="rounded-xl border-2 border-dashed border-(--border) bg-white">
+              <SignaturePad ref={sigPad} penColor="#1e293b" maxWidth="100%" />
             </div>
           </div>
 
@@ -758,6 +758,7 @@ const Account = () => {
                 ref={(el) => (sigUploadRef.current = el)}
                 type="file"
                 accept="image/*"
+                onChange={handleSignatureFileChange}
                 className="hidden"
               />
             </label>

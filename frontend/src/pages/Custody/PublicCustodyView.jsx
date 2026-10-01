@@ -12,7 +12,7 @@ import {
   Button,
   Badge,
 } from '../../components/ui/flowbite';
-import SignatureCanvas from 'react-signature-canvas';
+import SignaturePad from '../../components/Signature/SignaturePad';
 import { toast } from 'sonner';
 import sinabeIcon from '../../assets/logo/sinabe_icon.png';
 import gapLogo from '../../assets/logo/gap.png';
@@ -67,7 +67,7 @@ const PublicCustodyView = () => {
 
     setIsSubmitting(true);
     try {
-      const signatureBase64 = sigPad.current.getCanvas().toDataURL('image/png');
+      const signatureBase64 = sigPad.current.toDataURL();
       const data = await submitPublicSignature(token, signatureBase64);
       setRecord(data.custodyRecord);
       setIsSignedSuccessfully(true);
@@ -342,22 +342,12 @@ const PublicCustodyView = () => {
                       <X className="h-3 w-3" /> Limpiar
                     </button>
                   </div>
-                  <div className="flex justify-center">
-                    <div
-                      className="bg-white dark:bg-gray-900 rounded-xl border-2 border-blue-400 dark:border-blue-600 overflow-hidden shadow-md"
-                      style={{ width: 320 }}
-                    >
-                      <SignatureCanvas
-                        ref={sigPad}
-                        onEnd={() => setHasSignature(!sigPad.current.isEmpty())}
-                        penColor="black"
-                        canvasProps={{
-                          className: 'cursor-crosshair block',
-                          width: 320,
-                          height: 150,
-                        }}
-                      />
-                    </div>
+                  <div className="rounded-xl border-2 border-blue-400 dark:border-blue-600 overflow-hidden shadow-md bg-white">
+                    <SignaturePad
+                      ref={sigPad}
+                      maxWidth="100%"
+                      onEnd={() => setHasSignature(!sigPad.current.isEmpty())}
+                    />
                   </div>
 
                   <div className="flex flex-col items-center gap-3 pt-2">

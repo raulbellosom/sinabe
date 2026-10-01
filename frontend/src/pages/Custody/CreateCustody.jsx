@@ -2,7 +2,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFormik, FormikProvider } from 'formik';
 import * as Yup from 'yup';
-import SignatureCanvas from 'react-signature-canvas';
+import SignaturePad from '../../components/Signature/SignaturePad';
+import { getUserSignatureUrl } from '../../utils/signatureImage';
 import {
   createCustodyRecord,
   getCustodyRecord,
@@ -59,8 +60,8 @@ const CreateCustody = () => {
   const queryClient = useQueryClient();
   const { user, updateSignature } = useAuthContext();
   const { roles } = useRoleContext();
-  const receiverSigPad = useRef({});
-  const delivererSigPad = useRef({});
+  const receiverSigPad = useRef(null);
+  const delivererSigPad = useRef(null);
 
   const [selectedInventories, setSelectedInventories] = useState([]);
   const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
@@ -100,64 +101,49 @@ const CreateCustody = () => {
   const [selectedDeliverer, setSelectedDeliverer] = useState(null);
   const [allAdminUsers, setAllAdminUsers] = useState([]);
   const [isAdminUsersLoading, setIsAdminUsersLoading] = useState(false);
-  // Tracks whether the edit-mode record has finished loading
-  const [isRecordLoaded, setIsRecordLoaded] = useState(!isEditMode);
   const [recordStatus, setRecordStatus] = useState(null);
 
-  // Fixed canvas dimensions — absolute size on all screens
-  const CANVAS_W = 320;
-  const CANVAS_H = 150;
+  // Full URL of a user's profile signature (search results and the auth user
+  // expose it differently; the current user object is the most up to date).
+  const resolveProfileSignatureUrl = (deliverer) => {
+    const source = deliverer?.id && deliverer.id === user?.id ? user : deliverer;
+    const url = getUserSignatureUrl(source) || getUserSignatureUrl(deliverer);
+    return url ? `${API_URL}/${url}` : null;
+  };
 
-  // Initialize selectedDeliverer with current user in create mode
+  // Loads the deliverer's saved profile signature into the pad
+  const applyDelivererProfileSignature = async (deliverer) => {
+    const url = resolveProfileSignatureUrl(deliverer);
+    setInitialDelivererSignature(url);
+    setIsDelivererSignatureChanged(false);
+    if (!url) {
+      delivererSigPad.current?.clear();
+      return;
+    }
+    try {
+      await delivererSigPad.current?.loadImage(url);
+    } catch (e) {
+      console.error('Error loading signature', e);
+      toast.error('No se pudo cargar la firma guardada del responsable');
+    }
+  };
+
+  // Create mode: current user is the default deliverer, with their signature
   useEffect(() => {
     if (!isEditMode && user && !selectedDeliverer) {
       setSelectedDeliverer(user);
+      applyDelivererProfileSignature(user);
     }
   }, [user, isEditMode]);
 
-  // Load deliverer's profile signature whenever selectedDeliverer changes,
-  // but only after the record has been fully loaded (avoids overwriting in edit mode)
-  useEffect(() => {
-    if (!isRecordLoaded || !selectedDeliverer || !delivererSigPad.current)
-      return;
-    if (selectedDeliverer?.signature?.url) {
-      const loadSig = async () => {
-        try {
-          const response = await fetch(
-            `${API_URL}/${selectedDeliverer.signature.url}`,
-          );
-          const blob = await response.blob();
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const dataUrl = reader.result;
-            setInitialDelivererSignature(dataUrl);
-            delivererSigPad.current.fromDataURL(dataUrl, {
-              ratio: 1,
-              width: CANVAS_W,
-              height: CANVAS_H,
-            });
-          };
-          reader.readAsDataURL(blob);
-        } catch (e) {
-          console.error('Error loading signature', e);
-        }
-      };
-      loadSig();
-    } else {
-      delivererSigPad.current.clear();
-      setInitialDelivererSignature(null);
-    }
-  }, [selectedDeliverer, isRecordLoaded]);
-
-  const handleReestablishDelivererSignature = () => {
-    if (initialDelivererSignature) {
-      delivererSigPad.current.clear();
-      delivererSigPad.current.fromDataURL(initialDelivererSignature, {
-        ratio: 1,
-        width: CANVAS_W,
-        height: CANVAS_H,
-      });
+  const handleReestablishDelivererSignature = async () => {
+    if (!initialDelivererSignature) return;
+    try {
+      await delivererSigPad.current.loadImage(initialDelivererSignature);
       setIsDelivererSignatureChanged(false);
+    } catch (e) {
+      console.error('Error loading signature', e);
+      toast.error('No se pudo cargar la firma guardada');
     }
   };
 
@@ -206,7 +192,7 @@ const CreateCustody = () => {
 
   const handleSelectDeliverer = (adminUser) => {
     setSelectedDeliverer(adminUser);
-    setIsDelivererSignatureChanged(true);
+    applyDelivererProfileSignature(adminUser);
   };
 
   const handleSearchInventories = useCallback(
@@ -257,12 +243,8 @@ const CreateCustody = () => {
         return;
       }
 
-      const receiverSignature = receiverSigPad.current
-        .getCanvas()
-        .toDataURL('image/png');
-      const delivererSignature = delivererSigPad.current
-        .getCanvas()
-        .toDataURL('image/png');
+      const receiverSignature = receiverSigPad.current.toDataURL();
+      const delivererSignature = delivererSigPad.current.toDataURL();
 
       const payload = {
         ...values,
@@ -328,13 +310,21 @@ const CreateCustody = () => {
 
           // Load signatures from the existing record
           if (record.receiverSignature) {
-            receiverSigPad.current.fromDataURL(record.receiverSignature);
+            receiverSigPad.current
+              ?.loadImage(record.receiverSignature)
+              .catch((e) => console.error('Error loading signature', e));
           }
           if (record.delivererSignature) {
-            delivererSigPad.current.fromDataURL(record.delivererSignature);
+            setInitialDelivererSignature(
+              resolveProfileSignatureUrl(record.deliverer),
+            );
+            delivererSigPad.current
+              ?.loadImage(record.delivererSignature)
+              .catch((e) => console.error('Error loading signature', e));
+          } else {
+            // Draft without deliverer signature: fall back to the profile one
+            applyDelivererProfileSignature(record.deliverer);
           }
-          // Mark record as loaded so deliverer changes update the pad from here on
-          setIsRecordLoaded(true);
         } catch (error) {
           toast.error('Error al cargar el resguardo para editar');
           navigate('/custody');
@@ -347,12 +337,8 @@ const CreateCustody = () => {
   const handleSaveDraft = async () => {
     const values = formik.values;
 
-    const receiverSignature = !receiverSigPad.current.isEmpty()
-      ? receiverSigPad.current.getCanvas().toDataURL('image/png')
-      : null;
-    const delivererSignature = !delivererSigPad.current.isEmpty()
-      ? delivererSigPad.current.getCanvas().toDataURL('image/png')
-      : null;
+    const receiverSignature = receiverSigPad.current.toDataURL();
+    const delivererSignature = delivererSigPad.current.toDataURL();
 
     const payload = {
       ...values,
@@ -434,15 +420,7 @@ const CreateCustody = () => {
     setIsSignatureUpdateModalOpen(false);
     setIsSubmitting(true);
     try {
-      const dataUrl = delivererSigPad.current
-        .getCanvas()
-        .toDataURL('image/png');
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const fileToUpload = new File([blob], 'signature.png', {
-        type: 'image/png',
-      });
-
+      const fileToUpload = await delivererSigPad.current.toFile();
       await updateSignature(fileToUpload);
       toast.success('Firma actualizada en perfil');
       setIsDelivererSignatureChanged(false);
@@ -915,26 +893,17 @@ const CreateCustody = () => {
                 )}
               </div>
               {/* Receiver Signature Pad */}
-              <div className="flex justify-center">
-                <div
-                  className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative"
-                  style={{ width: 320 }}
-                >
-                  {isReceiverLocked && (
-                    <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
-                      <Lock className="text-gray-400 text-4xl" />
-                    </div>
-                  )}
-                  <SignatureCanvas
-                    ref={receiverSigPad}
-                    penColor="black"
-                    canvasProps={{
-                      className: 'cursor-crosshair block',
-                      width: 320,
-                      height: 150,
-                    }}
-                  />
-                </div>
+              <div className="relative rounded-lg border border-gray-200 dark:border-gray-700 shadow-inner">
+                {isReceiverLocked && (
+                  <div className="absolute inset-0 z-10 rounded-lg bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
+                    <Lock className="text-gray-400 text-4xl" />
+                  </div>
+                )}
+                <SignaturePad
+                  ref={receiverSigPad}
+                  disabled={isReceiverLocked}
+                  maxWidth="100%"
+                />
               </div>
               <p className="mt-2 text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">
                 Firma Digital
@@ -991,27 +960,18 @@ const CreateCustody = () => {
                   </>
                 ) : null}
               </div>
-              <div className="flex justify-center">
-                <div
-                  className="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative"
-                  style={{ width: 320 }}
-                >
-                  {isDelivererLocked && (
-                    <div className="absolute inset-0 z-10 bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
-                      <Lock className="text-gray-400 text-4xl" />
-                    </div>
-                  )}
-                  <SignatureCanvas
-                    ref={delivererSigPad}
-                    penColor="black"
-                    onBegin={() => setIsDelivererSignatureChanged(true)}
-                    canvasProps={{
-                      className: 'cursor-crosshair block',
-                      width: 320,
-                      height: 150,
-                    }}
-                  />
-                </div>
+              <div className="relative rounded-lg border border-gray-200 dark:border-gray-700 shadow-inner">
+                {isDelivererLocked && (
+                  <div className="absolute inset-0 z-10 rounded-lg bg-gray-100/30 backdrop-blur-[1px] flex items-center justify-center">
+                    <Lock className="text-gray-400 text-4xl" />
+                  </div>
+                )}
+                <SignaturePad
+                  ref={delivererSigPad}
+                  disabled={isDelivererLocked}
+                  maxWidth="100%"
+                  onBegin={() => setIsDelivererSignatureChanged(true)}
+                />
               </div>
               <p className="mt-2 text-[10px] text-gray-400 text-center uppercase tracking-widest font-bold">
                 Firma Digital

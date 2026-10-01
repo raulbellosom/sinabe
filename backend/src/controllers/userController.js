@@ -470,6 +470,9 @@ export const searchUsers = async (req, res) => {
     // El mapeo para quitar el password es correcto, lo mantenemos
     const usersWithoutPassword = users?.map((user) => {
       const { password, ...userWithoutPassword } = user;
+      const photos = user.photo || [];
+      userWithoutPassword.signature =
+        photos.find((p) => p.type === "SIGNATURE") || null;
       return userWithoutPassword;
     });
 

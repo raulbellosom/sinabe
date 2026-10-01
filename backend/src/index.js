@@ -65,7 +65,8 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json());
+// Custody records carry base64 PNG signatures in the body
+app.use(express.json({ limit: "5mb" }));
 
 // Routes registration
 app.use("/api/auth", authRoutes);
