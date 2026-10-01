@@ -62,7 +62,10 @@ async function finalizeCustodyRecord(recordId) {
   const receiverName = `${record.receiver.firstName} ${record.receiver.lastName}`;
   const safeReceiverName = receiverName.replace(/[<>:"/\\|?*]/g, "");
   const safeDate = formattedDate.replace(/\//g, "-");
-  const fileName = `Resguardo TI - ${safeReceiverName} - ${safeDate}.pdf`;
+  // Unique per generation: same receiver + same date used to overwrite the
+  // previous record's PDF and reuse a URL that browsers/caches kept serving.
+  const uniqueSuffix = `${record.id.slice(0, 8)}-${Date.now().toString(36)}`;
+  const fileName = `Resguardo TI - ${safeReceiverName} - ${safeDate} - ${uniqueSuffix}.pdf`;
   const filePath = path.join(uploadsDir, fileName);
   fs.writeFileSync(filePath, pdfBytes);
 

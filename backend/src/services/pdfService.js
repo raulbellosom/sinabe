@@ -140,8 +140,9 @@ export const generateCustodyPDF = async (data) => {
 
       // Ajusta tamaño de firmas (en px). Puedes cambiar a tu gusto.
       // Si en Word el espacio es más grande/pequeño, ajusta aquí.
+      // Signatures from the frontend are normalized to 1000x400 (2.5:1)
       getSize: () => {
-        return [220, 80]; // width, height
+        return [220, 88]; // width, height
       },
     });
 
